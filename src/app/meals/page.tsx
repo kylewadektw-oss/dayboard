@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import Image from 'next/image';
 
 interface Recipe {
   id: string;
@@ -45,7 +46,7 @@ export default function MealsPage() {
   const mealTimes = ['breakfast', 'lunch', 'dinner'] as const;
 
   // Sample fallback recipes
-  const fallbackRecipes: Recipe[] = [
+  const fallbackRecipes: Recipe[] = useMemo(() => [
     {
       id: 'fallback-1',
       title: 'Spaghetti Carbonara',
@@ -79,13 +80,9 @@ export default function MealsPage() {
       measurements: ['500g', '2 cups', '3 tbsp', '3 cloves', '1 inch piece'],
       favorite: false,
     }
-  ];
+  ], []);
 
-  useEffect(() => {
-    loadRandomRecipes();
-  }, []);
-
-  const loadRandomRecipes = async () => {
+  const loadRandomRecipes = useCallback(async () => {
     setLoading(true);
     try {
       const fetchedRecipes: Recipe[] = [];
@@ -118,7 +115,11 @@ export default function MealsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fallbackRecipes]);
+
+  useEffect(() => {
+    loadRandomRecipes();
+  }, [loadRandomRecipes]);
 
   const searchRecipes = async () => {
     if (!searchTerm.trim()) {
@@ -160,7 +161,7 @@ export default function MealsPage() {
         // Take first 12 recipes and get their full details
         const limitedMeals = data.meals.slice(0, 12);
         const detailedRecipes = await Promise.all(
-          limitedMeals.map(async (meal: any) => {
+          limitedMeals.map(async (meal: { idMeal: string }) => {
             try {
               const detailResponse = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`);
               const detailData = await detailResponse.json();
@@ -198,7 +199,7 @@ export default function MealsPage() {
       if (data.meals) {
         const limitedMeals = data.meals.slice(0, 12);
         const detailedRecipes = await Promise.all(
-          limitedMeals.map(async (meal: any) => {
+          limitedMeals.map(async (meal: { idMeal: string }) => {
             try {
               const detailResponse = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`);
               const detailData = await detailResponse.json();
@@ -268,6 +269,7 @@ export default function MealsPage() {
   const favoriteRecipes = recipes.filter(recipe => recipe.favorite);
 
   // Helper functions for meal planning
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const addToWeeklyPlan = (day: string, mealTime: string, recipe: Recipe) => {
     setWeeklyPlan(prev => ({
       ...prev,
@@ -359,7 +361,7 @@ export default function MealsPage() {
                   {favoriteRecipes.length} favorites
                 </span>
               </div>
-              <p className="text-gray-600 mb-6">Quick access to your household's favorite recipes for easy meal planning.</p>
+              <p className="text-gray-600 mb-6">Quick access to your household&apos;s favorite recipes for easy meal planning.</p>
               
               {favoriteRecipes.length === 0 ? (
                 <div className="text-center py-12">
@@ -397,7 +399,7 @@ export default function MealsPage() {
                             Add to Plan
                           </button>
                           <div className="absolute bottom-full left-0 mb-2 w-48 bg-black text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            Go to This Week's Plan to add to schedule
+                            Go to This Week&apos;s Plan to add to schedule
                           </div>
                         </div>
                       </div>
@@ -412,7 +414,7 @@ export default function MealsPage() {
         {activeTab === 'weekly' && (
           <div className="space-y-6">
             <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">📅 This Week's Meal Plan</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">📅 This Week&apos;s Meal Plan</h2>
               <p className="text-gray-600 mb-6">Plan your meals for the entire week. Drag favorites or add new recipes to each meal slot.</p>
               
               <div className="overflow-x-auto">
@@ -598,9 +600,11 @@ export default function MealsPage() {
                 {recipes.map((recipe) => (
                   <div key={recipe.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="relative">
-                      <img 
+                      <Image 
                         src={recipe.image || '/placeholder-recipe.jpg'} 
                         alt={recipe.title}
+                        width={400}
+                        height={192}
                         className="w-full h-48 object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -812,9 +816,11 @@ export default function MealsPage() {
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                  <img 
+                  <Image 
                     src={selectedRecipe.image || '/placeholder-recipe.jpg'} 
                     alt={selectedRecipe.title}
+                    width={400}
+                    height={256}
                     className="w-full h-64 object-cover rounded-lg mb-4"
                   />
                   <div className="flex items-center justify-between">
