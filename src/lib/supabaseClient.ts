@@ -1,19 +1,23 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Check if we're in a browser environment and have the required env vars
+// Environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Create a fallback client for build time
-const createSupabaseClient = () => {
-  if (!supabaseUrl || !supabaseKey) {
-    // During build time or when env vars are missing, create a dummy client
-    return createClient('https://placeholder.supabase.co', 'placeholder-key')
-  }
-  return createClient(supabaseUrl, supabaseKey)
+// Default values for development (replace with your actual values)
+const fallbackUrl = 'https://csbwewirwzeitavhvykr.supabase.co'
+const fallbackKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzYndld2lyd3plaXRhdmh2eWtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYzNTg3NjIsImV4cCI6MjA3MTkzNDc2Mn0.Jc3FO8nDvw5VtIKPH29V7cwDm-XX4Lniqn_PjFROXR8'
+
+// Use environment variables if available, otherwise use fallback values
+const finalUrl = supabaseUrl || fallbackUrl
+const finalKey = supabaseKey || fallbackKey
+
+// Validate that we have proper values
+if (!finalUrl || !finalKey || finalUrl.includes('placeholder')) {
+  console.error('Supabase configuration error. Please check your environment variables.')
 }
 
-export const supabase = createSupabaseClient()
+export const supabase = createClient(finalUrl, finalKey)
 
 // Types for our database tables
 export interface Profile {
