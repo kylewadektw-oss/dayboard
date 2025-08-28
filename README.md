@@ -1,4 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# dayboard
+
+A modern household command center that organizes calendars, meals, grocery lists, weather, and family updates into one elegant dashboard. Built with Next.js, Supabase, and Vercel.
 
 ## Getting Started
 
