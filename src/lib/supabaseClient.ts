@@ -1,9 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Check if we're in a browser environment and have the required env vars
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+// Create a fallback client for build time
+const createSupabaseClient = () => {
+  if (!supabaseUrl || !supabaseKey) {
+    // During build time or when env vars are missing, create a dummy client
+    return createClient('https://placeholder.supabase.co', 'placeholder-key')
+  }
+  return createClient(supabaseUrl, supabaseKey)
+}
+
+export const supabase = createSupabaseClient()
 
 // Types for our database tables
 export interface Profile {
