@@ -20,15 +20,14 @@ export default function Lists() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Family Lists</h1>
-          <p className="text-gray-600">Keep track of groceries, tasks, and more</p>
-        </div>
+    <div className="p-6 space-y-8 bg-gray-50 min-h-screen">
+      {/* Header */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">📋 Family Lists</h1>
+        <p className="text-gray-600">Keep track of groceries, tasks, and more</p>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Grocery List */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200">
             <div className="p-6 border-b border-gray-200">
@@ -123,7 +122,7 @@ export default function Lists() {
         </div>
 
         {/* Additional Lists */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Shopping Lists */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Shopping Lists</h3>
@@ -176,7 +175,6 @@ export default function Lists() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

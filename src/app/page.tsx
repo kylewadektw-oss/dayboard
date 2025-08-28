@@ -6,7 +6,7 @@ export default function Home() {
       {/* Navigation */}
       <nav className="p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="text-2xl font-bold text-gray-900">📋 Dayboard</div>
+          <Link href="/dashboard" className="text-2xl font-bold text-gray-900 hover:opacity-75 transition-opacity">📋 Dayboard</Link>
           <Link 
             href="/signin" 
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -62,6 +62,12 @@ export default function Home() {
             <p className="text-gray-600">Manage grocery lists, todos, and checklists with intelligent categorization and sharing.</p>
           </Link>
 
+          <Link href="/projects" className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
+            <div className="text-4xl mb-4">🔨</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">Home Projects</h3>
+            <p className="text-gray-600">Track household projects, renovations, and improvements with sliding tile view and progress tracking.</p>
+          </Link>
+
           <Link href="/daycare" className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
             <div className="text-4xl mb-4">🎒</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-3">Daycare Updates</h3>
@@ -101,7 +107,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <div className="text-lg font-semibold mb-2">📋 Dayboard</div>
+          <Link href="/dashboard" className="text-lg font-semibold mb-2 hover:opacity-75 transition-opacity inline-block">📋 Dayboard</Link>
           <p className="text-gray-400">Your family's command center, beautifully designed.</p>
         </div>
       </footer>

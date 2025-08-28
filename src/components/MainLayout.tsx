@@ -11,12 +11,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   
-  // Full width for landing page and signin
-  if (pathname === '/' || pathname === '/signin') {
-    return <>{children}</>;
-  }
-
-  // Listen for sidebar state changes
+  // Listen for sidebar state changes (must be before conditional return)
   useEffect(() => {
     const handleSidebarToggle = (event: CustomEvent) => {
       setSidebarCollapsed(event.detail.collapsed);
@@ -29,10 +24,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
     };
   }, []);
 
+  // Full width for landing page and signin
+  if (pathname === '/' || pathname === '/signin') {
+    return <>{children}</>;
+  }
+
   // With sidebar for app pages - slight push when expanded
   return (
     <div className={`w-full transition-all duration-300 ${
-      sidebarCollapsed ? 'ml-0' : 'ml-16'
+      sidebarCollapsed ? 'ml-16' : 'ml-64'
     }`} id="main-content">
       {children}
     </div>

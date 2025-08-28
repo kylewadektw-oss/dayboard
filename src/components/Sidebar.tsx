@@ -39,6 +39,7 @@ export default function Sidebar() {
     { name: 'Dashboard', href: '/dashboard', icon: '🏠' },
     { name: 'Meals', href: '/meals', icon: '🍽️' },
     { name: 'Lists', href: '/lists', icon: '📋' },
+    { name: 'Projects', href: '/projects', icon: '🔨' },
     { name: 'Daycare', href: '/daycare', icon: '🎒' },
     { name: 'Work', href: '/work', icon: '💼' },
     { name: 'Profile', href: '/profile', icon: '👤' },
@@ -58,13 +59,15 @@ export default function Sidebar() {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           {!isCollapsed && (
-            <div className="flex items-center space-x-2">
+            <Link href="/dashboard" className="flex items-center space-x-2 hover:opacity-75 transition-opacity">
               <span className="text-2xl">📋</span>
               <span className="text-xl font-bold text-gray-900">Dayboard</span>
-            </div>
+            </Link>
           )}
           {isCollapsed && (
-            <span className="text-2xl mx-auto">📋</span>
+            <Link href="/dashboard" className="hover:opacity-75 transition-opacity">
+              <span className="text-2xl mx-auto">📋</span>
+            </Link>
           )}
           <button
             onClick={toggleSidebar}
