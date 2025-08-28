@@ -9,7 +9,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   
   // Full width for landing page and signin
   if (pathname === '/' || pathname === '/signin') {
@@ -29,9 +29,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
     };
   }, []);
 
-  // With sidebar for app pages - sidebar overlays, doesn't push content
+  // With sidebar for app pages - slight push when expanded
   return (
-    <div className="w-full" id="main-content">
+    <div className={`w-full transition-all duration-300 ${
+      sidebarCollapsed ? 'ml-0' : 'ml-16'
+    }`} id="main-content">
       {children}
     </div>
   );

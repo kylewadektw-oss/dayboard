@@ -52,7 +52,7 @@ export default function Sidebar() {
   return (
     <>
       {/* Sidebar */}
-      <div className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 shadow-sm z-40 transition-all duration-300 ${
+<div className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 shadow-lg z-50 transition-all duration-300 ${
         isCollapsed ? 'w-16' : 'w-64'
       } ${isMobile && !isCollapsed ? 'shadow-2xl' : ''}`}>
         {/* Header */}
@@ -129,10 +129,10 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Overlay - light on desktop, darker on mobile */}
-      {!isCollapsed && (
+      {/* Mobile overlay only */}
+      {!isCollapsed && isMobile && (
         <div 
-          className={`fixed inset-0 z-30 ${isMobile ? 'bg-black bg-opacity-25' : 'bg-black bg-opacity-10'}`}
+          className="fixed inset-0 z-40 bg-black bg-opacity-25"
           onClick={() => setIsCollapsed(true)}
         />
       )}
