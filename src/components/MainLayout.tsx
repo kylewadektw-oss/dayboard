@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import ProtectedRoute from './ProtectedRoute';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -24,17 +25,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
     };
   }, []);
 
-  // Full width for landing page and signin
+  // Full width for landing page and signin (no auth required)
   if (pathname === '/' || pathname === '/signin') {
-    return <>{children}</>;
+    return <ProtectedRoute requireAuth={false}>{children}</ProtectedRoute>;
   }
 
-  // With sidebar for app pages - slight push when expanded
+  // With sidebar for app pages - require authentication
   return (
-    <div className={`w-full transition-all duration-300 ${
-      sidebarCollapsed ? 'ml-16' : 'ml-64'
-    }`} id="main-content">
-      {children}
-    </div>
+    <ProtectedRoute>
+      <div className={`w-full transition-all duration-300 ${
+        sidebarCollapsed ? 'ml-16' : 'ml-64'
+      }`} id="main-content">
+        {children}
+      </div>
+    </ProtectedRoute>
   );
 }

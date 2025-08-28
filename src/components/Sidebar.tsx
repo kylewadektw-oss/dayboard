@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(true); // Start collapsed by default
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
+  const { user, profile, signOut, loading } = useAuth();
 
   const toggleSidebar = () => {
     const newCollapsedState = !isCollapsed;
@@ -49,6 +51,26 @@ export default function Sidebar() {
   if (pathname === '/' || pathname === '/signin') {
     return null;
   }
+
+  // Don't show sidebar if user is not authenticated (except for loading state)
+  if (!loading && !user) {
+    return null;
+  }
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  // Get user initials for avatar
+  const getUserInitials = () => {
+    if (profile?.name) {
+      return profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    }
+    if (user?.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return 'U';
+  };
 
   return (
     <>
@@ -107,28 +129,47 @@ export default function Sidebar() {
 
         {/* Bottom section */}
         <div className="absolute bottom-4 left-4 right-4">
-          <div className={`flex items-center space-x-3 px-3 py-2 rounded-lg bg-gray-50 ${isCollapsed ? 'justify-center' : ''}`}>
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-sm font-medium text-blue-600">SJ</span>
+          {loading ? (
+            <div className={`flex items-center space-x-3 px-3 py-2 rounded-lg bg-gray-50 ${isCollapsed ? 'justify-center' : ''}`}>
+              <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+              {!isCollapsed && (
+                <div className="flex-1">
+                  <div className="h-3 bg-gray-200 rounded animate-pulse mb-1"></div>
+                  <div className="h-2 bg-gray-200 rounded animate-pulse"></div>
+                </div>
+              )}
             </div>
-            {!isCollapsed && (
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-gray-900 truncate">Sarah Johnson</div>
-                <div className="text-xs text-gray-500 truncate">sarah@example.com</div>
+          ) : user ? (
+            <Link
+              href="/profile"
+              className={`flex items-center space-x-3 px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors ${isCollapsed ? 'justify-center' : ''}`}
+            >
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-sm font-medium text-blue-600">{getUserInitials()}</span>
               </div>
-            )}
-          </div>
+              {!isCollapsed && (
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-900 truncate">
+                    {profile?.name || 'Complete Profile'}
+                  </div>
+                  <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                </div>
+              )}
+            </Link>
+          ) : null}
           
           {/* Sign Out Button */}
-          <Link
-            href="/signin"
-            className={`mt-2 flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors ${isCollapsed ? 'justify-center' : ''}`}
-          >
-            <span className="text-lg">🚪</span>
-            {!isCollapsed && (
-              <span className="text-sm font-medium">Sign Out</span>
-            )}
-          </Link>
+          {user && (
+            <button
+              onClick={handleSignOut}
+              className={`mt-2 w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors ${isCollapsed ? 'justify-center' : ''}`}
+            >
+              <span className="text-lg">🚪</span>
+              {!isCollapsed && (
+                <span className="text-sm font-medium">Sign Out</span>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
