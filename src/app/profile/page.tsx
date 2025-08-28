@@ -121,7 +121,7 @@ export default function ProfilePage() {
         city: formData.get('city')?.toString() || '',
         state: formData.get('state')?.toString() || '',
         zip: formData.get('zip')?.toString() || '',
-        monthly_income: Number(formData.get('monthly_income')) || null,
+        income: Number(formData.get('income')) || null,
         members_count: Number(formData.get('members_count')) || 1,
         created_by: user.id,
       };

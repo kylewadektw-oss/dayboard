@@ -26,7 +26,7 @@ export interface Household {
   city?: string
   state?: string
   zip?: string
-  monthly_income?: number
+  income?: number  // Fixed: renamed from monthly_income to income
   members_count?: number
   created_at?: string
   updated_at?: string

@@ -42,6 +42,7 @@ export default function Sidebar() {
     { name: 'Meals', href: '/meals', icon: '🍽️' },
     { name: 'Lists', href: '/lists', icon: '📋' },
     { name: 'Projects', href: '/projects', icon: '🔨' },
+    { name: 'Credentials', href: '/credentials', icon: '🔐' },
     { name: 'Daycare', href: '/daycare', icon: '🎒' },
     { name: 'Work', href: '/work', icon: '💼' },
     { name: 'Profile', href: '/profile', icon: '👤' },
