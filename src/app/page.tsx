@@ -44,41 +44,41 @@ export default function Home() {
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+          <Link href="/dashboard" className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
             <div className="text-4xl mb-4">🏠</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-3">Dashboard</h3>
             <p className="text-gray-600">Get a quick overview of weather, calendar, dinner plans, and grocery lists all in one place.</p>
-          </div>
+          </Link>
 
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+          <Link href="/meals" className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
             <div className="text-4xl mb-4">🍽️</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-3">Meal Planning</h3>
             <p className="text-gray-600">Plan your family meals, save recipes, and automatically add ingredients to your grocery list.</p>
-          </div>
+          </Link>
 
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+          <Link href="/lists" className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
             <div className="text-4xl mb-4">📋</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-3">Smart Lists</h3>
             <p className="text-gray-600">Manage grocery lists, todos, and checklists with intelligent categorization and sharing.</p>
-          </div>
+          </Link>
 
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+          <Link href="/daycare" className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
             <div className="text-4xl mb-4">🎒</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-3">Daycare Updates</h3>
             <p className="text-gray-600">Stay connected with your child's day through photos, reports, and real-time updates.</p>
-          </div>
+          </Link>
 
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+          <Link href="/work" className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
             <div className="text-4xl mb-4">💼</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-3">Work Integration</h3>
             <p className="text-gray-600">Balance work and family life with integrated calendars, tasks, and project management.</p>
-          </div>
+          </Link>
 
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+          <Link href="/profile" className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
             <div className="text-4xl mb-4">👨‍👩‍👧‍👦</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-3">Family Profiles</h3>
             <p className="text-gray-600">Manage household members, preferences, and stay connected with family updates.</p>
-          </div>
+          </Link>
         </div>
 
         {/* CTA Section */}

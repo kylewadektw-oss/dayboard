@@ -29,9 +29,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
     };
   }, []);
 
-  // With sidebar for app pages
+  // With sidebar for app pages - sidebar overlays, doesn't push content
   return (
-    <div className={`transition-all duration-300 lg:${sidebarCollapsed ? 'ml-16' : 'ml-64'} ml-0`} id="main-content">
+    <div className="w-full" id="main-content">
       {children}
     </div>
   );

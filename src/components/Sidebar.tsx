@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 export default function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true); // Start collapsed by default
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
 
@@ -129,10 +129,10 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Mobile overlay */}
-      {!isCollapsed && isMobile && (
+      {/* Overlay - light on desktop, darker on mobile */}
+      {!isCollapsed && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-25 z-30"
+          className={`fixed inset-0 z-30 ${isMobile ? 'bg-black bg-opacity-25' : 'bg-black bg-opacity-10'}`}
           onClick={() => setIsCollapsed(true)}
         />
       )}
