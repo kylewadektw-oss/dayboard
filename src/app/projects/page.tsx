@@ -126,7 +126,7 @@ function ProjectCard({ project, onMove, onView }: ProjectCardProps) {
 
   return (
     <div
-      ref={drag as any}
+      ref={drag as unknown as React.RefObject<HTMLDivElement>}
       className={`min-w-[280px] bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 cursor-grab active:cursor-grabbing flex-shrink-0 ${getStatusColor(project.status)} ${
         isDragging ? 'opacity-50 scale-95' : 'opacity-100 scale-100'
       } ${isOverdue ? 'ring-2 ring-red-300' : ''}`}
@@ -227,7 +227,7 @@ function DropZone({ status, children, onDrop }: DropZoneProps) {
 
   return (
     <div
-      ref={drop as any}
+      ref={drop as unknown as React.RefObject<HTMLDivElement>}
       className={`transition-all duration-200 rounded-2xl border-2 border-dashed border-transparent p-4 ${getDropZoneStyles()}`}
     >
       {children}

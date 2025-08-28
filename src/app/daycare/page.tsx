@@ -11,8 +11,8 @@ export default function Daycare() {
   ];
 
   const announcements = [
-    { id: 1, title: "Picture Day Next Friday", content: "Don't forget to send your little one in their best outfit!", type: "reminder" },
-    { id: 2, title: "Holiday Party Planning", content: "We're planning our holiday celebration. Volunteers needed for snacks!", type: "event" },
+    { id: 1, title: "Picture Day Next Friday", content: "Don&apos;t forget to send your little one in their best outfit!", type: "reminder" },
+    { id: 2, title: "Holiday Party Planning", content: "We&apos;re planning our holiday celebration. Volunteers needed for snacks!", type: "event" },
     { id: 3, title: "New Art Supplies", content: "Thank you to the Johnson family for donating new art supplies!", type: "thanks" },
   ];
 
@@ -22,7 +22,7 @@ export default function Daycare() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Daycare Updates</h1>
-          <p className="text-gray-600">Stay connected with your child's day</p>
+          <p className="text-gray-600">Stay connected with your child&apos;s day</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -55,7 +55,7 @@ export default function Daycare() {
             {/* Daily Report */}
             <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900">Today's Report</h2>
+                <h2 className="text-xl font-semibold text-gray-900">Today&apos;s Report</h2>
               </div>
               
               <div className="p-6">
@@ -152,7 +152,7 @@ export default function Daycare() {
             {/* Pickup Schedule */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">This Week's Schedule</h2>
+                <h2 className="text-lg font-semibold text-gray-900">This Week&apos;s Schedule</h2>
               </div>
               
               <div className="p-6">

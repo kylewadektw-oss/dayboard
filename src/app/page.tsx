@@ -20,7 +20,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="text-center mb-16">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Your Family's Command Center
+            Your Family&apos;s Command Center
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
             Organize calendars, meals, grocery lists, weather, and family updates 
@@ -71,7 +71,7 @@ export default function Home() {
           <Link href="/daycare" className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
             <div className="text-4xl mb-4">🎒</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-3">Daycare Updates</h3>
-            <p className="text-gray-600">Stay connected with your child's day through photos, reports, and real-time updates.</p>
+            <p className="text-gray-600">Stay connected with your child&apos;s day through photos, reports, and real-time updates.</p>
           </Link>
 
           <Link href="/work" className="bg-white rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all cursor-pointer">
@@ -108,7 +108,7 @@ export default function Home() {
       <footer className="bg-gray-900 text-white py-8">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <Link href="/dashboard" className="text-lg font-semibold mb-2 hover:opacity-75 transition-opacity inline-block">📋 Dayboard</Link>
-          <p className="text-gray-400">Your family's command center, beautifully designed.</p>
+          <p className="text-gray-400">Your family&apos;s command center, beautifully designed.</p>
         </div>
       </footer>
     </div>

@@ -133,7 +133,7 @@ export default function Work() {
             {/* Today's Schedule */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
               <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Today's Schedule</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Today&apos;s Schedule</h2>
               </div>
               
               <div className="p-6">

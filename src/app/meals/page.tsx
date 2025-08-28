@@ -114,7 +114,7 @@ export default function Meals() {
 
         {/* Weekly Meal Planner */}
         <div className="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">This Week's Meal Plan</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">This Week&apos;s Meal Plan</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
             {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day, index) => (

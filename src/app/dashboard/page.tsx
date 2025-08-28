@@ -5,7 +5,7 @@ export default function Dashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Good morning, Family!</h1>
-          <p className="text-gray-600">Here's what's happening today</p>
+          <p className="text-gray-600">Here&apos;s what&apos;s happening today</p>
         </div>
 
         {/* Dashboard Grid */}
@@ -27,7 +27,7 @@ export default function Dashboard() {
           {/* Calendar Card */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Today's Events</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Today&apos;s Events</h3>
               <div className="text-2xl">📅</div>
             </div>
             <div className="space-y-3">
@@ -51,7 +51,7 @@ export default function Dashboard() {
           {/* Dinner Card */}
           <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Tonight's Dinner</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Tonight&apos;s Dinner</h3>
               <div className="text-2xl">🍽️</div>
             </div>
             <div className="space-y-2">
@@ -124,7 +124,7 @@ export default function Dashboard() {
                   <span className="text-sm font-medium text-green-600">D</span>
                 </div>
                 <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">Dad updated tomorrow's dinner plan</div>
+                  <div className="text-sm font-medium text-gray-900">Dad updated tomorrow&apos;s dinner plan</div>
                   <div className="text-xs text-gray-500">5 hours ago</div>
                 </div>
               </div>
