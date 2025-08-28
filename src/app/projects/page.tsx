@@ -82,11 +82,10 @@ const initialProjects: Project[] = [
 
 interface ProjectCardProps {
   project: Project;
-  onMove: (projectId: number, newStatus: string) => void;
   onView: (project: Project) => void;
 }
 
-function ProjectCard({ project, onMove, onView }: ProjectCardProps) {
+function ProjectCard({ project, onView }: ProjectCardProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'project',
     item: { id: project.id, status: project.status },
@@ -358,7 +357,6 @@ export default function ProjectsPage() {
                     <ProjectCard
                       key={project.id}
                       project={project}
-                      onMove={moveProject}
                       onView={handleViewProject}
                     />
                   ))}
