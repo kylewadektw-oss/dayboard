@@ -287,7 +287,7 @@ export default function ProjectsPage() {
       }
 
       // Update in database
-      await supabase
+      const { error } = await supabase
         .from('home_projects')
         .update({
           status: newStatus,
