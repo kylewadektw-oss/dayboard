@@ -295,6 +295,11 @@ export default function ProjectsPage() {
         })
         .eq('id', projectId);
 
+      if (error) {
+        console.error('Error updating project status:', error);
+        return;
+      }
+
       // Update local state
       setProjects(prevProjects =>
         prevProjects.map(p =>

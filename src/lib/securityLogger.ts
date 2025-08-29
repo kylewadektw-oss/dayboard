@@ -9,7 +9,7 @@ export interface AuditEvent {
   event_type: 'auth' | 'data_access' | 'data_modify' | 'security' | 'error';
   action: string;
   resource?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   ip_address?: string;
   user_agent?: string;
   timestamp?: string;
@@ -171,7 +171,7 @@ class SecurityAuditLogger {
 export const securityLogger = SecurityAuditLogger.getInstance();
 
 // Convenience functions for common security events
-export const logAuthAttempt = (success: boolean, userId?: string, details?: Record<string, any>) => {
+export const logAuthAttempt = (success: boolean, userId?: string, details?: Record<string, unknown>) => {
   securityLogger.logEvent({
     event_type: 'auth',
     action: success ? 'login_success' : 'login_failed',
@@ -204,7 +204,7 @@ export const logDataModification = (resource: string, userId: string, action: st
   });
 };
 
-export const logSecurityViolation = (action: string, userId?: string, details?: Record<string, any>) => {
+export const logSecurityViolation = (action: string, userId?: string, details?: Record<string, unknown>) => {
   securityLogger.logEvent({
     event_type: 'security',
     action,

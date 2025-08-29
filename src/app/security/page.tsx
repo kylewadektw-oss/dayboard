@@ -61,7 +61,7 @@ function SecuritySettingsContent() {
     }
   }, [newMasterPassword]);
 
-  const handleSettingChange = (key: keyof SecuritySettings, value: any) => {
+  const handleSettingChange = (key: keyof SecuritySettings, value: boolean | string | number) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     

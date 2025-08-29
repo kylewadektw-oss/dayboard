@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, Profile } from '../lib/supabaseClient';
-import { securityLogger, logAuthAttempt, logSecurityViolation } from '../lib/securityLogger';
+import { logAuthAttempt, logSecurityViolation } from '../lib/securityLogger';
 
 interface AuthContextType {
   user: User | null;
@@ -172,6 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, SESSION_CONFIG.SESSION_REFRESH_INTERVAL);
 
     return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, sessionMetadata]);
 
   const refreshProfile = async () => {
