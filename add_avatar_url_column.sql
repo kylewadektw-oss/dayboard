@@ -34,23 +34,37 @@ BEGIN
         -- Add a comment to the column
         COMMENT ON COLUMN profiles.updated_at IS 'Timestamp of last profile update';
         
-        -- Create trigger to automatically update the timestamp
-        CREATE OR REPLACE FUNCTION update_updated_at_column()
-        RETURNS TRIGGER AS $$
-        BEGIN
-            NEW.updated_at = NOW();
-            RETURN NEW;
-        END;
-        $$ language 'plpgsql';
-        
+        RAISE NOTICE 'updated_at column and trigger added successfully to profiles table';
+    ELSE
+        RAISE NOTICE 'updated_at column already exists in profiles table';
+    END IF;
+END $$;
+
+-- Create trigger function to automatically update the timestamp (separate from DO block)
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Create the trigger if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.triggers 
+        WHERE trigger_name = 'update_profiles_updated_at'
+        AND event_object_table = 'profiles'
+    ) THEN
         CREATE TRIGGER update_profiles_updated_at 
             BEFORE UPDATE ON profiles 
             FOR EACH ROW 
             EXECUTE FUNCTION update_updated_at_column();
         
-        RAISE NOTICE 'updated_at column and trigger added successfully to profiles table';
+        RAISE NOTICE 'Trigger update_profiles_updated_at created successfully';
     ELSE
-        RAISE NOTICE 'updated_at column already exists in profiles table';
+        RAISE NOTICE 'Trigger update_profiles_updated_at already exists';
     END IF;
 END $$;
 

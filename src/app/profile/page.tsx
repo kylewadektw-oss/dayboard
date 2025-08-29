@@ -256,7 +256,7 @@ export default function ProfilePage() {
                         type="text"
                         defaultValue={profile?.name || ''}
                         required
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                         placeholder="Enter your full name"
                       />
                     </div>
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                           name="age"
                           type="number"
                           defaultValue={profile?.age || ''}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                           placeholder="Age"
                         />
                       </div>
@@ -278,7 +278,7 @@ export default function ProfilePage() {
                           name="profession"
                           type="text"
                           defaultValue={profile?.profession || ''}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                           placeholder="Your profession"
                         />
                       </div>
@@ -318,8 +318,8 @@ export default function ProfilePage() {
                   </form>
                 ) : (
                   <div className="space-y-6">
-                    {/* Profile Photo Upload */}
-                    <div className="text-center">
+                    {/* Profile Photo Upload - Moved to top */}
+                    <div className="flex justify-center pb-6 border-b border-gray-100">
                       <ProfilePhotoUpload
                         user={user}
                         currentAvatarUrl={profile?.avatar_url}
@@ -327,18 +327,18 @@ export default function ProfilePage() {
                       />
                     </div>
 
-                    <div className="flex items-center space-x-4">
-                      <div>
-                        <h3 className="text-lg font-medium text-gray-900">{profile?.name || 'No name set'}</h3>
-                        <p className="text-sm text-gray-600">{user.email}</p>
-                        {profile?.profession && <p className="text-sm text-gray-500">{profile.profession}</p>}
-                      </div>
+                    {/* User Information */}
+                    <div className="text-center space-y-2">
+                      <h3 className="text-2xl font-bold text-gray-900">{profile?.name || 'No name set'}</h3>
+                      <p className="text-gray-600">{user.email}</p>
+                      {profile?.profession && <p className="text-gray-500 italic">{profile.profession}</p>}
                     </div>
 
                     {profile?.age && (
-                      <div>
-                        <span className="text-sm font-medium text-gray-700">Age: </span>
-                        <span className="text-sm text-gray-600">{profile.age} years old</span>
+                      <div className="text-center">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                          {profile.age} years old
+                        </span>
                       </div>
                     )}
 
@@ -464,7 +464,7 @@ export default function ProfilePage() {
                     name="household_name"
                     type="text"
                     required
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                     placeholder="e.g., The Smith Family"
                   />
                 </div>
@@ -473,7 +473,7 @@ export default function ProfilePage() {
                   <input
                     name="address"
                     type="text"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                     placeholder="123 Main St"
                   />
                 </div>
@@ -483,7 +483,7 @@ export default function ProfilePage() {
                     <input
                       name="city"
                       type="text"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                       placeholder="City"
                     />
                   </div>
@@ -492,7 +492,7 @@ export default function ProfilePage() {
                     <input
                       name="state"
                       type="text"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                       placeholder="CA"
                     />
                   </div>
@@ -503,7 +503,7 @@ export default function ProfilePage() {
                     <input
                       name="zip"
                       type="text"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                       placeholder="12345"
                     />
                   </div>
@@ -514,7 +514,7 @@ export default function ProfilePage() {
                       type="number"
                       min="1"
                       defaultValue="1"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                     />
                   </div>
                 </div>

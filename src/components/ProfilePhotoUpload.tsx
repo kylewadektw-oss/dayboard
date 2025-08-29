@@ -182,16 +182,16 @@ export default function ProfilePhotoUpload({ user, currentAvatarUrl, onAvatarUpd
   return (
     <div className="relative">
       {/* Current Avatar */}
-      <div className="relative w-24 h-24 mx-auto mb-4">
+      <div className="relative w-32 h-32 mx-auto mb-6">
         {currentAvatarUrl ? (
           <img
             src={currentAvatarUrl}
             alt="Profile"
-            className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+            className="w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg"
           />
         ) : (
-          <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-            <span className="text-2xl font-bold text-blue-600">
+          <div className="w-32 h-32 bg-blue-100 rounded-2xl flex items-center justify-center border-4 border-white shadow-lg">
+            <span className="text-3xl font-bold text-blue-600">
               {user.email?.charAt(0).toUpperCase()}
             </span>
           </div>
@@ -201,7 +201,7 @@ export default function ProfilePhotoUpload({ user, currentAvatarUrl, onAvatarUpd
         <button
           onClick={() => setShowOptions(true)}
           disabled={uploading}
-          className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200"
+          className="absolute inset-0 bg-black bg-opacity-50 rounded-2xl flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200"
         >
           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -211,7 +211,7 @@ export default function ProfilePhotoUpload({ user, currentAvatarUrl, onAvatarUpd
 
         {/* Loading spinner */}
         {uploading && (
-          <div className="absolute inset-0 bg-white bg-opacity-80 rounded-full flex items-center justify-center">
+          <div className="absolute inset-0 bg-white bg-opacity-80 rounded-2xl flex items-center justify-center">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
           </div>
         )}
