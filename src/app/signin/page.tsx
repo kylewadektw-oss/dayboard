@@ -75,14 +75,6 @@ export default function SignInPage() {
     }
   };
 
-  const generateInviteLink = () => {
-    if (householdCode && householdCode.trim()) {
-      const baseUrl = window.location.origin;
-      return `${baseUrl}/signin?code=${householdCode.trim().toUpperCase()}`;
-    }
-    return '';
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
@@ -95,9 +87,9 @@ export default function SignInPage() {
         {/* Household Code Section */}
         {inviteCode && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-blue-900 mb-2">🏠 You've been invited!</h3>
+            <h3 className="font-semibold text-blue-900 mb-2">🏠 You&apos;ve been invited!</h3>
             <p className="text-sm text-blue-700 mb-3">
-              You've been invited to join a household. Sign in to complete your request.
+              You&apos;ve been invited to join a household. Sign in to complete your request.
             </p>
             <div className="bg-white border border-blue-300 rounded px-3 py-2 font-mono text-center text-lg font-bold text-blue-900 tracking-wider">
               {inviteCode}

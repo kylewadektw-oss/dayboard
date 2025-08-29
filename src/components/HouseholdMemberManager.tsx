@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase, Profile } from '../lib/supabaseClient';
 
@@ -25,7 +25,7 @@ export default function HouseholdMemberManager({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Fetch pending members (admin only)
-  const fetchPendingMembers = async () => {
+  const fetchPendingMembers = useCallback(async () => {
     if (userRole !== 'admin') return;
 
     setLoading(true);
@@ -48,7 +48,7 @@ export default function HouseholdMemberManager({
     } finally {
       setLoading(false);
     }
-  };
+  }, [householdId, userRole]);
 
   // Handle member approval/rejection
   const handleMemberAction = async (memberUserId: string, action: 'approve' | 'reject') => {
@@ -90,7 +90,7 @@ export default function HouseholdMemberManager({
 
   useEffect(() => {
     fetchPendingMembers();
-  }, [householdId, userRole]);
+  }, [fetchPendingMembers]);
 
   // Don't show anything if user is not an admin
   if (userRole !== 'admin') {

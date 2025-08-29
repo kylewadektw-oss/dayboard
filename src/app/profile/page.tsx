@@ -59,7 +59,7 @@ export default function ProfilePage() {
         if (pendingCode && profileData && !profileData.household_id && profileData.household_status !== 'pending') {
           // Auto-attempt to join household with the pending code
           try {
-            const { data, error } = await supabase
+            const { data } = await supabase
               .rpc('join_household_by_code', {
                 p_household_code: pendingCode,
                 p_user_id: user.id
@@ -79,8 +79,8 @@ export default function ProfilePage() {
               
               alert(`Join request sent to "${data.household_name}"! You'll be notified when an admin approves your request.`);
             }
-          } catch (error) {
-            console.error('Auto-join error:', error);
+          } catch (joinError) {
+            console.error('Auto-join error:', joinError);
           } finally {
             // Clear the pending code
             sessionStorage.removeItem('pending_household_code');
