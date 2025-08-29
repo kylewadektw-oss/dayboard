@@ -1,20 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Disable source maps in production to avoid eval() issues
+  // Completely disable source maps to avoid eval() issues
   productionBrowserSourceMaps: false,
   
-  // Headers temporarily disabled for development
-  // async headers() {
-  //   return [];
-  // },
-  
-  // Optimize webpack for production security
-  webpack: (config, { dev, isServer }) => {
-    if (!dev && !isServer) {
-      // Disable eval-based source maps in production
-      config.devtool = false;
-    }
+  // Disable webpack devtool completely
+  webpack: (config, { dev }) => {
+    // Always disable eval-based source maps
+    config.devtool = false;
     return config;
   },
   

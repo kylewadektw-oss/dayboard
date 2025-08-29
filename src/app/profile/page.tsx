@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { supabase, Profile, Household } from '../../lib/supabaseClient';
 import ProfileSetup from '../../components/ProfileSetup';
+import ProfilePhotoUpload from '../../components/ProfilePhotoUpload';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -74,6 +75,10 @@ export default function ProfilePage() {
     setIsFirstTimeUser(false);
     // Refresh the page data
     window.location.reload();
+  };
+
+  const handleAvatarUpdate = (newAvatarUrl: string) => {
+    setProfile(prev => prev ? { ...prev, avatar_url: newAvatarUrl } : prev);
   };
 
   const handleSaveProfile = async (formData: FormData) => {
@@ -313,12 +318,16 @@ export default function ProfilePage() {
                   </form>
                 ) : (
                   <div className="space-y-6">
+                    {/* Profile Photo Upload */}
+                    <div className="text-center">
+                      <ProfilePhotoUpload
+                        user={user}
+                        currentAvatarUrl={profile?.avatar_url}
+                        onAvatarUpdate={handleAvatarUpdate}
+                      />
+                    </div>
+
                     <div className="flex items-center space-x-4">
-                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-2xl font-bold text-blue-600">
-                          {profile?.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
                       <div>
                         <h3 className="text-lg font-medium text-gray-900">{profile?.name || 'No name set'}</h3>
                         <p className="text-sm text-gray-600">{user.email}</p>
