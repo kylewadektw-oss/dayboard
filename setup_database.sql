@@ -67,10 +67,19 @@ CREATE TABLE IF NOT EXISTS credentials (
 -- Add missing created_by column if it doesn't exist
 ALTER TABLE households ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id);
 
--- Add foreign key constraint for household_id in profiles
-ALTER TABLE profiles 
-ADD CONSTRAINT fk_profiles_household 
-FOREIGN KEY (household_id) REFERENCES households(id) ON DELETE SET NULL;
+-- Add foreign key constraint for household_id in profiles (only if it doesn't exist)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE constraint_name = 'fk_profiles_household' 
+        AND table_name = 'profiles'
+    ) THEN
+        ALTER TABLE profiles 
+        ADD CONSTRAINT fk_profiles_household 
+        FOREIGN KEY (household_id) REFERENCES households(id) ON DELETE SET NULL;
+    END IF;
+END $$;
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()

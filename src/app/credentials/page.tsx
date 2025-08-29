@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabaseClient';
+import ProtectedRoute from '../../components/ProtectedRoute';
 
 interface Credential {
   id?: string;
@@ -20,7 +21,7 @@ interface Credential {
   updated_at?: string;
 }
 
-export default function CredentialsPage() {
+function CredentialsContent() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [credentials, setCredentials] = useState<Credential[]>([]);
@@ -199,7 +200,7 @@ export default function CredentialsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your credentials...</p>
+          <p className="text-blue-800">Loading your credentials...</p>
         </div>
       </div>
     );
@@ -215,8 +216,8 @@ export default function CredentialsPage() {
         {/* Header */}
         <div className="mb-8 flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">🔐 Credentials Manager</h1>
-            <p className="text-gray-600">Securely manage your passwords and login information</p>
+            <h1 className="text-3xl font-bold text-blue-900 mb-2">🔐 Credentials Manager</h1>
+            <p className="text-blue-700">Securely manage your passwords and login information</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
@@ -235,14 +236,14 @@ export default function CredentialsPage() {
                 placeholder="Search credentials..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
               />
             </div>
             <div>
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
               >
                 <option value="all">All Categories</option>
                 <option value="personal">👤 Personal</option>
@@ -264,7 +265,7 @@ export default function CredentialsPage() {
                 <div className="flex items-center space-x-3">
                   <span className="text-2xl">{getCategoryIcon(credential.category)}</span>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{credential.title}</h3>
+                    <h3 className="text-lg font-semibold text-blue-900">{credential.title}</h3>
                     {credential.website && (
                       <a 
                         href={credential.website.startsWith('http') ? credential.website : `https://${credential.website}`}
@@ -283,13 +284,13 @@ export default function CredentialsPage() {
                       setEditingCredential(credential);
                       setShowAddModal(true);
                     }}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-blue-400 hover:text-blue-600"
                   >
                     ✏️
                   </button>
                   <button
                     onClick={() => handleDeleteCredential(credential.id!)}
-                    className="text-gray-400 hover:text-red-600"
+                    className="text-blue-400 hover:text-red-600"
                   >
                     🗑️
                   </button>
@@ -304,12 +305,12 @@ export default function CredentialsPage() {
 
                 {credential.username && (
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Username:</span>
+                    <span className="text-sm text-blue-700">Username:</span>
                     <div className="flex items-center space-x-2">
-                      <code className="text-sm bg-gray-100 px-2 py-1 rounded">{credential.username}</code>
+                      <code className="text-sm bg-gray-100 px-2 py-1 rounded text-black">{credential.username}</code>
                       <button
                         onClick={() => copyToClipboard(credential.username!, 'Username')}
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-blue-400 hover:text-blue-600"
                       >
                         📋
                       </button>
@@ -319,20 +320,20 @@ export default function CredentialsPage() {
 
                 {credential.password && (
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Password:</span>
+                    <span className="text-sm text-blue-700">Password:</span>
                     <div className="flex items-center space-x-2">
-                      <code className="text-sm bg-gray-100 px-2 py-1 rounded">
+                      <code className="text-sm bg-gray-100 px-2 py-1 rounded text-black">
                         {showPasswords[credential.id!] ? credential.password : '••••••••'}
                       </code>
                       <button
                         onClick={() => togglePasswordVisibility(credential.id!)}
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-blue-400 hover:text-blue-600"
                       >
                         {showPasswords[credential.id!] ? '🙈' : '👁️'}
                       </button>
                       <button
                         onClick={() => copyToClipboard(credential.password!, 'Password')}
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-blue-400 hover:text-blue-600"
                       >
                         📋
                       </button>
@@ -342,8 +343,8 @@ export default function CredentialsPage() {
 
                 {credential.notes && (
                   <div>
-                    <span className="text-sm text-gray-600">Notes:</span>
-                    <p className="text-sm text-gray-700 mt-1 bg-gray-50 p-2 rounded">{credential.notes}</p>
+                    <span className="text-sm text-blue-700">Notes:</span>
+                    <p className="text-sm text-blue-800 mt-1 bg-gray-50 p-2 rounded">{credential.notes}</p>
                   </div>
                 )}
               </div>
@@ -354,8 +355,8 @@ export default function CredentialsPage() {
         {filteredCredentials.length === 0 && (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🔐</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No credentials found</h3>
-            <p className="text-gray-600 mb-6">
+            <h3 className="text-xl font-semibold text-blue-900 mb-2">No credentials found</h3>
+            <p className="text-blue-700 mb-6">
               {searchTerm || filterCategory !== 'all' 
                 ? 'Try adjusting your search or filter criteria'
                 : 'Add your first credential to get started'
@@ -374,7 +375,7 @@ export default function CredentialsPage() {
         {showAddModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+              <h2 className="text-xl font-bold text-blue-900 mb-4">
                 {editingCredential ? '✏️ Edit Credential' : '🔐 Add New Credential'}
               </h2>
               <form onSubmit={(e) => {
@@ -382,56 +383,56 @@ export default function CredentialsPage() {
                 handleSaveCredential(new FormData(e.currentTarget));
               }} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                  <label className="block text-sm font-medium text-blue-800 mb-1">Title *</label>
                   <input
                     name="title"
                     type="text"
                     required
                     defaultValue={editingCredential?.title || ''}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                     placeholder="e.g., Gmail, Netflix, Bank Login"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+                  <label className="block text-sm font-medium text-blue-800 mb-1">Website</label>
                   <input
                     name="website"
                     type="text"
                     defaultValue={editingCredential?.website || ''}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                     placeholder="e.g., gmail.com, netflix.com"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Username/Email</label>
+                  <label className="block text-sm font-medium text-blue-800 mb-1">Username/Email</label>
                   <input
                     name="username"
                     type="text"
                     defaultValue={editingCredential?.username || ''}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                     placeholder="Username or email address"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <label className="block text-sm font-medium text-blue-800 mb-1">Password</label>
                   <input
                     name="password"
                     type="password"
                     defaultValue={editingCredential?.password || ''}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                     placeholder="Enter password"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <label className="block text-sm font-medium text-blue-800 mb-1">Category</label>
                   <select
                     name="category"
                     defaultValue={editingCredential?.category || 'other'}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   >
                     <option value="personal">👤 Personal</option>
                     <option value="household">🏠 Household</option>
@@ -443,12 +444,12 @@ export default function CredentialsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                  <label className="block text-sm font-medium text-blue-800 mb-1">Notes</label>
                   <textarea
                     name="notes"
                     rows={3}
                     defaultValue={editingCredential?.notes || ''}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                     placeholder="Additional notes or security questions..."
                   />
                 </div>
@@ -461,7 +462,7 @@ export default function CredentialsPage() {
                     defaultChecked={editingCredential?.is_shared || false}
                     className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                   />
-                  <label htmlFor="is_shared" className="ml-2 text-sm text-gray-700">
+                  <label htmlFor="is_shared" className="ml-2 text-sm text-blue-800">
                     Share with household members
                   </label>
                 </div>
@@ -480,7 +481,7 @@ export default function CredentialsPage() {
                       setShowAddModal(false);
                       setEditingCredential(null);
                     }}
-                    className="bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
+                    className="bg-gray-200 text-blue-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
                   >
                     Cancel
                   </button>
@@ -491,5 +492,13 @@ export default function CredentialsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CredentialsPage() {
+  return (
+    <ProtectedRoute requireAuth={true} requireProfile={true}>
+      <CredentialsContent />
+    </ProtectedRoute>
   );
 }

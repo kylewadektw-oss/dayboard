@@ -59,7 +59,18 @@ export default function Sidebar() {
   }
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      await signOut();
+      // Also manually clear localStorage as backup
+      localStorage.removeItem('sb-csbwewirwzeitavhvykr-auth-token');
+      localStorage.removeItem('sb-csbwewirwzeitavhvykr-auth-token-code-verifier');
+      sessionStorage.clear();
+      window.location.href = '/signin';
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Force redirect even if there's an error
+      window.location.href = '/signin';
+    }
   };
 
   // Get user initials for avatar
@@ -125,6 +136,21 @@ export default function Sidebar() {
                 </li>
               );
             })}
+            
+            {/* Logout button in navigation */}
+            {user && (
+              <li>
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <span className="text-xl">🚪</span>
+                  {!isCollapsed && (
+                    <span className="font-medium">Logout</span>
+                  )}
+                </button>
+              </li>
+            )}
           </ul>
         </nav>
 

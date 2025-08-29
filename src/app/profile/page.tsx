@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { supabase, Profile, Household } from '../../lib/supabaseClient';
+import ProfileSetup from '../../components/ProfileSetup';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showHouseholdSetup, setShowHouseholdSetup] = useState(false);
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +58,7 @@ export default function ProfilePage() {
           }
         } else {
           // New user - show setup
-          setIsEditing(true);
+          setIsFirstTimeUser(true);
         }
       } catch (error) {
         console.error('Data fetch error:', error);
@@ -67,6 +69,12 @@ export default function ProfilePage() {
 
     fetchData();
   }, [router]);
+
+  const handleSetupComplete = () => {
+    setIsFirstTimeUser(false);
+    // Refresh the page data
+    window.location.reload();
+  };
 
   const handleSaveProfile = async (formData: FormData) => {
     if (!user) return;
@@ -177,6 +185,11 @@ export default function ProfilePage() {
 
   if (!user) {
     return null; // Will redirect to signin
+  }
+
+  // Show ProfileSetup for first-time users
+  if (isFirstTimeUser) {
+    return <ProfileSetup user={user} onComplete={handleSetupComplete} />;
   }
 
   return (
