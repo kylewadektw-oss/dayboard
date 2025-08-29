@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '../../lib/supabaseClient';
+import { authClient } from '../../lib/authUtils';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function SignInPage() {
   useEffect(() => {
     // Check if user is already signed in
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await authClient.auth.getUser();
       if (user) {
         router.push('/profile');
       }
@@ -30,7 +30,7 @@ export default function SignInPage() {
     }
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = authClient.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
         // If there's a household code, store it in session storage for after profile setup
         if (householdCode && householdCode.trim()) {
@@ -52,7 +52,7 @@ export default function SignInPage() {
         sessionStorage.setItem('pending_household_code', householdCode.trim().toUpperCase());
       }
       
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await authClient.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/profile`,

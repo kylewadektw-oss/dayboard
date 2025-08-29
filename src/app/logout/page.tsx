@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../lib/supabaseClient';
+import { authClient } from '../../lib/authUtils';
 
 export default function LogoutPage() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export default function LogoutPage() {
     const handleLogout = async () => {
       try {
         // Sign out from Supabase
-        await supabase.auth.signOut();
+        await authClient.auth.signOut();
         
         // Clear any additional local storage
         localStorage.removeItem('sb-csbwewirwzeitavhvykr-auth-token');

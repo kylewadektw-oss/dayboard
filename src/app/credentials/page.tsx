@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabaseClient';
+import { authClient } from '../../lib/authUtils';
 import ProtectedRoute from '../../components/ProtectedRoute';
 
 interface Credential {
@@ -37,7 +38,7 @@ function CredentialsContent() {
     const fetchData = async () => {
       try {
         // Get current user
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await authClient.auth.getUser();
         
         if (userError || !user) {
           router.push('/signin');

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { supabase, Profile, Household } from '../../lib/supabaseClient';
+import { authClient } from '../../lib/authUtils';
 import ProfileSetup from '../../components/ProfileSetup';
 import ProfilePhotoUpload from '../../components/ProfilePhotoUpload';
 import HouseholdCodeManager from '../../components/HouseholdCodeManager';
@@ -44,7 +45,7 @@ export default function ProfilePage() {
         // Get current user with rate limiting
         const userData = await makeRateLimitedRequest(
           async () => {
-            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            const { data: { user }, error: userError } = await authClient.auth.getUser();
             if (userError || !user) {
               throw new Error('User not authenticated');
             }
@@ -334,7 +335,7 @@ export default function ProfilePage() {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await authClient.auth.signOut();
     router.push('/signin');
   };
 

@@ -22,33 +22,39 @@ if (!finalUrl || !finalKey || finalUrl.includes('placeholder')) {
 // Rate-limited fetch function for Supabase requests
 const rateLimitedFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-  const requestKey = `supabase-${url}`;
   
-  // Check if we can make the request
-  if (!globalRateLimiter.canMakeRequest(requestKey)) {
-    const waitTime = globalRateLimiter.getTimeUntilNextRequest(requestKey);
-    if (waitTime > 0) {
-      console.warn(`Supabase rate limited. Waiting ${Math.min(waitTime, 3000)}ms`);
-      await new Promise(resolve => setTimeout(resolve, Math.min(waitTime, 3000))); // Max 3s wait
+  // Skip rate limiting for authentication endpoints
+  const isAuthEndpoint = url.includes('/auth/') || url.includes('/token');
+  
+  if (!isAuthEndpoint) {
+    const requestKey = `supabase-${url}`;
+    
+    // Check if we can make the request
+    if (!globalRateLimiter.canMakeRequest(requestKey)) {
+      const waitTime = globalRateLimiter.getTimeUntilNextRequest(requestKey);
+      if (waitTime > 0) {
+        console.warn(`Supabase rate limited. Waiting ${Math.min(waitTime, 3000)}ms`);
+        await new Promise(resolve => setTimeout(resolve, Math.min(waitTime, 3000))); // Max 3s wait
+      }
     }
+    
+    // Check cache first for GET requests
+    if (!init?.method || init.method.toLowerCase() === 'get') {
+      const cached = globalRateLimiter.getCachedData(requestKey);
+      if (cached) {
+        return new Response(JSON.stringify(cached), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+    }
+    
+    // Record the request
+    globalRateLimiter.recordRequest(requestKey);
   }
   
-  // Check cache first for GET requests
-  if (!init?.method || init.method.toLowerCase() === 'get') {
-    const cached = globalRateLimiter.getCachedData(requestKey);
-    if (cached) {
-      return new Response(JSON.stringify(cached), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-  }
-  
-  // Record the request
-  globalRateLimiter.recordRequest(requestKey);
-  
-  // Make the request with retry logic
-  let retries = 2;
+  // Make the request with retry logic (but no retries for auth endpoints)
+  let retries = isAuthEndpoint ? 1 : 2;
   let lastError: Error | null = null;
   
   for (let attempt = 0; attempt < retries; attempt++) {
@@ -62,8 +68,8 @@ const rateLimitedFetch = async (input: RequestInfo | URL, init?: RequestInit): P
         }
       });
       
-      // Handle rate limiting
-      if (response.status === 429) {
+      // Handle rate limiting (but don't retry auth endpoints)
+      if (response.status === 429 && !isAuthEndpoint) {
         const retryAfter = response.headers.get('Retry-After');
         const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : (attempt + 1) * 2000;
         
@@ -72,10 +78,11 @@ const rateLimitedFetch = async (input: RequestInfo | URL, init?: RequestInit): P
         continue;
       }
       
-      // Cache successful GET responses
-      if (response.ok && (!init?.method || init.method.toLowerCase() === 'get')) {
+      // Cache successful GET responses (but not auth responses)
+      if (!isAuthEndpoint && response.ok && (!init?.method || init.method.toLowerCase() === 'get')) {
         try {
           const data = await response.clone().json();
+          const requestKey = `supabase-${url}`;
           globalRateLimiter.setCachedData(requestKey, data);
         } catch {
           // Ignore caching errors
@@ -85,7 +92,7 @@ const rateLimitedFetch = async (input: RequestInfo | URL, init?: RequestInit): P
       return response;
     } catch (error) {
       lastError = error as Error;
-      if (attempt < retries - 1) {
+      if (attempt < retries - 1 && !isAuthEndpoint) {
         const waitTime = (attempt + 1) * 1000;
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }

@@ -14,10 +14,15 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     try {
-      // Create a Supabase client for server-side auth
+      // Create a Supabase client for server-side auth (don't use rate limiting here)
       const supabase = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          auth: {
+            flowType: 'pkce'
+          }
+        }
       )
 
       // Exchange the code for a session

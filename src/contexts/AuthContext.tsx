@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, Profile } from '../lib/supabaseClient';
+import { authClient } from '../lib/authUtils';
 import { logAuthAttempt, logSecurityViolation } from '../lib/securityLogger';
 
 interface AuthContextType {
@@ -185,7 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      const { data: { session }, error } = await authClient.auth.getSession();
       
       if (error) {
         console.error('Error getting session:', error);
@@ -221,7 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     getInitialSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: { subscription } } = authClient.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state change:', event, session?.user?.id);
         setSession(session);
@@ -273,7 +274,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Log the logout attempt
       logAuthAttempt(true, currentUserId, { action: 'manual_logout' });
       
-      await supabase.auth.signOut();
+      await authClient.auth.signOut();
       setUser(null);
       setSession(null);
       setProfile(null);
