@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function SignInPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const [showHouseholdCode, setShowHouseholdCode] = useState(false);
+  const [householdCode, setHouseholdCode] = useState('');
+  
+  // Check for household code in URL params (for invitation links)
+  const inviteCode = searchParams.get('code');
 
   useEffect(() => {
     // Check if user is already signed in
@@ -17,19 +23,35 @@ export default function SignInPage() {
     };
     checkUser();
 
+    // Set household code from URL if present
+    if (inviteCode) {
+      setHouseholdCode(inviteCode);
+      setShowHouseholdCode(true);
+    }
+
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN') {
+        // If there's a household code, store it in session storage for after profile setup
+        if (householdCode && householdCode.trim()) {
+          sessionStorage.setItem('pending_household_code', householdCode.trim().toUpperCase());
+        }
         router.push('/profile');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [router]);
+  }, [router, inviteCode, householdCode]);
 
   const handleGoogleSignIn = async () => {
     try {
       console.log('Attempting Google sign in...');
+      
+      // Store household code in session storage if provided
+      if (householdCode && householdCode.trim()) {
+        sessionStorage.setItem('pending_household_code', householdCode.trim().toUpperCase());
+      }
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -53,6 +75,14 @@ export default function SignInPage() {
     }
   };
 
+  const generateInviteLink = () => {
+    if (householdCode && householdCode.trim()) {
+      const baseUrl = window.location.origin;
+      return `${baseUrl}/signin?code=${householdCode.trim().toUpperCase()}`;
+    }
+    return '';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
@@ -61,6 +91,36 @@ export default function SignInPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Dayboard</h1>
           <p className="text-gray-600">Your household command center</p>
         </div>
+
+        {/* Household Code Section */}
+        {inviteCode && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-blue-900 mb-2">🏠 You've been invited!</h3>
+            <p className="text-sm text-blue-700 mb-3">
+              You've been invited to join a household. Sign in to complete your request.
+            </p>
+            <div className="bg-white border border-blue-300 rounded px-3 py-2 font-mono text-center text-lg font-bold text-blue-900 tracking-wider">
+              {inviteCode}
+            </div>
+          </div>
+        )}
+
+        {!inviteCode && showHouseholdCode && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-gray-900 mb-2">👨‍👩‍👧‍👦 Join a Household</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Have a household code? Enter it below to join after signing in.
+            </p>
+            <input
+              type="text"
+              value={householdCode}
+              onChange={(e) => setHouseholdCode(e.target.value.toUpperCase())}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 font-mono text-center text-lg tracking-wider focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+              placeholder="XXXXXXXX"
+              maxLength={8}
+            />
+          </div>
+        )}
         
         <div className="space-y-6">
           <button
@@ -75,6 +135,28 @@ export default function SignInPage() {
             </svg>
             <span className="text-gray-700 font-medium">Continue with Google</span>
           </button>
+
+          {/* Toggle household code input */}
+          {!inviteCode && !showHouseholdCode && (
+            <button
+              onClick={() => setShowHouseholdCode(true)}
+              className="w-full text-blue-600 hover:text-blue-700 text-sm font-medium py-2"
+            >
+              Have a household code? Click here to enter it
+            </button>
+          )}
+
+          {!inviteCode && showHouseholdCode && (
+            <button
+              onClick={() => {
+                setShowHouseholdCode(false);
+                setHouseholdCode('');
+              }}
+              className="w-full text-gray-500 hover:text-gray-600 text-sm py-2"
+            >
+              Skip for now
+            </button>
+          )}
           
           <div className="text-center text-sm text-gray-500">
             <p className="mb-2">🏠 Organize your family life in one place</p>

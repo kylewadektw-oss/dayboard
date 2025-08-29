@@ -29,6 +29,9 @@ export interface Profile {
   household_id?: string
   avatar_url?: string
   dietary_preferences?: string[]
+  household_status?: 'none' | 'pending' | 'approved' | 'admin'
+  household_role?: 'admin' | 'member'
+  requested_household_id?: string
   created_at?: string
   updated_at?: string
 }
@@ -42,6 +45,7 @@ export interface Household {
   zip?: string
   income?: number  // Fixed: renamed from monthly_income to income
   members_count?: number
+  household_code?: string
   created_at?: string
   updated_at?: string
   created_by: string
@@ -53,4 +57,18 @@ export interface HouseholdMember {
   user_id: string
   role: 'admin' | 'member'
   joined_at?: string
+}
+
+export interface HouseholdInvitation {
+  id?: string
+  household_id: string
+  inviter_user_id: string
+  invitee_user_id: string
+  household_code: string
+  status: 'pending' | 'accepted' | 'rejected' | 'expired'
+  invited_at?: string
+  responded_at?: string
+  expires_at?: string
+  created_at?: string
+  updated_at?: string
 }

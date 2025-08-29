@@ -6,6 +6,8 @@ import { User } from '@supabase/supabase-js';
 import { supabase, Profile, Household } from '../../lib/supabaseClient';
 import ProfileSetup from '../../components/ProfileSetup';
 import ProfilePhotoUpload from '../../components/ProfilePhotoUpload';
+import HouseholdCodeManager from '../../components/HouseholdCodeManager';
+import HouseholdMemberManager from '../../components/HouseholdMemberManager';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -45,21 +47,44 @@ export default function ProfilePage() {
 
           // If user has a household, fetch it
           if (profileData.household_id) {
-            const { data: householdData, error: householdError } = await supabase
-              .from('households')
-              .select('*')
-              .eq('id', profileData.household_id)
-              .single();
-
-            if (householdError) {
-              console.error('Household fetch error:', householdError);
-            } else {
-              setHousehold(householdData);
-            }
+            fetchHousehold(profileData.household_id);
           }
         } else {
           // New user - show setup
           setIsFirstTimeUser(true);
+        }
+
+        // Check for pending household code from sign-in
+        const pendingCode = sessionStorage.getItem('pending_household_code');
+        if (pendingCode && profileData && !profileData.household_id && profileData.household_status !== 'pending') {
+          // Auto-attempt to join household with the pending code
+          try {
+            const { data, error } = await supabase
+              .rpc('join_household_by_code', {
+                p_household_code: pendingCode,
+                p_user_id: user.id
+              });
+
+            if (data?.success) {
+              // Refresh profile to get updated status
+              const { data: updatedProfile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+              
+              if (updatedProfile) {
+                setProfile(updatedProfile);
+              }
+              
+              alert(`Join request sent to "${data.household_name}"! You'll be notified when an admin approves your request.`);
+            }
+          } catch (error) {
+            console.error('Auto-join error:', error);
+          } finally {
+            // Clear the pending code
+            sessionStorage.removeItem('pending_household_code');
+          }
         }
       } catch (error) {
         console.error('Data fetch error:', error);
@@ -79,6 +104,33 @@ export default function ProfilePage() {
 
   const handleAvatarUpdate = (newAvatarUrl: string) => {
     setProfile(prev => prev ? { ...prev, avatar_url: newAvatarUrl } : prev);
+  };
+
+  const handleProfileUpdate = (updatedProfile: Profile) => {
+    setProfile(updatedProfile);
+    
+    // If profile now has a household_id, fetch the household
+    if (updatedProfile.household_id && !household) {
+      fetchHousehold(updatedProfile.household_id);
+    }
+  };
+
+  const fetchHousehold = async (householdId: string) => {
+    try {
+      const { data: householdData, error: householdError } = await supabase
+        .from('households')
+        .select('*')
+        .eq('id', householdId)
+        .single();
+
+      if (householdError) {
+        console.error('Household fetch error:', householdError);
+      } else {
+        setHousehold(householdData);
+      }
+    } catch (error) {
+      console.error('Household fetch error:', error);
+    }
   };
 
   const handleSaveProfile = async (formData: FormData) => {
@@ -369,11 +421,30 @@ export default function ProfilePage() {
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            </div>
+            )}
+          </div>
 
-            {/* Household Information */}
+          {/* Household Code Management */}
+          <div className="mt-8">
+            <HouseholdCodeManager
+              user={user}
+              household={household}
+              profile={profile}
+              onProfileUpdate={handleProfileUpdate}
+            />
+          </div>
+
+          {/* Household Member Management (Admin Only) */}
+          {household && profile?.household_role === 'admin' && (
+            <div className="mt-8">
+              <HouseholdMemberManager
+                user={user}
+                householdId={household.id!}
+                userRole={profile.household_role}
+              />
+            </div>
+          )}
+        </div>            {/* Household Information */}
             {household && (
               <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200">
                 <div className="p-6 border-b border-gray-200">
