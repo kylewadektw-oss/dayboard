@@ -41,7 +41,20 @@ export default function ProfilePage() {
           .single();
 
         if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Profile fetch error:', profileError);
+          console.error('Profile fetch error:', {
+            code: profileError.code,
+            message: profileError.message,
+            details: profileError.details,
+            hint: profileError.hint,
+            userId: user.id
+          });
+          
+          // Check if it's a table doesn't exist error
+          if (profileError.code === '42P01') {
+            console.error('❌ Database tables not found. Please run setup_database.sql in Supabase SQL Editor');
+            alert('Database not set up. Please run setup_database.sql in your Supabase SQL Editor.');
+            return;
+          }
         } else if (profileData) {
           setProfile(profileData);
 
@@ -59,13 +72,25 @@ export default function ProfilePage() {
         if (pendingCode && profileData && !profileData.household_id && profileData.household_status !== 'pending') {
           // Auto-attempt to join household with the pending code
           try {
-            const { data } = await supabase
+            const { data, error: rpcError } = await supabase
               .rpc('join_household_by_code', {
                 p_household_code: pendingCode,
                 p_user_id: user.id
               });
 
-            if (data?.success) {
+            if (rpcError) {
+              console.error('RPC Error joining household:', {
+                code: rpcError.code,
+                message: rpcError.message,
+                details: rpcError.details,
+                hint: rpcError.hint
+              });
+              
+              if (rpcError.code === '42883') {
+                console.error('❌ Household invitation functions not found. Please run setup_household_invitations.sql in Supabase SQL Editor');
+                alert('Household invitation system not set up. Please run setup_household_invitations.sql in your Supabase SQL Editor.');
+              }
+            } else if (data?.success) {
               // Refresh profile to get updated status
               const { data: updatedProfile } = await supabase
                 .from('profiles')
@@ -124,12 +149,23 @@ export default function ProfilePage() {
         .single();
 
       if (householdError) {
-        console.error('Household fetch error:', householdError);
+        console.error('Household fetch error:', {
+          code: householdError.code,
+          message: householdError.message,
+          details: householdError.details,
+          hint: householdError.hint,
+          householdId
+        });
+        
+        // Check if it's a table doesn't exist error
+        if (householdError.code === '42P01') {
+          console.error('❌ Database tables not found. Please run setup_database.sql in Supabase SQL Editor');
+        }
       } else {
         setHousehold(householdData);
       }
     } catch (error) {
-      console.error('Household fetch error:', error);
+      console.error('Household fetch unexpected error:', error);
     }
   };
 
