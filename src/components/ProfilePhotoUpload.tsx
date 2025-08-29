@@ -74,12 +74,16 @@ export default function ProfilePhotoUpload({ user, currentAvatarUrl, onAvatarUpd
       // Update profile with new avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ avatar_url: publicUrl })
+        .update({ 
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString()
+        })
         .eq('user_id', user.id);
 
       if (updateError) {
         console.error('Profile update error:', updateError);
-        alert('Error updating profile. Please try again.');
+        console.error('Update error details:', JSON.stringify(updateError, null, 2));
+        alert(`Error updating profile: ${updateError.message}. Please try again.`);
         return;
       }
 
@@ -119,12 +123,16 @@ export default function ProfilePhotoUpload({ user, currentAvatarUrl, onAvatarUpd
       // Update profile with Google avatar URL
       const { error } = await supabase
         .from('profiles')
-        .update({ avatar_url: googleAvatarUrl })
+        .update({ 
+          avatar_url: googleAvatarUrl,
+          updated_at: new Date().toISOString()
+        })
         .eq('user_id', user.id);
 
       if (error) {
         console.error('Profile update error:', error);
-        alert('Error updating profile. Please try again.');
+        console.error('Update error details:', JSON.stringify(error, null, 2));
+        alert(`Error updating profile: ${error.message}. Please try again.`);
         return;
       }
 
@@ -147,12 +155,16 @@ export default function ProfilePhotoUpload({ user, currentAvatarUrl, onAvatarUpd
 
       const { error } = await supabase
         .from('profiles')
-        .update({ avatar_url: null })
+        .update({ 
+          avatar_url: null,
+          updated_at: new Date().toISOString()
+        })
         .eq('user_id', user.id);
 
       if (error) {
         console.error('Profile update error:', error);
-        alert('Error removing avatar. Please try again.');
+        console.error('Update error details:', JSON.stringify(error, null, 2));
+        alert(`Error removing avatar: ${error.message}. Please try again.`);
         return;
       }
 
