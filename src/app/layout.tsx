@@ -6,6 +6,7 @@ import MainLayout from "@/components/MainLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import CacheManager from "@/components/CacheManager";
 import CacheDiagnostics from "@/components/CacheDiagnostics";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,14 +38,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <CacheManager />
-          <Sidebar />
-          <MainLayout>
-            {children}
-          </MainLayout>
-          <CacheDiagnostics />
-        </AuthProvider>
+        <ErrorBoundary>
+          <AuthProvider>
+            <CacheManager />
+            <Sidebar />
+            <MainLayout>
+              {children}
+            </MainLayout>
+            <CacheDiagnostics />
+          </AuthProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

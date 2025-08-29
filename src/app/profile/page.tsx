@@ -10,6 +10,7 @@ import HouseholdCodeManager from '../../components/HouseholdCodeManager';
 import HouseholdMemberManager from '../../components/HouseholdMemberManager';
 import { useLoadingTimeout, LoadingTimeoutFallback } from '../../lib/loadingManager';
 import { updateActivityTimestamp } from '../../lib/cacheUtils';
+import { useRateLimitedRequest } from '../../hooks/useRateLimit';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -21,6 +22,9 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [showHouseholdSetup, setShowHouseholdSetup] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
+
+  // Use rate limiting for API requests
+  const { makeRequest: makeRateLimitedRequest, error: rateLimitError } = useRateLimitedRequest<any>();
 
   // Use loading timeout to prevent infinite loading
   const { isLoading: timeoutLoading, hasTimedOut, startLoading, stopLoading } = useLoadingTimeout({
@@ -37,44 +41,69 @@ export default function ProfilePage() {
         startLoading(); // Start timeout tracking
         updateActivityTimestamp(); // Update activity
         
-        // Get current user
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
-        if (userError || !user) {
+        // Get current user with rate limiting
+        const userData = await makeRateLimitedRequest(
+          async () => {
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError || !user) {
+              throw new Error('User not authenticated');
+            }
+            return user;
+          },
+          'auth-getUser'
+        );
+
+        if (!userData) {
           router.push('/signin');
           return;
         }
 
-        setUser(user);
+        setUser(userData);
 
-        // Get user profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
+        // Get user profile with rate limiting
+        const profileData = await makeRateLimitedRequest(
+          async () => {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', userData.id)
+              .single();
 
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Profile fetch error:', {
-            code: profileError.code,
-            message: profileError.message,
-            details: profileError.details,
-            hint: profileError.hint,
-            userId: user.id
-          });
-          
-          // Check if it's a table doesn't exist error
-          if (profileError.code === '42P01') {
-            console.error('❌ Database tables not found. Please run setup_database.sql in Supabase SQL Editor');
-            alert('Database not set up. Please run setup_database.sql in your Supabase SQL Editor.');
-            return;
-          }
-        } else if (profileData) {
+            if (profileError && profileError.code !== 'PGRST116') {
+              console.error('Profile fetch error:', {
+                code: profileError.code,
+                message: profileError.message,
+                details: profileError.details,
+                hint: profileError.hint,
+                userId: userData.id
+              });
+              
+              // Check if it's a table doesn't exist error
+              if (profileError.code === '42P01') {
+                console.error('❌ Database tables not found. Please run setup_database.sql in Supabase SQL Editor');
+                alert('Database not set up. Please run setup_database.sql in your Supabase SQL Editor.');
+                throw new Error('Database tables not found');
+              }
+              
+              if (profileError.code !== 'PGRST116') {
+                throw profileError;
+              }
+            }
+            
+            return profileData;
+          },
+          `profile-${userData.id}`
+        );
+
+        if (profileData) {
           setProfile(profileData);
 
-          // If user has a household, fetch it
+          // If user has a household, fetch it with rate limiting
           if (profileData.household_id) {
-            fetchHousehold(profileData.household_id);
+            const householdData = await makeRateLimitedRequest(
+              () => fetchHousehold(profileData.household_id!),
+              `household-${profileData.household_id}`
+            );
           }
         } else {
           // New user - show setup
@@ -84,39 +113,55 @@ export default function ProfilePage() {
         // Check for pending household code from sign-in
         const pendingCode = sessionStorage.getItem('pending_household_code');
         if (pendingCode && profileData && !profileData.household_id && profileData.household_status !== 'pending') {
-          // Auto-attempt to join household with the pending code
+          // Auto-attempt to join household with the pending code with rate limiting
           try {
-            const { data, error: rpcError } = await supabase
-              .rpc('join_household_by_code', {
-                p_household_code: pendingCode,
-                p_user_id: user.id
-              });
+            const joinResult = await makeRateLimitedRequest(
+              async () => {
+                const { data, error: rpcError } = await supabase
+                  .rpc('join_household_by_code', {
+                    p_household_code: pendingCode,
+                    p_user_id: userData.id
+                  });
 
-            if (rpcError) {
-              console.error('RPC Error joining household:', {
-                code: rpcError.code,
-                message: rpcError.message,
-                details: rpcError.details,
-                hint: rpcError.hint
-              });
-              
-              if (rpcError.code === '42883') {
-                console.error('❌ Household invitation functions not found. Please run setup_household_invitations.sql in Supabase SQL Editor');
-                alert('Household invitation system not set up. Please run setup_household_invitations.sql in your Supabase SQL Editor.');
-              }
-            } else if (data?.success) {
-              // Refresh profile to get updated status
-              const { data: updatedProfile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('user_id', user.id)
-                .single();
+                if (rpcError) {
+                  console.error('RPC Error joining household:', {
+                    code: rpcError.code,
+                    message: rpcError.message,
+                    details: rpcError.details,
+                    hint: rpcError.hint
+                  });
+                  
+                  if (rpcError.code === '42883') {
+                    console.error('❌ Household invitation functions not found. Please run setup_household_invitations.sql in Supabase SQL Editor');
+                    alert('Household invitation system not set up. Please run setup_household_invitations.sql in your Supabase SQL Editor.');
+                  }
+                  throw rpcError;
+                }
+                
+                return data;
+              },
+              `join-household-${pendingCode}-${userData.id}`
+            );
+
+            if (joinResult?.success) {
+              // Refresh profile to get updated status with rate limiting
+              const updatedProfile = await makeRateLimitedRequest(
+                async () => {
+                  const { data: updatedProfile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('user_id', userData.id)
+                    .single();
+                  return updatedProfile;
+                },
+                `profile-refresh-${userData.id}`
+              );
               
               if (updatedProfile) {
                 setProfile(updatedProfile);
               }
               
-              alert(`Join request sent to "${data.household_name}"! You'll be notified when an admin approves your request.`);
+              alert(`Join request sent to "${joinResult.household_name}"! You'll be notified when an admin approves your request.`);
             }
           } catch (joinError) {
             console.error('Auto-join error:', joinError);

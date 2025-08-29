@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { addCacheBustingHeaders } from './cacheUtils'
+import { globalRateLimiter } from './rateLimiter'
 
 // Environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -18,6 +19,82 @@ if (!finalUrl || !finalKey || finalUrl.includes('placeholder')) {
   console.error('Supabase configuration error. Please check your environment variables.')
 }
 
+// Rate-limited fetch function for Supabase requests
+const rateLimitedFetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  const requestKey = `supabase-${url}`;
+  
+  // Check if we can make the request
+  if (!globalRateLimiter.canMakeRequest(requestKey)) {
+    const waitTime = globalRateLimiter.getTimeUntilNextRequest(requestKey);
+    if (waitTime > 0) {
+      console.warn(`Supabase rate limited. Waiting ${Math.min(waitTime, 3000)}ms`);
+      await new Promise(resolve => setTimeout(resolve, Math.min(waitTime, 3000))); // Max 3s wait
+    }
+  }
+  
+  // Check cache first for GET requests
+  if (!init?.method || init.method.toLowerCase() === 'get') {
+    const cached = globalRateLimiter.getCachedData(requestKey);
+    if (cached) {
+      return new Response(JSON.stringify(cached), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+  }
+  
+  // Record the request
+  globalRateLimiter.recordRequest(requestKey);
+  
+  // Make the request with retry logic
+  let retries = 2;
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      const response = await fetch(input, {
+        ...init,
+        headers: {
+          ...init?.headers,
+          ...addCacheBustingHeaders({}),
+          'X-Request-ID': `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+        }
+      });
+      
+      // Handle rate limiting
+      if (response.status === 429) {
+        const retryAfter = response.headers.get('Retry-After');
+        const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : (attempt + 1) * 2000;
+        
+        console.warn(`Supabase 429 error. Waiting ${waitTime}ms before retry ${attempt + 1}/${retries}`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+      
+      // Cache successful GET responses
+      if (response.ok && (!init?.method || init.method.toLowerCase() === 'get')) {
+        try {
+          const data = await response.clone().json();
+          globalRateLimiter.setCachedData(requestKey, data);
+        } catch {
+          // Ignore caching errors
+        }
+      }
+      
+      return response;
+    } catch (error) {
+      lastError = error as Error;
+      if (attempt < retries - 1) {
+        const waitTime = (attempt + 1) * 1000;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+  }
+  
+  throw lastError || new Error('All Supabase request attempts failed');
+};
+
 export const supabase = createClient(finalUrl, finalKey, {
   auth: {
     // Prevent auth caching issues
@@ -27,6 +104,8 @@ export const supabase = createClient(finalUrl, finalKey, {
     flowType: 'pkce'
   },
   global: {
+    // Use rate-limited fetch for all requests
+    fetch: rateLimitedFetch,
     // Add cache-busting headers to all requests
     headers: addCacheBustingHeaders({
       'X-Client-Info': 'dayboard-app'
