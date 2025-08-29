@@ -158,7 +158,7 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
         <div className="text-center mb-8">
           <div className="text-4xl mb-4">👋</div>
           <h1 className="text-3xl font-bold text-blue-900 mb-2">Welcome to Dayboard!</h1>
-          <p className="text-blue-700">Let's set up your profile and household</p>
+          <p className="text-blue-700">Let&apos;s set up your profile and household</p>
           
           {/* Progress bar */}
           <div className="mt-6 flex justify-center space-x-2">
@@ -238,13 +238,13 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                 placeholder="e.g., The Smith Family, Johnson Household"
               />
-              <p className="text-xs text-blue-600 mt-1">This will be the name for your family's shared space</p>
+              <p className="text-xs text-blue-600 mt-1">This will be the name for your family&apos;s shared space</p>
             </div>
 
             <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-medium text-blue-900 mb-2">What's a household?</h3>
+              <h3 className="font-medium text-blue-900 mb-2">What&apos;s a household?</h3>
               <p className="text-sm text-blue-700">
-                A household is your family's shared space for organizing meals, projects, credentials, and more. 
+                A household is your family&apos;s shared space for organizing meals, projects, credentials, and more. 
                 You can invite other family members to join later.
               </p>
             </div>
