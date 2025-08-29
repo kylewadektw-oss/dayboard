@@ -50,11 +50,12 @@ export function middleware(request: NextRequest) {
   // Skip middleware for OAuth flows and Supabase auth callbacks
   if (
     pathname.startsWith('/auth/') ||
+    pathname.startsWith('/api/auth/') ||
     pathname.includes('/callback') ||
     pathname.includes('/oauth') ||
     searchParams.has('code') ||  // OAuth callback with code parameter
     searchParams.has('state') || // OAuth state parameter
-    pathname.startsWith('/api/auth') ||
+    searchParams.has('error') || // OAuth error parameter
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/favicon.ico')
   ) {
@@ -161,6 +162,6 @@ export const config = {
      * - auth (authentication callbacks)
      * And excluding OAuth callback URLs with query parameters
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|auth).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|auth/).*)',
   ],
 }

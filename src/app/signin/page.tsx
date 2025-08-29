@@ -55,7 +55,7 @@ export default function SignInPage() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/profile`,
+          redirectTo: `${window.location.origin}/auth/callback?next=/profile`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',

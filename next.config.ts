@@ -30,15 +30,21 @@ const nextConfig: NextConfig = {
   
   // Disable webpack devtool completely to avoid eval() usage
   webpack: (config, { dev, isServer }) => {
-    // Completely disable source maps and eval usage
-    config.devtool = false;
-    
-    // Ensure no eval-based optimizations
-    if (dev && !isServer) {
+    // Completely disable source maps and eval usage in development
+    if (dev) {
+      config.devtool = false;
+      
+      // Disable all eval-based optimizations
       config.optimization = {
         ...config.optimization,
-        minimize: false
+        minimize: false,
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        splitChunks: false,
       };
+      
+      // Ensure no eval in module concatenation
+      config.optimization.concatenateModules = false;
     }
     
     return config;
@@ -52,47 +58,57 @@ const nextConfig: NextConfig = {
   async headers() {
     const isDevelopment = process.env.NODE_ENV === 'development';
     
+    // In development, avoid CSP entirely to prevent eval() issues with dev tools
+    if (isDevelopment) {
+      return [
+        {
+          source: '/(.*)',
+          headers: [
+            {
+              key: 'X-Content-Type-Options',
+              value: 'nosniff'
+            },
+            // Explicitly allow eval in development for dev tools
+            {
+              key: 'Content-Security-Policy',
+              value: "default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'"
+            }
+          ]
+        }
+      ];
+    }
+    
+    // Production: Strict CSP for security
     return [
       {
         source: '/(.*)',
         headers: [
-          // Development: No CSP restrictions to avoid eval() issues
-          // Production: Strict CSP for security
-          ...(isDevelopment ? [
-            // Development headers - minimal restrictions
-            {
-              key: 'X-Content-Type-Options',
-              value: 'nosniff'
-            }
-          ] : [
-            // Production headers - strict security
-            {
-              key: 'Content-Security-Policy',
-              value: [
-                "default-src 'self'",
-                "script-src 'self' 'unsafe-inline'", // Allow inline scripts but not eval
-                "style-src 'self' 'unsafe-inline'",
-                "img-src 'self' data: https:",
-                "font-src 'self' data:",
-                "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
-                "frame-src 'none'",
-                "base-uri 'self'",
-                "form-action 'self'"
-              ].join('; ')
-            },
-            {
-              key: 'X-Frame-Options',
-              value: 'DENY'
-            },
-            {
-              key: 'X-Content-Type-Options',
-              value: 'nosniff'
-            },
-            {
-              key: 'Referrer-Policy',
-              value: 'strict-origin-when-cross-origin'
-            }
-          ])
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline'", // Allow inline scripts but not eval
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https:",
+              "font-src 'self' data:",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+              "frame-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'"
+            ].join('; ')
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin'
+          }
         ]
       }
     ];
