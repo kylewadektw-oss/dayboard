@@ -28,10 +28,19 @@ const nextConfig: NextConfig = {
     ],
   },
   
-  // Disable webpack devtool completely
-  webpack: (config, { dev }) => {
-    // Always disable eval-based source maps
+  // Disable webpack devtool completely to avoid eval() usage
+  webpack: (config, { dev, isServer }) => {
+    // Completely disable source maps and eval usage
     config.devtool = false;
+    
+    // Ensure no eval-based optimizations
+    if (dev && !isServer) {
+      config.optimization = {
+        ...config.optimization,
+        minimize: false
+      };
+    }
+    
     return config;
   },
   
@@ -41,12 +50,22 @@ const nextConfig: NextConfig = {
   
   // Add headers to handle CSP appropriately for development vs production
   async headers() {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
     return [
       {
         source: '/(.*)',
         headers: [
-          // Only apply CSP in production, minimal headers in development
-          ...(process.env.NODE_ENV === 'production' ? [
+          // Development: No CSP restrictions to avoid eval() issues
+          // Production: Strict CSP for security
+          ...(isDevelopment ? [
+            // Development headers - minimal restrictions
+            {
+              key: 'X-Content-Type-Options',
+              value: 'nosniff'
+            }
+          ] : [
+            // Production headers - strict security
             {
               key: 'Content-Security-Policy',
               value: [
@@ -72,12 +91,6 @@ const nextConfig: NextConfig = {
             {
               key: 'Referrer-Policy',
               value: 'strict-origin-when-cross-origin'
-            }
-          ] : [
-            // Development: Only basic security headers, no CSP
-            {
-              key: 'X-Content-Type-Options',
-              value: 'nosniff'
             }
           ])
         ]
