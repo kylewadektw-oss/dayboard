@@ -128,6 +128,11 @@ CREATE INDEX IF NOT EXISTS idx_household_invitations_expires ON household_invita
 -- 10. Create RLS policies for household_invitations
 ALTER TABLE household_invitations ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies to avoid conflicts
+DROP POLICY IF EXISTS "Users can view their invitations" ON household_invitations;
+DROP POLICY IF EXISTS "Admins can create invitations" ON household_invitations;
+DROP POLICY IF EXISTS "Users can respond to invitations" ON household_invitations;
+
 -- Policy: Users can view invitations they sent or received
 CREATE POLICY "Users can view their invitations" ON household_invitations
     FOR SELECT USING (
@@ -152,10 +157,12 @@ CREATE POLICY "Users can respond to invitations" ON household_invitations
 
 -- 11. Update profiles RLS policies for new columns
 DROP POLICY IF EXISTS "Users can view all profiles" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Admins can manage household members" ON profiles;
+
 CREATE POLICY "Users can view all profiles" ON profiles
     FOR SELECT USING (true);
 
-DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 CREATE POLICY "Users can update own profile" ON profiles
     FOR UPDATE USING (user_id = auth.uid());
 
