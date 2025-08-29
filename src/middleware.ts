@@ -45,7 +45,23 @@ function checkRateLimit(key: string, limit: number, window: number): boolean {
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
-  const isAuthRoute = pathname.includes('/signin') || pathname.includes('/auth')
+  const searchParams = request.nextUrl.searchParams
+  
+  // Skip middleware for OAuth flows and Supabase auth callbacks
+  if (
+    pathname.startsWith('/auth/') ||
+    pathname.includes('/callback') ||
+    pathname.includes('/oauth') ||
+    searchParams.has('code') ||  // OAuth callback with code parameter
+    searchParams.has('state') || // OAuth state parameter
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/favicon.ico')
+  ) {
+    return NextResponse.next()
+  }
+  
+  const isAuthRoute = pathname.includes('/signin')
   const isSensitiveRoute = SECURITY_CONFIG.SENSITIVE_ROUTES.some(route => 
     pathname.startsWith(route)
   )
@@ -78,15 +94,15 @@ export function middleware(request: NextRequest) {
     return new NextResponse('Rate limit exceeded', { status: 429 })
   }
 
-  // Handle any invalid paths
-  if (pathname.endsWith('/') && pathname !== '/') {
+  // Handle trailing slashes - be less restrictive
+  if (pathname.endsWith('/') && pathname !== '/' && pathname.length > 1) {
     const url = request.nextUrl.clone()
     url.pathname = pathname.slice(0, -1)
     return NextResponse.redirect(url)
   }
 
-  // Security validation for sensitive routes
-  if (isSensitiveRoute) {
+  // Security validation for sensitive routes (skip for auth flows)
+  if (isSensitiveRoute && !isAuthRoute) {
     // Additional security checks for sensitive routes
     const userAgent = request.headers.get('user-agent')
     if (!userAgent || userAgent.length < 10) {
@@ -139,10 +155,12 @@ export const config = {
     /*
      * Match all request paths except for the ones starting with:
      * - api (API routes)
-     * - _next/static (static files)
+     * - _next/static (static files)  
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - auth (authentication callbacks)
+     * And excluding OAuth callback URLs with query parameters
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|auth).*)',
   ],
 }
