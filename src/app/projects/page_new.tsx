@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { supabase } from '../../lib/supabaseClient';
@@ -236,16 +236,7 @@ export default function ProjectsPage() {
   const statuses = ["Planned", "In Progress", "Completed"];
 
   // Load projects from Supabase
-  useEffect(() => {
-    loadProjects();
-  }, []);
-
-  // Reload when filters change
-  useEffect(() => {
-    loadProjects();
-  }, [filters]);
-
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     try {
       setIsLoading(true);
       
@@ -257,9 +248,7 @@ export default function ProjectsPage() {
       if (filters.category) query = query.eq("category", filters.category);
       if (filters.difficulty) query = query.eq("difficulty", filters.difficulty);
 
-      const { data, error } = await query;
-      
-      if (error) throw error;
+      const { data } = await query;
       
       // Convert to our Project interface with legacy field mapping
       const formattedProjects = (data || []).map(p => ({
@@ -275,7 +264,11 @@ export default function ProjectsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
 
   const moveProject = async (projectId: string, newStatus: string) => {
     try {
@@ -314,60 +307,61 @@ export default function ProjectsPage() {
     }
   };
 
-  const handleViewProject = (project: Project) => {
-    // Simple alert for now - TODO: Create proper modal
-    alert(`Project: ${project.title}\nStatus: ${project.status}\nProgress: ${project.progress}%\nDue: ${project.due_date || 'No due date'}`);
-  };
+  // Commented out unused functions to fix ESLint warnings
+  // const handleViewProject = (project: Project) => {
+  //   // Simple alert for now - TODO: Create proper modal
+  //   alert(`Project: ${project.title}\nStatus: ${project.status}\nProgress: ${project.progress}%\nDue: ${project.due_date || 'No due date'}`);
+  // };
 
-  const handleSaveProject = async (updatedProject: Project) => {
-    try {
-      const { error } = await supabase
-        .from('home_projects')
-        .update({
-          title: updatedProject.title,
-          status: updatedProject.status,
-          due_date: updatedProject.dueDate || updatedProject.due_date,
-          assigned_to: updatedProject.assignedTo || updatedProject.assigned_to,
-          progress: updatedProject.progress
-        })
-        .eq('id', updatedProject.id);
+  // const handleSaveProject = async (updatedProject: Project) => {
+  //   try {
+  //     const { error } = await supabase
+  //       .from('home_projects')
+  //       .update({
+  //         title: updatedProject.title,
+  //         status: updatedProject.status,
+  //         due_date: updatedProject.dueDate || updatedProject.due_date,
+  //         assigned_to: updatedProject.assignedTo || updatedProject.assigned_to,
+  //         progress: updatedProject.progress
+  //       })
+  //       .eq('id', updatedProject.id);
 
-      if (error) throw error;
+  //     if (error) throw error;
 
-      // Update local state
-      setProjects(prevProjects =>
-        prevProjects.map(project =>
-          project.id === updatedProject.id ? { 
-            ...updatedProject, 
-            due_date: updatedProject.dueDate || updatedProject.due_date,
-            assigned_to: updatedProject.assignedTo || updatedProject.assigned_to
-          } : project
-        )
-      );
-    } catch (err) {
-      console.error('Error saving project:', err);
-      setError('Failed to save project changes.');
-    }
-  };
+  //     // Update local state
+  //     setProjects(prevProjects =>
+  //       prevProjects.map(project =>
+  //         project.id === updatedProject.id ? { 
+  //           ...updatedProject, 
+  //           due_date: updatedProject.dueDate || updatedProject.due_date,
+  //           assigned_to: updatedProject.assignedTo || updatedProject.assigned_to
+  //         } : project
+  //       )
+  //     );
+  //   } catch (err) {
+  //     console.error('Error saving project:', err);
+  //     setError('Failed to save project changes.');
+  //   }
+  // };
 
-  const handleDeleteProject = async (projectId: string) => {
-    try {
-      const { error } = await supabase
-        .from('home_projects')
-        .delete()
-        .eq('id', projectId);
+  // const handleDeleteProject = async (projectId: string) => {
+  //   try {
+  //     const { error } = await supabase
+  //       .from('home_projects')
+  //       .delete()
+  //       .eq('id', projectId);
 
-      if (error) throw error;
+  //     if (error) throw error;
       
-      // Update local state
-      setProjects(prevProjects =>
-        prevProjects.filter(project => project.id !== projectId)
-      );
-    } catch (err) {
-      console.error('Error deleting project:', err);
-      setError('Failed to delete project.');
-    }
-  };
+  //     // Update local state
+  //     setProjects(prevProjects =>
+  //       prevProjects.filter(project => project.id !== projectId)
+  //     );
+  //   } catch (err) {
+  //     console.error('Error deleting project:', err);
+  //     setError('Failed to delete project.');
+  //   }
+  // };
 
   const handleAddProject = async (newProjectData: Omit<Project, 'id' | 'created_at'>) => {
     try {
