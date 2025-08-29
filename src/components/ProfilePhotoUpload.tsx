@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
 
@@ -184,10 +185,13 @@ export default function ProfilePhotoUpload({ user, currentAvatarUrl, onAvatarUpd
       {/* Current Avatar */}
       <div className="relative w-32 h-32 mx-auto mb-6">
         {currentAvatarUrl ? (
-          <img
+          <Image
             src={currentAvatarUrl}
             alt="Profile"
+            width={128}
+            height={128}
             className="w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg"
+            priority
           />
         ) : (
           <div className="w-32 h-32 bg-blue-100 rounded-2xl flex items-center justify-center border-4 border-white shadow-lg">

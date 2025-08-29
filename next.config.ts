@@ -4,6 +4,30 @@ const nextConfig: NextConfig = {
   // Completely disable source maps to avoid eval() issues
   productionBrowserSourceMaps: false,
   
+  // Configure image optimization for external sources
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com', // Google avatars
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com', // GitHub avatars
+        port: '',
+        pathname: '/**',
+      }
+    ],
+  },
+  
   // Disable webpack devtool completely
   webpack: (config, { dev }) => {
     // Always disable eval-based source maps
