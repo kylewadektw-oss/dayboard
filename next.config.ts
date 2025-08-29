@@ -45,7 +45,7 @@ const nextConfig: NextConfig = {
       {
         source: '/(.*)',
         headers: [
-          // Only apply strict CSP in production
+          // Only apply CSP in production, minimal headers in development
           ...(process.env.NODE_ENV === 'production' ? [
             {
               key: 'Content-Security-Policy',
@@ -60,37 +60,26 @@ const nextConfig: NextConfig = {
                 "base-uri 'self'",
                 "form-action 'self'"
               ].join('; ')
+            },
+            {
+              key: 'X-Frame-Options',
+              value: 'DENY'
+            },
+            {
+              key: 'X-Content-Type-Options',
+              value: 'nosniff'
+            },
+            {
+              key: 'Referrer-Policy',
+              value: 'strict-origin-when-cross-origin'
             }
           ] : [
-            // Development: More permissive CSP to allow dev tools
+            // Development: Only basic security headers, no CSP
             {
-              key: 'Content-Security-Policy',
-              value: [
-                "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Allow eval in dev
-                "style-src 'self' 'unsafe-inline'",
-                "img-src 'self' data: https:",
-                "font-src 'self' data:",
-                "connect-src 'self' https://*.supabase.co wss://*.supabase.co ws://localhost:* http://localhost:*",
-                "frame-src 'none'",
-                "base-uri 'self'",
-                "form-action 'self'"
-              ].join('; ')
+              key: 'X-Content-Type-Options',
+              value: 'nosniff'
             }
-          ]),
-          // Additional security headers
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin'
-          }
+          ])
         ]
       }
     ];
