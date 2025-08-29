@@ -24,7 +24,11 @@ const rateLimitedFetch = async (input: RequestInfo | URL, init?: RequestInit): P
   const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
   
   // Skip rate limiting for authentication endpoints
-  const isAuthEndpoint = url.includes('/auth/') || url.includes('/token');
+  const isAuthEndpoint = url.includes('/auth/') || 
+                         url.includes('/token') || 
+                         url.includes('grant_type=') ||
+                         url.includes('refresh_token') ||
+                         (init && init.method === 'POST' && url.includes('supabase.co/auth'));
   
   if (!isAuthEndpoint) {
     const requestKey = `supabase-${url}`;
@@ -38,7 +42,7 @@ const rateLimitedFetch = async (input: RequestInfo | URL, init?: RequestInit): P
       }
     }
     
-    // Check cache first for GET requests
+    // Check cache first for GET requests (but not auth GET requests)
     if (!init?.method || init.method.toLowerCase() === 'get') {
       const cached = globalRateLimiter.getCachedData(requestKey);
       if (cached) {
@@ -53,19 +57,25 @@ const rateLimitedFetch = async (input: RequestInfo | URL, init?: RequestInit): P
     globalRateLimiter.recordRequest(requestKey);
   }
   
-  // Make the request with retry logic (but no retries for auth endpoints)
+  // Make the request (no retries for auth endpoints to avoid conflicts)
   let retries = isAuthEndpoint ? 1 : 2;
   let lastError: Error | null = null;
   
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
+      const headers: Record<string, string> = {
+        ...init?.headers as Record<string, string>,
+        'X-Request-ID': `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      };
+      
+      // Only add cache-busting headers for non-auth requests
+      if (!isAuthEndpoint) {
+        Object.assign(headers, addCacheBustingHeaders({}));
+      }
+      
       const response = await fetch(input, {
         ...init,
-        headers: {
-          ...init?.headers,
-          ...addCacheBustingHeaders({}),
-          'X-Request-ID': `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        }
+        headers
       });
       
       // Handle rate limiting (but don't retry auth endpoints)

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -14,17 +13,9 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     try {
-      // Create a Supabase client for server-side auth (don't use rate limiting here)
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          auth: {
-            flowType: 'pkce'
-          }
-        }
-      )
-
+      // Use dynamic import to avoid creating multiple client instances
+      const { supabase } = await import('../../../lib/supabaseClient');
+      
       // Exchange the code for a session
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)
       
