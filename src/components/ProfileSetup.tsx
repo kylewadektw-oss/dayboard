@@ -54,6 +54,12 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
     setLoading(true);
     try {
       // Validate required fields
+      if (!profileData.name || !profileData.name.trim()) {
+        alert('Name is required');
+        setLoading(false);
+        return;
+      }
+
       if (!profileData.householdName || !profileData.householdName.trim()) {
         alert('Household name is required');
         setLoading(false);
@@ -80,11 +86,11 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
       const { data: household, error: householdError } = await supabase
         .from('households')
         .insert({
-          name: profileData.householdName,
-          address: profileData.address,
-          city: profileData.city,
-          state: profileData.state,
-          zip: profileData.zip,
+          name: profileData.householdName.trim(),
+          address: profileData.address.trim() || null,
+          city: profileData.city.trim() || null,
+          state: profileData.state.trim() || null,
+          zip: profileData.zip.trim() || null,
           created_by: user.id,
           members_count: 1
         })
@@ -95,33 +101,29 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
         console.error('Household creation error:', householdError);
         console.error('Detailed error:', JSON.stringify(householdError, null, 2));
         console.error('User ID:', user.id);
-        console.error('Household data being inserted:', {
-          name: profileData.householdName,
-          address: profileData.address,
-          city: profileData.city,
-          state: profileData.state,
-          zip: profileData.zip,
-          created_by: user.id,
-          members_count: 1
-        });
         alert(`Error creating household: ${householdError.message || 'Unknown error'}. Please try again.`);
         return;
       }
 
-      // Create profile
+      // Create profile with upsert to handle existing profiles
+      const profilePayload = {
+        user_id: user.id,
+        name: profileData.name.trim(),
+        age: profileData.age ? parseInt(profileData.age) : null,
+        profession: profileData.profession.trim() || null,
+        household_id: household.id
+      };
+
+      console.log('Creating profile with data:', profilePayload);
+
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          user_id: user.id,
-          name: profileData.name,
-          age: profileData.age ? parseInt(profileData.age) : null,
-          profession: profileData.profession,
-          household_id: household.id
-        });
+        .upsert(profilePayload, { onConflict: 'user_id' });
 
       if (profileError) {
         console.error('Profile creation error:', profileError);
-        alert('Error creating profile. Please try again.');
+        console.error('Profile error details:', JSON.stringify(profileError, null, 2));
+        alert(`Error creating profile: ${profileError.message || 'Unknown error'}. Please try again.`);
         return;
       }
 

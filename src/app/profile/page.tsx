@@ -81,16 +81,27 @@ export default function ProfilePage() {
 
     setSaving(true);
     try {
-      const dietaryPrefs = formData.get('dietary_preferences')?.toString().split(',').map(item => item.trim()).filter(Boolean) || [];
+      // Note: Removed dietary_preferences for now since the column doesn't exist in database
+      // const dietaryPrefs = formData.get('dietary_preferences')?.toString().split(',').map(item => item.trim()).filter(Boolean) || [];
       
       const profileData = {
         user_id: user.id,
-        name: formData.get('name')?.toString() || '',
+        name: formData.get('name')?.toString()?.trim() || '',
         age: Number(formData.get('age')) || null,
-        profession: formData.get('profession')?.toString() || '',
-        dietary_preferences: dietaryPrefs,
+        profession: formData.get('profession')?.toString()?.trim() || '',
+        // dietary_preferences: dietaryPrefs, // Commented out until database column is added
         household_id: profile?.household_id || null,
       };
+
+      // Validate required fields
+      if (!profileData.name) {
+        alert('Name is required');
+        setSaving(false);
+        return;
+      }
+
+      console.log('Saving profile with data:', profileData);
+      console.log('User ID:', user.id);
 
       const { data, error } = await supabase
         .from('profiles')
@@ -100,7 +111,9 @@ export default function ProfilePage() {
 
       if (error) {
         console.error('Profile save error:', error);
-        alert('Error saving profile. Please try again.');
+        console.error('Error details:', JSON.stringify(error, null, 2));
+        console.error('Profile data being saved:', profileData);
+        alert(`Error saving profile: ${error.message || 'Unknown error'}. Please try again.`);
       } else {
         setProfile(data);
         setIsEditing(false);
@@ -266,6 +279,8 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
+{/* Temporarily disabled until database column is added */}
+                    {/* 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Preferences</label>
                       <input
@@ -277,6 +292,7 @@ export default function ProfilePage() {
                       />
                       <p className="text-xs text-gray-500 mt-1">Used for meal planning and recipe suggestions</p>
                     </div>
+                    */}
 
                     <div className="flex gap-3">
                       <button
@@ -317,6 +333,7 @@ export default function ProfilePage() {
                       </div>
                     )}
 
+                    {/* Temporarily disabled until database column is added
                     {profile?.dietary_preferences && profile.dietary_preferences.length > 0 && (
                       <div>
                         <span className="text-sm font-medium text-gray-700">Dietary Preferences: </span>
@@ -329,6 +346,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     )}
+                    */}
 
                     {!profile && (
                       <div className="text-center py-8">
