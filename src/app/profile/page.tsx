@@ -8,6 +8,8 @@ import ProfileSetup from '../../components/ProfileSetup';
 import ProfilePhotoUpload from '../../components/ProfilePhotoUpload';
 import HouseholdCodeManager from '../../components/HouseholdCodeManager';
 import HouseholdMemberManager from '../../components/HouseholdMemberManager';
+import { useLoadingTimeout, LoadingTimeoutFallback } from '../../lib/loadingManager';
+import { updateActivityTimestamp } from '../../lib/cacheUtils';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -20,9 +22,21 @@ export default function ProfilePage() {
   const [showHouseholdSetup, setShowHouseholdSetup] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
 
+  // Use loading timeout to prevent infinite loading
+  const { isLoading: timeoutLoading, hasTimedOut, startLoading, stopLoading } = useLoadingTimeout({
+    timeout: 15000, // 15 seconds
+    onTimeout: () => {
+      console.warn('Profile page loading timed out');
+      setLoading(false);
+    }
+  });
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        startLoading(); // Start timeout tracking
+        updateActivityTimestamp(); // Update activity
+        
         // Get current user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
@@ -115,11 +129,12 @@ export default function ProfilePage() {
         console.error('Data fetch error:', error);
       } finally {
         setLoading(false);
+        stopLoading(); // Stop timeout tracking
       }
     };
 
     fetchData();
-  }, [router]);
+  }, [router, startLoading, stopLoading]);
 
   const handleSetupComplete = () => {
     setIsFirstTimeUser(false);
@@ -278,12 +293,24 @@ export default function ProfilePage() {
     router.push('/signin');
   };
 
-  if (loading) {
+  if (loading || timeoutLoading) {
+    // Show timeout fallback if loading has timed out
+    if (hasTimedOut) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <LoadingTimeoutFallback onRetry={() => window.location.reload()} />
+        </div>
+      );
+    }
+    
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your profile...</p>
+          <div className="mt-2 text-sm text-gray-500">
+            This should only take a few seconds
+          </div>
         </div>
       </div>
     );

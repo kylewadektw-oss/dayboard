@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { addCacheBustingHeaders } from './cacheUtils'
 
 // Environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -17,7 +18,26 @@ if (!finalUrl || !finalKey || finalUrl.includes('placeholder')) {
   console.error('Supabase configuration error. Please check your environment variables.')
 }
 
-export const supabase = createClient(finalUrl, finalKey)
+export const supabase = createClient(finalUrl, finalKey, {
+  auth: {
+    // Prevent auth caching issues
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  },
+  global: {
+    // Add cache-busting headers to all requests
+    headers: addCacheBustingHeaders({
+      'X-Client-Info': 'dayboard-app'
+    })
+  },
+  realtime: {
+    // Ensure realtime connections don't get stuck
+    heartbeatIntervalMs: 30000,
+    timeout: 20000
+  }
+})
 
 // Types for our database tables
 export interface Profile {

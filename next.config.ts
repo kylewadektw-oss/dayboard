@@ -68,6 +68,19 @@ const nextConfig: NextConfig = {
               key: 'X-Content-Type-Options',
               value: 'nosniff'
             },
+            // Cache control to prevent stale data issues
+            {
+              key: 'Cache-Control',
+              value: 'no-cache, no-store, must-revalidate'
+            },
+            {
+              key: 'Pragma',
+              value: 'no-cache'
+            },
+            {
+              key: 'Expires',
+              value: '0'
+            },
             // Explicitly allow eval in development for dev tools
             {
               key: 'Content-Security-Policy',

@@ -4,6 +4,8 @@ import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import MainLayout from "@/components/MainLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
+import CacheManager from "@/components/CacheManager";
+import CacheDiagnostics from "@/components/CacheDiagnostics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,14 +29,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
+          <CacheManager />
           <Sidebar />
           <MainLayout>
             {children}
           </MainLayout>
+          <CacheDiagnostics />
         </AuthProvider>
       </body>
     </html>
