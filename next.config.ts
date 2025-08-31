@@ -1,16 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Performance optimizations
-  swcMinify: true,
-  
-  // Faster builds in development
-  experimental: {
-    turbo: {
-      resolveAlias: {
-        // Reduce bundle analysis time
-        canvas: './empty-module.js',
-      },
+  // Turbopack configuration (replaces experimental.turbo)
+  turbopack: {
+    resolveAlias: {
+      // Reduce bundle analysis time
+      canvas: './empty-module.js',
     },
   },
 
@@ -24,7 +19,12 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Reduce bundle size
+  // Development optimizations
+  experimental: {
+    // Enable other experimental features if needed
+  },
+
+  // Webpack optimizations
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {
       // Faster development builds
