@@ -22,7 +22,7 @@ interface ProfileSetupProps {
   isEditing?: boolean;
 }
 
-export default function ProfileSetup({ user, onComplete, isEditing = false }: ProfileSetupProps) {
+export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   

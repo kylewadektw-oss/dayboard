@@ -19,6 +19,31 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  // Add security headers with permissive CSP for development tools
+  async headers() {
+    return [
+      {
+        // Apply to all routes
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // Allow eval for development tools
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https:",
+              "font-src 'self' data:",
+              "connect-src 'self' https://*.supabase.co https://*.supabase.com",
+              "frame-src 'none'",
+              "object-src 'none'",
+            ].join('; '),
+          },
+        ],
+      },
+    ];
+  },
+
   // Development optimizations
   experimental: {
     // Enable other experimental features if needed
