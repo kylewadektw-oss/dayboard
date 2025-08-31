@@ -36,6 +36,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Set a maximum loading time to prevent infinite loading
+  useEffect(() => {
+    const loadingTimeout = setTimeout(() => {
+      console.log('⚠️ Auth loading timeout - setting loading to false');
+      setLoading(false);
+    }, 3000); // 3 second max loading time
+
+    return () => clearTimeout(loadingTimeout);
+  }, []);
+
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
@@ -66,22 +76,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error('Error getting session:', error);
-      } else {
-        setSession(session);
-        setUser(session?.user ?? null);
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting session:', error);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
 
-        // Fetch profile if user exists
-        if (session?.user) {
-          const profileData = await fetchProfile(session.user.id);
-          setProfile(profileData);
+          // Fetch profile in background if user exists
+          if (session?.user) {
+            fetchProfile(session.user.id).then(setProfile);
+          }
         }
+      } catch (error) {
+        console.error('Session error:', error);
+      } finally {
+        // Always set loading to false quickly
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
     getInitialSession();
