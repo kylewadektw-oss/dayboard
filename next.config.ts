@@ -32,21 +32,21 @@ const nextConfig: NextConfig = {
             key: 'Content-Security-Policy',
             value: isDevelopment 
               ? [
-                  // Very permissive for development
-                  "default-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data: https:",
-                  "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data: https:",
-                  "style-src 'self' 'unsafe-inline' https: blob: data:",
-                  "img-src 'self' data: https: blob:",
-                  "font-src 'self' data: https: blob:",
-                  "connect-src 'self' https: wss: ws: blob: data:",
-                  "worker-src 'self' blob: data: https:",
-                  "child-src 'self' blob: https:",
-                  "frame-src 'self' https:",
+                  // Very permissive for development - allow all eval sources
+                  "default-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data: https: http: ws: wss:",
+                  "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data: https: http:",
+                  "style-src 'self' 'unsafe-inline' https: http: blob: data:",
+                  "img-src 'self' data: https: http: blob:",
+                  "font-src 'self' data: https: http: blob:",
+                  "connect-src 'self' https: http: wss: ws: blob: data:",
+                  "worker-src 'self' blob: data: https: http:",
+                  "child-src 'self' blob: https: http:",
+                  "frame-src 'self' https: http:",
                   "object-src 'self' blob: data:",
-                  "media-src 'self' blob: data: https:",
+                  "media-src 'self' blob: data: https: http:",
                 ].join('; ')
               : [
-                  // Production CSP (more restrictive)
+                  // Production CSP (still permissive for now)
                   "default-src 'self' 'unsafe-eval' 'unsafe-inline'",
                   "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data: https:",
                   "style-src 'self' 'unsafe-inline' https:",

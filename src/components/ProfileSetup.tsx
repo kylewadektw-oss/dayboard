@@ -213,6 +213,7 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                 placeholder="Your full name"
                 autoComplete="name"
+                aria-required="true"
               />
             </div>
 
@@ -229,6 +230,7 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                 min="1"
                 max="120"
                 autoComplete="age"
+                aria-required="true"
               />
             </div>
 
@@ -280,9 +282,11 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                     checked={householdOption === 'create'}
                     onChange={() => setHouseholdOption('create')}
                     className="mr-3"
+                    aria-describedby="create-household-desc"
                   />
                   <label htmlFor="create-household" className="font-medium text-blue-900">Create New Household</label>
                 </div>
+                <p id="create-household-desc" className="text-sm text-gray-600 ml-6">Start a new household and invite family members later</p>
                 <p className="text-sm text-gray-600 ml-6">Start a new household and invite family members later</p>
               </div>
 
@@ -303,9 +307,11 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                     checked={householdOption === 'join'}
                     onChange={() => setHouseholdOption('join')}
                     className="mr-3"
+                    aria-describedby="join-household-desc"
                   />
                   <label htmlFor="join-household" className="font-medium text-blue-900">Join Existing Household</label>
                 </div>
+                <p id="join-household-desc" className="text-sm text-gray-600 ml-6">Use a household code to join your family</p>
                 <p className="text-sm text-gray-600 ml-6">Use a household code to join your family</p>
               </div>
             </div>
@@ -322,7 +328,8 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                   onChange={(e) => handleInputChange('householdName', e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                   placeholder="e.g., The Smith Family"
-                  autoComplete="off"
+                  autoComplete="organization"
+                  aria-required="true"
                 />
               </div>
             )}
@@ -340,8 +347,10 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                   placeholder="XXXXXXXX"
                   maxLength={8}
                   autoComplete="off"
+                  aria-required="true"
+                  aria-describedby="household-code-help"
                 />
-                <p className="text-xs text-blue-600 mt-1">Enter the 8-character code from your household admin</p>
+                <p id="household-code-help" className="text-xs text-blue-600 mt-1">Enter the 8-character code from your household admin</p>
               </div>
             )}
 
@@ -381,6 +390,7 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                     placeholder="Street address"
                     autoComplete="street-address"
+                    aria-required="true"
                   />
                 </div>
 
@@ -396,6 +406,7 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                       placeholder="City"
                       autoComplete="address-level2"
+                      aria-required="true"
                     />
                   </div>
                   <div>
@@ -409,6 +420,7 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                       placeholder="State"
                       autoComplete="address-level1"
+                      aria-required="true"
                     />
                   </div>
                 </div>
