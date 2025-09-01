@@ -31,10 +31,11 @@ export default function SignInPage() {
     try {
       console.log('Attempting Google sign in...');
       
-      // Use the proper callback URL for production
-      const redirectUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://dayboard-eight.vercel.app/auth/callback'
-        : `${window.location.origin}/auth/callback`;
+      // Get the current domain dynamically
+      const currentDomain = window.location.origin;
+      const redirectUrl = `${currentDomain}/auth/callback`;
+      
+      console.log('Using redirect URL:', redirectUrl);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -47,7 +48,7 @@ export default function SignInPage() {
         }
       });
       
-      console.log('Sign in response:', { data, error });
+      console.log('Sign in response:', { data, error, redirectUrl });
       
       if (error) {
         console.error('Error signing in:', error.message);
