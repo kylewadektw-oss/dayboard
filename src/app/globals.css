@@ -37,3 +37,115 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Dark theme page background */
+.bg-gray-50 {
+  background-color: #111827 !important; /* Very dark background */
+}
+
+/* Dark card backgrounds with clean input fields */
+.bg-white {
+  background-color: #1f2937 !important; /* Dark gray background for cards */
+  color: #f9fafb !important; /* Light text for cards */
+}
+
+/* Headers and text within cards */
+.text-gray-900 {
+  color: #f9fafb !important; /* Light text for headings */
+}
+
+.text-gray-700 {
+  color: #d1d5db !important; /* Light gray for labels */
+}
+
+.text-gray-600 {
+  color: #9ca3af !important; /* Medium gray for secondary text */
+}
+
+.text-gray-500 {
+  color: #6b7280 !important; /* Darker gray for tertiary text */
+}
+
+/* Input field styling - clean white background on dark cards */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select,
+.form-input {
+  color: #111827 !important; /* Dark text in inputs */
+  background-color: #ffffff !important; /* Clean white background */
+  border: 1px solid #d1d5db !important; /* Light gray border */
+}
+
+/* Override Tailwind's text color classes for inputs */
+input.text-gray-500,
+input.text-gray-400,
+input.text-gray-300,
+textarea.text-gray-500,
+textarea.text-gray-400,
+textarea.text-gray-300 {
+  color: #111827 !important; /* Force dark text in inputs */
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+input[type="tel"]::placeholder,
+input[type="url"]::placeholder,
+textarea::placeholder {
+  color: #6b7280 !important; /* Medium gray for placeholder */
+  opacity: 1 !important;
+}
+
+/* Focused state */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+textarea:focus {
+  color: #111827 !important; /* Dark text on focus */
+  background-color: #ffffff !important; /* Keep white background */
+  border-color: #3b82f6 !important; /* Blue focus border */
+}
+
+/* Button styling for dark theme */
+.bg-blue-600 {
+  background-color: #2563eb !important;
+}
+
+.bg-blue-100 {
+  background-color: #3b82f6 !important;
+  color: #ffffff !important;
+}
+
+.bg-gray-100 {
+  background-color: #374151 !important;
+  color: #d1d5db !important;
+}
+
+.bg-gray-200 {
+  background-color: #4b5563 !important;
+  color: #f9fafb !important;
+}
+
+/* Badge styling */
+.bg-green-100 {
+  background-color: #065f46 !important;
+  color: #d1fae5 !important;
+}
+
+/* Border colors for dark theme */
+.border-gray-200 {
+  border-color: #374151 !important;
+}
+
+.border-gray-300 {
+  border-color: #4b5563 !important;
+}
