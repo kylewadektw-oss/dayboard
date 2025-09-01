@@ -232,8 +232,9 @@ export default function ProfilePage() {
                     handleSaveProfile(new FormData(e.currentTarget));
                   }} className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                      <label htmlFor="profile-name" className="block text-sm font-medium text-gray-700 mb-2">Name</label>
                       <input
+                        id="profile-name"
                         name="name"
                         type="text"
                         defaultValue={profile?.name || ''}
@@ -245,8 +246,9 @@ export default function ProfilePage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
+                        <label htmlFor="profile-age" className="block text-sm font-medium text-gray-700 mb-2">Age</label>
                         <input
+                          id="profile-age"
                           name="age"
                           type="number"
                           defaultValue={profile?.age || ''}
@@ -255,8 +257,9 @@ export default function ProfilePage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Profession</label>
+                        <label htmlFor="profile-profession" className="block text-sm font-medium text-gray-700 mb-2">Profession</label>
                         <input
+                          id="profile-profession"
                           name="profession"
                           type="text"
                           defaultValue={profile?.profession || ''}
@@ -267,8 +270,9 @@ export default function ProfilePage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Preferences</label>
+                      <label htmlFor="profile-dietary" className="block text-sm font-medium text-gray-700 mb-2">Dietary Preferences</label>
                       <input
+                        id="profile-dietary"
                         name="dietary_preferences"
                         type="text"
                         defaultValue={profile?.dietary_preferences?.join(', ') || ''}
@@ -432,8 +436,9 @@ export default function ProfilePage() {
                 handleCreateHousehold(new FormData(e.currentTarget));
               }} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Household Name</label>
+                  <label htmlFor="household-name" className="block text-sm font-medium text-gray-700 mb-1">Household Name</label>
                   <input
+                    id="household-name"
                     name="household_name"
                     type="text"
                     required
@@ -442,8 +447,9 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Address (Optional)</label>
+                  <label htmlFor="household-address" className="block text-sm font-medium text-gray-700 mb-1">Address (Optional)</label>
                   <input
+                    id="household-address"
                     name="address"
                     type="text"
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -452,8 +458,9 @@ export default function ProfilePage() {
                 </div>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                    <label htmlFor="household-city" className="block text-sm font-medium text-gray-700 mb-1">City</label>
                     <input
+                      id="household-city"
                       name="city"
                       type="text"
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -461,8 +468,9 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                    <label htmlFor="household-state" className="block text-sm font-medium text-gray-700 mb-1">State</label>
                     <input
+                      id="household-state"
                       name="state"
                       type="text"
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -472,8 +480,9 @@ export default function ProfilePage() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                    <label htmlFor="household-zip" className="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
                     <input
+                      id="household-zip"
                       name="zip"
                       type="text"
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -481,8 +490,9 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Members</label>
+                    <label htmlFor="household-members" className="block text-sm font-medium text-gray-700 mb-1">Members</label>
                     <input
+                      id="household-members"
                       name="members_count"
                       type="number"
                       min="1"

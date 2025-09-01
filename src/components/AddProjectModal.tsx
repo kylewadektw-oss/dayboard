@@ -106,10 +106,12 @@ export default function AddProjectModal({ isOpen, onClose, onAdd }: AddProjectMo
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Project Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="project-title" className="block text-sm font-medium text-gray-700 mb-2">
               Project Title *
             </label>
             <input
+              id="project-title"
+              name="title"
               type="text"
               value={newProject.title}
               onChange={(e) => setNewProject(prev => ({...prev, title: e.target.value}))}
@@ -122,8 +124,10 @@ export default function AddProjectModal({ isOpen, onClose, onAdd }: AddProjectMo
           {/* Project Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <label htmlFor="project-status" className="block text-sm font-medium text-gray-700 mb-2">Status</label>
               <select
+                id="project-status"
+                name="status"
                 value={newProject.status}
                 onChange={(e) => setNewProject(prev => ({...prev, status: e.target.value}))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2"
@@ -135,10 +139,12 @@ export default function AddProjectModal({ isOpen, onClose, onAdd }: AddProjectMo
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="project-due-date" className="block text-sm font-medium text-gray-700 mb-2">
                 Due Date *
               </label>
               <input
+                id="project-due-date"
+                name="dueDate"
                 type="date"
                 value={newProject.dueDate}
                 onChange={(e) => setNewProject(prev => ({...prev, dueDate: e.target.value}))}
@@ -148,8 +154,10 @@ export default function AddProjectModal({ isOpen, onClose, onAdd }: AddProjectMo
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Assigned To</label>
+              <label htmlFor="project-assigned-to" className="block text-sm font-medium text-gray-700 mb-2">Assigned To</label>
               <select
+                id="project-assigned-to"
+                name="assignedTo"
                 value={newProject.assignedTo}
                 onChange={(e) => setNewProject(prev => ({...prev, assignedTo: e.target.value}))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2"
@@ -164,10 +172,12 @@ export default function AddProjectModal({ isOpen, onClose, onAdd }: AddProjectMo
           {/* Progress */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">Initial Progress</label>
+              <label htmlFor="project-progress" className="block text-sm font-medium text-gray-700">Initial Progress</label>
               <span className="text-sm font-bold text-gray-900">{newProject.progress}%</span>
             </div>
             <input
+              id="project-progress"
+              name="progress"
               type="range"
               min="0"
               max="100"
@@ -179,8 +189,10 @@ export default function AddProjectModal({ isOpen, onClose, onAdd }: AddProjectMo
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <label htmlFor="project-description" className="block text-sm font-medium text-gray-700 mb-2">Description</label>
             <textarea
+              id="project-description"
+              name="description"
               value={newProject.description}
               onChange={(e) => setNewProject(prev => ({...prev, description: e.target.value}))}
               placeholder="Describe what this project involves..."
@@ -191,8 +203,10 @@ export default function AddProjectModal({ isOpen, onClose, onAdd }: AddProjectMo
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+            <label htmlFor="project-notes" className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
             <textarea
+              id="project-notes"
+              name="notes"
               value={newProject.notes}
               onChange={(e) => setNewProject(prev => ({...prev, notes: e.target.value}))}
               placeholder="Any additional notes or reminders..."
