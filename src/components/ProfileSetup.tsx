@@ -287,7 +287,6 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                   <label htmlFor="create-household" className="font-medium text-blue-900">Create New Household</label>
                 </div>
                 <p id="create-household-desc" className="text-sm text-gray-600 ml-6">Start a new household and invite family members later</p>
-                <p className="text-sm text-gray-600 ml-6">Start a new household and invite family members later</p>
               </div>
 
               <div 
@@ -312,7 +311,6 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                   <label htmlFor="join-household" className="font-medium text-blue-900">Join Existing Household</label>
                 </div>
                 <p id="join-household-desc" className="text-sm text-gray-600 ml-6">Use a household code to join your family</p>
-                <p className="text-sm text-gray-600 ml-6">Use a household code to join your family</p>
               </div>
             </div>
 
