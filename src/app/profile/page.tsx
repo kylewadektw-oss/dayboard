@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User } from '@supabase/supabase-js';
 import { supabase, Profile, Household } from '../../lib/supabaseClient';
 import ProfileSetup from '../../components/ProfileSetup';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, loading: authLoading, signOut } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [household, setHousehold] = useState<Household | null>(null);
   const [loading, setLoading] = useState(true);
@@ -18,18 +18,20 @@ export default function ProfilePage() {
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
 
   useEffect(() => {
+    // If auth is still loading, wait
+    if (authLoading) {
+      return;
+    }
+
+    // If no user after auth loading is complete, redirect to signin
+    if (!user) {
+      router.push('/signin');
+      return;
+    }
+
+    // Fetch user data
     const fetchData = async () => {
       try {
-        // Get current user
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
-        if (userError || !user) {
-          router.push('/signin');
-          return;
-        }
-
-        setUser(user);
-
         // Get user profile
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
@@ -68,7 +70,7 @@ export default function ProfilePage() {
     };
 
     fetchData();
-  }, [router]);
+  }, [user, authLoading, router]);
 
   const handleSetupComplete = () => {
     setIsFirstTimeUser(false);
@@ -168,11 +170,12 @@ export default function ProfilePage() {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     router.push('/signin');
   };
 
-  if (loading) {
+  // Show loading if auth is loading or profile data is loading
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
