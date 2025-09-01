@@ -54,3 +54,19 @@ export interface HouseholdMember {
   role: 'admin' | 'member'
   joined_at?: string
 }
+
+export interface HouseholdInvitation {
+  id?: string
+  household_id: string
+  invitation_code: string
+  created_by: string
+  invitee_email?: string
+  invitee_name?: string
+  role: 'admin' | 'member'
+  status: 'pending' | 'accepted' | 'expired' | 'cancelled'
+  expires_at: string
+  used_by?: string
+  used_at?: string
+  created_at?: string
+  updated_at?: string
+}

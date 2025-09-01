@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, Profile, Household } from '../../lib/supabaseClient';
 import ProfileSetup from '../../components/ProfileSetup';
+import HouseholdInvitationManager from '../../components/HouseholdInvitationManager';
+import JoinHouseholdForm from '../../components/JoinHouseholdForm';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading, signOut, isAuthenticated } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [household, setHousehold] = useState<Household | null>(null);
   const [loading, setLoading] = useState(true);
@@ -16,61 +18,126 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [showHouseholdSetup, setShowHouseholdSetup] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
+  const [showInvitationManager, setShowInvitationManager] = useState(false);
+  const [showJoinHousehold, setShowJoinHousehold] = useState(false);
+
+  // Emergency redirect if definitely not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated()) {
+      console.log('🚨 Emergency: Not authenticated, immediate redirect to signin');
+      router.push('/signin');
+    }
+  }, [authLoading, isAuthenticated, router]);
 
   useEffect(() => {
-    // If auth is still loading, wait
-    if (authLoading) {
+    // Immediate authentication check - don't wait for anything
+    const immediateAuthCheck = () => {
+      // If auth is still loading, wait a bit more
+      if (authLoading) {
+        console.log('⏳ Auth still loading, waiting...');
+        return;
+      }
+
+      // Use the simple authentication check - this only depends on session and user state
+      if (!isAuthenticated()) {
+        console.log('🔒 User not authenticated (no session/user), redirecting to signin immediately');
+        router.push('/signin');
+        return;
+      }
+
+      // Double check user ID exists
+      if (!user?.id) {
+        console.log('🔒 No user ID found, redirecting to signin');
+        router.push('/signin');
+        return;
+      }
+
+      console.log('👤 User authenticated successfully, proceeding with profile page');
+      
+      // Only fetch profile data if user is definitely authenticated
+      fetchData();
+    };
+
+    immediateAuthCheck();
+  }, [authLoading, user, isAuthenticated, router]);
+
+  // Fetch user data
+  const fetchData = async () => {
+    if (!user?.id) {
+      console.log('⚠️ No user ID available for data fetch');
       return;
     }
 
-    // If no user after auth loading is complete, redirect to signin
-    if (!user) {
-      router.push('/signin');
-      return;
-    }
-
-    // Fetch user data
-    const fetchData = async () => {
-      try {
-        // Get user profile
+    try {
+      setLoading(true);
+      console.log('👤 Authenticated user found, fetching profile data for:', user.id);
+        
+        // Get user profile with simplified error handling
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('user_id', user.id)
           .single();
 
-        if (profileError && profileError.code !== 'PGRST116') {
-          console.error('Profile fetch error:', profileError);
-        } else if (profileData) {
+        // Simplified error handling - treat any error or no data as new user
+        if (profileError || !profileData) {
+          console.log('ℹ️ No profile found or error occurred, treating as new user');
+          if (profileError) {
+            console.log('📋 Profile error details:', {
+              hasError: !!profileError,
+              errorType: typeof profileError,
+              isEmptyObject: JSON.stringify(profileError) === '{}'
+            });
+          }
+          setIsFirstTimeUser(true);
+        } else {
+          console.log('✅ Profile loaded:', profileData.name);
           setProfile(profileData);
 
-          // If user has a household, fetch it
+          // If user has a household, fetch it with simplified error handling
           if (profileData.household_id) {
+            console.log('🏠 Fetching household:', profileData.household_id);
             const { data: householdData, error: householdError } = await supabase
               .from('households')
               .select('*')
               .eq('id', profileData.household_id)
               .single();
 
-            if (householdError) {
-              console.error('Household fetch error:', householdError);
+            if (householdError || !householdData) {
+              console.log('ℹ️ Household fetch issue - continuing without household data');
+              if (householdError) {
+                console.log('📋 Household error details:', {
+                  hasError: !!householdError,
+                  errorType: typeof householdError,
+                  isEmptyObject: JSON.stringify(householdError) === '{}'
+                });
+              }
+              // Continue without household - not critical
             } else {
+              console.log('✅ Household loaded:', householdData.name);
               setHousehold(householdData);
             }
           }
-        } else {
-          // New user - show setup
-          setIsFirstTimeUser(true);
         }
       } catch (error) {
-        console.error('Data fetch error:', error);
+        console.error('❌ Data fetch error:', {
+          error,
+          message: error instanceof Error ? error.message : 'Unknown error'
+        });
+        // On error, check if user is still authenticated
+        if (!user || !user.id) {
+          console.log('🔒 User session lost during fetch, redirecting to signin');
+          router.push('/signin');
+          return;
+        }
+        // Otherwise treat as new user to allow recovery
+        setIsFirstTimeUser(true);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [user, authLoading, router]);
 
   const handleSetupComplete = () => {
     setIsFirstTimeUser(false);
@@ -170,17 +237,66 @@ export default function ProfilePage() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push('/signin');
+    try {
+      console.log('🚪 Initiating sign out...');
+      await signOut();
+      console.log('✅ Sign out complete, redirecting...');
+      router.push('/signin');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Force redirect even if sign out fails
+      router.push('/signin');
+    }
   };
 
   // Show loading if auth is loading or profile data is loading
   if (authLoading || loading) {
+    // Safety check: if not loading auth but no user, redirect immediately
+    if (!authLoading && !user) {
+      router.push('/signin');
+      return null;
+    }
+
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your profile...</p>
+          <p className="text-gray-600 mb-2">
+            {authLoading ? 'Checking authentication...' : 'Loading your profile...'}
+          </p>
+          <p className="text-xs text-gray-400 mb-4">
+            User: {user?.email || 'Checking...'}
+          </p>
+          <div className="space-y-2">
+            <button
+              onClick={() => {
+                console.log('🔄 Force refresh triggered');
+                window.location.reload();
+              }}
+              className="block mx-auto text-sm text-blue-600 hover:text-blue-700 underline"
+            >
+              Taking too long? Click to refresh
+            </button>
+            <button
+              onClick={() => {
+                console.log('🚨 Emergency profile setup triggered');
+                setIsFirstTimeUser(true);
+                setLoading(false);
+              }}
+              className="block mx-auto text-sm text-orange-600 hover:text-orange-700 underline"
+            >
+              Set up profile manually
+            </button>
+            <button
+              onClick={() => {
+                console.log('🔓 Manual redirect to signin');
+                router.push('/signin');
+              }}
+              className="block mx-auto text-sm text-red-600 hover:text-red-700 underline"
+            >
+              Go to Sign In
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -188,6 +304,12 @@ export default function ProfilePage() {
 
   if (!user) {
     return null; // Will redirect to signin
+  }
+
+  if (!user) {
+    // Final safety check - should not reach here but redirect if it does
+    router.push('/signin');
+    return null;
   }
 
   // Show ProfileSetup for first-time users
@@ -206,9 +328,10 @@ export default function ProfilePage() {
           </div>
           <button
             onClick={handleSignOut}
-            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+            disabled={authLoading}
+            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign Out
+            {authLoading ? 'Signing Out...' : 'Sign Out'}
           </button>
         </div>
 
@@ -408,16 +531,29 @@ export default function ProfilePage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">🚀 Quick Actions</h3>
               <div className="space-y-3">
                 {!household && (
+                  <>
+                    <button 
+                      onClick={() => setShowHouseholdSetup(true)}
+                      className="w-full bg-blue-100 text-blue-700 p-3 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+                    >
+                      🏠 Create New Household
+                    </button>
+                    <button 
+                      onClick={() => setShowJoinHousehold(true)}
+                      className="w-full bg-green-100 text-green-700 p-3 rounded-lg hover:bg-green-200 transition-colors text-sm font-medium"
+                    >
+                      � Join Existing Household
+                    </button>
+                  </>
+                )}
+                {household && (
                   <button 
-                    onClick={() => setShowHouseholdSetup(true)}
+                    onClick={() => setShowInvitationManager(true)}
                     className="w-full bg-blue-100 text-blue-700 p-3 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
                   >
-                    🏠 Set Up Household
+                    📱 Manage Invitations
                   </button>
                 )}
-                <button className="w-full bg-gray-100 text-gray-700 p-3 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
-                  📱 Invite Family Members
-                </button>
                 <button className="w-full bg-gray-100 text-gray-700 p-3 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
                   🔒 Privacy Settings
                 </button>
@@ -521,6 +657,34 @@ export default function ProfilePage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Invitation Manager Modal */}
+        {showInvitationManager && household?.id && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <HouseholdInvitationManager 
+                householdId={household.id} 
+                onClose={() => setShowInvitationManager(false)} 
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Join Household Modal */}
+        {showJoinHousehold && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="max-w-md w-full">
+              <JoinHouseholdForm 
+                onSuccess={() => {
+                  setShowJoinHousehold(false);
+                  // Refresh page to show new household
+                  window.location.reload();
+                }}
+                onCancel={() => setShowJoinHousehold(false)}
+              />
             </div>
           </div>
         )}
