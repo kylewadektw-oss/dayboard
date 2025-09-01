@@ -60,7 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('user_id', userId)
         .single();
 
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+      const result = await Promise.race([queryPromise, timeoutPromise]);
+      const { data, error } = result as { data: Profile | null; error: Error | null };
 
       console.log('📊 Query result:', { 
         hasData: !!data, 
@@ -77,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('✅ Profile fetched successfully:', data.name || 'Unnamed');
       return data;
 
-    } catch (error) {
+    } catch {
       console.log('ℹ️ Profile fetch failed - treating as new user (timeout or other issue)');
       return null;
     }
@@ -121,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             console.log('👻 No user in session');
           }
         }
-              } catch (sessionError) {
+              } catch {
           console.log('ℹ️ Session retrieval failed - treating as logged out');
           setUser(null);
           setProfile(null);
@@ -212,7 +213,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(null);
       setLoading(false);
       console.log('✅ Signed out successfully');
-    } catch (error) {
+    } catch {
       console.log('ℹ️ Sign out failed, but cleared local state');
       setLoading(false);
     }

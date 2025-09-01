@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase, HouseholdInvitation } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -20,11 +20,7 @@ export default function HouseholdInvitationManager({ householdId, onClose }: Hou
     role: 'member' as 'admin' | 'member'
   });
 
-  useEffect(() => {
-    fetchInvitations();
-  }, [householdId]);
-
-  const fetchInvitations = async () => {
+  const fetchInvitations = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('household_invitations')
@@ -42,7 +38,11 @@ export default function HouseholdInvitationManager({ householdId, onClose }: Hou
     } finally {
       setLoading(false);
     }
-  };
+  }, [householdId]);
+
+  useEffect(() => {
+    fetchInvitations();
+  }, [fetchInvitations]);
 
   const createInvitation = async () => {
     if (!user || !newInvitation.invitee_name.trim()) return;

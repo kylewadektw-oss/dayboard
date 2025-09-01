@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, Profile, Household } from '../../lib/supabaseClient';
 import ProfileSetup from '../../components/ProfileSetup';
@@ -21,48 +21,8 @@ export default function ProfilePage() {
   const [showInvitationManager, setShowInvitationManager] = useState(false);
   const [showJoinHousehold, setShowJoinHousehold] = useState(false);
 
-  // Emergency redirect if definitely not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated()) {
-      console.log('🚨 Emergency: Not authenticated, immediate redirect to signin');
-      router.push('/signin');
-    }
-  }, [authLoading, isAuthenticated, router]);
-
-  useEffect(() => {
-    // Immediate authentication check - don't wait for anything
-    const immediateAuthCheck = () => {
-      // If auth is still loading, wait a bit more
-      if (authLoading) {
-        console.log('⏳ Auth still loading, waiting...');
-        return;
-      }
-
-      // Use the simple authentication check - this only depends on session and user state
-      if (!isAuthenticated()) {
-        console.log('🔒 User not authenticated (no session/user), redirecting to signin immediately');
-        router.push('/signin');
-        return;
-      }
-
-      // Double check user ID exists
-      if (!user?.id) {
-        console.log('🔒 No user ID found, redirecting to signin');
-        router.push('/signin');
-        return;
-      }
-
-      console.log('👤 User authenticated successfully, proceeding with profile page');
-      
-      // Only fetch profile data if user is definitely authenticated
-      fetchData();
-    };
-
-    immediateAuthCheck();
-  }, [authLoading, user, isAuthenticated, router]);
-
   // Fetch user data
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user?.id) {
       console.log('⚠️ No user ID available for data fetch');
       return;
@@ -135,9 +95,47 @@ export default function ProfilePage() {
       } finally {
         setLoading(false);
       }
+    }, [user, router, setProfile, setHousehold, setIsFirstTimeUser, setLoading]);
+
+  // Emergency redirect if definitely not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated()) {
+      console.log('🚨 Emergency: Not authenticated, immediate redirect to signin');
+      router.push('/signin');
+    }
+  }, [authLoading, isAuthenticated, router]);
+
+  useEffect(() => {
+    // Immediate authentication check - don't wait for anything
+    const immediateAuthCheck = () => {
+      // If auth is still loading, wait a bit more
+      if (authLoading) {
+        console.log('⏳ Auth still loading, waiting...');
+        return;
+      }
+
+      // Use the simple authentication check - this only depends on session and user state
+      if (!isAuthenticated()) {
+        console.log('🔒 User not authenticated (no session/user), redirecting to signin immediately');
+        router.push('/signin');
+        return;
+      }
+
+      // Double check user ID exists
+      if (!user?.id) {
+        console.log('🔒 No user ID found, redirecting to signin');
+        router.push('/signin');
+        return;
+      }
+
+      console.log('👤 User authenticated successfully, proceeding with profile page');
+      
+      // Only fetch profile data if user is definitely authenticated
+      fetchData();
     };
 
-    fetchData();
+    immediateAuthCheck();
+  }, [authLoading, user, isAuthenticated, router, fetchData]);
 
   const handleSetupComplete = () => {
     setIsFirstTimeUser(false);

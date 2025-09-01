@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -146,7 +146,7 @@ export default function JoinHouseholdForm({ onSuccess, onCancel }: JoinHousehold
         <ul className="text-sm text-blue-800 space-y-1">
           <li>• Ask a household member for their invitation code</li>
           <li>• Enter the 8-character code above</li>
-          <li>• You'll automatically join their household</li>
+          <li>• You&apos;ll automatically join their household</li>
           <li>• Start managing tasks and meals together!</li>
         </ul>
       </div>
