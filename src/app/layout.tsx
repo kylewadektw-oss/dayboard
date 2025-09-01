@@ -17,14 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Development CSP fallback - Next.js headers() can be unreliable in dev mode */}
-        {process.env.NODE_ENV === 'development' && (
-          <meta 
-            httpEquiv="Content-Security-Policy" 
-            content="default-src * 'unsafe-eval' 'unsafe-inline' 'unsafe-hashes'; script-src * 'self' 'unsafe-eval' 'unsafe-inline' 'unsafe-hashes' data: blob: https: http: ws: wss: https://accounts.google.com https://accounts.youtube.com https://apis.google.com https://www.google.com https://ssl.gstatic.com https://www.gstatic.com; style-src * 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://www.google.com https://fonts.googleapis.com; img-src * 'self' data: blob: https: http: https://accounts.google.com https://www.google.com; connect-src * 'self' ws: wss: https: http: https://accounts.google.com https://apis.google.com; font-src * 'self' data: https: https://fonts.gstatic.com; frame-src * 'self' https: https://accounts.google.com https://www.google.com; object-src 'none'; base-uri 'self';" 
-          />
-        )}
-        {/* Production CSP is handled via next.config.ts headers() */}
+        {/* CSP is handled via vercel.json and next.config.ts headers */}
       </head>
       <body
         className="antialiased font-sans"

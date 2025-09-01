@@ -30,10 +30,10 @@ const nextConfig: NextConfig = {
           {
             key: 'Content-Security-Policy',
             value: isDev 
-              ? // Development CSP - allows eval() for Next.js dev tools
-                "default-src * 'unsafe-eval' 'unsafe-inline' 'unsafe-hashes'; script-src * 'self' 'unsafe-eval' 'unsafe-inline' 'unsafe-hashes' data: blob: https: http: ws: wss: https://accounts.google.com https://accounts.youtube.com https://apis.google.com https://www.google.com https://ssl.gstatic.com https://www.gstatic.com; style-src * 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://www.google.com https://fonts.googleapis.com; img-src * 'self' data: blob: https: http: https://accounts.google.com https://www.google.com; connect-src * 'self' ws: wss: https: http: https://accounts.google.com https://apis.google.com; font-src * 'self' data: https: https://fonts.gstatic.com; frame-src * 'self' https: https://accounts.google.com https://www.google.com; object-src 'none'; base-uri 'self';"
-              : // Production CSP - more permissive for Vercel build and runtime
-                "default-src 'self' 'unsafe-eval' 'unsafe-inline'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://apis.google.com https://www.google.com https://ssl.gstatic.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://accounts.google.com https://www.google.com https://fonts.googleapis.com; img-src 'self' data: blob: https: https://accounts.google.com https://www.google.com; connect-src 'self' https: wss: https://accounts.google.com https://apis.google.com; font-src 'self' data: https: https://fonts.gstatic.com; frame-src 'self' https://accounts.google.com https://www.google.com; object-src 'none'; base-uri 'self';"
+              ? // Development CSP - very permissive for dev tools
+                "default-src * 'unsafe-eval' 'unsafe-inline' data: blob:; script-src * 'unsafe-eval' 'unsafe-inline' data: blob:; style-src * 'unsafe-inline'; img-src * data: blob:; connect-src *; font-src * data:; frame-src *; object-src 'none';"
+              : // Production CSP - permissive for Vercel + Next.js requirements
+                "default-src * 'unsafe-eval' 'unsafe-inline' data: blob:; script-src * 'unsafe-eval' 'unsafe-inline' data: blob:; style-src * 'unsafe-inline'; img-src * data: blob:; connect-src *; font-src * data:; frame-src *; object-src 'none';"
           },
           {
             key: 'X-Frame-Options',
