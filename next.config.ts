@@ -19,22 +19,13 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Security headers including environment-aware CSP
+  // Security headers - CSP temporarily disabled for debugging
   async headers() {
-    const isDev = process.env.NODE_ENV === 'development';
-    
     return [
       {
         source: '/(.*)',
         headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: isDev 
-              ? // Development CSP - very permissive for dev tools
-                "default-src * 'unsafe-eval' 'unsafe-inline' data: blob:; script-src * 'unsafe-eval' 'unsafe-inline' data: blob:; style-src * 'unsafe-inline'; img-src * data: blob:; connect-src *; font-src * data:; frame-src *; object-src 'none';"
-              : // Production CSP - permissive for Vercel + Next.js requirements
-                "default-src * 'unsafe-eval' 'unsafe-inline' data: blob:; script-src * 'unsafe-eval' 'unsafe-inline' data: blob:; style-src * 'unsafe-inline'; img-src * data: blob:; connect-src *; font-src * data:; frame-src *; object-src 'none';"
-          },
+          // CSP temporarily disabled
           {
             key: 'X-Frame-Options',
             value: 'DENY'

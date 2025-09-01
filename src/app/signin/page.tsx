@@ -30,10 +30,16 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     try {
       console.log('Attempting Google sign in...');
+      
+      // Use the proper callback URL for production
+      const redirectUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://dayboard-eight.vercel.app/auth/callback'
+        : `${window.location.origin}/auth/callback`;
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/profile`,
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
