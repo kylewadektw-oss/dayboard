@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
 
   // Add security headers with permissive CSP for development tools
   async headers() {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
     return [
       {
         // Apply to all routes
@@ -28,17 +30,44 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // Allow eval for development tools
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https:",
-              "font-src 'self' data:",
-              "connect-src 'self' https://*.supabase.co https://*.supabase.com",
-              "frame-src 'none'",
-              "object-src 'none'",
-            ].join('; '),
+            value: isDevelopment 
+              ? [
+                  // Very permissive for development
+                  "default-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data: https:",
+                  "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data: https:",
+                  "style-src 'self' 'unsafe-inline' https: blob: data:",
+                  "img-src 'self' data: https: blob:",
+                  "font-src 'self' data: https: blob:",
+                  "connect-src 'self' https: wss: ws: blob: data:",
+                  "worker-src 'self' blob: data: https:",
+                  "child-src 'self' blob: https:",
+                  "frame-src 'self' https:",
+                  "object-src 'self' blob: data:",
+                  "media-src 'self' blob: data: https:",
+                ].join('; ')
+              : [
+                  // Production CSP (more restrictive)
+                  "default-src 'self' 'unsafe-eval' 'unsafe-inline'",
+                  "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data: https:",
+                  "style-src 'self' 'unsafe-inline' https:",
+                  "img-src 'self' data: https: blob:",
+                  "font-src 'self' data: https:",
+                  "connect-src 'self' https: wss: ws: blob: data:",
+                  "worker-src 'self' blob: data:",
+                  "child-src 'self' blob:",
+                  "frame-src 'self'",
+                  "object-src 'self'",
+                  "media-src 'self' blob: data:",
+                ].join('; '),
           },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          }
         ],
       },
     ];
