@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('✅ Initial session found:', session?.user?.id || 'No user');
         setSession(session);
         setUser(session?.user ?? null);
-      } catch (sessionError) {
+      } catch {
         console.log('ℹ️ Session retrieval failed - treating as logged out');
         if (isMounted) {
           setUser(null);
@@ -108,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(null);
       setLoading(false);
       console.log('✅ Signed out successfully');
-    } catch (signOutError) {
+    } catch {
       console.log('ℹ️ Sign out completed (with cleanup)');
       setLoading(false);
     }

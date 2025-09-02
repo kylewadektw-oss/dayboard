@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabaseClient';
@@ -55,7 +55,7 @@ export default function ProfilePage() {
     }
   }, [authLoading, user, isAuthenticated, router, fetchedOnce]);
 
-  const fetchProfileData = async () => {
+  const fetchProfileData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -109,7 +109,7 @@ export default function ProfilePage() {
       setError('Failed to load profile. Please try refreshing the page.');
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     // Wait for auth to complete

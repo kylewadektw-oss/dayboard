@@ -7,8 +7,8 @@ import { supabase } from '../../lib/supabaseClient';
 export default function AuthTestPage() {
   const { user, session, loading, isAuthenticated } = useAuth();
   const [sessionData, setSessionData] = useState<{
-    session: any;
-    error: any;
+    session: import('@supabase/supabase-js').Session | null;
+    error: import('@supabase/supabase-js').AuthError | null;
   } | null>(null);
 
   useEffect(() => {
