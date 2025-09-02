@@ -34,27 +34,6 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [fetchedOnce, setFetchedOnce] = useState(false);
 
-  useEffect(() => {
-    // Wait for auth to complete
-    if (authLoading) {
-      console.log('⏳ Waiting for auth to complete...');
-      return;
-    }
-
-    // Redirect if not authenticated
-    if (!isAuthenticated()) {
-      console.log('🔒 Not authenticated, redirecting to signin');
-      router.push('/signin');
-      return;
-    }
-
-    // We have a user, now fetch their profile (only once)
-    if (user && !fetchedOnce) {
-      setFetchedOnce(true);
-      fetchProfileData();
-    }
-  }, [authLoading, user, isAuthenticated, router, fetchedOnce]);
-
   const fetchProfileData = useCallback(async () => {
     if (!user) return;
 
@@ -110,6 +89,27 @@ export default function ProfilePage() {
       setLoading(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    // Wait for auth to complete
+    if (authLoading) {
+      console.log('⏳ Waiting for auth to complete...');
+      return;
+    }
+
+    // Redirect if not authenticated
+    if (!isAuthenticated()) {
+      console.log('🔒 Not authenticated, redirecting to signin');
+      router.push('/signin');
+      return;
+    }
+
+    // We have a user, now fetch their profile (only once)
+    if (user && !fetchedOnce) {
+      setFetchedOnce(true);
+      fetchProfileData();
+    }
+  }, [authLoading, user, isAuthenticated, router, fetchedOnce, fetchProfileData]);
 
   useEffect(() => {
     // Wait for auth to complete
