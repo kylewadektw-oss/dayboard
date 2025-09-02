@@ -25,8 +25,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
     };
   }, []);
 
-  // Full width for landing page and signin (no auth required)
-  if (pathname === '/' || pathname === '/signin') {
+  // Full width for landing page, signin, and debug pages (no auth required)
+  if (pathname === '/' || pathname === '/signin' || pathname === '/oauth-debug' || pathname === '/auth-test') {
     return <ProtectedRoute requireAuth={false}>{children}</ProtectedRoute>;
   }
 

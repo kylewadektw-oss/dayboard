@@ -8,6 +8,11 @@ export default function SignInPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // Clear any development auth data that might be causing conflicts
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('dev-auth');
+    }
+    
     // Check if user is already signed in
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -30,17 +35,10 @@ export default function SignInPage() {
   const handleGoogleSignIn = async () => {
     try {
       console.log('Attempting Google sign in...');
-      
-      // Get the current domain dynamically
-      const currentDomain = window.location.origin;
-      const redirectUrl = `${currentDomain}/auth/callback`;
-      
-      console.log('Using redirect URL:', redirectUrl);
-      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: redirectUrl,
+          redirectTo: `${window.location.origin}/profile`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -48,7 +46,7 @@ export default function SignInPage() {
         }
       });
       
-      console.log('Sign in response:', { data, error, redirectUrl });
+      console.log('Sign in response:', { data, error });
       
       if (error) {
         console.error('Error signing in:', error.message);

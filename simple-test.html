@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple OAuth Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px 0; }
+        .result { background: #f5f5f5; padding: 15px; margin: 10px 0; }
+        code { background: #e0e0e0; padding: 2px 4px; }
+    </style>
+</head>
+<body>
+    <h1>OAuth Configuration Test</h1>
+    <button onclick="testBasic()">Test Basic Setup</button>
+    <div id="result"></div>
+    
+    <h2>Google Cloud Console Requirements:</h2>
+    <p><strong>Authorized redirect URIs:</strong></p>
+    <code>https://csbwewirwzeitavhvykr.supabase.co/auth/v1/callback</code>
+    
+    <p><strong>Authorized JavaScript origins:</strong></p>
+    <code>https://csbwewirwzeitavhvykr.supabase.co</code><br>
+    <code>http://localhost:3000</code>
+
+    <script>
+        function testBasic() {
+            document.getElementById('result').innerHTML = `
+                <div class="result">
+                    <h3>Testing OAuth Configuration...</h3>
+                    <p>Current URL: ${window.location.href}</p>
+                    <p>Expected redirect to: file:///profile (this won't work from file://)</p>
+                    <p><strong>Issue:</strong> File:// URLs don't work with Supabase OAuth</p>
+                    <p><strong>Solution:</strong> Test from localhost:3000 instead</p>
+                </div>
+            `;
+        }
+        
+        // Test on page load
+        window.onload = function() {
+            document.getElementById('result').innerHTML = `
+                <div class="result">
+                    <p>✅ HTML loaded successfully</p>
+                    <p>⚠️ Note: OAuth testing requires HTTP server, not file:// protocol</p>
+                    <p><strong>Next step:</strong> Test from localhost:3000/signin instead</p>
+                </div>
+            `;
+        };
+    </script>
+</body>
+</html>
