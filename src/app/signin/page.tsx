@@ -8,23 +8,21 @@ export default function SignInPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Clear any development auth data that might be causing conflicts
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('dev-auth');
-    }
-    
-    // Check if user is already signed in
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        router.push('/profile');
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          router.push('/profile');
+        }
+      } catch (error) {
+        // Stay on signin page
       }
     };
+    
     checkUser();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
         router.push('/profile');
       }
     });
@@ -34,7 +32,6 @@ export default function SignInPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      console.log('Attempting Google sign in...');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -46,14 +43,10 @@ export default function SignInPage() {
         }
       });
       
-      console.log('Sign in response:', { data, error });
-      
       if (error) {
-        console.error('Error signing in:', error.message);
         alert(`Error signing in: ${error.message}`);
       }
     } catch (error) {
-      console.error('Sign in error:', error);
       alert('Something went wrong. Please try again.');
     }
   };
