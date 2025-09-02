@@ -53,20 +53,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const getInitialSession = async () => {
       try {
         console.log('🔄 AuthContext: Getting initial session...');
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
         if (!isMounted) return;
 
-        if (error) {
-          console.log('ℹ️ Session error - treating as logged out');
-          setUser(null);
-          setSession(null);
-        } else {
-          console.log('✅ Initial session found:', session?.user?.id || 'No user');
-          setSession(session);
-          setUser(session?.user ?? null);
-        }
-      } catch (error) {
+        console.log('✅ Initial session found:', session?.user?.id || 'No user');
+        setSession(session);
+        setUser(session?.user ?? null);
+      } catch (sessionError) {
         console.log('ℹ️ Session retrieval failed - treating as logged out');
         if (isMounted) {
           setUser(null);
@@ -102,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, []); // Empty dependency array - run only once
+  }, [initialized]); // Empty dependency array - run only once
 
   const signOut = async () => {
     try {
@@ -114,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(null);
       setLoading(false);
       console.log('✅ Signed out successfully');
-    } catch (error) {
+    } catch (signOutError) {
       console.log('ℹ️ Sign out completed (with cleanup)');
       setLoading(false);
     }

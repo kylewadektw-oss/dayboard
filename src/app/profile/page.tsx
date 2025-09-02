@@ -111,6 +111,27 @@ export default function ProfilePage() {
     }
   };
 
+  useEffect(() => {
+    // Wait for auth to complete
+    if (authLoading) {
+      console.log('⏳ Waiting for auth to complete...');
+      return;
+    }
+
+    // Redirect if not authenticated
+    if (!isAuthenticated()) {
+      console.log('🔒 Not authenticated, redirecting to signin');
+      router.push('/signin');
+      return;
+    }
+
+    // We have a user, now fetch their profile (only once)
+    if (user && !fetchedOnce) {
+      setFetchedOnce(true);
+      fetchProfileData();
+    }
+  }, [authLoading, user, isAuthenticated, router, fetchedOnce, fetchProfileData]);
+
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
@@ -191,7 +212,7 @@ export default function ProfilePage() {
 
   // Show ProfileSetup for first-time users
   if (!profile) {
-    return <ProfileSetup user={user as any} onComplete={handleSetupComplete} />;
+    return <ProfileSetup user={user} onComplete={handleSetupComplete} />;
   }
 
   // Show existing profile

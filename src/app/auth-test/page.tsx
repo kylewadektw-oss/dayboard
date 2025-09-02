@@ -6,7 +6,10 @@ import { supabase } from '../../lib/supabaseClient';
 
 export default function AuthTestPage() {
   const { user, session, loading, isAuthenticated } = useAuth();
-  const [sessionData, setSessionData] = useState<any>(null);
+  const [sessionData, setSessionData] = useState<{
+    session: any;
+    error: any;
+  } | null>(null);
 
   useEffect(() => {
     // Check what Supabase thinks about the current session
