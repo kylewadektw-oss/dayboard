@@ -10,7 +10,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   // Listen for sidebar state changes (must be before conditional return)
   useEffect(() => {

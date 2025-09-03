@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(true); // Start collapsed by default
+  const [isCollapsed, setIsCollapsed] = useState(false); // Start open by default
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
   const { user, signOut, loading } = useAuth();
