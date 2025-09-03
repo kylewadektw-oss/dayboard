@@ -2,6 +2,8 @@
 
 A modern household command center that organizes calendars, meals, grocery lists, weather, and family updates into one elegant dashboard. Built with Next.js, Supabase, and Vercel.
 
+> ✅ **Production Status**: Latest deployment includes database connectivity fixes and empty file cleanup.
+
 ## Getting Started
 
 First, run the development server:
