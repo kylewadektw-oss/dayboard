@@ -1,23 +1,36 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(_request: NextRequest) {
+export function middleware(request: NextRequest) {
   // Get the response
   const response = NextResponse.next();
   
-  // COMPLETELY REMOVE ALL CSP AND SECURITY HEADERS
-  response.headers.delete('content-security-policy');
-  response.headers.delete('content-security-policy-report-only');
-  response.headers.delete('x-content-security-policy');
-  response.headers.delete('x-webkit-csp');
-  response.headers.delete('strict-transport-security');
-  response.headers.delete('x-frame-options');
-  response.headers.delete('x-content-type-options');
-  response.headers.delete('referrer-policy');
-  response.headers.delete('permissions-policy');
+  // AGGRESSIVELY REMOVE ALL SECURITY HEADERS
+  const headersToRemove = [
+    'content-security-policy',
+    'content-security-policy-report-only',
+    'x-content-security-policy',
+    'x-webkit-csp',
+    'strict-transport-security',
+    'x-frame-options',
+    'x-content-type-options',
+    'referrer-policy',
+    'permissions-policy',
+    'feature-policy',
+    'x-xss-protection',
+    'x-permitted-cross-domain-policies'
+  ];
   
-  // Explicitly set a permissive CSP that allows everything
-  response.headers.set('content-security-policy', "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *; media-src *; object-src *; child-src *; frame-src *; worker-src *; frame-ancestors *; form-action *; upgrade-insecure-requests");
+  headersToRemove.forEach(header => {
+    response.headers.delete(header);
+  });
+  
+  // Force a completely permissive CSP
+  response.headers.set('content-security-policy', "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *; media-src *; object-src *; child-src *; frame-src *; worker-src *; frame-ancestors *; form-action *;");
+  
+  // Add debug headers
+  response.headers.set('x-csp-debug', 'ultra-permissive');
+  response.headers.set('x-middleware-run', 'true');
   
   return response;
 }
