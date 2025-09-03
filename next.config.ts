@@ -34,8 +34,13 @@ const nextConfig: NextConfig = {
     turbo: {}
   },
 
-  // Webpack optimizations
+  // Webpack optimizations - avoid eval in production
   webpack: (config, { dev, isServer }) => {
+    // Force no eval in production
+    if (!dev) {
+      config.devtool = false;
+    }
+    
     if (dev && !isServer) {
       // Faster development builds
       config.optimization.splitChunks = {
@@ -53,6 +58,9 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+
+  // Disable source maps in production to avoid eval
+  productionBrowserSourceMaps: false,
 };
 
 export default nextConfig;
