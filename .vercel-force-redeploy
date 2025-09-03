@@ -1,0 +1,11 @@
+# Force Vercel Redeploy
+# Created: 2025-09-02
+# Purpose: Trigger fresh deployment after cleaning empty TypeScript files
+
+This file exists to force Vercel to pick up our latest commit (5686686) which has:
+- Removed all empty backup files causing TypeScript compilation errors
+- Deleted problematic src/app/auth/callback/route.ts file
+- Cleaned up codebase for successful production deployment
+
+Deploy from commit: 5686686
+Status: Ready for production deployment
