@@ -23,29 +23,9 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Security headers - Permissive CSP for authentication
+  // Security headers - Completely disable CSP for now
   async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel.app https://vercel.live https://*.supabase.co https://*.googleapis.com https://accounts.google.com",
-              "style-src 'self' 'unsafe-inline'", 
-              "img-src 'self' data: https:",
-              "connect-src 'self' https://*.supabase.co https://*.googleapis.com https://accounts.google.com https://*.vercel.app",
-              "frame-src 'self' https://accounts.google.com https://maps.google.com",
-              "font-src 'self' data:",
-              "object-src 'none'",
-              "base-uri 'self'"
-            ].join('; ')
-          }
-        ],
-      },
-    ];
+    return [];
   },
 
   // Development optimizations
