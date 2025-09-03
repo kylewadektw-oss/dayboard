@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabaseClient';
-import ProfileSetup from '../../components/ProfileSetup';
 import EnhancedProfileSetup from '../../components/EnhancedProfileSetup';
 import ProfileEditModal from '../../components/ProfileEditModal';
 import HouseholdEditModal from '../../components/HouseholdEditModal';
@@ -358,9 +358,11 @@ export default function ProfilePage() {
                 {/* Profile Photo */}
                 <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
                   {profile.profile_photo_url || profile.google_avatar_url ? (
-                    <img
-                      src={profile.profile_photo_url || profile.google_avatar_url}
+                    <Image
+                      src={(profile.profile_photo_url || profile.google_avatar_url) as string}
                       alt={profile.name}
+                      width={80}
+                      height={80}
                       className="w-full h-full object-cover"
                     />
                   ) : (

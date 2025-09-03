@@ -32,7 +32,7 @@ export default function HouseholdCodeManager({
 
   useEffect(() => {
     fetchActiveCode();
-  }, [householdId]);
+  }, [householdId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchActiveCode = async () => {
     try {

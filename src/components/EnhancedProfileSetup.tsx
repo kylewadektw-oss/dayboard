@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
 
@@ -44,7 +45,7 @@ export default function EnhancedProfileSetup({ user, onComplete }: ProfileSetupP
     useGoogleAvatar: false,
   });
 
-  const handleInputChange = (field: keyof ProfileData, value: string | boolean | File | null) => {
+  const handleInputChange = (field: string, value: string | File | null | boolean) => {
     setProfileData(prev => ({
       ...prev,
       [field]: value
@@ -78,7 +79,7 @@ export default function EnhancedProfileSetup({ user, onComplete }: ProfileSetupP
       const filePath = `profile-photos/${userId}/${fileName}`;
 
       // Upload file to Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('profile-photos')
         .upload(filePath, file, {
           cacheControl: '3600',
@@ -219,7 +220,18 @@ export default function EnhancedProfileSetup({ user, onComplete }: ProfileSetupP
       }
 
       // Create/update profile with enhanced fields
-      const profileUpdateData: any = {
+      const profileUpdateData: {
+        user_id: string;
+        name: string;
+        date_of_birth: string | null;
+        profession: string | null;
+        household_id: string;
+        updated_at: string;
+        avatar_url?: string;
+        dietary_preferences?: string[];
+        profile_photo_url?: string;
+        google_avatar_url?: string;
+      } = {
         user_id: user.id,
         name: profileData.name,
         date_of_birth: profileData.dateOfBirth || null,
@@ -294,7 +306,7 @@ export default function EnhancedProfileSetup({ user, onComplete }: ProfileSetupP
         <div className="text-center mb-8">
           <div className="text-4xl mb-4">👋</div>
           <h1 className="text-3xl font-bold text-blue-900 mb-2">Welcome to Dayboard!</h1>
-          <p className="text-blue-700">Let's set up your enhanced profile</p>
+          <p className="text-blue-700">Let&apos;s set up your enhanced profile</p>
           
           {/* Progress bar */}
           <div className="mt-6 flex justify-center space-x-2">
@@ -323,15 +335,19 @@ export default function EnhancedProfileSetup({ user, onComplete }: ProfileSetupP
                 <div className="flex justify-center">
                   <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                     {profileData.profilePhoto ? (
-                      <img
+                      <Image
                         src={URL.createObjectURL(profileData.profilePhoto)}
                         alt="Profile preview"
+                        width={96}
+                        height={96}
                         className="w-full h-full object-cover"
                       />
                     ) : profileData.useGoogleAvatar && user?.user_metadata?.avatar_url ? (
-                      <img
+                      <Image
                         src={user.user_metadata.avatar_url}
                         alt="Google avatar"
+                        width={96}
+                        height={96}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -624,12 +640,12 @@ export default function EnhancedProfileSetup({ user, onComplete }: ProfileSetupP
                   <div className="text-4xl mb-3">🤝</div>
                   <h3 className="font-semibold text-blue-900 mb-2">Join Household Request</h3>
                   <p className="text-blue-700 mb-4">
-                    You're about to request to join a household using code: 
+                    You&apos;re about to request to join a household using code: 
                     <span className="font-mono font-bold text-lg ml-2">{profileData.householdCode}</span>
                   </p>
                   <div className="text-sm text-blue-600 bg-white p-3 rounded border">
-                    After clicking "Send Request", a household admin will need to approve your request. 
-                    You'll be notified once you're approved!
+                    After clicking &quot;Send Request&quot;, a household admin will need to approve your request. 
+                    You&apos;ll be notified once you&apos;re approved!
                   </div>
                 </div>
               </>

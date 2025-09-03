@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { supabase } from '../lib/supabaseClient';
 
 interface Dependent {
@@ -50,7 +51,7 @@ export default function HouseholdDependentsManager({ householdId, onClose }: Hou
 
   useEffect(() => {
     fetchDependents();
-  }, [householdId]);
+  }, [householdId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchDependents = async () => {
     try {
@@ -73,7 +74,7 @@ export default function HouseholdDependentsManager({ householdId, onClose }: Hou
     }
   };
 
-  const handleInputChange = (field: keyof Dependent, value: any) => {
+    const handleInputChange = (field: string, value: string | File | null | boolean | string[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -91,7 +92,7 @@ export default function HouseholdDependentsManager({ householdId, onClose }: Hou
       const fileName = `dependent_${Date.now()}.${fileExt}`;
       const filePath = `dependent-photos/${householdId}/${fileName}`;
 
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('profile-photos')
         .upload(filePath, file);
 
@@ -364,9 +365,11 @@ export default function HouseholdDependentsManager({ householdId, onClose }: Hou
               <label className="block text-sm font-medium text-gray-700 mb-1">Photo</label>
               <div className="flex items-center space-x-4">
                 {formData.photo_url && (
-                  <img
+                  <Image
                     src={formData.photo_url}
                     alt="Preview"
+                    width={64}
+                    height={64}
                     className="w-16 h-16 rounded-full object-cover"
                   />
                 )}
@@ -497,9 +500,11 @@ export default function HouseholdDependentsManager({ householdId, onClose }: Hou
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-4">
                   {dependent.photo_url ? (
-                    <img
+                    <Image
                       src={dependent.photo_url}
                       alt={dependent.name}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 rounded-full object-cover"
                     />
                   ) : (

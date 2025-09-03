@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { supabase } from '../lib/supabaseClient';
 
 interface Profile {
@@ -47,7 +48,7 @@ export default function ProfileEditModal({ profile, onClose, onSuccess }: Profil
     return age;
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | string[] | File | boolean | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -85,12 +86,9 @@ export default function ProfileEditModal({ profile, onClose, onSuccess }: Profil
       const fileName = `${userId}_${Date.now()}.${fileExt}`;
       const filePath = `profile-photos/${userId}/${fileName}`;
 
-      const { data, error } = await supabase.storage
+            const { error } = await supabase.storage
         .from('profile-photos')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(filePath, formData.profilePhoto as File);
 
       if (error) {
         console.error('Storage upload error:', error);
@@ -123,7 +121,16 @@ export default function ProfileEditModal({ profile, onClose, onSuccess }: Profil
       }
 
       // Prepare update data
-      const updateData: any = {
+      const updateData: {
+        name: string;
+        date_of_birth: string | null;
+        profession: string | null;
+        updated_at: string;
+        avatar_url?: string | null;
+        profile_photo_url?: string | null;
+        google_avatar_url?: string | null;
+        dietary_preferences?: string[];
+      } = {
         name: formData.name,
         date_of_birth: formData.date_of_birth || null,
         profession: formData.profession || null,
@@ -198,9 +205,11 @@ export default function ProfileEditModal({ profile, onClose, onSuccess }: Profil
                 <div className="flex justify-center">
                   <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                     {getCurrentPhotoUrl() ? (
-                      <img
+                      <Image
                         src={getCurrentPhotoUrl()!}
                         alt="Profile preview"
+                        width={96}
+                        height={96}
                         className="w-full h-full object-cover"
                       />
                     ) : (
