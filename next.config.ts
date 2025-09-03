@@ -23,8 +23,11 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Security headers - Allow Next.js requirements while maintaining security
+  // Security headers - Temporarily disabled due to CSP eval conflicts
   async headers() {
+    // Completely disable CSP until Next.js eval issues are resolved
+    return [];
+    
     if (process.env.NODE_ENV === 'production') {
       return [
         {
