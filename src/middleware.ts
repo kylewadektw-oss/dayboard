@@ -5,24 +5,25 @@ export function middleware(_request: NextRequest) {
   // Get the response
   const response = NextResponse.next();
   
-  // FORCEFULLY REMOVE ALL CSP HEADERS
+  // COMPLETELY REMOVE ALL CSP - DON'T SET ANY CSP AT ALL
   response.headers.delete('content-security-policy');
   response.headers.delete('content-security-policy-report-only');
   response.headers.delete('x-content-security-policy');
   response.headers.delete('x-webkit-csp');
   
-  // Set a completely permissive CSP to override any external ones
-  response.headers.set(
-    'content-security-policy',
-    "default-src * 'unsafe-eval' 'unsafe-inline'; script-src * 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'; img-src * data: blob:; connect-src *; frame-src *; font-src *; object-src *; media-src *; child-src *; worker-src *; base-uri *;"
-  );
+  // DO NOT set any CSP - let it be completely unrestricted
+  // This should allow eval() if there's no external CSP source
+  
+  // Add debug header to verify middleware is running
+  response.headers.set('x-csp-override', 'disabled-completely');
+  response.headers.set('x-debug-middleware', 'running');
   
   return response;
 }
 
 export const config = {
   matcher: [
-    // Skip all internal paths (_next)
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    // Apply to all routes including the root
+    '/(.*)',
   ],
 };
