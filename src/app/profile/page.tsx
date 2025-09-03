@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabaseClient';
 import ProfileSetup from '../../components/ProfileSetup';
+import HouseholdInvitationManager from '../../components/HouseholdInvitationManager';
+import JoinHouseholdForm from '../../components/JoinHouseholdForm';
 
 interface Profile {
   id?: string;
@@ -33,6 +35,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fetchedOnce, setFetchedOnce] = useState(false);
+  const [showInvitations, setShowInvitations] = useState(false);
+  const [showJoinForm, setShowJoinForm] = useState(false);
 
   const fetchProfileData = useCallback(async () => {
     if (!user) return;
@@ -279,14 +283,35 @@ export default function ProfilePage() {
                     <label className="block text-sm font-medium text-gray-400 mb-1">Your Role</label>
                     <p className="text-white capitalize">{profile.household_role || 'Member'}</p>
                   </div>
+
+                  {/* Household Actions */}
+                  <div className="pt-4 space-y-2">
+                    <button
+                      onClick={() => setShowInvitations(true)}
+                      className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors"
+                    >
+                      👥 Invite Members
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <div className="text-center py-8">
+                <div className="text-center py-4">
                   <div className="text-gray-400 text-4xl mb-4">🏠</div>
                   <p className="text-gray-400 mb-4">No household yet</p>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors">
-                    Create Household
-                  </button>
+                  <div className="space-y-2">
+                    <button 
+                      className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors"
+                      onClick={() => {/* TODO: Create household */}}
+                    >
+                      Create Household
+                    </button>
+                    <button
+                      onClick={() => setShowJoinForm(true)}
+                      className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-500 transition-colors"
+                    >
+                      Join Household
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -326,6 +351,33 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Invitation Manager Modal */}
+      {showInvitations && household && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <HouseholdInvitationManager 
+              householdId={household.id}
+              onClose={() => setShowInvitations(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Join Household Modal */}
+      {showJoinForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <JoinHouseholdForm
+            onSuccess={() => {
+              setShowJoinForm(false);
+              // Refresh profile data to show new household
+              setFetchedOnce(false);
+              fetchProfileData();
+            }}
+            onCancel={() => setShowJoinForm(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }
