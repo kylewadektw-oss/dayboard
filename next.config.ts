@@ -23,8 +23,11 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Security headers - Disabled for development  
+  // Security headers - Temporarily disabled due to CSP conflicts with Next.js
   async headers() {
+    // Disable CSP in production until we can properly configure it
+    return [];
+    
     if (process.env.NODE_ENV === 'production') {
       return [
         {
@@ -32,7 +35,7 @@ const nextConfig: NextConfig = {
           headers: [
             {
               key: 'Content-Security-Policy',
-              value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.googleapis.com https://accounts.google.com; frame-src https://accounts.google.com;"
+              value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel.app https://*.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://*.googleapis.com https://accounts.google.com https://*.vercel.app; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self';"
             }
           ],
         },
