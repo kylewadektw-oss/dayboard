@@ -18,6 +18,23 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/* CSP is handled via vercel.json and next.config.ts headers */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Suppress browser extension communication errors
+              window.addEventListener('unhandledrejection', function(event) {
+                if (event.reason && event.reason.message) {
+                  const msg = event.reason.message;
+                  if (msg.includes('message channel closed') || 
+                      msg.includes('listener indicated an asynchronous response')) {
+                    event.preventDefault();
+                    return false;
+                  }
+                }
+              });
+            `,
+          }}
+        />
       </head>
       <body
         className="antialiased font-sans"
