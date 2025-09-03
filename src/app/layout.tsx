@@ -17,7 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* CSP is handled via vercel.json and next.config.ts headers */}
+        {/* Override any external CSP restrictions */}
+        <meta 
+          httpEquiv="Content-Security-Policy" 
+          content="default-src * 'unsafe-eval' 'unsafe-inline'; script-src * 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'; img-src * data:; connect-src *; frame-src *; font-src *; object-src *; media-src *;"
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
