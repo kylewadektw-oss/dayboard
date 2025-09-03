@@ -100,7 +100,7 @@ export default function DirectAuthPage() {
       <div className="mt-6 bg-blue-100 p-4 rounded">
         <h3 className="font-bold mb-2">Theory:</h3>
         <p className="text-sm">
-          The CSP error might be coming from the Supabase client library's OAuth implementation.
+          The CSP error might be coming from the Supabase client library&apos;s OAuth implementation.
           This page tests direct OAuth without the Supabase client to isolate the issue.
         </p>
       </div>

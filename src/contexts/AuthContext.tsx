@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log('🔄 AuthContext: Checking authentication...');
         await refreshAuth();
-      } catch (error) {
+      } catch (_error) {
         console.log('ℹ️ Auth check failed - treating as logged out');
         if (isMounted) {
           setUser(null);

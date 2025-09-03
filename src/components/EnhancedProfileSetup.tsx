@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { User } from '@supabase/supabase-js';
+import { User } from '@/contexts/AuthContext';
 import { supabase } from '../lib/supabaseClient';
 
 interface ProfileData {
@@ -245,8 +245,8 @@ export default function EnhancedProfileSetup({ user, onComplete }: ProfileSetupP
         profileUpdateData.profile_photo_url = profilePhotoUrl;
       }
       
-      if (profileData.useGoogleAvatar && user.user_metadata?.avatar_url) {
-        profileUpdateData.google_avatar_url = user.user_metadata.avatar_url;
+      if (profileData.useGoogleAvatar && user.picture) {
+        profileUpdateData.google_avatar_url = user.picture;
       }
 
       // Age will be automatically calculated by the database trigger
@@ -342,9 +342,9 @@ export default function EnhancedProfileSetup({ user, onComplete }: ProfileSetupP
                         height={96}
                         className="w-full h-full object-cover"
                       />
-                    ) : profileData.useGoogleAvatar && user?.user_metadata?.avatar_url ? (
+                    ) : profileData.useGoogleAvatar && user?.picture ? (
                       <Image
-                        src={user.user_metadata.avatar_url}
+                        src={user.picture}
                         alt="Google avatar"
                         width={96}
                         height={96}
@@ -366,7 +366,7 @@ export default function EnhancedProfileSetup({ user, onComplete }: ProfileSetupP
                     📱 Upload from Device
                   </button>
                   
-                  {user?.user_metadata?.avatar_url && (
+                  {user?.picture && (
                     <button
                       type="button"
                       onClick={() => {

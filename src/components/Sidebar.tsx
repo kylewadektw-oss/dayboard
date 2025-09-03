@@ -9,7 +9,7 @@ export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(true); // Start collapsed by default
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
-  const { user, profile, signOut, loading } = useAuth();
+  const { user, signOut, loading } = useAuth();
 
   const toggleSidebar = () => {
     const newCollapsedState = !isCollapsed;
@@ -74,14 +74,11 @@ export default function Sidebar() {
   };
 
   // Get user initials for avatar
-  const getUserInitials = () => {
-    if (profile?.name) {
-      return profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    const getInitials = () => {
+    if (user?.name) {
+      return user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
     }
-    if (user?.email) {
-      return user.email.slice(0, 2).toUpperCase();
-    }
-    return 'U';
+    return user?.email?.charAt(0).toUpperCase() || '?';
   };
 
   return (
@@ -172,12 +169,12 @@ export default function Sidebar() {
               className={`flex items-center space-x-3 px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors ${isCollapsed ? 'justify-center' : ''}`}
             >
               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-blue-600">{getUserInitials()}</span>
+                <span className="text-sm font-medium text-blue-600">{getInitials()}</span>
               </div>
               {!isCollapsed && (
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium text-gray-900 truncate">
-                    {profile?.name || 'Complete Profile'}
+                    {user?.name || 'Complete Profile'}
                   </div>
                   <div className="text-xs text-gray-500 truncate">{user.email}</div>
                 </div>

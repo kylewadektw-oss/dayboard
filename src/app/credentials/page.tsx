@@ -517,7 +517,7 @@ function CredentialsContent() {
 
 export default function CredentialsPage() {
   return (
-    <ProtectedRoute requireAuth={true} requireProfile={true}>
+    <ProtectedRoute requireAuth={true}>
       <CredentialsContent />
     </ProtectedRoute>
   );

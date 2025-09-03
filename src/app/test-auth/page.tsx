@@ -10,7 +10,8 @@ export default function TestAuthPage() {
       // Test if Supabase client causes CSP violations
       const { createClient } = await import('@supabase/supabase-js')
       
-      const supabase = createClient(
+      // Note: Creating client but not using it to test creation vs usage
+      createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       )
@@ -31,7 +32,7 @@ export default function TestAuthPage() {
       )
       
       // This is where CSP violations typically occur
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`

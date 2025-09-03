@@ -40,7 +40,7 @@ export default function MinimalAuthPage() {
       const client = createClient(supabaseUrl, supabaseKey);
       
       // Simple auth test
-      const { data, error } = await client.auth.getSession();
+      const { error } = await client.auth.getSession();
       
       if (error) {
         setMessage(`❌ Supabase error: ${error.message}`);

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 
 export default function AuthTestPage() {
-  const { user, session, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated } = useAuth();
   const [sessionData, setSessionData] = useState<{
     session: import('@supabase/supabase-js').Session | null;
     error: import('@supabase/supabase-js').AuthError | null;
@@ -34,7 +34,7 @@ export default function AuthTestPage() {
             <div>Loading: {loading ? 'true' : 'false'}</div>
             <div>User ID: {user?.id || 'null'}</div>
             <div>User Email: {user?.email || 'null'}</div>
-            <div>Session exists: {session ? 'true' : 'false'}</div>
+            <div>Session exists: {user ? 'true' : 'false'}</div>
             <div>isAuthenticated(): {isAuthenticated() ? 'true' : 'false'}</div>
           </div>
         </div>
