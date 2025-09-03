@@ -23,36 +23,29 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Security headers - Temporarily disabled due to CSP eval conflicts
+  // Security headers - Permissive CSP for authentication
   async headers() {
-    // Completely disable CSP until Next.js eval issues are resolved
-    return [];
-    
-    if (process.env.NODE_ENV === 'production') {
-      return [
-        {
-          source: '/(.*)',
-          headers: [
-            {
-              key: 'Content-Security-Policy',
-              value: [
-                "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel.app https://vercel.live",
-                "style-src 'self' 'unsafe-inline'", 
-                "img-src 'self' data: https:",
-                "connect-src 'self' https://*.supabase.co https://*.googleapis.com https://accounts.google.com https://*.vercel.app",
-                "frame-src 'self' https://accounts.google.com",
-                "font-src 'self' data:",
-                "object-src 'none'",
-                "base-uri 'self'"
-              ].join('; ')
-            }
-          ],
-        },
-      ];
-    }
-    return []; // No headers in development
-    return []; // No headers in development
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.vercel.app https://vercel.live https://*.supabase.co https://*.googleapis.com https://accounts.google.com",
+              "style-src 'self' 'unsafe-inline'", 
+              "img-src 'self' data: https:",
+              "connect-src 'self' https://*.supabase.co https://*.googleapis.com https://accounts.google.com https://*.vercel.app",
+              "frame-src 'self' https://accounts.google.com https://maps.google.com",
+              "font-src 'self' data:",
+              "object-src 'none'",
+              "base-uri 'self'"
+            ].join('; ')
+          }
+        ],
+      },
+    ];
   },
 
   // Development optimizations
