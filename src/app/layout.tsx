@@ -17,11 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Override any external CSP restrictions */}
-        <meta 
-          httpEquiv="Content-Security-Policy" 
-          content="default-src * 'unsafe-eval' 'unsafe-inline'; script-src * 'unsafe-eval' 'unsafe-inline'; style-src * 'unsafe-inline'; img-src * data:; connect-src *; frame-src *; font-src *; object-src *; media-src *;"
-        />
+        {/* CSP is handled by middleware.ts */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
