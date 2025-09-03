@@ -13,11 +13,5 @@
         }
       ]
     }
-  ],
-  "functions": {
-    "app/**/*.js": {
-      "includeFiles": "**"
-    }
-  },
-  "outputFileTracing": true
+  ]
 }
