@@ -43,7 +43,8 @@ const nextConfig: NextConfig = {
 
   // Development optimizations
   experimental: {
-    // Enable other experimental features if needed
+    // Force cache invalidation - empty files removed
+    turbo: {}
   },
 
   // Webpack optimizations
