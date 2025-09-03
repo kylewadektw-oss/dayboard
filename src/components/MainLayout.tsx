@@ -25,8 +25,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
     };
   }, []);
 
-  // Full width for landing page, signin, and debug pages (no auth required)
-  if (pathname === '/' || pathname === '/signin' || pathname === '/oauth-debug' || pathname === '/auth-test' || pathname === '/csp-debug') {
+  // Full width for landing page, signin, auth bypass, and debug pages (no auth required)
+  if (pathname === '/' || pathname === '/signin' || pathname === '/auth-bypass' || pathname === '/auth-callback' || pathname === '/direct-auth' || pathname === '/auth-minimal' || pathname === '/test-auth' || pathname === '/oauth-debug' || pathname === '/auth-test' || pathname === '/csp-debug') {
     return <ProtectedRoute requireAuth={false}>{children}</ProtectedRoute>;
   }
 
