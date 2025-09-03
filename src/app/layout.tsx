@@ -17,56 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Completely disable CSP via meta tag */}
-        <meta httpEquiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline'; img-src * data: blob:; font-src *; connect-src *; media-src *; object-src *; child-src *; frame-src *; worker-src *; frame-ancestors *; form-action *;" />
-        
-        {/* CSP is handled by middleware.ts */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              // Suppress browser extension communication errors
-              window.addEventListener('unhandledrejection', function(event) {
-                if (event.reason && event.reason.message) {
-                  const msg = event.reason.message;
-                  if (msg.includes('message channel closed') || 
-                      msg.includes('listener indicated an asynchronous response')) {
-                    event.preventDefault();
-                    return false;
-                  }
-                }
-              });
-
-              // Suppress extension-related errors
-              window.addEventListener('error', function(event) {
-                const errorMessage = event.message || '';
-                const source = event.filename || '';
-                
-                // Suppress common extension errors
-                if (source.includes('watch.js') || 
-                    source.includes('extension') ||
-                    errorMessage.includes('couponCheckingRequireAt') ||
-                    errorMessage.includes('Cannot set properties of undefined')) {
-                  event.preventDefault();
-                  return false;
-                }
-              });
-
-              // Override console.error for extension errors in development
-              if (typeof window !== 'undefined') {
-                const originalError = console.error;
-                console.error = function(...args) {
-                  const message = args[0];
-                  if (typeof message === 'string' && 
-                      (message.includes('couponCheckingRequireAt') || 
-                       message.includes('watch.js'))) {
-                    return; // Suppress these specific errors
-                  }
-                  originalError.apply(console, args);
-                };
-              }
-            `,
-          }}
-        />
+        {/* CSP is handled by middleware.ts and vercel.json - no meta CSP needed */}
       </head>
       <body
         className="antialiased font-sans"

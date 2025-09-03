@@ -30,19 +30,21 @@ const nextConfig: NextConfig = {
 
   // Development optimizations
   experimental: {
-    // Force cache invalidation - empty files removed
-    turbo: {}
+    // Remove turbo from experimental (now top-level)
   },
 
-  // Webpack optimizations - avoid eval in production
+  // Webpack optimizations - ELIMINATE ALL EVAL USAGE
   webpack: (config, { dev, isServer }) => {
-    // Force no eval in production
-    if (!dev) {
-      config.devtool = false;
+    // FORCE no eval in ALL environments
+    config.devtool = false;
+    
+    // Ensure no eval-based transforms
+    if (config.optimization) {
+      config.optimization.minimize = !dev;
     }
     
     if (dev && !isServer) {
-      // Faster development builds
+      // Faster development builds without eval
       config.optimization.splitChunks = {
         chunks: 'all',
         cacheGroups: {
@@ -59,7 +61,7 @@ const nextConfig: NextConfig = {
     return config;
   },
 
-  // Disable source maps in production to avoid eval
+  // DISABLE ALL SOURCE MAPS to prevent eval
   productionBrowserSourceMaps: false,
 };
 
