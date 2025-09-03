@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
 
 interface ProfileData {
   name: string;
-  age: string;
+  dateOfBirth: string;
   profession: string;
   householdName: string;
   householdCode: string;
@@ -14,6 +14,8 @@ interface ProfileData {
   city: string;
   state: string;
   zipCode: string;
+  profilePhoto: File | null;
+  useGoogleAvatar: boolean;
 }
 
 interface ProfileSetupProps {
@@ -22,14 +24,15 @@ interface ProfileSetupProps {
   isEditing?: boolean;
 }
 
-export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
+export default function EnhancedProfileSetup({ user, onComplete }: ProfileSetupProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [householdOption, setHouseholdOption] = useState<'create' | 'join'>('create');
   const [profileData, setProfileData] = useState<ProfileData>({
     name: '',
-    age: '',
+    dateOfBirth: '',
     profession: '',
     householdName: '',
     householdCode: '',
@@ -37,13 +40,80 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
     city: '',
     state: '',
     zipCode: '',
+    profilePhoto: null,
+    useGoogleAvatar: false,
   });
 
-  const handleInputChange = (field: keyof ProfileData, value: string) => {
+  const handleInputChange = (field: keyof ProfileData, value: string | boolean | File | null) => {
     setProfileData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+      
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      handleInputChange('profilePhoto', file);
+      handleInputChange('useGoogleAvatar', false);
+    }
+  };
+
+  const uploadProfilePhoto = async (file: File, userId: string): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}_${Date.now()}.${fileExt}`;
+      const filePath = `profile-photos/${userId}/${fileName}`;
+
+      // Upload file to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('profile-photos')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('Storage upload error:', error);
+        return null;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Photo upload error:', error);
+      return null;
+    }
+  };
+
+  const calculateAge = (dateOfBirth: string): number => {
+    if (!dateOfBirth) return 0;
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age;
   };
 
   const handleNext = () => {
@@ -76,7 +146,16 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
     setLoading(true);
     
     try {
-      console.log('Starting profile setup for user:', user.id);
+      console.log('Starting enhanced profile setup for user:', user.id);
+
+      // Upload profile photo if provided
+      let profilePhotoUrl = null;
+      if (profileData.profilePhoto) {
+        profilePhotoUrl = await uploadProfilePhoto(profileData.profilePhoto, user.id);
+        if (!profilePhotoUrl) {
+          throw new Error('Failed to upload profile photo');
+        }
+      }
 
       // Handle household creation or joining
       let householdId = '';
@@ -116,13 +195,11 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
 
           if (invitationError) {
             console.warn('Failed to create initial invitation code:', invitationError);
-            // Don't throw - household creation succeeded
           } else if (invitationData?.success) {
             console.log('Initial invitation code created:', invitationData.invitation_code);
           }
         } catch (inviteErr) {
           console.warn('Error creating invitation code:', inviteErr);
-          // Don't throw - household creation succeeded
         }
       } else {
         // Join existing household
@@ -141,24 +218,36 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
         console.log('Found household:', householdId);
       }
 
-      // Create/update profile
+      // Create/update profile with enhanced fields
+      const profileUpdateData: any = {
+        user_id: user.id,
+        name: profileData.name,
+        date_of_birth: profileData.dateOfBirth || null,
+        profession: profileData.profession || null,
+        household_id: householdId,
+        updated_at: new Date().toISOString()
+      };
+
+      // Add photo URLs
+      if (profilePhotoUrl) {
+        profileUpdateData.profile_photo_url = profilePhotoUrl;
+      }
+      
+      if (profileData.useGoogleAvatar && user.user_metadata?.avatar_url) {
+        profileUpdateData.google_avatar_url = user.user_metadata.avatar_url;
+      }
+
+      // Age will be automatically calculated by the database trigger
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user.id,
-          name: profileData.name,
-          age: parseInt(profileData.age),
-          profession: profileData.profession,
-          household_id: householdId,
-          updated_at: new Date().toISOString()
-        });
+        .upsert(profileUpdateData);
 
       if (profileError) {
         console.error('Profile upsert error:', profileError);
         throw new Error('Failed to save profile');
       }
 
-      console.log('Profile saved successfully');
+      console.log('Enhanced profile saved successfully');
 
       // Add user to household_members if not already there
       const { error: memberError } = await supabase
@@ -173,12 +262,11 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
 
       if (memberError) {
         console.error('Household member error:', memberError);
-        // Don&apos;t throw here as the core profile is saved
       } else {
         console.log('Household member created successfully');
       }
 
-      console.log('Profile setup completed successfully');
+      console.log('Enhanced profile setup completed successfully');
       alert('Profile setup completed successfully!');
       onComplete();
 
@@ -190,10 +278,15 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
     }
   };
 
-  const isStep1Valid = profileData.name.trim() && profileData.age.trim();
+  const isStep1Valid = profileData.name.trim() && profileData.dateOfBirth;
   const isStep2Valid = householdOption === 'join' 
     ? profileData.householdCode.trim().length === 8
     : profileData.householdName.trim() && profileData.address.trim() && profileData.city.trim() && profileData.state.trim() && profileData.zipCode.trim();
+
+  const calculateDisplayAge = () => {
+    if (!profileData.dateOfBirth) return null;
+    return calculateAge(profileData.dateOfBirth);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -201,7 +294,7 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
         <div className="text-center mb-8">
           <div className="text-4xl mb-4">👋</div>
           <h1 className="text-3xl font-bold text-blue-900 mb-2">Welcome to Dayboard!</h1>
-          <p className="text-blue-700">Let&apos;s set up your profile and household</p>
+          <p className="text-blue-700">Let's set up your enhanced profile</p>
           
           {/* Progress bar */}
           <div className="mt-6 flex justify-center space-x-2">
@@ -217,10 +310,75 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
           <p className="text-sm text-blue-600 mt-2">Step {currentStep} of 3</p>
         </div>
 
-        {/* Step 1: Personal Information */}
+        {/* Step 1: Personal Information with Photo */}
         {currentStep === 1 && (
           <div className="space-y-6">
             <h2 className="text-xl font-semibold text-blue-900 mb-4">👤 Tell us about yourself</h2>
+            
+            {/* Profile Photo Upload */}
+            <div className="text-center">
+              <label className="block text-sm font-medium text-blue-800 mb-2">Profile Photo</label>
+              <div className="space-y-4">
+                {/* Photo Preview */}
+                <div className="flex justify-center">
+                  <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                    {profileData.profilePhoto ? (
+                      <img
+                        src={URL.createObjectURL(profileData.profilePhoto)}
+                        alt="Profile preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : profileData.useGoogleAvatar && user?.user_metadata?.avatar_url ? (
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt="Google avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-gray-400 text-2xl">📷</div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Photo Options */}
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full bg-blue-100 text-blue-700 py-2 px-4 rounded-lg hover:bg-blue-200 transition-colors"
+                  >
+                    📱 Upload from Device
+                  </button>
+                  
+                  {user?.user_metadata?.avatar_url && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleInputChange('useGoogleAvatar', !profileData.useGoogleAvatar);
+                        if (!profileData.useGoogleAvatar) {
+                          handleInputChange('profilePhoto', null);
+                        }
+                      }}
+                      className={`w-full py-2 px-4 rounded-lg transition-colors ${
+                        profileData.useGoogleAvatar 
+                          ? 'bg-green-100 text-green-700' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {profileData.useGoogleAvatar ? '✅' : '🔗'} Use Google Avatar
+                    </button>
+                  )}
+                </div>
+                
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+              </div>
+            </div>
             
             <div>
               <label htmlFor="profile-name" className="block text-sm font-medium text-blue-800 mb-2">Full Name *</label>
@@ -238,20 +396,21 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
             </div>
 
             <div>
-              <label htmlFor="profile-age" className="block text-sm font-medium text-blue-800 mb-2">Age *</label>
+              <label htmlFor="profile-dob" className="block text-sm font-medium text-blue-800 mb-2">Date of Birth *</label>
               <input
-                id="profile-age"
-                name="age"
-                type="number"
-                value={profileData.age}
-                onChange={(e) => handleInputChange('age', e.target.value)}
+                id="profile-dob"
+                name="dateOfBirth"
+                type="date"
+                value={profileData.dateOfBirth}
+                onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
-                placeholder="Your age"
-                min="1"
-                max="120"
-                autoComplete="age"
                 aria-required="true"
               />
+              {profileData.dateOfBirth && (
+                <p className="text-sm text-blue-600 mt-1">
+                  Age: {calculateDisplayAge()} years old
+                </p>
+              )}
             </div>
 
             <div>
@@ -465,12 +624,12 @@ export default function ProfileSetup({ user, onComplete }: ProfileSetupProps) {
                   <div className="text-4xl mb-3">🤝</div>
                   <h3 className="font-semibold text-blue-900 mb-2">Join Household Request</h3>
                   <p className="text-blue-700 mb-4">
-                    You&apos;re about to request to join a household using code: 
+                    You're about to request to join a household using code: 
                     <span className="font-mono font-bold text-lg ml-2">{profileData.householdCode}</span>
                   </p>
                   <div className="text-sm text-blue-600 bg-white p-3 rounded border">
-                    After clicking &quot;Send Request&quot;, a household admin will need to approve your request. 
-                    You&apos;ll be notified once you&apos;re approved!
+                    After clicking "Send Request", a household admin will need to approve your request. 
+                    You'll be notified once you're approved!
                   </div>
                 </div>
               </>

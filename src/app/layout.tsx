@@ -32,6 +32,35 @@ export default function RootLayout({
                   }
                 }
               });
+
+              // Suppress extension-related errors
+              window.addEventListener('error', function(event) {
+                const errorMessage = event.message || '';
+                const source = event.filename || '';
+                
+                // Suppress common extension errors
+                if (source.includes('watch.js') || 
+                    source.includes('extension') ||
+                    errorMessage.includes('couponCheckingRequireAt') ||
+                    errorMessage.includes('Cannot set properties of undefined')) {
+                  event.preventDefault();
+                  return false;
+                }
+              });
+
+              // Override console.error for extension errors in development
+              if (typeof window !== 'undefined') {
+                const originalError = console.error;
+                console.error = function(...args) {
+                  const message = args[0];
+                  if (typeof message === 'string' && 
+                      (message.includes('couponCheckingRequireAt') || 
+                       message.includes('watch.js'))) {
+                    return; // Suppress these specific errors
+                  }
+                  originalError.apply(console, args);
+                };
+              }
             `,
           }}
         />
