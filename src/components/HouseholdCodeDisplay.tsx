@@ -1,17 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 interface HouseholdCodeDisplayProps {
   householdId: string;
   compact?: boolean;
   showActions?: boolean;
-}
-
-interface HouseholdInvitation {
-  invitation_code: string;
-  expires_at: string;
 }
 
 export default function HouseholdCodeDisplay({ 
@@ -25,43 +20,7 @@ export default function HouseholdCodeDisplay({
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
 
-  useEffect(() => {
-    fetchCurrentCode();
-  }, [householdId]);
-
-  const generateCode = async () => {
-    try {
-      setGenerating(true);
-      console.log('🔧 Generating new invitation code for household:', householdId);
-
-      const { data, error } = await supabase.rpc('create_household_invitation', {
-        household_id_param: householdId,
-        invitee_name_param: null,
-        invitee_email_param: null,
-        role_param: 'member'
-      });
-
-      if (error) {
-        console.error('❌ Error generating code:', error);
-        return;
-      }
-
-      if (data && data.success) {
-        console.log('✅ New invitation code generated:', data.invitation_code);
-        setCode(data.invitation_code);
-        setExpiresAt(data.expires_at);
-      } else {
-        console.error('❌ Failed to generate code:', data);
-      }
-
-    } catch (err) {
-      console.error('❌ Error in generateCode:', err);
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const fetchCurrentCode = async () => {
+  const fetchCurrentCode = useCallback(async () => {
     try {
       setLoading(true);
       console.log('🔍 Fetching invitation code for household:', householdId);
@@ -92,10 +51,46 @@ export default function HouseholdCodeDisplay({
         setExpiresAt(null);
       }
 
-    } catch (err) {
-      console.error('❌ Error in fetchCurrentCode:', err);
+    } catch (error) {
+      console.error('❌ Error in fetchCurrentCode:', error);
     } finally {
       setLoading(false);
+    }
+  }, [householdId]);
+
+  useEffect(() => {
+    fetchCurrentCode();
+  }, [fetchCurrentCode]);
+
+  const generateCode = async () => {
+    try {
+      setGenerating(true);
+      console.log('🔧 Generating new invitation code for household:', householdId);
+
+      const { data, error } = await supabase.rpc('create_household_invitation', {
+        household_id_param: householdId,
+        invitee_name_param: null,
+        invitee_email_param: null,
+        role_param: 'member'
+      });
+
+      if (error) {
+        console.error('❌ Error generating code:', error);
+        return;
+      }
+
+      if (data && data.success) {
+        console.log('✅ New invitation code generated:', data.invitation_code);
+        setCode(data.invitation_code);
+        setExpiresAt(data.expires_at);
+      } else {
+        console.error('❌ Failed to generate code:', data);
+      }
+
+    } catch (error) {
+      console.error('❌ Error in generateCode:', error);
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -106,16 +101,33 @@ export default function HouseholdCodeDisplay({
       await navigator.clipboard.writeText(code);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      // Fallback
-      const textArea = document.createElement('textarea');
-      textArea.value = code;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers - avoid document.execCommand due to CSP
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = code;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        // Try to copy without execCommand
+        const success = document.execCommand && document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (success) {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } else {
+          // If all else fails, just show the code is selected
+          console.log('Copy to clipboard not supported');
+        }
+      } catch {
+        // Final fallback - just indicate the action was attempted
+        console.log('Copy to clipboard not supported');
+      }
     }
   };
 

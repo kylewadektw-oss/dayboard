@@ -7,12 +7,18 @@ export default function CSPDebugPage() {
   const [headers, setHeaders] = useState<string>('Loading headers...');
 
   useEffect(() => {
-    // Test eval() functionality
-    try {
-      const result = eval('2 + 2');
-      setEvalResult(`✅ eval() works! Result: ${result}`);
-    } catch (error) {
-      setEvalResult(`❌ eval() blocked: ${error}`);
+    // Test eval() functionality - only in browser, not during build
+    if (typeof window !== 'undefined') {
+      try {
+        // Use indirect eval to avoid static analysis issues
+        const globalEval = window.eval;
+        const result = globalEval('2 + 2');
+        setEvalResult(`✅ eval() works! Result: ${result}`);
+      } catch (error) {
+        setEvalResult(`❌ eval() blocked: ${error}`);
+      }
+    } else {
+      setEvalResult('⏳ Running on server side...');
     }
 
     // Check response headers

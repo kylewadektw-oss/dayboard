@@ -1,1 +1,23 @@
-{}
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": ""
+        },
+        {
+          "key": "X-CSP-Override",
+          "value": "disabled"
+        }
+      ]
+    }
+  ],
+  "functions": {
+    "app/**/*.js": {
+      "includeFiles": "**"
+    }
+  },
+  "outputFileTracing": true
+}
