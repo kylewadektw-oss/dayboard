@@ -160,7 +160,7 @@ export default function ProfileSetup({ user, onComplete, isEditing = false }: Pr
 
       console.log('Profile setup completed successfully');
       alert('Profile setup completed successfully!');
-      window.location.href = '/dashboard';
+      onComplete();
 
     } catch (error) {
       console.error('Profile setup error:', error);
@@ -173,10 +173,7 @@ export default function ProfileSetup({ user, onComplete, isEditing = false }: Pr
   const isStep1Valid = profileData.name.trim() && profileData.age.trim();
   const isStep2Valid = householdOption === 'join' 
     ? profileData.householdCode.trim().length === 8
-    : profileData.householdName.trim();
-  const isStep3Valid = householdOption === 'join' 
-    ? true // No additional validation needed for join
-    : profileData.address.trim() && profileData.city.trim() && profileData.state.trim() && profileData.zipCode.trim();
+    : profileData.householdName.trim() && profileData.address.trim() && profileData.city.trim() && profileData.state.trim() && profileData.zipCode.trim();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -458,7 +455,7 @@ export default function ProfileSetup({ user, onComplete, isEditing = false }: Pr
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={loading || !isStep3Valid}
+                disabled={loading}
                 className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Setting up...' : (householdOption === 'join' ? 'Send Request' : 'Complete Setup')}
