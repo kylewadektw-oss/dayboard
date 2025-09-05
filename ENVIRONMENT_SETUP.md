@@ -77,7 +77,8 @@ npm run env:check        # Check current environment variables
 ## Deployment Checklist
 
 ### Staging Deployment
-- [ ] Update `.env.staging` with correct URLs
+- [x] Update `.env.staging` with correct URLs
+- [x] Fix package manager lock file conflicts  
 - [ ] Verify Stripe test keys are being used
 - [ ] Test all functionality in staging environment
 - [ ] Verify database migrations are applied
