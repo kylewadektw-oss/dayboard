@@ -16,25 +16,26 @@ export default async function DashboardPage() {
   
   const { data: { user } } = await supabase.auth.getUser();
   
-  if (!user) {
-    redirect('/signin');
-  }
+  // TODO: Re-enable after Google Auth is configured
+  // if (!user) {
+  //   redirect('/signin');
+  // }
 
   const userProfile = await getCurrentUser();
-  const canViewDashboard = await hasPermission('dashboard');
+  // const canViewDashboard = await hasPermission('dashboard');
 
-  if (!canViewDashboard) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 p-4 md:p-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h1 className="text-xl font-bold text-red-800 mb-2">Access Denied</h1>
-            <p className="text-red-600">You don't have permission to access the dashboard.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // TODO: Re-enable permission checking after Google Auth setup
+  // if (!canViewDashboard) {
+  //   return (
+  //     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 p-4 md:p-6">
+  //       <div className="max-w-4xl mx-auto">
+  //         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+  //           <h1 className="text-xl font-bold text-red-800 mb-2">Access Denied</h1>
+  //           <p className="text-red-600">You don't have permission to access the dashboard.</p>
+  //         </div>
+  //       </div>
+  //     );
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 p-4 md:p-6">
