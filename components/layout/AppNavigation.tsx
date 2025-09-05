@@ -2,12 +2,29 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Home, UtensilsCrossed, ClipboardList, Briefcase, FolderOpen, User, Settings, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 
 export function AppNavigation() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  
+  // Add class to body to adjust main content
+  useEffect(() => {
+    const body = document.body;
+    if (isCollapsed) {
+      body.classList.add('sidebar-collapsed');
+      body.classList.remove('sidebar-expanded');
+    } else {
+      body.classList.add('sidebar-expanded');
+      body.classList.remove('sidebar-collapsed');
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      body.classList.remove('sidebar-collapsed', 'sidebar-expanded');
+    };
+  }, [isCollapsed]);
   
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home, current: pathname === '/dashboard' },
@@ -20,7 +37,7 @@ export function AppNavigation() {
   return (
     <>
       {/* Left Sidebar Navigation - Desktop */}
-      <div className={`hidden md:flex flex-col bg-white border-r border-gray-200 shadow-sm transition-all duration-300 ${
+      <div className={`hidden md:flex md:fixed md:inset-y-0 md:left-0 md:z-50 flex-col bg-white border-r border-gray-200 shadow-sm transition-all duration-300 ${
         isCollapsed ? 'w-16' : 'w-64'
       }`}>
         {/* Logo and Toggle */}

@@ -57,3 +57,14 @@ p a {
 .height-screen-helper {
   min-height: calc(100vh - 80px);
 }
+
+/* Sidebar Navigation States */
+@media (min-width: 768px) {
+  .sidebar-collapsed main {
+    margin-left: 4rem; /* 64px */
+  }
+  
+  .sidebar-expanded main {
+    margin-left: 16rem; /* 256px */
+  }
+}
