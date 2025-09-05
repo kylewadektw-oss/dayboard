@@ -81,6 +81,8 @@ npm run env:check        # Check current environment variables
 - [x] Fix package manager lock file conflicts
 - [x] Remove duplicate route conflicts
 - [x] **SUCCESSFUL DEPLOYMENT** - Build completed and deployed to Vercel ✅
+- [x] Simplify auth to Google OAuth only (removed email/password signin)
+- [ ] Configure Google OAuth provider in Supabase
 - [ ] Verify Stripe test keys are being used
 - [ ] Test all functionality in staging environment
 - [ ] Verify database migrations are applied
