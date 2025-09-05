@@ -30,13 +30,13 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
-
-# vercel
-.vercel
-
-# editors
-.vscode
-
-# certificates
-certificates
 .env*.local
+
+# Environment files (commit .env.staging and .env.production for team use)
+# .env.staging  # Uncomment this line if you want to keep staging env private
+# .env.production  # Uncomment this line if you want to keep production env private
+
+# Development roadmap and planning (keep local)
+ROADMAP.md
+TODO.md
+NOTES.md

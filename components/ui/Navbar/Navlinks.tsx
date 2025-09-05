@@ -18,32 +18,54 @@ export default function Navlinks({ user }: NavlinksProps) {
   return (
     <div className="relative flex flex-row justify-between py-4 align-center md:py-6">
       <div className="flex items-center flex-1">
-        <Link href="/" className={s.logo} aria-label="Logo">
+        <Link href={user ? "/dashboard" : "/"} className={s.logo} aria-label="Dayboard">
           <Logo />
         </Link>
-        <nav className="ml-6 space-x-2 lg:block">
-          <Link href="/" className={s.link}>
-            Pricing
-          </Link>
-          {user && (
-            <Link href="/account" className={s.link}>
-              Account
+        {user && (
+          <nav className="ml-6 space-x-4 lg:block">
+            <Link href="/dashboard" className={s.link}>
+              Dashboard
             </Link>
-          )}
-        </nav>
+            <Link href="/meals" className={s.link}>
+              Meals
+            </Link>
+            <Link href="/lists" className={s.link}>
+              Lists
+            </Link>
+            <Link href="/work" className={s.link}>
+              Work
+            </Link>
+            <Link href="/projects" className={s.link}>
+              Projects
+            </Link>
+          </nav>
+        )}
       </div>
       <div className="flex justify-end space-x-8">
         {user ? (
-          <form onSubmit={(e) => handleRequest(e, SignOut, router)}>
-            <input type="hidden" name="pathName" value={usePathname()} />
-            <button type="submit" className={s.link}>
-              Sign out
-            </button>
-          </form>
+          <div className="flex items-center space-x-4">
+            <Link href="/account" className={s.link}>
+              Account
+            </Link>
+            <form onSubmit={(e) => handleRequest(e, SignOut, router)}>
+              <input type="hidden" name="pathName" value={usePathname()} />
+              <button type="submit" className={s.link}>
+                Sign out
+              </button>
+            </form>
+          </div>
         ) : (
-          <Link href="/signin" className={s.link}>
-            Sign In
-          </Link>
+          <div className="flex items-center space-x-4">
+            <Link href="/signin" className={s.link}>
+              Sign In
+            </Link>
+            <Link 
+              href="/#pricing" 
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Get Started
+            </Link>
+          </div>
         )}
       </div>
     </div>
