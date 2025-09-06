@@ -53,13 +53,15 @@ export default function LogsDashboard() {
   const refreshLogs = async () => {
     if (isPaused) return;
     
-    // Try to get logs from database + memory, fallback to memory only
+    // Use optimized method with reasonable limit
     let allLogs: LogEntry[] = [];
     try {
-      allLogs = await logger.getAllLogsIncludingDatabase();
+      // Get up to 150 logs with caching optimization
+      allLogs = await logger.getAllLogsIncludingDatabase(150);
     } catch (error) {
+      console.error('❌ Failed to load logs:', error);
       // Fallback to memory logs only
-      allLogs = logger.getAllLogs();
+      allLogs = logger.getAllLogs().slice(0, 100);
     }
     
     let filteredLogs = [...allLogs];
@@ -320,6 +322,16 @@ export default function LogsDashboard() {
               }`}
             >
               {isPaused ? '▶️ Resume' : '⏸️ Pause'}
+            </button>
+            <button
+              onClick={() => {
+                logger.clearDbCache();
+                refreshLogs();
+              }}
+              className="px-3 py-1 text-sm rounded bg-purple-500 hover:bg-purple-600 text-white transition-colors"
+              title="Clear cache and refresh from database"
+            >
+              🔄 Refresh Cache
             </button>
           </div>
         </div>

@@ -33,6 +33,13 @@ class Logger {
   private sessionId: string;
   private supabase = createClient();
   
+  // Performance optimizations
+  private dbLogsCache: LogEntry[] = [];
+  private lastDbFetch: number = 0;
+  private cacheTimeout: number = 30000; // 30 seconds cache
+  private isDbLoading: boolean = false;
+  private dbLoadPromise: Promise<LogEntry[]> | null = null;
+  
   constructor() {
     this.sessionId = this.generateSessionId();
     this.setupConsoleInterception();
@@ -100,33 +107,28 @@ class Logger {
 
   private captureConsoleLog(level: LogLevel, args: any[], component: string) {
     try {
-      // Check if we're on the logs-dashboard page to avoid recursive logging
-      const isOnLogsDashboard = typeof window !== 'undefined' && 
-        window.location.pathname.includes('/logs-dashboard');
-      
-      // Convert console arguments to a readable message
-      const message = args.map(arg => {
-        if (typeof arg === 'string') return arg;
-        if (typeof arg === 'object') return JSON.stringify(arg, null, 2);
-        return String(arg);
-      }).join(' ');
-      
-      // Skip logs-dashboard specific operations to prevent recursive logging
-      if (isOnLogsDashboard && (
-        message.includes('🔄 Refreshing logs') ||
-        message.includes('📊 Loaded logs from') ||
-        message.includes('🎯 Available log levels') ||
-        message.includes('📊 Log level counts') ||
-        message.includes('🔍 Starting with logs') ||
-        message.includes('⏰ Time filter') ||
-        message.includes('📊 Level filter') ||
-        message.includes('🏗️ Component filter') ||
-        message.includes('🔍 Search filter') ||
-        message.includes('📏 Limit applied') ||
-        message.includes('✅ Final filtered logs')
-      )) {
-        return; // Skip logging these dashboard-specific operations
+      // Performance: Early exit for logs dashboard to prevent recursive logging
+      if (typeof window !== 'undefined' && window.location.pathname.includes('/logs-dashboard')) {
+        return; // Skip all dashboard logging to prevent performance issues
       }
+      
+      // Convert console arguments to a readable message (more efficient)
+      const message = args.length === 1 && typeof args[0] === 'string' 
+        ? args[0] 
+        : args.map(arg => {
+            if (typeof arg === 'string') return arg;
+            if (typeof arg === 'object') {
+              try {
+                return JSON.stringify(arg);
+              } catch {
+                return '[Circular Object]';
+              }
+            }
+            return String(arg);
+          }).join(' ');
+      
+      // Performance: Skip empty or very short messages
+      if (!message || message.length < 3) return;
 
       // Extract any error objects for stack traces
       const error = args.find(arg => arg instanceof Error);
@@ -174,24 +176,21 @@ class Logger {
   private async writeLog(entry: LogEntry) {
     this.logs.push(entry);
     
-    // Keep only last 1000 logs in memory
-    if (this.logs.length > 1000) {
-      this.logs = this.logs.slice(-1000);
+    // Keep only last 500 logs in memory (reduced from 1000)
+    if (this.logs.length > 500) {
+      this.logs = this.logs.slice(-500);
     }
 
-    // Check for auto-review triggers
+    // Check for auto-review triggers (only for errors)
     if (entry.level === LogLevel.ERROR) {
       this.checkForAutoReview();
     }
 
-    // Persist to database (async, don't wait)
-    this.persistToDatabase(entry).catch(err => {
-      // Use original console to avoid infinite loops
-      this.originalConsole?.error?.('Failed to persist log to database:', err);
-    });
+    // Persist to database asynchronously with throttling
+    this.throttledPersistToDatabase(entry);
 
-    // Console output in development
-    if (this.isDev) {
+    // Simplified console output in development
+    if (this.isDev && entry.level !== LogLevel.DEBUG) { // Skip debug logs in dev
       const emoji = {
         [LogLevel.ERROR]: '❌',
         [LogLevel.WARN]: '⚠️',
@@ -203,19 +202,67 @@ class Logger {
       
       switch (entry.level) {
         case LogLevel.ERROR:
-          this.originalConsole?.error?.(prefix, entry.message, entry.data);
-          if (entry.stack) this.originalConsole?.error?.(entry.stack);
+          this.originalConsole?.error?.(prefix, entry.message);
           break;
         case LogLevel.WARN:
-          this.originalConsole?.warn?.(prefix, entry.message, entry.data);
+          this.originalConsole?.warn?.(prefix, entry.message);
           break;
-        case LogLevel.INFO:
-          this.originalConsole?.info?.(prefix, entry.message, entry.data);
-          break;
-        case LogLevel.DEBUG:
-          this.originalConsole?.debug?.(prefix, entry.message, entry.data);
+        default:
+          this.originalConsole?.info?.(prefix, entry.message);
           break;
       }
+    }
+  }
+
+  // Throttled database persistence to prevent overwhelming the database
+  private pendingLogs: LogEntry[] = [];
+  private persistTimeout: NodeJS.Timeout | null = null;
+
+  private throttledPersistToDatabase(entry: LogEntry) {
+    this.pendingLogs.push(entry);
+    
+    // Clear existing timeout
+    if (this.persistTimeout) {
+      clearTimeout(this.persistTimeout);
+    }
+    
+    // Batch database writes every 2 seconds or when we have 10+ logs
+    this.persistTimeout = setTimeout(() => {
+      if (this.pendingLogs.length > 0) {
+        this.batchPersistToDatabase([...this.pendingLogs]);
+        this.pendingLogs = [];
+      }
+    }, this.pendingLogs.length >= 10 ? 100 : 2000);
+  }
+
+  private async batchPersistToDatabase(entries: LogEntry[]) {
+    try {
+      const userId = await this.getCurrentUserId();
+      
+      const insertData = entries.map(entry => ({
+        user_id: userId,
+        session_id: entry.sessionId,
+        level: entry.level,
+        message: entry.message,
+        component: entry.component,
+        data: entry.data,
+        stack_trace: entry.stack,
+        user_agent: entry.userAgent,
+        url: entry.url,
+        timestamp: entry.timestamp,
+        side: entry.side || 'client'
+      }));
+
+      const { error } = await (this.supabase as any)
+        .from('application_logs')
+        .insert(insertData);
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      // Silently fail database writes to avoid impacting app performance
+      this.originalConsole?.error?.('❌ Batch database write failed:', error);
     }
   }
 
@@ -252,12 +299,45 @@ class Logger {
     }
   }
 
-  // Method to load logs from database
-  async loadLogsFromDatabase(limit: number = 200): Promise<LogEntry[]> {
+  // Optimized method to load logs from database with caching
+  async loadLogsFromDatabase(limit: number = 100): Promise<LogEntry[]> {
+    // Return cached results if recent enough
+    const now = Date.now();
+    if (this.dbLogsCache.length > 0 && (now - this.lastDbFetch) < this.cacheTimeout) {
+      return this.dbLogsCache.slice(0, limit);
+    }
+
+    // If already loading, return the existing promise
+    if (this.isDbLoading && this.dbLoadPromise) {
+      try {
+        return await this.dbLoadPromise;
+      } catch {
+        return [];
+      }
+    }
+
+    // Start new database load
+    this.isDbLoading = true;
+    this.dbLoadPromise = this.fetchLogsFromDatabase(limit);
+
+    try {
+      const logs = await this.dbLoadPromise;
+      this.dbLogsCache = logs;
+      this.lastDbFetch = now;
+      return logs;
+    } catch (error) {
+      return [];
+    } finally {
+      this.isDbLoading = false;
+      this.dbLoadPromise = null;
+    }
+  }
+
+  private async fetchLogsFromDatabase(limit: number): Promise<LogEntry[]> {
     try {
       const { data, error } = await (this.supabase as any)
         .from('application_logs')
-        .select('*')
+        .select('id, user_id, session_id, level, message, component, data, stack_trace, user_agent, url, timestamp, side')
         .order('timestamp', { ascending: false })
         .limit(limit);
 
@@ -275,25 +355,55 @@ class Logger {
         userAgent: row.user_agent,
         url: row.url,
         timestamp: row.timestamp,
-        side: row.side || 'client' // Default to client for backward compatibility
+        side: row.side || 'client'
       })) || [];
     } catch (error) {
-      // Return empty array if database query fails
+      this.originalConsole?.error?.('❌ Database fetch failed:', error);
       return [];
     }
   }
 
-  // Get combined logs (memory + database)
-  async getAllLogsIncludingDatabase(): Promise<LogEntry[]> {
-    const dbLogs = await this.loadLogsFromDatabase();
-    const allLogs = [...dbLogs, ...this.logs];
-    
-    // Remove duplicates and sort by timestamp
-    const uniqueLogs = allLogs.filter((log, index, self) => 
-      index === self.findIndex(l => l.timestamp === log.timestamp && l.message === log.message)
-    );
-    
-    return uniqueLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  // Optimized method to get combined logs with better performance
+  async getAllLogsIncludingDatabase(limit: number = 100): Promise<LogEntry[]> {
+    try {
+      // Get database logs (cached if possible)
+      const dbLogs = await this.loadLogsFromDatabase(limit);
+      
+      // Get recent memory logs (only recent ones to avoid duplicates)
+      const recentMemoryLogs = this.logs.filter(log => {
+        const logTime = new Date(log.timestamp).getTime();
+        const cutoff = Date.now() - (5 * 60 * 1000); // Last 5 minutes
+        return logTime > cutoff;
+      });
+      
+      // Combine and deduplicate more efficiently
+      const logMap = new Map<string, LogEntry>();
+      
+      // Add database logs first
+      dbLogs.forEach(log => {
+        const key = `${log.timestamp}-${log.message}-${log.component}`;
+        logMap.set(key, log);
+      });
+      
+      // Add memory logs (will overwrite duplicates)
+      recentMemoryLogs.forEach(log => {
+        const key = `${log.timestamp}-${log.message}-${log.component}`;
+        logMap.set(key, log);
+      });
+      
+      // Convert back to array and sort
+      const allLogs = Array.from(logMap.values());
+      return allLogs
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, limit);
+        
+    } catch (error) {
+      this.originalConsole?.error?.('❌ Failed to get combined logs:', error);
+      // Fallback to memory logs only
+      return this.logs
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, limit);
+    }
   }
 
   // Trigger automatic review after high error activity
@@ -345,6 +455,13 @@ class Logger {
   // Clear logs
   clearLogs() {
     this.logs = [];
+    this.clearDbCache();
+  }
+
+  // Clear database cache
+  clearDbCache() {
+    this.dbLogsCache = [];
+    this.lastDbFetch = 0;
   }
 
   // Export logs as JSON for analysis
