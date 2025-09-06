@@ -19,6 +19,7 @@ export default function LogsDashboard() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [filterSidebarCollapsed, setFilterSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // State for sidebar navigation
   const logsEndRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(false); // Default to false for less glitchy behavior
   const [lastLogCount, setLastLogCount] = useState(0);
@@ -286,8 +287,18 @@ export default function LogsDashboard() {
 
   return (
     <>
-      <LoggingNav />
-      <div className="p-4 max-w-full mx-auto bg-gray-50 min-h-screen">
+      {/* Sidebar Navigation */}
+      <LoggingNav 
+        variant="sidebar"
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
+      
+      {/* Main Content Area */}
+      <div className={`transition-all duration-300 ${
+        sidebarCollapsed ? 'ml-16' : 'ml-64'
+      }`}>
+        <div className="p-4 max-w-full mx-auto bg-gray-50 min-h-screen">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-2xl font-bold text-gray-800">📊 Enhanced Logs Dashboard</h1>
           <div className="flex items-center gap-2">
@@ -743,6 +754,7 @@ export default function LogsDashboard() {
           >
             🔍 Auto Log Analysis
           </a>
+        </div>
         </div>
       </div>
     </>

@@ -10,6 +10,7 @@ export default function AutoLogReview() {
   const [autoReviewEnabled, setAutoReviewEnabled] = useState(false);
   const [autoReviewInterval, setAutoReviewInterval] = useState<(() => void) | null>(null);
   const [lastReviewTime, setLastReviewTime] = useState<string>('');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const runAnalysis = async (timeRangeMinutes: number = 30) => {
     setIsAnalyzing(true);
@@ -67,8 +68,18 @@ export default function AutoLogReview() {
 
   return (
     <>
-      <LoggingNav />
-      <div className="p-6 max-w-7xl mx-auto">
+      {/* Sidebar Navigation */}
+      <LoggingNav 
+        variant="sidebar"
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
+      
+      {/* Main Content Area */}
+      <div className={`transition-all duration-300 ${
+        sidebarCollapsed ? 'ml-16' : 'ml-64'
+      }`}>
+        <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">🔍 Automated Log Review</h1>
         
@@ -325,6 +336,7 @@ export default function AutoLogReview() {
           </button>
         </div>
       )}
+        </div>
       </div>
     </>
   );

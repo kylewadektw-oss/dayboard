@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { logger } from '@/utils/logger';
 import LoggingNav from '@/components/logging/LoggingNav';
 
 export default function TestConsoleLogging() {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   const testBasicLogging = () => {
     console.log('✅ This is a test console.log message');
@@ -92,8 +93,18 @@ export default function TestConsoleLogging() {
 
   return (
     <>
-      <LoggingNav />
-      <div className="p-6 max-w-4xl mx-auto">
+      {/* Sidebar Navigation */}
+      <LoggingNav 
+        variant="sidebar"
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
+      
+      {/* Main Content Area */}
+      <div className={`transition-all duration-300 ${
+        sidebarCollapsed ? 'ml-16' : 'ml-64'
+      }`}>
+        <div className="p-6 max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">🧪 Console Logging Test Suite</h1>
         
         <div className="mb-6 p-4 bg-blue-100 border border-blue-300 rounded-lg">
@@ -232,6 +243,7 @@ export default function TestConsoleLogging() {
           >
             📊 View Logs Dashboard
           </a>
+        </div>
         </div>
       </div>
     </>
