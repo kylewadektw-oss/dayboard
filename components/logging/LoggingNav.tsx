@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { ChevronLeft, ChevronRight, BarChart3, Search, TestTube } from 'lucide-react';
 
 const loggingRoutes = [
@@ -32,7 +32,7 @@ interface LoggingNavProps {
   onToggleCollapse?: () => void;
 }
 
-export default function LoggingNav({ 
+const LoggingNav = memo(function LoggingNav({ 
   variant = 'horizontal', 
   isCollapsed = false, 
   onToggleCollapse 
@@ -126,4 +126,6 @@ export default function LoggingNav({
       </div>
     </div>
   );
-}
+});
+
+export default LoggingNav;

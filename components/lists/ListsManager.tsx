@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Plus, ClipboardList, Check, X, ShoppingCart } from 'lucide-react';
 
 interface ListItem {
@@ -63,9 +63,12 @@ export function ListsManager() {
   const [newItemText, setNewItemText] = useState('');
   const [activeList, setActiveList] = useState(lists[0].id);
 
-  const currentList = lists.find(list => list.id === activeList);
+  const currentList = useMemo(() => 
+    lists.find(list => list.id === activeList), 
+    [lists, activeList]
+  );
 
-  const toggleItem = (listId: string, itemId: string) => {
+  const toggleItem = useCallback((listId: string, itemId: string) => {
     setLists(prev => prev.map(list => 
       list.id === listId 
         ? {
@@ -76,9 +79,9 @@ export function ListsManager() {
           }
         : list
     ));
-  };
+  }, []);
 
-  const addItem = (listId: string) => {
+  const addItem = useCallback((listId: string) => {
     if (!newItemText.trim()) return;
 
     const newItem: ListItem = {
@@ -94,15 +97,15 @@ export function ListsManager() {
     ));
 
     setNewItemText('');
-  };
+  }, [newItemText]);
 
-  const removeItem = (listId: string, itemId: string) => {
+  const removeItem = useCallback((listId: string, itemId: string) => {
     setLists(prev => prev.map(list =>
       list.id === listId
         ? { ...list, items: list.items.filter(item => item.id !== itemId) }
         : list
     ));
-  };
+  }, []);
 
   return (
     <div>

@@ -1,15 +1,30 @@
 'use client';
 
-import { Suspense, useEffect } from 'react';
-import { WeatherWidget } from '@/components/dashboard/WeatherWidget';
-import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
-import { MealsWidget } from '@/components/dashboard/MealsWidget';
-import { GroceryWidget } from '@/components/dashboard/GroceryWidget';
-import { ProjectsWidget } from '@/components/dashboard/ProjectsWidget';
-import { QuickActionsHub } from '@/components/dashboard/QuickActionsHub';
-import { ProfileStatus } from '@/components/dashboard/ProfileStatus';
-import { DaycareWidget } from '@/components/dashboard/DaycareWidget';
+import { Suspense, useEffect, lazy } from 'react';
 import { authLogger } from '@/utils/logger';
+
+// Lazy load all dashboard widgets for better performance
+const WeatherWidget = lazy(() => import('@/components/dashboard/WeatherWidget').then(m => ({ default: m.WeatherWidget })));
+const CalendarWidget = lazy(() => import('@/components/dashboard/CalendarWidget').then(m => ({ default: m.CalendarWidget })));
+const MealsWidget = lazy(() => import('@/components/dashboard/MealsWidget').then(m => ({ default: m.MealsWidget })));
+const GroceryWidget = lazy(() => import('@/components/dashboard/GroceryWidget').then(m => ({ default: m.GroceryWidget })));
+const ProjectsWidget = lazy(() => import('@/components/dashboard/ProjectsWidget').then(m => ({ default: m.ProjectsWidget })));
+const QuickActionsHub = lazy(() => import('@/components/dashboard/QuickActionsHub').then(m => ({ default: m.QuickActionsHub })));
+const ProfileStatus = lazy(() => import('@/components/dashboard/ProfileStatus').then(m => ({ default: m.ProfileStatus })));
+const DaycareWidget = lazy(() => import('@/components/dashboard/DaycareWidget').then(m => ({ default: m.DaycareWidget })));
+
+// Optimized loading component
+const WidgetSkeleton = () => (
+  <div className="h-48 bg-white rounded-2xl shadow-lg animate-pulse">
+    <div className="p-4 space-y-3">
+      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+      <div className="space-y-2">
+        <div className="h-3 bg-gray-200 rounded"></div>
+        <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+      </div>
+    </div>
+  </div>
+);
 
 export default function DashboardPage() {
   // Skip authentication checks since Google auth is disabled
@@ -80,13 +95,13 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
           {/* Top Row - Primary Widgets (Always Visible) */}
           <div className="lg:col-span-1">
-            <Suspense fallback={<div className="h-48 bg-white rounded-2xl animate-pulse" />}>
+            <Suspense fallback={<WidgetSkeleton />}>
               <WeatherWidget />
             </Suspense>
           </div>
           
           <div className="lg:col-span-1">
-            <Suspense fallback={<div className="h-48 bg-white rounded-2xl animate-pulse" />}>
+            <Suspense fallback={<WidgetSkeleton />}>
               <CalendarWidget />
             </Suspense>
           </div>
@@ -97,26 +112,26 @@ export default function DashboardPage() {
 
           {/* Middle Row - Core Family Features */}
           <div className="lg:col-span-1">
-            <Suspense fallback={<div className="h-48 bg-white rounded-2xl animate-pulse" />}>
+            <Suspense fallback={<WidgetSkeleton />}>
               <MealsWidget />
             </Suspense>
           </div>
 
           <div className="lg:col-span-1">
-            <Suspense fallback={<div className="h-48 bg-white rounded-2xl animate-pulse" />}>
+            <Suspense fallback={<WidgetSkeleton />}>
               <GroceryWidget />
             </Suspense>
           </div>
 
           <div className="lg:col-span-1">
-            <Suspense fallback={<div className="h-48 bg-white rounded-2xl animate-pulse" />}>
+            <Suspense fallback={<WidgetSkeleton />}>
               <ProjectsWidget />
             </Suspense>
           </div>
 
           {/* Family Updates Row */}
           <div className="lg:col-span-2">
-            <Suspense fallback={<div className="h-48 bg-white rounded-2xl animate-pulse" />}>
+            <Suspense fallback={<WidgetSkeleton />}>
               <DaycareWidget />
             </Suspense>
           </div>

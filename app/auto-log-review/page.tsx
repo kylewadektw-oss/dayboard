@@ -336,6 +336,28 @@ export default function AutoLogReview() {
           </button>
         </div>
       )}
+
+      {/* Navigation */}
+      <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <a 
+          href="/dashboard"
+          className="inline-block px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-lg font-semibold transition-colors"
+        >
+          🏠 Back to Dashboard
+        </a>
+        <a 
+          href="/logs-dashboard"
+          className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-lg font-semibold transition-colors"
+        >
+          📊 View Logs Dashboard
+        </a>
+        <a 
+          href="/test-console-logging"
+          className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-lg font-semibold transition-colors"
+        >
+          🧪 Test Console Logging
+        </a>
+      </div>
         </div>
       </div>
     </>

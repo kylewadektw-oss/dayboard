@@ -236,10 +236,16 @@ export default function TestConsoleLogging() {
         </div>
 
         {/* Navigation */}
-        <div className="mt-8 text-center">
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <a 
+            href="/dashboard"
+            className="inline-block px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-lg font-semibold transition-colors"
+          >
+            🏠 Back to Dashboard
+          </a>
           <a 
             href="/logs-dashboard"
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-lg font-semibold"
+            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-lg font-semibold transition-colors"
           >
             📊 View Logs Dashboard
           </a>
