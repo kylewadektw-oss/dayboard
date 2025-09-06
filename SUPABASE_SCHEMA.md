@@ -58,19 +58,41 @@ _This document provides an overview of all tables, columns, types, and relations
 | updated_at         | timestamptz  | Updated timestamp                           |
 
 ### `profiles`
-| Column         | Type      | Description                                  |
-|----------------|-----------|----------------------------------------------|
-| id             | uuid      | PK, references `auth.users`                  |
-| email          | text      | Unique, user email                           |
-| full_name      | text      | Full name                                    |
-| display_name   | text      | Display name                                 |
-| avatar_url     | text      | Profile image                                |
-| role           | user_role | Enum: super_admin, admin, member              |
-| household_id   | uuid      | FK to `households.id`                        |
-| is_active      | boolean   | Active status                                |
-| last_seen_at   | timestamptz| Last seen                                   |
-| created_at     | timestamptz| Created timestamp                            |
-| updated_at     | timestamptz| Updated timestamp                            |
+| Column                    | Type      | Description                                  |
+|---------------------------|-----------|----------------------------------------------|
+| id                        | uuid      | PK, references `auth.users`                  |
+| email                     | text      | Unique, user email                           |
+| full_name                 | text      | Full legal name                              |
+| display_name              | text      | Display name for UI                          |
+| avatar_url                | text      | Profile image URL                            |
+| **Personal Details**      |           |                                              |
+| date_of_birth             | date      | Date of birth                                |
+| phone_number              | text      | Phone number                                 |
+| bio                       | text      | Personal bio/description                     |
+| preferred_name            | text      | What they like to be called                  |
+| pronouns                  | text      | Preferred pronouns (he/him, she/her, etc.)   |
+| **Location & Contact**    |           |                                              |
+| address                   | jsonb     | Full address as JSON                         |
+| emergency_contact         | jsonb     | Emergency contact info as JSON               |
+| **Preferences & Settings**|           |                                              |
+| timezone                  | text      | Timezone (default: America/New_York)         |
+| language                  | text      | Language preference (default: en)            |
+| notification_preferences  | jsonb     | Notification settings as JSON                |
+| privacy_settings          | jsonb     | Privacy settings as JSON                     |
+| **Family Role & System**  |           |                                              |
+| role                      | user_role | Enum: super_admin, admin, member             |
+| household_id              | uuid      | FK to `households.id`                        |
+| family_role               | text      | Mom, Dad, Child, Grandparent, etc.           |
+| dietary_restrictions      | text[]    | Array of dietary restrictions                |
+| allergies                 | text[]    | Array of allergies                           |
+| **Status & Activity**     |           |                                              |
+| is_active                 | boolean   | Active status                                |
+| last_seen_at              | timestamptz| Last seen timestamp                         |
+| onboarding_completed      | boolean   | Has completed onboarding flow                |
+| profile_completion_percentage| integer | Profile completion (0-100%)                |
+| **Timestamps**            |           |                                              |
+| created_at                | timestamptz| Created timestamp                            |
+| updated_at                | timestamptz| Updated timestamp                            |
 
 - **RLS:** Users can view/update their own profile. Household members can view each other. Admins/super_admins can manage household members.
 

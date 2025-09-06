@@ -14,10 +14,12 @@ import {
   Clock,
   Shield
 } from 'lucide-react';
+import LandingPageLogger from '@/components/marketing/LandingPageLogger';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <LandingPageLogger />
       {/* Hero Section */}
       <section className="relative px-4 pt-20 pb-32 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="text-center">
@@ -38,7 +40,7 @@ export default function LandingPage() {
           {/* CTA Buttons */}
           <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-6">
             <Link
-              href="/dashboard"
+              href="/profile"
               className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-10 py-5 text-xl font-bold text-white shadow-2xl hover:shadow-blue-500/25 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50 transition-all duration-300 transform hover:-translate-y-1"
             >
               <PlayCircle className="w-6 h-6" />
@@ -222,7 +224,7 @@ export default function LandingPage() {
           
           <div className="mb-12">
             <Link
-              href="/dashboard"
+              href="/profile"
               className="inline-flex items-center gap-4 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-12 py-6 text-2xl font-bold text-white shadow-2xl hover:shadow-blue-500/25 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50 transition-all duration-300 transform hover:-translate-y-2"
             >
               <PlayCircle className="w-8 h-8" />

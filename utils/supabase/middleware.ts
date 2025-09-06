@@ -70,8 +70,8 @@ export const updateSession = async (request: NextRequest) => {
     // https://supabase.com/docs/guides/auth/server-side/nextjs
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Define protected routes
-    const protectedRoutes = ['/dashboard', '/meals', '/lists', '/work', '/projects', '/profile'];
+    // Define protected routes (removed /profile since auth is disabled)
+    const protectedRoutes = ['/dashboard', '/meals', '/lists', '/work', '/projects'];
     const isProtectedRoute = protectedRoutes.some(route => 
       request.nextUrl.pathname.startsWith(route)
     );
@@ -84,8 +84,8 @@ export const updateSession = async (request: NextRequest) => {
 
     // If user is not authenticated and trying to access protected route
     if (!user && isProtectedRoute) {
-      const redirectUrl = new URL('/signin', request.url);
-      redirectUrl.searchParams.set('redirectTo', request.nextUrl.pathname);
+      // Since Google auth is disabled, redirect to profile instead of signin
+      const redirectUrl = new URL('/profile', request.url);
       return NextResponse.redirect(redirectUrl);
     }
 

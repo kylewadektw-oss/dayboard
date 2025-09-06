@@ -10,8 +10,12 @@ const nextConfig = {
                          process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '',
   },
   images: {
-    domains: ['lh3.googleusercontent.com'], // For Google OAuth profile images
+    domains: [], // Removed Google OAuth profile images domain
   },
+  // async headers() {
+  //   // CSP completely disabled for OAuth debugging
+  //   return [];
+  // }
 }
 
 module.exports = nextConfig

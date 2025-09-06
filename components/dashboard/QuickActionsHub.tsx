@@ -97,7 +97,7 @@ export function QuickActionsHub() {
       <div className="mt-3 pt-3 border-t border-gray-100">
         <div className="flex items-center justify-center text-xs text-gray-500">
           <span className="mr-1">🎙️</span>
-          <span>"Hey Google, add milk to grocery list"</span>
+          <span>"Hey assistant, add milk to grocery list"</span>
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { type Provider } from '@supabase/supabase-js';
 import { getURL } from '@/utils/helpers';
 import { redirectToPath } from './server';
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { oauthLogger } from '@/utils/logger';
 
 export async function handleRequest(
   e: React.FormEvent<HTMLFormElement>,
@@ -29,16 +30,42 @@ export async function handleRequest(
 export async function signInWithOAuth(e: React.FormEvent<HTMLFormElement>) {
   // Prevent default form submission refresh
   e.preventDefault();
-  const formData = new FormData(e.currentTarget);
-  const provider = String(formData.get('provider')).trim() as Provider;
-
-  // Create client-side supabase client and call signInWithOAuth
-  const supabase = createClient();
-  const redirectURL = getURL('/auth/callback');
-  await supabase.auth.signInWithOAuth({
-    provider: provider,
-    options: {
-      redirectTo: redirectURL
+  
+  try {
+    const formData = new FormData(e.currentTarget);
+    const provider = String(formData.get('provider')).trim() as Provider;
+    
+    oauthLogger.info(`🚀 Starting OAuth flow`, { provider });
+    
+    // Create client-side supabase client and call signInWithOAuth
+    const supabase = createClient();
+    const redirectURL = getURL('/auth/callback');
+    
+    oauthLogger.info(`🔗 Redirect URL configured`, { redirectURL });
+    
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: provider,
+      options: {
+        redirectTo: redirectURL
+      }
+    });
+    
+    if (error) {
+      oauthLogger.error(`❌ OAuth error occurred`, { provider, error: error.message }, error);
+      throw error;
     }
-  });
+    
+    if (data?.url) {
+      oauthLogger.info(`🌐 OAuth redirect URL generated`, { provider, url: data.url });
+    }
+    
+    oauthLogger.info(`✅ OAuth request completed successfully`, { provider });
+    
+  } catch (error) {
+    oauthLogger.error(`💥 OAuth sign-in failed`, { 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined 
+    }, error instanceof Error ? error : undefined);
+    throw error;
+  }
 }

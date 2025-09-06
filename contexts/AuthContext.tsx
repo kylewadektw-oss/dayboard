@@ -28,24 +28,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserData = async (currentUser: User) => {
     try {
+      console.log('Fetching profile for user:', currentUser.id);
+      
       // Fetch profile
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', currentUser.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle to avoid error if no profile
+
+      console.log('Profile fetch result:', { profileData, profileError });
 
       if (profileData) {
         setProfile(profileData);
 
-        // Fetch permissions
-        const { data: permissionsData } = await supabase
-          .from('user_permissions')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .single();
+        // Try to fetch permissions (table might not exist yet)
+        try {
+          const { data: permissionsData, error: permissionsError } = await supabase
+            .from('user_permissions')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .maybeSingle();
 
-        setPermissions(permissionsData);
+          console.log('Permissions fetch result:', { permissionsData, permissionsError });
+          
+          if (permissionsError && permissionsError.message.includes("Could not find the table")) {
+            console.log('⚠️  user_permissions table does not exist yet - using default permissions');
+            setPermissions(null); // Will default to allowing access
+          } else {
+            setPermissions(permissionsData);
+          }
+        } catch (permError) {
+          console.log('⚠️  Error fetching permissions (table might not exist):', permError);
+          setPermissions(null); // Will default to allowing access
+        }
+      } else if (profileError) {
+        console.error('Error fetching profile:', profileError);
+      } else {
+        console.log('No profile found for user, this might be expected during initial signup');
+        setProfile(null);
+        setPermissions(null);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);

@@ -1,5 +1,5 @@
 // Boolean toggles to determine which auth types are allowed
-const allowOauth = true;
+const allowOauth = false; // Disabled for development
 const allowEmail = false;
 const allowPassword = false;
 
@@ -7,18 +7,18 @@ const allowPassword = false;
 // (Currently set to false because screen sometimes flickers with server redirects)
 const allowServerRedirect = false;
 
-// Only OAuth is allowed for this app (Google Auth)
+// OAuth is currently disabled for development
 export const getAuthTypes = () => {
   return { allowOauth, allowEmail, allowPassword };
 };
 
 export const getViewTypes = () => {
-  // Only OAuth login is supported
-  return ['oauth_signin'];
+  // OAuth login is disabled
+  return ['oauth_signin']; // Kept for compatibility but OAuth is disabled
 };
 
 export const getDefaultSignInView = (preferredSignInView: string | null) => {
-  // Always default to OAuth signin
+  // OAuth signin (disabled)
   return 'oauth_signin';
 };
 

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Logo from '@/components/icons/Logo';
 import Card from '@/components/ui/Card';
 import OauthSignIn from '@/components/ui/AuthForms/OauthSignIn';
+import SignInLogger from '@/components/auth/SignInLogger';
 
 export default async function SignIn() {
   // Check if user is already logged in
@@ -17,6 +18,7 @@ export default async function SignIn() {
 
   return (
     <div className="flex justify-center height-screen-helper">
+      <SignInLogger />
       <div className="flex flex-col justify-between max-w-lg p-3 m-auto w-80">
         <div className="flex justify-center pb-12">
           <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-4 rounded-2xl">
