@@ -223,7 +223,7 @@ class Logger {
     try {
       const userId = await this.getCurrentUserId();
       
-      // Use any to bypass TypeScript errors for now since the table may not be in types yet
+      // Since this is using the same database as before, side column should exist
       const { error } = await (this.supabase as any)
         .from('application_logs')
         .insert({
@@ -237,7 +237,7 @@ class Logger {
           user_agent: entry.userAgent,
           url: entry.url,
           timestamp: entry.timestamp,
-          side: entry.side || 'client' // Default to client for backward compatibility
+          side: entry.side || 'client' // Should work since database has this column
         });
 
       if (error) {
