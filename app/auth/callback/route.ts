@@ -23,12 +23,43 @@ export async function GET(request: NextRequest) {
         )
       );
     }
+
+    // After successful auth, check if user profile exists
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (user) {
+      // Check if profile exists
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      // If no profile exists, create one
+      if (!profile) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email!,
+            full_name: user.user_metadata?.full_name || '',
+            display_name: user.user_metadata?.name || user.email?.split('@')[0] || '',
+            avatar_url: user.user_metadata?.avatar_url || '',
+            role: 'member',
+            is_active: true
+          });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+        }
+      }
+    }
   }
 
   // URL to redirect to after sign in process completes
   return NextResponse.redirect(
     getStatusRedirect(
-      `${requestUrl.origin}/account`,
+      `${requestUrl.origin}/dashboard`,
       'Success!',
       'You are now signed in.'
     )

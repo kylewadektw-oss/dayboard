@@ -1,9 +1,10 @@
 import { PropsWithChildren } from 'react';
 import { AppNavigation } from '@/components/layout/AppNavigation';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export default function AppLayout({ children }: PropsWithChildren) {
   return (
-    <>
+    <AuthProvider>
       <AppNavigation />
       <div className="min-h-screen bg-gray-50">
         {/* Main content with responsive margin - CSS classes handle sidebar states */}
@@ -11,6 +12,6 @@ export default function AppLayout({ children }: PropsWithChildren) {
           {children}
         </main>
       </div>
-    </>
+    </AuthProvider>
   );
 }
