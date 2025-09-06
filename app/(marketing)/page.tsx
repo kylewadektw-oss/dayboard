@@ -1,10 +1,3 @@
-import Pricing from '@/components/ui/Pricing/Pricing';
-import { createClient } from '@/utils/supabase/server';
-import {
-  getProducts,
-  getSubscription,
-  getUser
-} from '@/utils/supabase/queries';
 import Link from 'next/link';
 import { 
   Calendar, 
@@ -14,330 +7,251 @@ import {
   Timer, 
   Smartphone,
   Star,
-  Shield,
-  Zap,
-  Heart,
   ArrowRight,
-  CheckCircle
+  PlayCircle,
+  CheckCircle,
+  Sparkles,
+  Clock,
+  Shield
 } from 'lucide-react';
 
-export default async function LandingPage() {
-  const supabase = createClient();
-  const [user, products, subscription] = await Promise.all([
-    getUser(supabase),
-    getProducts(supabase),
-    getSubscription(supabase)
-  ]);
-
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Hero Section */}
-      <section className="relative px-4 pt-20 pb-16 mx-auto max-w-7xl sm:px-6 lg:px-8">
+      <section className="relative px-4 pt-20 pb-32 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-            Your Family's
-            <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"> Command Center</span>
+          {/* Main Headline */}
+          <h1 className="text-6xl font-extrabold tracking-tight text-gray-900 sm:text-8xl leading-none">
+            Your Household
+            <span className="block bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
+              Command Center
+            </span>
           </h1>
-          <p className="mt-6 text-lg leading-8 text-gray-600 max-w-2xl mx-auto">
-            Streamline your family life with beautiful meal planning, smart lists, project tracking, and time management—all designed for tablets and Echo Show devices.
+          
+          {/* Subtitle */}
+          <p className="mt-8 text-2xl leading-relaxed text-gray-700 max-w-4xl mx-auto font-light">
+            Stop juggling apps, notes, and reminders. Dayboard consolidates everything your household needs 
+            into one intelligent dashboard that actually works.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-x-6">
+          
+          {/* CTA Buttons */}
+          <div className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-6">
             <Link
-              href="/signin"
-              className="rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:from-purple-700 hover:to-pink-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-all duration-200"
+              href="/dashboard"
+              className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-10 py-5 text-xl font-bold text-white shadow-2xl hover:shadow-blue-500/25 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50 transition-all duration-300 transform hover:-translate-y-1"
             >
-              Start Your Free Trial
+              <PlayCircle className="w-6 h-6" />
+              Get Started Now
             </Link>
-            <Link href="#features" className="text-sm font-semibold leading-6 text-gray-900 hover:text-purple-600 transition-colors">
-              See Features <ArrowRight className="inline ml-1 w-4 h-4" />
+            <Link
+              href="#features"
+              className="inline-flex items-center gap-2 px-8 py-5 text-xl font-semibold text-gray-800 hover:text-blue-600 transition-all duration-300 group"
+            >
+              Explore Features
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-        </div>
-
-        {/* Hero Image/Demo */}
-        <div className="mt-16 relative">
-          <div className="relative mx-auto max-w-4xl">
-            <img
-              src="/demo.png"
-              alt="Family Command Center Dashboard"
-              className="w-full rounded-2xl shadow-2xl border border-gray-200"
-            />
+          
+          {/* Trust Indicators */}
+          <div className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-8 text-base text-gray-600">
+            <div className="flex items-center gap-3">
+              <Shield className="w-5 h-5 text-emerald-500" />
+              <span className="font-medium">Privacy Protected</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-blue-500" />
+              <span className="font-medium">Ready in Minutes</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-purple-500" />
+              <span className="font-medium">No Credit Card</span>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-white/50 backdrop-blur-sm">
+      <section id="features" className="relative py-32 bg-white">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-base font-semibold leading-7 text-purple-600">Everything You Need</h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Built for Busy Families
-            </p>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              From meal planning to project management, keep your family organized and connected with our comprehensive dashboard.
+          <div className="text-center mb-20">
+            <h2 className="text-5xl font-bold text-gray-900 mb-6">
+              Everything in One Place
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              No more switching between multiple apps. Dayboard brings all your household management tools together.
             </p>
           </div>
           
-          <div className="mx-auto mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none">
-            <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
-              {/* Meal Planning */}
-              <div className="flex flex-col">
-                <div className="mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-pink-600">
-                    <ChefHat className="h-6 w-6 text-white" />
-                  </div>
+          {/* Feature Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
+            {/* Meal Planning */}
+            <div className="group relative">
+              <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-3xl p-10 hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-500 border border-orange-100">
+                <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
+                  <ChefHat className="w-8 h-8 text-white" />
                 </div>
-                <dt className="text-xl font-semibold leading-7 text-gray-900">Smart Meal Planning</dt>
-                <dd className="mt-1 flex flex-auto flex-col text-base leading-7 text-gray-600">
-                  <p className="flex-auto">Plan weekly meals with drag-and-drop scheduling. Browse 50+ family-tested recipes with ratings and auto-generate grocery lists.</p>
-                </dd>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Smart Meal Planning</h3>
+                <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                  Weekly meal planning with recipe suggestions, automatic grocery lists, and dietary preferences. 
+                  Turn dinner decisions from stressful to seamless.
+                </p>
+                <div className="text-orange-600 font-semibold text-lg">
+                  Recipe library included →
+                </div>
               </div>
+            </div>
 
-              {/* List Management */}
-              <div className="flex flex-col">
-                <div className="mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-pink-600">
-                    <ListTodo className="h-6 w-6 text-white" />
-                  </div>
+            {/* Task Management */}
+            <div className="group relative">
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-3xl p-10 hover:shadow-2xl hover:shadow-emerald-500/10 transition-all duration-500 border border-emerald-100">
+                <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
+                  <ListTodo className="w-8 h-8 text-white" />
                 </div>
-                <dt className="text-xl font-semibold leading-7 text-gray-900">Organized Lists</dt>
-                <dd className="mt-1 flex flex-auto flex-col text-base leading-7 text-gray-600">
-                  <p className="flex-auto">Manage grocery lists, todos, and shopping with real-time sync across all family devices. Stay organized effortlessly.</p>
-                </dd>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Intelligent Lists</h3>
+                <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                  Grocery lists, to-dos, and household tasks that sync across all devices. 
+                  Smart categorization and sharing keep everyone aligned.
+                </p>
+                <div className="text-emerald-600 font-semibold text-lg">
+                  Real-time collaboration →
+                </div>
               </div>
+            </div>
 
-              {/* Family Coordination */}
-              <div className="flex flex-col">
-                <div className="mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-pink-600">
-                    <Users className="h-6 w-6 text-white" />
-                  </div>
+            {/* Household Coordination */}
+            <div className="group relative">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-10 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 border border-blue-100">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
+                  <Users className="w-8 h-8 text-white" />
                 </div>
-                <dt className="text-xl font-semibold leading-7 text-gray-900">Family Coordination</dt>
-                <dd className="mt-1 flex flex-auto flex-col text-base leading-7 text-gray-600">
-                  <p className="flex-auto">Track everyone's schedules, assign tasks, and celebrate achievements. Keep your family connected and productive.</p>
-                </dd>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Household Sync</h3>
+                <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                  Coordinate schedules, assign responsibilities, and track progress together. 
+                  Perfect for roommates, couples, or multi-generational homes.
+                </p>
+                <div className="text-blue-600 font-semibold text-lg">
+                  Built for any household →
+                </div>
               </div>
+            </div>
 
-              {/* Project Management */}
-              <div className="flex flex-col">
-                <div className="mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-pink-600">
-                    <Calendar className="h-6 w-6 text-white" />
-                  </div>
+            {/* Project Tracking */}
+            <div className="group relative">
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-10 hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 border border-purple-100">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
+                  <Calendar className="w-8 h-8 text-white" />
                 </div>
-                <dt className="text-xl font-semibold leading-7 text-gray-900">Project Tracking</dt>
-                <dd className="mt-1 flex flex-auto flex-col text-base leading-7 text-gray-600">
-                  <p className="flex-auto">Visual project management with progress tracking, built-in timers, and task breakdowns for family goals.</p>
-                </dd>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Project Management</h3>
+                <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                  Visual tracking for home improvements, seasonal tasks, and long-term goals. 
+                  Break down big projects into manageable steps.
+                </p>
+                <div className="text-purple-600 font-semibold text-lg">
+                  Visual progress tracking →
+                </div>
               </div>
+            </div>
 
-              {/* Time Management */}
-              <div className="flex flex-col">
-                <div className="mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-pink-600">
-                    <Timer className="h-6 w-6 text-white" />
-                  </div>
+            {/* Time & Focus */}
+            <div className="group relative">
+              <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-3xl p-10 hover:shadow-2xl hover:shadow-rose-500/10 transition-all duration-500 border border-rose-100">
+                <div className="w-16 h-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
+                  <Timer className="w-8 h-8 text-white" />
                 </div>
-                <dt className="text-xl font-semibold leading-7 text-gray-900">Time Tracking</dt>
-                <dd className="mt-1 flex flex-auto flex-col text-base leading-7 text-gray-600">
-                  <p className="flex-auto">Built-in timers for work sessions, productivity analytics, and schedule management for better work-life balance.</p>
-                </dd>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Focus & Productivity</h3>
+                <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                  Built-in timers, productivity tracking, and focus sessions. 
+                  Balance household responsibilities with personal goals.
+                </p>
+                <div className="text-rose-600 font-semibold text-lg">
+                  Productivity insights →
+                </div>
               </div>
+            </div>
 
-              {/* Device Optimized */}
-              <div className="flex flex-col">
-                <div className="mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-pink-600">
-                    <Smartphone className="h-6 w-6 text-white" />
-                  </div>
+            {/* Multi-Device */}
+            <div className="group relative">
+              <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-3xl p-10 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-500 border border-cyan-100">
+                <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300">
+                  <Smartphone className="w-8 h-8 text-white" />
                 </div>
-                <dt className="text-xl font-semibold leading-7 text-gray-900">Device Optimized</dt>
-                <dd className="mt-1 flex flex-auto flex-col text-base leading-7 text-gray-600">
-                  <p className="flex-auto">Perfect for kitchen tablets and Echo Show devices. Beautiful, responsive design that works everywhere.</p>
-                </dd>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Everywhere Access</h3>
+                <p className="text-gray-700 text-lg leading-relaxed mb-6">
+                  Optimized for phones, tablets, desktops, and smart displays. 
+                  Your dashboard follows you wherever you need it most.
+                </p>
+                <div className="text-cyan-600 font-semibold text-lg">
+                  All devices supported →
+                </div>
               </div>
-            </dl>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Customer Reviews Section */}
-      <section className="py-24 bg-gradient-to-br from-purple-50/50 to-pink-50/50">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Loved by Families Everywhere
-            </h2>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              See what families are saying about their Command Center experience.
+      {/* Testimonial */}
+      <section className="py-24 bg-gradient-to-r from-gray-900 to-black">
+        <div className="mx-auto max-w-5xl px-6 lg:px-8">
+          <div className="text-center">
+            <div className="flex justify-center items-center gap-2 mb-8">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-8 w-8 fill-yellow-400 text-yellow-400" />
+              ))}
+            </div>
+            <blockquote className="text-3xl font-light text-white max-w-4xl mx-auto leading-relaxed">
+              "Finally, a household management system that doesn't feel like work. 
+              Dayboard eliminated the chaos and gave us our evenings back."
+            </blockquote>
+            <div className="mt-8 text-gray-300 text-xl">
+              — Alex Chen, Software Engineer & Parent
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-32 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="mx-auto max-w-4xl px-6 lg:px-8 text-center">
+          <h2 className="text-5xl font-bold text-gray-900 sm:text-6xl mb-8">
+            Ready to Take Control?
+          </h2>
+          <p className="text-2xl text-gray-700 mb-12 font-light">
+            Join thousands who've transformed their household management with Dayboard.
+          </p>
+          
+          <div className="mb-12">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-4 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-12 py-6 text-2xl font-bold text-white shadow-2xl hover:shadow-blue-500/25 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50 transition-all duration-300 transform hover:-translate-y-2"
+            >
+              <PlayCircle className="w-8 h-8" />
+              Start Your Dashboard
+            </Link>
+            
+            <p className="mt-8 text-lg text-gray-600">
+              Free forever • No setup fees • Cancel anytime
             </p>
           </div>
           
-          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {/* Review 1 */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg ring-1 ring-gray-200">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <blockquote className="text-gray-900 text-lg leading-7 mb-6">
-                "This has completely transformed how we manage our household. The meal planning alone saves us hours every week, and the kids love checking off their tasks!"
-              </blockquote>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center text-white font-semibold">
-                  SM
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Sarah Martinez</p>
-                  <p className="text-sm text-gray-600">Mother of 3, Seattle</p>
-                </div>
-              </div>
+          {/* Feature Summary */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-gray-700">
+            <div className="flex items-center gap-3 justify-center">
+              <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+              <span className="font-medium">Meal Planning</span>
             </div>
-
-            {/* Review 2 */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg ring-1 ring-gray-200">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <blockquote className="text-gray-900 text-lg leading-7 mb-6">
-                "The tablet interface is perfect for our kitchen. We can plan meals while cooking and everyone can see what's coming up. Game changer!"
-              </blockquote>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center text-white font-semibold">
-                  JR
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Jennifer Rodriguez</p>
-                  <p className="text-sm text-gray-600">Working Mom, Austin</p>
-                </div>
-              </div>
+            <div className="flex items-center gap-3 justify-center">
+              <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+              <span className="font-medium">Smart Lists</span>
             </div>
-
-            {/* Review 3 */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg ring-1 ring-gray-200">
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                ))}
-              </div>
-              <blockquote className="text-gray-900 text-lg leading-7 mb-6">
-                "Finally, a family organization system that actually works! The project tracking helps us tackle home improvements together as a team."
-              </blockquote>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center text-white font-semibold">
-                  DK
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900">David Kim</p>
-                  <p className="text-sm text-gray-600">Father & Engineer, Portland</p>
-                </div>
-              </div>
+            <div className="flex items-center gap-3 justify-center">
+              <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+              <span className="font-medium">Task Management</span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-24 bg-white">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Why Families Choose Us
-            </h2>
-          </div>
-          
-          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-8 sm:gap-12 lg:mx-0 lg:max-w-none lg:grid-cols-2">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <Shield className="h-8 w-8 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Privacy First</h3>
-                <p className="mt-2 text-gray-600">Your family data stays secure with enterprise-grade encryption and privacy controls.</p>
-              </div>
+            <div className="flex items-center gap-3 justify-center">
+              <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
+              <span className="font-medium">Project Tracking</span>
             </div>
-            
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <Zap className="h-8 w-8 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Lightning Fast</h3>
-                <p className="mt-2 text-gray-600">Optimized for speed with real-time sync across all your family devices.</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <Heart className="h-8 w-8 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Built with Love</h3>
-                <p className="mt-2 text-gray-600">Created by a family, for families. We understand the challenges of modern parenting.</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <CheckCircle className="h-8 w-8 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Always Improving</h3>
-                <p className="mt-2 text-gray-600">Regular updates and new features based on real family feedback and needs.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="py-24 bg-gradient-to-br from-purple-50/50 to-pink-50/50">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <h2 className="text-base font-semibold leading-7 text-purple-600">Pricing</h2>
-            <p className="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-              Simple, Family-Friendly Pricing
-            </p>
-          </div>
-          <div className="mt-16">
-            <Pricing
-              user={user}
-              products={products ?? []}
-              subscription={subscription}
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative py-24">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Ready to Transform Your Family Life?
-            </h2>
-            <p className="mt-6 text-lg leading-8 text-gray-600">
-              Join thousands of families who've simplified their daily routines with our Command Center.
-            </p>
-            <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link
-                href="/signin"
-                className="rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-4 text-base font-semibold text-white shadow-sm hover:from-purple-700 hover:to-pink-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600 transition-all duration-200"
-              >
-                Start Free Trial
-              </Link>
-              <Link href="#features" className="text-base font-semibold leading-7 text-gray-900 hover:text-purple-600 transition-colors">
-                Learn More <ArrowRight className="inline ml-1 w-4 h-4" />
-              </Link>
-            </div>
-            <p className="mt-6 text-sm text-gray-500">
-              No credit card required • 14-day free trial • Cancel anytime
-            </p>
           </div>
         </div>
       </section>

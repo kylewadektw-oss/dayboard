@@ -8,15 +8,12 @@ export default function Footer() {
         <div className="col-span-1 lg:col-span-3">
           <Link
             href="/"
-            className="flex items-center flex-initial font-bold md:mr-24"
+            className="flex items-center flex-initial font-bold md:mr-24 mb-4"
           >
-            <span className="mr-2 border rounded-full border-zinc-700">
-              <Logo />
-            </span>
-            <span>Dayboard</span>
+            <Logo className="scale-75" />
           </Link>
           <p className="mt-4 text-sm text-zinc-400 max-w-xs">
-            Organize your family life with ease. From meal planning to project tracking, 
+            Organize your household life with ease. From meal planning to project tracking, 
             Dayboard helps families stay connected and productive.
           </p>
         </div>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Home, UtensilsCrossed, ClipboardList, Briefcase, FolderOpen, User, Settings, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
+import Logo from '@/components/icons/Logo';
 
 export function AppNavigation() {
   const pathname = usePathname();
@@ -44,17 +45,14 @@ export function AppNavigation() {
         <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
           {!isCollapsed ? (
             <Link href="/dashboard" className="flex items-center">
-              <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Home className="h-5 w-5 text-white" />
+              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-2 rounded-lg">
+                <Logo className="scale-50" />
               </div>
-              <span className="ml-2 text-lg font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-                Family Hub
-              </span>
             </Link>
           ) : (
             <Link href="/dashboard" className="flex items-center justify-center w-full">
-              <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Home className="h-5 w-5 text-white" />
+              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-2 rounded-lg">
+                <Logo iconOnly className="w-6 h-6" />
               </div>
             </Link>
           )}
@@ -131,12 +129,9 @@ export function AppNavigation() {
         {/* Mobile Header */}
         <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between z-50">
           <Link href="/dashboard" className="flex items-center">
-            <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Home className="h-5 w-5 text-white" />
+            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-1 rounded-lg">
+              <Logo className="scale-50" />
             </div>
-            <span className="ml-2 text-lg font-semibold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-              Family Hub
-            </span>
           </Link>
         </div>
 

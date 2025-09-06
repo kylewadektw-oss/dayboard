@@ -19,7 +19,9 @@ export default async function SignIn() {
     <div className="flex justify-center height-screen-helper">
       <div className="flex flex-col justify-between max-w-lg p-3 m-auto w-80">
         <div className="flex justify-center pb-12">
-          <Logo width="64px" height="64px" />
+          <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-4 rounded-2xl">
+            <Logo className="scale-75" />
+          </div>
         </div>
         <Card title="Welcome to Dayboard">
           <div className="text-center mb-6">
