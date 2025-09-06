@@ -7,7 +7,7 @@ import SignInLogger from '@/components/auth/SignInLogger';
 
 export default async function SignIn() {
   // Check if user is already logged in
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user }
   } = await supabase.auth.getUser();

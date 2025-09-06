@@ -3,7 +3,7 @@ import { UserRole, UserPermissions, UserProfile, DEFAULT_PERMISSIONS } from '@/t
 
 // Mock function for development - replace with real DB queries after migration
 export async function getCurrentUser(): Promise<UserProfile | null> {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;

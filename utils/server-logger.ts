@@ -16,7 +16,7 @@ class ServerLogger {
 
   private async getCurrentUserId(): Promise<string | null> {
     try {
-      const supabase = createClient();
+      const supabase = await createClient();
       const { data: { user } } = await supabase.auth.getUser();
       return user?.id || null;
     } catch {
@@ -42,7 +42,7 @@ class ServerLogger {
   private async writeLogToDatabase(entry: LogEntry) {
     try {
       const userId = await this.getCurrentUserId();
-      const supabase = createClient();
+      const supabase = await createClient();
       
       const { error } = await (supabase as any)
         .from('application_logs')

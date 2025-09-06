@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   });
 
   if (code) {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     serverAuthLogger.info(`🔑 Exchanging code for session`);
     const { error } = await supabase.auth.exchangeCodeForSession(code);
