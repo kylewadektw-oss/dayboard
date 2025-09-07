@@ -329,6 +329,83 @@ export interface Database {
           }
         ]
       }
+      user_permissions: {
+        Row: {
+          id: string
+          user_id: string
+          dashboard: boolean
+          meals: boolean
+          lists: boolean
+          work: boolean
+          projects: boolean
+          profile: boolean
+          sports_ticker: boolean
+          financial_tracking: boolean
+          ai_features: boolean
+          household_management: boolean
+          user_management: boolean
+          feature_management: boolean
+          billing_management: boolean
+          system_admin: boolean
+          global_feature_control: boolean
+          analytics_dashboard: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          dashboard?: boolean
+          meals?: boolean
+          lists?: boolean
+          work?: boolean
+          projects?: boolean
+          profile?: boolean
+          sports_ticker?: boolean
+          financial_tracking?: boolean
+          ai_features?: boolean
+          household_management?: boolean
+          user_management?: boolean
+          feature_management?: boolean
+          billing_management?: boolean
+          system_admin?: boolean
+          global_feature_control?: boolean
+          analytics_dashboard?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          dashboard?: boolean
+          meals?: boolean
+          lists?: boolean
+          work?: boolean
+          projects?: boolean
+          profile?: boolean
+          sports_ticker?: boolean
+          financial_tracking?: boolean
+          ai_features?: boolean
+          household_management?: boolean
+          user_management?: boolean
+          feature_management?: boolean
+          billing_management?: boolean
+          system_admin?: boolean
+          global_feature_control?: boolean
+          analytics_dashboard?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_permissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       users: {
         Row: {
           avatar_url: string | null
