@@ -310,6 +310,7 @@ export default function LogsDashboard() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         onClearFilters={clearAllFilters}
+        logStats={logStats}
       />
       
       {/* Main Content Area */}
@@ -348,36 +349,51 @@ export default function LogsDashboard() {
           
           {/* Statistics Panel */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-            <div className={`p-4 bg-white rounded-lg shadow-sm border text-center ${
-              selectedLevel === 'all' ? 'ring-2 ring-blue-500 bg-blue-50' : ''
-            }`}>
+            <button 
+              onClick={() => setSelectedLevel(selectedLevel === 'all' ? 'all' : 'all')}
+              className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
+                selectedLevel === 'all' ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'
+              }`}
+            >
               <div className="text-2xl font-bold text-gray-700">{logStats.total}</div>
               <div className="text-sm text-gray-500">Total Logs</div>
-            </div>
-            <div className={`p-4 bg-white rounded-lg shadow-sm border text-center ${
-              selectedLevel === LogLevel.ERROR ? 'ring-2 ring-red-500 bg-red-50' : ''
-            }`}>
+            </button>
+            <button 
+              onClick={() => setSelectedLevel(selectedLevel === LogLevel.ERROR ? 'all' : LogLevel.ERROR)}
+              className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
+                selectedLevel === LogLevel.ERROR ? 'ring-2 ring-red-500 bg-red-50' : 'hover:bg-red-50'
+              }`}
+            >
               <div className="text-2xl font-bold text-red-600">{logStats.errors}</div>
               <div className="text-sm text-red-500">❌ Errors</div>
-            </div>
-            <div className={`p-4 bg-white rounded-lg shadow-sm border text-center ${
-              selectedLevel === LogLevel.WARN ? 'ring-2 ring-yellow-500 bg-yellow-50' : ''
-            }`}>
+            </button>
+            <button 
+              onClick={() => setSelectedLevel(selectedLevel === LogLevel.WARN ? 'all' : LogLevel.WARN)}
+              className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
+                selectedLevel === LogLevel.WARN ? 'ring-2 ring-yellow-500 bg-yellow-50' : 'hover:bg-yellow-50'
+              }`}
+            >
               <div className="text-2xl font-bold text-yellow-600">{logStats.warnings}</div>
               <div className="text-sm text-yellow-500">⚠️ Warnings</div>
-            </div>
-            <div className={`p-4 bg-white rounded-lg shadow-sm border text-center ${
-              selectedLevel === LogLevel.INFO ? 'ring-2 ring-blue-500 bg-blue-50' : ''
-            }`}>
+            </button>
+            <button 
+              onClick={() => setSelectedLevel(selectedLevel === LogLevel.INFO ? 'all' : LogLevel.INFO)}
+              className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
+                selectedLevel === LogLevel.INFO ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-blue-50'
+              }`}
+            >
               <div className="text-2xl font-bold text-blue-600">{logStats.info}</div>
               <div className="text-sm text-blue-500">ℹ️ Info</div>
-            </div>
-            <div className={`p-4 bg-white rounded-lg shadow-sm border text-center ${
-              selectedLevel === LogLevel.DEBUG ? 'ring-2 ring-gray-500 bg-gray-50' : ''
-            }`}>
+            </button>
+            <button 
+              onClick={() => setSelectedLevel(selectedLevel === LogLevel.DEBUG ? 'all' : LogLevel.DEBUG)}
+              className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
+                selectedLevel === LogLevel.DEBUG ? 'ring-2 ring-gray-500 bg-gray-50' : 'hover:bg-gray-50'
+              }`}
+            >
               <div className="text-2xl font-bold text-gray-600">{logStats.debug}</div>
               <div className="text-sm text-gray-500">🐛 Debug</div>
-            </div>
+            </button>
           </div>
 
           {/* Quick Actions & Controls */}

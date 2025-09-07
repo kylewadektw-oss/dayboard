@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, memo } from 'react';
 import { ChevronLeft, ChevronRight, BarChart3, Search, TestTube, Filter, Clock, Layers, Component, X, Zap } from 'lucide-react';
+import { LogLevel } from '@/utils/logger';
 
 const loggingRoutes = [
   {
@@ -74,6 +75,14 @@ interface LoggingNavProps {
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
   onClearFilters?: () => void;
+  // Log statistics for sidebar display
+  logStats?: {
+    total: number;
+    errors: number;
+    warnings: number;
+    info: number;
+    debug: number;
+  };
 }
 
 const LoggingNav = memo(function LoggingNav({ 
@@ -91,7 +100,8 @@ const LoggingNav = memo(function LoggingNav({
   availableComponents = [],
   searchQuery = '',
   onSearchChange,
-  onClearFilters
+  onClearFilters,
+  logStats
 }: LoggingNavProps) {
   const pathname = usePathname();
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -199,6 +209,95 @@ const LoggingNav = memo(function LoggingNav({
                 ))}
               </div>
             </div>
+
+            {/* Log Level Statistics - Quick Filters */}
+            {!isCollapsed && logStats && (
+              <div className="p-4 border-t border-gray-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <BarChart3 size={16} className="text-gray-500" />
+                  <h3 className="text-sm font-medium text-gray-700">
+                    Quick Filters
+                  </h3>
+                </div>
+                
+                <div className="space-y-2">
+                  <button 
+                    onClick={() => onLevelChange?.(selectedLevel === 'all' ? 'all' : 'all')}
+                    className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
+                      selectedLevel === 'all' ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-200' : 'bg-white hover:bg-gray-50 border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">📊</span>
+                        <span className="text-sm font-medium text-gray-700">All Logs</span>
+                      </div>
+                      <span className="text-lg font-bold text-gray-700">{logStats.total}</span>
+                    </div>
+                  </button>
+                  
+                  <button 
+                    onClick={() => onLevelChange?.(selectedLevel === LogLevel.ERROR ? 'all' : LogLevel.ERROR)}
+                    className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
+                      selectedLevel === LogLevel.ERROR ? 'ring-2 ring-red-500 bg-red-50 border-red-200' : 'bg-white hover:bg-red-50 border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">❌</span>
+                        <span className="text-sm font-medium text-red-600">Errors</span>
+                      </div>
+                      <span className="text-lg font-bold text-red-600">{logStats.errors}</span>
+                    </div>
+                  </button>
+                  
+                  <button 
+                    onClick={() => onLevelChange?.(selectedLevel === LogLevel.WARN ? 'all' : LogLevel.WARN)}
+                    className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
+                      selectedLevel === LogLevel.WARN ? 'ring-2 ring-yellow-500 bg-yellow-50 border-yellow-200' : 'bg-white hover:bg-yellow-50 border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">⚠️</span>
+                        <span className="text-sm font-medium text-yellow-600">Warnings</span>
+                      </div>
+                      <span className="text-lg font-bold text-yellow-600">{logStats.warnings}</span>
+                    </div>
+                  </button>
+                  
+                  <button 
+                    onClick={() => onLevelChange?.(selectedLevel === LogLevel.INFO ? 'all' : LogLevel.INFO)}
+                    className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
+                      selectedLevel === LogLevel.INFO ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-200' : 'bg-white hover:bg-blue-50 border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">ℹ️</span>
+                        <span className="text-sm font-medium text-blue-600">Info</span>
+                      </div>
+                      <span className="text-lg font-bold text-blue-600">{logStats.info}</span>
+                    </div>
+                  </button>
+                  
+                  <button 
+                    onClick={() => onLevelChange?.(selectedLevel === LogLevel.DEBUG ? 'all' : LogLevel.DEBUG)}
+                    className={`w-full p-3 rounded-lg border text-left transition-all hover:shadow-sm ${
+                      selectedLevel === LogLevel.DEBUG ? 'ring-2 ring-gray-500 bg-gray-50 border-gray-200' : 'bg-white hover:bg-gray-50 border-gray-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🐛</span>
+                        <span className="text-sm font-medium text-gray-600">Debug</span>
+                      </div>
+                      <span className="text-lg font-bold text-gray-600">{logStats.debug}</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Main Filters Toggle */}
             <div className="p-4 border-t border-gray-200">
