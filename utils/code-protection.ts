@@ -113,12 +113,26 @@ export function validateDomain() {
     'your-domain.com' // Replace with your actual domain
   ];
   
+  // Additional patterns for development/preview domains
+  const developmentPatterns = [
+    '.vercel.app',
+    '.netlify.app',
+    '.railway.app'
+  ];
+  
   const currentDomain = window.location.hostname;
+  
+  // Check authorized domains
   const isAuthorized = authorizedDomains.some(domain => 
     currentDomain === domain || currentDomain.endsWith('.' + domain)
   );
   
-  if (!isAuthorized && process.env.NODE_ENV === 'production') {
+  // Check development patterns
+  const isDevelopment = developmentPatterns.some(pattern => 
+    currentDomain.endsWith(pattern)
+  );
+  
+  if (!isAuthorized && !isDevelopment && process.env.NODE_ENV === 'production') {
     console.error('🛡️ Unauthorized domain detected!');
     console.error('This application is proprietary and cannot run on unauthorized domains.');
     
