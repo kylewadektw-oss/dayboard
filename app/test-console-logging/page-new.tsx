@@ -18,7 +18,6 @@
 
 import { useEffect, useState } from 'react';
 import { logger } from '@/utils/logger';
-import Link from 'next/link';
 import LoggingNav from '@/components/logging/LoggingNav';
 
 export default function TestConsoleLogging() {
@@ -83,14 +82,8 @@ export default function TestConsoleLogging() {
       }`}>
         <div className="min-h-screen bg-gray-50 p-8">
           <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
+            <div className="mb-8">
               <h1 className="text-3xl font-bold text-gray-900">🧪 Console Logging Test Suite</h1>
-              <Link 
-                href="/logs-dashboard"
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                📊 View Logs Dashboard
-              </Link>
             </div>
             
             <div className="grid gap-6">

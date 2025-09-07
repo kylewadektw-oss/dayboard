@@ -314,7 +314,7 @@ class Logger {
       };
 
       console.debug = (...args: any[]) => {
-        this.captureConsoleLog(LogLevel.DEBUG, args, 'Console');
+        // Skip debug capture - not beneficial right now
         this.originalConsole.debug(...args);
       };
     }
@@ -322,9 +322,23 @@ class Logger {
 
   private captureConsoleLog(level: LogLevel, args: any[], defaultComponent: string) {
     try {
+      // Skip debug logging entirely - not beneficial right now
+      if (level === LogLevel.DEBUG) {
+        return;
+      }
+      
       // Performance: Early exit for logs dashboard to prevent recursive logging
       if (typeof window !== 'undefined' && window.location.pathname.includes('/logs-dashboard')) {
         return; // Skip all dashboard logging to prevent performance issues
+      }
+      
+      // Check for dashboard-specific logging messages to prevent feedback loops
+      const messageStr = args.join(' ');
+      if (messageStr.includes('📊 Refreshing logs') || 
+          messageStr.includes('📊 Retrieved') || 
+          messageStr.includes('📊 Time filter') || 
+          messageStr.includes('📊 Final result')) {
+        return; // Skip dashboard internal logging
       }
       
       // Convert console arguments to a readable message (more efficient)

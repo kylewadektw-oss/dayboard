@@ -367,9 +367,11 @@ const LoggingNav = memo(function LoggingNav({
                 <div className="mt-3 space-y-4">
                   {/* Search Filter */}
                   <div>
-                    <label className="block text-xs font-semibold text-gray-800 mb-2">🔍 Search</label>
+                    <label htmlFor="log-search" className="block text-xs font-semibold text-gray-800 mb-2">🔍 Search</label>
                     <div className="relative">
                       <input
+                        id="log-search"
+                        name="log-search"
                         type="text"
                         value={searchQuery}
                         onChange={(e) => onSearchChange?.(e.target.value)}
@@ -389,7 +391,7 @@ const LoggingNav = memo(function LoggingNav({
 
                   {/* Level Filter */}
                   <div>
-                    <label className="block text-xs font-semibold text-gray-800 mb-2">📊 Log Level</label>
+                    <h3 className="block text-xs font-semibold text-gray-800 mb-2">📊 Log Level</h3>
                     <div className="space-y-1 max-h-32 overflow-y-auto">
                       {logLevels.map((level) => (
                         <button
@@ -410,7 +412,7 @@ const LoggingNav = memo(function LoggingNav({
 
                   {/* Source Filter */}
                   <div>
-                    <label className="block text-xs font-semibold text-gray-800 mb-2">🌍 Source</label>
+                    <h3 className="block text-xs font-semibold text-gray-800 mb-2">🌍 Source</h3>
                     <div className="space-y-1">
                       {sourceSides.map((side) => (
                         <button
@@ -432,7 +434,7 @@ const LoggingNav = memo(function LoggingNav({
                   {/* Component Filter */}
                   {availableComponents.length > 1 && (
                     <div>
-                      <label className="block text-xs font-semibold text-gray-800 mb-2">🧩 Component</label>
+                      <h3 className="block text-xs font-semibold text-gray-800 mb-2">🧩 Component</h3>
                       <div className="space-y-1 max-h-32 overflow-y-auto">
                         {availableComponents.map((component) => (
                           <button

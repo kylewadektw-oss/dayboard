@@ -255,10 +255,9 @@ User Agent: ${log.userAgent || 'N/A'}
 
     try {
       await navigator.clipboard.writeText(formattedText);
-      // Show a brief success indicator
-      console.log('✅ Error details copied to clipboard');
+      // Show a brief success indicator (removed console.log to prevent feedback loop)
     } catch (err) {
-      console.error('Failed to copy to clipboard:', err);
+      // Failed to copy to clipboard (removed console.error to prevent feedback loop)
       // Fallback: select text for manual copy
       const textArea = document.createElement('textarea');
       textArea.value = formattedText;
@@ -276,13 +275,18 @@ User Agent: ${log.userAgent || 'N/A'}
     try {
       // Convert time range to milliseconds for database query
       const timeRangeMs = selectedTimeRange !== 'all' ? getTimeRangeMs(selectedTimeRange) : undefined;
-      console.log(`📊 Refreshing logs with time range: ${selectedTimeRange} (${timeRangeMs}ms), max: ${maxLogs}`);
+      // Use direct logger to avoid console interception feedback loop
+      if (process.env.NODE_ENV === 'development') {
+        logger.debug(`📊 Dashboard refresh - Time range: ${selectedTimeRange} (${timeRangeMs}ms), max: ${maxLogs}`, 'LogsDashboard');
+      }
       
       // Get logs from database with time filtering (use maxLogs instead of hardcoded 300)
       allLogs = await logger.getAllLogsIncludingDatabase(maxLogs * 2, timeRangeMs); // Get 2x to allow for filtering
-      console.log(`📊 Retrieved ${allLogs.length} logs from database`);
+      if (process.env.NODE_ENV === 'development') {
+        logger.debug(`📊 Dashboard refresh - Retrieved ${allLogs.length} logs from database`, 'LogsDashboard');
+      }
     } catch (error) {
-      console.error('❌ Failed to load logs:', error);
+      logger.error('❌ Failed to load logs:', 'LogsDashboard', { error: error instanceof Error ? error.message : String(error) });
       // Fallback to memory logs only
       allLogs = logger.getAllLogs().slice(0, maxLogs);
     }
@@ -300,28 +304,28 @@ User Agent: ${log.userAgent || 'N/A'}
         return logTime > cutoff;
       });
       
-      console.log(`📊 Time filter: ${beforeFilter} -> ${filteredLogs.length} logs (range: ${selectedTimeRange}, cutoff: ${new Date(cutoff).toISOString()})`);
+      // Removed dashboard internal logging to prevent feedback loop
     }
     
     // Level filtering
     if (selectedLevel !== 'all') {
       const beforeFilter = filteredLogs.length;
       filteredLogs = filteredLogs.filter(log => log.level === selectedLevel);
-      console.log(`📊 Level filter (${selectedLevel}): ${beforeFilter} -> ${filteredLogs.length} logs`);
+      // Removed dashboard internal logging to prevent feedback loop
     }
 
     // Side filtering (client/server)
     if (selectedSide !== 'all') {
       const beforeFilter = filteredLogs.length;
       filteredLogs = filteredLogs.filter(log => (log.side || 'client') === selectedSide);
-      console.log(`📊 Side filter (${selectedSide}): ${beforeFilter} -> ${filteredLogs.length} logs`);
+      // Removed dashboard internal logging to prevent feedback loop
     }
     
     // Component filtering
     if (selectedComponent !== 'all') {
       const beforeFilter = filteredLogs.length;
       filteredLogs = filteredLogs.filter(log => log.component === selectedComponent);
-      console.log(`📊 Component filter (${selectedComponent}): ${beforeFilter} -> ${filteredLogs.length} logs`);
+      // Removed dashboard internal logging to prevent feedback loop
     }
     
     // Search filtering
@@ -334,7 +338,7 @@ User Agent: ${log.userAgent || 'N/A'}
         (log.component && log.component.toLowerCase().includes(query)) ||
         (log.stack && log.stack.toLowerCase().includes(query))
       );
-      console.log(`📊 Search filter ("${query}"): ${beforeFilter} -> ${filteredLogs.length} logs`);
+      // Removed dashboard internal logging to prevent feedback loop
     }
     
     // Sort by timestamp
@@ -346,8 +350,7 @@ User Agent: ${log.userAgent || 'N/A'}
     
     // Apply max logs limit
     const finalLogs = filteredLogs.slice(0, maxLogs);
-    console.log(`📊 Final result: ${finalLogs.length} logs displayed (max: ${maxLogs})`);
-    
+    // Removed dashboard internal logging to prevent feedback loop
     setLogs(finalLogs);
   }, [isPaused, selectedTimeRange, maxLogs, selectedLevel, selectedComponent, selectedSide, searchQuery, sortOrder]);
 
@@ -405,18 +408,17 @@ User Agent: ${log.userAgent || 'N/A'}
   };
 
   const testConsoleLogging = () => {
-    console.log('✅ Test console.log message');
-    console.error('❌ Test console.error message'); 
-    console.warn('⚠️ Test console.warn message');
-    console.info('ℹ️ Test console.info message');
-    console.debug('🐛 Test console.debug message');
+    // Simple direct logging that will be captured properly
+    logger.info('✅ Test message from dashboard', 'Dashboard');
+    logger.error('❌ Test error from dashboard', 'Dashboard'); 
+    logger.warn('⚠️ Test warning from dashboard', 'Dashboard');
     
-    console.log('Object test:', { test: 'data', timestamp: new Date() });
+    logger.info('Object test from dashboard', 'Dashboard', { test: 'data', timestamp: new Date() });
     
     try {
-      throw new Error('Test error for logging');
+      throw new Error('Test error for logging from dashboard');
     } catch (error) {
-      console.error('Caught error:', error);
+      logger.error('Caught error from dashboard test', 'Dashboard', { error: error instanceof Error ? error.message : String(error) });
     }
   };
 
@@ -458,7 +460,7 @@ User Agent: ${log.userAgent || 'N/A'}
         }, 1000);
       }
     } catch (err) {
-      console.error('Failed to copy log entry:', err);
+      // Failed to copy log entry (removed console.error to prevent feedback loop)
     }
   };
 
@@ -478,7 +480,7 @@ User Agent: ${log.userAgent || 'N/A'}
         }, 1500);
       }
     } catch (err) {
-      console.error('Failed to copy all logs:', err);
+      // Failed to copy all logs (removed console.error to prevent feedback loop)
     }
   };
 
@@ -498,7 +500,7 @@ User Agent: ${log.userAgent || 'N/A'}
         }, 1500);
       }
     } catch (err) {
-      console.error('Failed to copy messages:', err);
+      // Failed to copy messages (removed console.error to prevent feedback loop)
     }
   };
 
@@ -766,8 +768,10 @@ User Agent: ${log.userAgent || 'N/A'}
               <div className="flex items-center gap-4">
                 {/* Max Logs Control */}
                 <div className="flex items-center gap-2">
-                  <label className="text-sm text-gray-900 font-semibold">📊 Max Logs:</label>
+                  <label htmlFor="max-logs" className="text-sm text-gray-900 font-semibold">📊 Max Logs:</label>
                   <select
+                    id="max-logs"
+                    name="max-logs"
                     value={maxLogs}
                     onChange={(e) => setMaxLogs(Number(e.target.value))}
                     className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -782,8 +786,10 @@ User Agent: ${log.userAgent || 'N/A'}
                   </select>
                 </div>
 
-                <label className="flex items-center gap-2 text-sm text-gray-700">
+                <label htmlFor="auto-refresh" className="flex items-center gap-2 text-sm text-gray-700">
                   <input 
+                    id="auto-refresh"
+                    name="auto-refresh"
                     type="checkbox" 
                     checked={autoRefresh}
                     onChange={(e) => setAutoRefresh(e.target.checked)}
@@ -791,8 +797,10 @@ User Agent: ${log.userAgent || 'N/A'}
                   />
                   🔄 Auto Refresh
                 </label>
-                <label className="flex items-center gap-2 text-sm text-gray-700">
+                <label htmlFor="auto-scroll" className="flex items-center gap-2 text-sm text-gray-700">
                   <input 
+                    id="auto-scroll"
+                    name="auto-scroll"
                     type="checkbox" 
                     checked={autoScroll}
                     onChange={(e) => setAutoScroll(e.target.checked)}
