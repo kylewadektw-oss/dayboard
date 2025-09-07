@@ -66,8 +66,9 @@ export default function TestLogGeneration() {
           logger.error('Critical application error', 'ProfileComponent', {
             errorMessage: error.message,
             stackTrace: error.stack,
-            context: 'User profile rendering'
-          }, error);
+            context: 'User profile rendering',
+            errorObject: error
+          });
         }
       },
       
