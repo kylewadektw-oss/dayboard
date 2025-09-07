@@ -44,7 +44,10 @@ export default function TestLoggingPage() {
       addResult("✅ Direct logger executed")
       
       // Test logger error
-      await logger.error("Direct logger error test", "TestComponent", { test: true }, new Error("Test error"))
+      await logger.error("Direct logger error test", "TestComponent", { 
+        test: true, 
+        errorObject: new Error("Test error") 
+      })
       addResult("✅ Direct logger error executed")
       
       addResult("✅ All logging tests completed")
