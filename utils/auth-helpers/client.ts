@@ -68,7 +68,7 @@ export async function signInWithOAuth(e: React.FormEvent<HTMLFormElement>) {
     });
     
     if (error) {
-      oauthLogger.error(`❌ OAuth error occurred`, { provider, error: error.message }, error);
+      oauthLogger.error(`❌ OAuth error occurred`, { provider, error: error.message, errorObject: error });
       throw error;
     }
     
