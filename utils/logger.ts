@@ -249,8 +249,8 @@ class Logger {
         stack_trace: entry.stack,
         user_agent: entry.userAgent,
         url: entry.url,
-        timestamp: entry.timestamp,
-        side: entry.side || 'client'
+        timestamp: entry.timestamp
+        // Omitting 'side' column to avoid database errors
       }));
 
       const { error } = await (this.supabase as any)
@@ -258,11 +258,21 @@ class Logger {
         .insert(insertData);
 
       if (error) {
+        console.error('❌ Batch database write failed:', {
+          error: error,
+          entryCount: entries.length
+        });
         throw error;
+      } else {
+        console.log(`✅ Batch of ${entries.length} logs persisted to database`);
       }
     } catch (error) {
-      // Silently fail database writes to avoid impacting app performance
-      this.originalConsole?.error?.('❌ Batch database write failed:', error);
+      // Enhanced error logging for debugging
+      console.error('❌ Batch database write failed:', {
+        errorMessage: (error as any)?.message || 'Unknown error',
+        errorCode: (error as any)?.code || 'NO_CODE',
+        entryCount: entries.length
+      });
     }
   }
 
@@ -270,7 +280,7 @@ class Logger {
     try {
       const userId = await this.getCurrentUserId();
       
-      // Since this is using the same database as before, side column should exist
+      // Insert without 'side' column since it doesn't exist in remote database yet
       const { error } = await (this.supabase as any)
         .from('application_logs')
         .insert({
@@ -283,13 +293,18 @@ class Logger {
           stack_trace: entry.stack,
           user_agent: entry.userAgent,
           url: entry.url,
-          timestamp: entry.timestamp,
-          side: entry.side || 'client' // Should work since database has this column
+          timestamp: entry.timestamp
+          // Omitting 'side' column to avoid database errors
         });
 
       if (error) {
-        console.error('❌ Database logging error:', error);
+        console.error('❌ Database logging error:', {
+          error: error,
+          message: entry.message.substring(0, 50) + '...'
+        });
         throw error;
+      } else {
+        console.log('✅ Log persisted to database:', entry.message.substring(0, 50) + '...');
       }
     } catch (error) {
       // Log database write errors to console for debugging
@@ -335,13 +350,17 @@ class Logger {
 
   private async fetchLogsFromDatabase(limit: number): Promise<LogEntry[]> {
     try {
+      // Select without the 'side' column since it doesn't exist in remote database
       const { data, error } = await (this.supabase as any)
         .from('application_logs')
-        .select('id, user_id, session_id, level, message, component, data, stack_trace, user_agent, url, timestamp, side')
+        .select('id, user_id, session_id, level, message, component, data, stack_trace, user_agent, url, timestamp, created_at')
         .order('timestamp', { ascending: false })
         .limit(limit);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database query error:', error);
+        throw error;
+      }
 
       return data?.map((row: any) => ({
         id: row.id,
@@ -355,10 +374,14 @@ class Logger {
         userAgent: row.user_agent,
         url: row.url,
         timestamp: row.timestamp,
-        side: row.side || 'client'
+        side: 'client' // Default to 'client' since side column doesn't exist yet
       })) || [];
     } catch (error) {
-      this.originalConsole?.error?.('❌ Database fetch failed:', error);
+      console.error('❌ Database fetch failed:', {
+        errorMessage: (error as any)?.message || 'Unknown error',
+        errorCode: (error as any)?.code || 'NO_CODE',
+        errorDetails: (error as any)?.details || 'No details'
+      });
       return [];
     }
   }
