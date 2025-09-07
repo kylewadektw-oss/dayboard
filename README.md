@@ -110,11 +110,31 @@ See [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) for detailed development timeline
 - ✅ Work time tracking and project management
 - ✅ Household profile and household management
 - ✅ Responsive navigation with collapsible sidebar
+- ✅ Enhanced logging dashboard with real-time monitoring
+- ✅ Analytics dashboard suite with 7 specialized monitoring pages
 
 ### Next Up
 - 🚧 Phase 2: Database Integration with Supabase
 - 📅 Phase 3: Advanced features and navigation enhancements
 - 💰 Phase 4: Premium features and monetization
+
+## 🔍 Understanding Log Types & Notifications
+
+### 💬 Console Messages (Normal)
+- **Info**: General information and status updates
+- **Debug**: Technical details for development
+- *These are expected and help with monitoring app behavior*
+
+### ⚠️ Issues (Need Attention)
+- **Warnings**: Potential problems or deprecated code
+- **Errors**: Broken functionality that affects users
+- *These should be investigated and resolved when possible*
+
+### 🔄 Why Notifications Come and Go
+Logs appear and disappear based on user activity, page changes, and system operations. Errors that "fix themselves" often indicate:
+- 🔄 Page refresh resolved the issue
+- 🌐 Network connectivity improved
+- ⏱️ Temporary timing or loading issue
 
 ## 🤝 Contributing
 

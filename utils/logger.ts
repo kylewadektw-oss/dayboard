@@ -44,6 +44,10 @@
  * // Specialized logging
  * await oauthLogger.error('OAuth token expired', { provider: 'google' });
  * await authLogger.info('User signed in successfully', { userId: 'user123' });
+ * 
+ * // Configure dashboard filtering
+ * logger.setDashboardFilteringEnabled(false); // Disable filtering if needed
+ * console.log(logger.isDashboardFilteringEnabled()); // Check current state
  * ```
  * 
  * ENHANCED FEATURES:
@@ -55,6 +59,7 @@
  * - Severity Assessment: Automatic priority classification (Critical, High, Medium, Low)
  * - Impact Analysis: Business impact assessment for each log entry
  * - Suggested Actions: Contextual recommendations for error resolution
+ * - Dashboard Filtering: Automatic filtering of dashboard refresh alerts to reduce DB load
  * 
  * TECHNICAL:
  * - Circular Reference Protection: Safe object serialization
@@ -130,6 +135,9 @@ class Logger {
   private isIntercepting = false;
   private sessionId: string;
   private supabase = createClient();
+  
+  // Configuration - Complete prevention of dashboard refresh alerts (not filterable)
+  private filterDashboardRefreshAlerts: boolean = true; // Always enabled for complete prevention
   
   // Performance optimizations
   private dbLogsCache: LogEntry[] = [];
@@ -277,6 +285,63 @@ class Logger {
     return 'power-user';
   }
 
+  // Check if message is a dashboard refresh alert - ALWAYS PREVENT (no longer configurable)
+  private isDashboardRefreshAlert(message: string): boolean {
+    // COMPLETE PREVENTION: Always check patterns, no configuration toggle needed
+    const lowerMessage = message.toLowerCase();
+    const refreshPatterns = [
+      'dashboard refresh',
+      'refreshing dashboard', 
+      'dashboard updated',
+      'dashboard reload',
+      'dashboard data',
+      'auto-refresh',
+      'live updating',
+      'dashboard sync',
+      'dashboard polling',
+      'dashboard state',
+      'dashboard mounted',
+      'dashboard component',
+      'refreshing data',
+      'updating dashboard',
+      'dashboard load',
+      'dashboard ready',
+      'dayboard proprietary',
+      'batch of',
+      'logs persisted to database',
+      'dashboard refresh - time range:'
+    ];
+
+    const refreshEmojis = ['📊', '🔄', '⚡', '🔃', '↻', '🛡️', '✅'];
+    
+    // Check for refresh patterns
+    for (const pattern of refreshPatterns) {
+      if (lowerMessage.includes(pattern)) {
+        return true;
+      }
+    }
+    
+    // Check for refresh emojis
+    for (const emoji of refreshEmojis) {
+      if (message.includes(emoji)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  // Public method to configure dashboard filtering (legacy compatibility - prevention always active)
+  public setDashboardFilteringEnabled(enabled: boolean): void {
+    this.filterDashboardRefreshAlerts = enabled;
+    console.log(`📊 Dashboard refresh alert prevention ${enabled ? 'enabled' : 'disabled'} (complete prevention always active)`);
+  }
+
+  // Public method to check if dashboard filtering is enabled (legacy compatibility)
+  public isDashboardFilteringEnabled(): boolean {
+    return this.filterDashboardRefreshAlerts;
+  }
+
   // Intercept all console methods to capture logs
   // Make this public so components can call it
   public setupConsoleInterception() {
@@ -327,18 +392,43 @@ class Logger {
         return;
       }
       
-      // Performance: Early exit for logs dashboard to prevent recursive logging
-      if (typeof window !== 'undefined' && window.location.pathname.includes('/logs-dashboard')) {
-        return; // Skip all dashboard logging to prevent performance issues
-      }
-      
       // Check for dashboard-specific logging messages to prevent feedback loops
       const messageStr = args.join(' ');
+      
+      // Performance: Early exit for dashboard-specific logs to prevent recursive logging
+      if (typeof window !== 'undefined' && window.location.pathname.includes('/logs-dashboard')) {
+        // Only skip dashboard-internal logs, not ALL logs
+        if (messageStr.includes('📊') || 
+            messageStr.includes('Dashboard') || 
+            messageStr.includes('LogsDashboard') ||
+            messageStr.includes('Refreshing logs') ||
+            messageStr.includes('Retrieved') ||
+            messageStr.includes('Time filter') ||
+            messageStr.includes('Final result') ||
+            messageStr.includes('🛡️ Dayboard Proprietary') ||
+            messageStr.includes('✅ Batch of') ||
+            messageStr.includes('logs persisted to database') ||
+            messageStr.includes('Dashboard refresh - Time range:')) {
+          return; // Skip dashboard internal logging only
+        }
+        // Allow all other logs (errors, warnings, etc.) to be captured
+      }
+      
+      // Use the helper method to check for dashboard refresh alerts - PREVENT CAPTURE ENTIRELY
+      if (this.isDashboardRefreshAlert(messageStr)) {
+        return; // COMPLETE PREVENTION: Do not capture, process, store, or make available
+      }
+      
+      // Additional specific patterns for logging dashboard
       if (messageStr.includes('📊 Refreshing logs') || 
           messageStr.includes('📊 Retrieved') || 
-          messageStr.includes('📊 Time filter') || 
-          messageStr.includes('📊 Final result')) {
-        return; // Skip dashboard internal logging
+          messageStr.includes('� Time filter') || 
+          messageStr.includes('📊 Final result') ||
+          messageStr.includes('🛡️ Dayboard Proprietary') ||
+          messageStr.includes('✅ Batch of') ||
+          messageStr.includes('logs persisted to database') ||
+          messageStr.includes('Dashboard refresh - Time range:')) {
+        return; // COMPLETE PREVENTION: Skip dashboard internal logging entirely
       }
       
       // Convert console arguments to a readable message (more efficient)
@@ -1177,21 +1267,37 @@ class Logger {
   }
 
   async error(message: string, component?: string, details?: any) {
+    // COMPLETE PREVENTION: Dashboard refresh alerts are never captured
+    if (this.isDashboardRefreshAlert(message)) {
+      return; // Do not capture, process, store, or make available
+    }
     const entry = this.createLogEntry(LogLevel.ERROR, message, component, details);
     await this.writeLog(entry);
   }
 
   async warn(message: string, component?: string, details?: any) {
+    // COMPLETE PREVENTION: Dashboard refresh alerts are never captured
+    if (this.isDashboardRefreshAlert(message)) {
+      return; // Do not capture, process, store, or make available
+    }
     const entry = this.createLogEntry(LogLevel.WARN, message, component, details);
     await this.writeLog(entry);
   }
 
   async info(message: string, component?: string, details?: any) {
+    // COMPLETE PREVENTION: Dashboard refresh alerts are never captured
+    if (this.isDashboardRefreshAlert(message)) {
+      return; // Do not capture, process, store, or make available
+    }
     const entry = this.createLogEntry(LogLevel.INFO, message, component, details);
     await this.writeLog(entry);
   }
 
   async debug(message: string, component?: string, details?: any) {
+    // COMPLETE PREVENTION: Dashboard refresh alerts are never captured
+    if (this.isDashboardRefreshAlert(message)) {
+      return; // Do not capture, process, store, or make available
+    }
     const entry = this.createLogEntry(LogLevel.DEBUG, message, component, details);
     await this.writeLog(entry);
   }

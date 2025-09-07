@@ -45,6 +45,98 @@ import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { LogLevel, LogEntry, logger } from '@/utils/logger';
 import LoggingNav from '@/components/logging/LoggingNav';
 
+// Enhanced error translation helper
+const translateLogMessage = (log: LogEntry): { 
+  userFriendly: string; 
+  technicalDetails: string; 
+  category: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+} => {
+  const message = log.message.toLowerCase();
+  
+  // Console vs Issues categorization
+  let category = 'General';
+  let severity: 'low' | 'medium' | 'high' | 'critical' = 'low';
+  let userFriendly = log.message;
+  let technicalDetails = '';
+
+  // Network/API Issues
+  if (message.includes('fetch') || message.includes('network') || message.includes('cors') || message.includes('api')) {
+    category = 'Network/API';
+    userFriendly = '🌐 Network connection or API communication issue';
+    technicalDetails = 'The app is having trouble connecting to external services or APIs';
+    severity = message.includes('cors') ? 'high' : 'medium';
+  }
+  
+  // Authentication Issues
+  else if (message.includes('auth') || message.includes('token') || message.includes('unauthorized') || message.includes('403') || message.includes('401')) {
+    category = 'Authentication';
+    userFriendly = '🔐 User authentication or permission issue';
+    technicalDetails = 'Problems with user login, session, or access permissions';
+    severity = 'high';
+  }
+  
+  // Database Issues
+  else if (message.includes('database') || message.includes('sql') || message.includes('supabase') || message.includes('query')) {
+    category = 'Database';
+    userFriendly = '🗄️ Database connection or data retrieval issue';
+    technicalDetails = 'Problems accessing or updating information in the database';
+    severity = 'critical';
+  }
+  
+  // React/UI Issues
+  else if (message.includes('hydration') || message.includes('component') || message.includes('react') || message.includes('render')) {
+    category = 'UI/Component';
+    userFriendly = '🎨 User interface display or component issue';
+    technicalDetails = 'Problems with how the page displays or interactive elements';
+    severity = 'medium';
+  }
+  
+  // JavaScript Errors
+  else if (message.includes('undefined') || message.includes('null') || message.includes('typeerror') || message.includes('referenceerror')) {
+    category = 'Code Logic';
+    userFriendly = '⚠️ Programming logic error affecting functionality';
+    technicalDetails = 'Code trying to use data that doesn\'t exist or is invalid';
+    severity = 'high';
+  }
+  
+  // Performance Issues
+  else if (message.includes('slow') || message.includes('performance') || message.includes('timeout') || message.includes('memory')) {
+    category = 'Performance';
+    userFriendly = '🐌 Application performance or speed issue';
+    technicalDetails = 'App is running slower than expected or using too many resources';
+    severity = 'medium';
+  }
+  
+  // Security Issues
+  else if (message.includes('security') || message.includes('xss') || message.includes('injection') || message.includes('vulnerability')) {
+    category = 'Security';
+    userFriendly = '🛡️ Security vulnerability or protection issue';
+    technicalDetails = 'Potential security risks that need immediate attention';
+    severity = 'critical';
+  }
+  
+  // Console vs Issues distinction
+  if (log.level === 'debug' || log.level === 'info') {
+    category = category + ' (Console Info)';
+  } else if (log.level === 'warn' || log.level === 'error') {
+    category = category + ' (Issue)';
+  }
+
+  return { userFriendly, technicalDetails, category, severity };
+};
+
+// Enhanced severity color helper
+const getSeverityStyles = (severity: 'low' | 'medium' | 'high' | 'critical') => {
+  switch (severity) {
+    case 'critical': return 'bg-red-100 text-red-800 border-red-300';
+    case 'high': return 'bg-orange-100 text-orange-800 border-orange-300';
+    case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+    case 'low': return 'bg-blue-100 text-blue-800 border-blue-300';
+    default: return 'bg-gray-100 text-gray-800 border-gray-300';
+  }
+};
+
 // Memoized log item component for better performance
 const LogItem = memo(({ log, index, getSideIndicator, getLogLevelStyles, copyToClipboard }: {
   log: LogEntry;
@@ -52,43 +144,66 @@ const LogItem = memo(({ log, index, getSideIndicator, getLogLevelStyles, copyToC
   getSideIndicator: (side: 'client' | 'server' | undefined) => JSX.Element;
   getLogLevelStyles: (level: LogLevel) => string;
   copyToClipboard: (log: LogEntry) => void;
-}) => (
-  <div key={`${log.id}-${index}`} className="p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors">
-    <div className="flex items-start justify-between gap-3">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-2">
-          <span className={`px-2 py-1 text-xs font-bold rounded ${getLogLevelStyles(log.level)}`}>
-            {log.level.toUpperCase()}
-          </span>
-          {getSideIndicator(log.side)}
-          {log.component && (
-            <span className="px-2 py-1 bg-gray-200 text-gray-800 text-xs rounded-full font-medium">
-              {log.component}
+}) => {
+  const translation = translateLogMessage(log);
+  
+  return (
+    <div key={`${log.id}-${index}`} className="p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-3">
+            <span className={`px-2 py-1 text-xs font-bold rounded ${getLogLevelStyles(log.level)}`}>
+              {log.level.toUpperCase()}
             </span>
-          )}
+            {getSideIndicator(log.side)}
+            <span className={`px-2 py-1 text-xs font-medium rounded border ${getSeverityStyles(translation.severity)}`}>
+              {translation.category}
+            </span>
+            {log.component && (
+              <span className="px-2 py-1 bg-gray-200 text-gray-800 text-xs rounded-full font-medium">
+                {log.component}
+              </span>
+            )}
+          </div>
+          
+          {/* Combined User-Friendly Translation and Technical Details */}
+          <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="text-sm font-semibold text-blue-900 mb-2">📝 What this means:</div>
+            <div className="text-sm text-blue-800 mb-3">{translation.userFriendly}</div>
+            {translation.technicalDetails && (
+              <div className="text-xs text-blue-700 mb-3 italic">{translation.technicalDetails}</div>
+            )}
+            
+            {/* Technical Details */}
+            <div className="border-t border-blue-200 pt-3">
+              <div className="text-xs font-semibold text-blue-900 mb-1">🔧 Technical Details:</div>
+              <div className="text-sm font-medium text-blue-900 break-words leading-relaxed">
+                {log.message}
+              </div>
+              {log.stack && (
+                <div className="mt-2 text-xs text-blue-800 font-medium">
+                  <strong>Stack:</strong> {log.stack}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="mb-2 text-xs text-gray-800 font-medium">
-          <strong>Stack:</strong> {log.stack || 'N/A'}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className="text-xs text-gray-800 whitespace-nowrap font-semibold">
+            {new Date(log.timestamp).toLocaleTimeString()}
+          </span>
+          <button
+            onClick={() => copyToClipboard(log)}
+            className="p-1 hover:bg-gray-200 rounded transition-colors"
+            title="Copy log details"
+          >
+            📋
+          </button>
         </div>
-        <div className="text-sm font-medium text-gray-900 break-words leading-relaxed mb-2">
-          {log.message}
-        </div>
-      </div>
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <span className="text-xs text-gray-800 whitespace-nowrap font-semibold">
-          {new Date(log.timestamp).toLocaleTimeString()}
-        </span>
-        <button
-          onClick={() => copyToClipboard(log)}
-          className="p-1 hover:bg-gray-200 rounded transition-colors"
-          title="Copy log details"
-        >
-          📋
-        </button>
       </div>
     </div>
-  </div>
-));
+  );
+});
 
 export default function LogsDashboard() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -97,17 +212,52 @@ export default function LogsDashboard() {
   const [selectedSide, setSelectedSide] = useState<'client' | 'server' | 'all'>('all');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [maxLogs, setMaxLogs] = useState(150); // Changed default from 500 to 150
+  const [maxLogs, setMaxLogs] = useState(250); // Changed default from 150 to 250
   const [isPaused, setIsPaused] = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('1h'); // Changed default from '1d' to '1h'
   const [showStackTrace, setShowStackTrace] = useState(false);
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [insightsCollapsed, setInsightsCollapsed] = useState(false);
+  const [filtersExpanded, setFiltersExpanded] = useState(false); // Collapsed by default
   const [selectedLogForFix, setSelectedLogForFix] = useState<LogEntry | null>(null);
   const [showFixPopout, setShowFixPopout] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(false);
   const [lastLogCount, setLastLogCount] = useState(0);
+
+  // New slider controls for log limits
+  const [maxErrors, setMaxErrors] = useState(50);
+  const [maxWarnings, setMaxWarnings] = useState(50);
+  const [maxInfo, setMaxInfo] = useState(50);
+  const [maxDebug, setMaxDebug] = useState(50);
+
+  // Load advanced configuration if available
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('logs_dashboard_config');
+    if (savedConfig) {
+      try {
+        const config = JSON.parse(savedConfig);
+        // Apply relevant configurations to existing state
+        if (config.timeRangeHours <= 24) {
+          const timeRangeMap: { [key: number]: string } = {
+            1: '1h',
+            24: '1d'
+          };
+          const closestRange = timeRangeMap[config.timeRangeHours] || '1h';
+          setSelectedTimeRange(closestRange);
+        }
+        
+        // Set max logs based on combined limits from config
+        const totalConfiguredLogs = config.maxErrors + config.maxWarnings + config.maxInfo + config.maxDebug;
+        if (totalConfiguredLogs > 0) {
+          setMaxLogs(Math.min(totalConfiguredLogs, 1000)); // Cap at 1000 for performance
+        }
+      } catch (error) {
+        console.error('Failed to load advanced dashboard config:', error);
+      }
+    }
+  }, []);
 
   // Convert time range string to milliseconds
   const getTimeRangeMs = (range: string): number => {
@@ -307,7 +457,16 @@ User Agent: ${log.userAgent || 'N/A'}
       // Removed dashboard internal logging to prevent feedback loop
     }
     
-    // Level filtering
+    // Apply slider-based filtering by log type
+    const errorLogs = filteredLogs.filter(log => log.level === LogLevel.ERROR).slice(0, maxErrors);
+    const warnLogs = filteredLogs.filter(log => log.level === LogLevel.WARN).slice(0, maxWarnings);
+    const infoLogs = filteredLogs.filter(log => log.level === LogLevel.INFO).slice(0, maxInfo);
+    const debugLogs = filteredLogs.filter(log => log.level === LogLevel.DEBUG).slice(0, maxDebug);
+    
+    // Combine filtered logs
+    filteredLogs = [...errorLogs, ...warnLogs, ...infoLogs, ...debugLogs];
+    
+    // Level filtering (if specific level is selected, override slider filtering)
     if (selectedLevel !== 'all') {
       const beforeFilter = filteredLogs.length;
       filteredLogs = filteredLogs.filter(log => log.level === selectedLevel);
@@ -348,11 +507,11 @@ User Agent: ${log.userAgent || 'N/A'}
       return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
     });
     
-    // Apply max logs limit
+    // Apply final max logs limit
     const finalLogs = filteredLogs.slice(0, maxLogs);
     // Removed dashboard internal logging to prevent feedback loop
     setLogs(finalLogs);
-  }, [isPaused, selectedTimeRange, maxLogs, selectedLevel, selectedComponent, selectedSide, searchQuery, sortOrder]);
+  }, [isPaused, selectedTimeRange, maxLogs, selectedLevel, selectedComponent, selectedSide, searchQuery, sortOrder, maxErrors, maxWarnings, maxInfo, maxDebug]);
 
   useEffect(() => {
     logger.setupConsoleInterception();
@@ -387,7 +546,11 @@ User Agent: ${log.userAgent || 'N/A'}
     const info = logs.filter(log => log.level === LogLevel.INFO).length;
     const debug = logs.filter(log => log.level === LogLevel.DEBUG).length;
     
-    return { total, errors, warnings, info, debug };
+    // Console vs Issues breakdown
+    const consoleMessages = logs.filter(log => log.level === LogLevel.INFO || log.level === LogLevel.DEBUG).length;
+    const issues = logs.filter(log => log.level === LogLevel.ERROR || log.level === LogLevel.WARN).length;
+    
+    return { total, errors, warnings, info, debug, consoleMessages, issues };
   }, [logs]);
 
   const components = useMemo(() => {
@@ -405,6 +568,12 @@ User Agent: ${log.userAgent || 'N/A'}
     setSelectedSide('all');
     setSelectedTimeRange('1h'); // Reset to default
     setSearchQuery('');
+    // Reset slider values to defaults
+    setMaxLogs(250);
+    setMaxErrors(50);
+    setMaxWarnings(50);
+    setMaxInfo(50);
+    setMaxDebug(50);
   };
 
   const testConsoleLogging = () => {
@@ -556,6 +725,16 @@ User Agent: ${log.userAgent || 'N/A'}
         onSearchChange={setSearchQuery}
         onClearFilters={clearAllFilters}
         logStats={logStats}
+        maxLogs={maxLogs}
+        onMaxLogsChange={setMaxLogs}
+        maxErrors={maxErrors}
+        onMaxErrorsChange={setMaxErrors}
+        maxWarnings={maxWarnings}
+        onMaxWarningsChange={setMaxWarnings}
+        maxInfo={maxInfo}
+        onMaxInfoChange={setMaxInfo}
+        maxDebug={maxDebug}
+        onMaxDebugChange={setMaxDebug}
       />
       
       {/* Main Content Area */}
@@ -593,7 +772,7 @@ User Agent: ${log.userAgent || 'N/A'}
           </div>
           
           {/* Statistics Panel */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-4">
             <button 
               onClick={() => setSelectedLevel(selectedLevel === 'all' ? 'all' : 'all')}
               className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
@@ -603,6 +782,17 @@ User Agent: ${log.userAgent || 'N/A'}
               <div className="text-2xl font-bold text-gray-900">{logStats.total}</div>
               <div className="text-sm text-gray-800 font-semibold">Total Logs</div>
             </button>
+            
+            <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg shadow-sm border text-center">
+              <div className="text-2xl font-bold text-blue-600">{logStats.consoleMessages}</div>
+              <div className="text-sm text-blue-600 font-semibold">💬 Console</div>
+            </div>
+            
+            <div className="p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg shadow-sm border text-center">
+              <div className="text-2xl font-bold text-orange-600">{logStats.issues}</div>
+              <div className="text-sm text-orange-600 font-semibold">⚠️ Issues</div>
+            </div>
+            
             <button 
               onClick={() => setSelectedLevel(selectedLevel === LogLevel.ERROR ? 'all' : LogLevel.ERROR)}
               className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
@@ -643,70 +833,106 @@ User Agent: ${log.userAgent || 'N/A'}
 
           {/* Insights and Recommendations Section - Show when there are warnings or errors */}
           {(logStats.errors > 0 || logStats.warnings > 0) && (
-            <div className="mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl">💡</span>
-                <h2 className="text-lg font-bold text-gray-900">Insights & Recommendations</h2>
+            <div className="mb-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">💡</span>
+                  <h2 className="text-sm font-bold text-gray-900">Smart Insights & Issue Translation</h2>
+                </div>
+                <button
+                  onClick={() => setInsightsCollapsed(!insightsCollapsed)}
+                  className="text-gray-500 hover:text-gray-700 text-sm"
+                >
+                  {insightsCollapsed ? '▼' : '▲'}
+                </button>
               </div>
               
-              <div className="grid md:grid-cols-2 gap-6">
-                {/* Error Analysis */}
-                {logStats.errors > 0 && (
-                  <div className="bg-white rounded-lg p-4 border border-red-200">
-                    <h3 className="font-semibold text-red-800 mb-3 flex items-center gap-2">
-                      <span className="text-lg">🚨</span>
-                      Error Analysis ({logStats.errors} errors)
-                    </h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2 text-red-700">
-                        <span>•</span>
-                        <span>High priority: Review and fix critical errors immediately</span>
+              {!insightsCollapsed && (
+                <div className="space-y-4">
+                  {/* Console vs Issues Breakdown */}
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm">
+                      <span>📊</span>
+                      What You're Seeing: Console Messages vs Real Issues
+                    </h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                        <div className="text-lg font-bold text-blue-900">{logStats.consoleMessages}</div>
+                        <div className="text-sm font-semibold text-blue-800">💬 Console Messages</div>
+                        <div className="text-xs text-blue-700 mt-1">
+                          Normal information and debugging data - these are expected
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-red-700">
-                        <span>•</span>
-                        <span>Check for patterns in error messages and components</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-red-700">
-                        <span>•</span>
-                        <span>Verify proper error handling is implemented</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Warning Analysis */}
-                {logStats.warnings > 0 && (
-                  <div className="bg-white rounded-lg p-4 border border-yellow-200">
-                    <h3 className="font-semibold text-yellow-800 mb-3 flex items-center gap-2">
-                      <span className="text-lg">⚠️</span>
-                      Warning Analysis ({logStats.warnings} warnings)
-                    </h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2 text-yellow-700">
-                        <span>•</span>
-                        <span>Address warnings to prevent future errors</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-yellow-700">
-                        <span>•</span>
-                        <span>Review deprecation warnings and update code</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-yellow-700">
-                        <span>•</span>
-                        <span>Check for performance-related warnings</span>
+                      <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                        <div className="text-lg font-bold text-orange-900">{logStats.issues}</div>
+                        <div className="text-sm font-semibold text-orange-800">⚠️ Actual Issues</div>
+                        <div className="text-xs text-orange-700 mt-1">
+                          Problems that may affect user experience - needs attention
+                        </div>
                       </div>
                     </div>
                   </div>
-                )}
-              </div>
 
-              {/* System Health Status */}
-              <div className="mt-4 p-3 bg-white rounded-lg border border-gray-200">
+                  <div className="grid md:grid-cols-2 gap-3">
+                    {/* Error Analysis */}
+                    {logStats.errors > 0 && (
+                      <div className="bg-white rounded-lg p-3 border border-red-200">
+                        <h4 className="font-semibold text-red-800 mb-2 flex items-center gap-2 text-sm">
+                          <span>🚨</span>
+                          Critical Issues ({logStats.errors} errors)
+                        </h4>
+                        <div className="space-y-1 text-xs">
+                          <div className="flex items-center gap-1 text-red-700">
+                            <span>•</span>
+                            <span>These break functionality and frustrate users</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-red-700">
+                            <span>•</span>
+                            <span>Check for patterns in error messages and affected pages</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-red-700">
+                            <span>•</span>
+                            <span>Look at the "What this means" section above for each error</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Warning Analysis */}
+                    {logStats.warnings > 0 && (
+                      <div className="bg-white rounded-lg p-3 border border-yellow-200">
+                        <h4 className="font-semibold text-yellow-800 mb-2 flex items-center gap-2 text-sm">
+                          <span>⚠️</span>
+                          Potential Problems ({logStats.warnings} warnings)
+                        </h4>
+                        <div className="space-y-1 text-xs">
+                          <div className="flex items-center gap-1 text-yellow-700">
+                            <span>•</span>
+                            <span>May become errors if not addressed</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-yellow-700">
+                            <span>•</span>
+                            <span>Often related to deprecated code or accessibility</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-yellow-700">
+                            <span>•</span>
+                            <span>Can impact performance or user experience</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* System Health Status - Always visible but compact */}
+              <div className="mt-2 p-2 bg-white rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-lg">🏥</span>
-                    <span className="font-semibold text-gray-900">System Health</span>
+                    <span className="text-sm">🏥</span>
+                    <span className="font-semibold text-gray-900 text-sm">System Health</span>
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
                     logStats.errors === 0 && logStats.warnings < 5 
                       ? 'bg-green-100 text-green-800' 
                       : logStats.errors > 0 
@@ -722,93 +948,193 @@ User Agent: ${log.userAgent || 'N/A'}
                 </div>
                 {(logStats.errors === 0 && logStats.warnings < 5) && (
                   <div className="mt-2 text-sm text-gray-800 font-medium">
-                    <span>💡 Consider reviewing UI contrast ratios and accessibility for optimal user experience</span>
+                    <span>💡 System running smoothly! Consider checking accessibility analytics for optimization opportunities.</span>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* Quick Actions & Controls */}
+
+
+          {/* Quick Actions & Controls - Enhanced with Filters and Additional Controls */}
           <div className="bg-white border rounded-lg shadow-sm p-4 mb-4">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <h3 className="text-sm font-semibold text-gray-900">🎛️ Quick Actions:</h3>
-                
-                <button 
-                  onClick={refreshLogs}
-                  disabled={isPaused}
-                  className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm disabled:bg-gray-400 transition-colors"
-                >
-                  🔄 Refresh
-                </button>
-
-                <button 
-                  onClick={clearLogs}
-                  className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm transition-colors"
-                >
-                  🗑️ Clear All
-                </button>
-
-                <button 
-                  onClick={exportLogs}
-                  className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm transition-colors"
-                >
-                  📁 Export JSON
-                </button>
-
-                <button 
-                  onClick={testConsoleLogging}
-                  className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 text-sm transition-colors"
-                >
-                  🧪 Generate Test Logs
-                </button>
-              </div>
-
-              <div className="flex items-center gap-4">
-                {/* Max Logs Control */}
-                <div className="flex items-center gap-2">
-                  <label htmlFor="max-logs" className="text-sm text-gray-900 font-semibold">📊 Max Logs:</label>
-                  <select
-                    id="max-logs"
-                    name="max-logs"
-                    value={maxLogs}
-                    onChange={(e) => setMaxLogs(Number(e.target.value))}
-                    className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            <div className="space-y-4">
+              {/* Action Buttons Row */}
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <h3 className="text-sm font-semibold text-gray-900">🎛️ Quick Actions:</h3>
+                  
+                  <button 
+                    onClick={refreshLogs}
+                    disabled={isPaused}
+                    className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm disabled:bg-gray-400 transition-colors"
                   >
-                    <option value={50}>50</option>
-                    <option value={100}>100</option>
-                    <option value={150}>150</option>
-                    <option value={300}>300</option>
-                    <option value={500}>500</option>
-                    <option value={1000}>1000</option>
-                    <option value={2000}>2000</option>
-                  </select>
-                </div>
+                    🔄 Refresh
+                  </button>
 
-                <label htmlFor="auto-refresh" className="flex items-center gap-2 text-sm text-gray-700">
-                  <input 
-                    id="auto-refresh"
-                    name="auto-refresh"
-                    type="checkbox" 
-                    checked={autoRefresh}
-                    onChange={(e) => setAutoRefresh(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  🔄 Auto Refresh
-                </label>
-                <label htmlFor="auto-scroll" className="flex items-center gap-2 text-sm text-gray-700">
-                  <input 
-                    id="auto-scroll"
-                    name="auto-scroll"
-                    type="checkbox" 
-                    checked={autoScroll}
-                    onChange={(e) => setAutoScroll(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  📜 Auto Scroll
-                </label>
+                  <button 
+                    onClick={clearLogs}
+                    className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm transition-colors"
+                  >
+                    🗑️ Clear All
+                  </button>
+
+                  <button 
+                    onClick={exportLogs}
+                    className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm transition-colors"
+                  >
+                    📁 Export JSON
+                  </button>
+
+                  <button 
+                    onClick={testConsoleLogging}
+                    className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 text-sm transition-colors"
+                  >
+                    🧪 Generate Test Logs
+                  </button>
+
+                  <button 
+                    onClick={clearAllFilters}
+                    className="px-3 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600 text-sm transition-colors"
+                  >
+                    🗑️ Clear Filters
+                  </button>
+                </div>
               </div>
+
+              {/* Live Statistics and Controls Row */}
+              <div className="border-t pt-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <h4 className="text-sm font-medium text-gray-700">📊 Live Statistics & Controls:</h4>
+                    
+                    <label htmlFor="auto-refresh" className="flex items-center gap-2 text-sm text-gray-700">
+                      <input 
+                        id="auto-refresh"
+                        name="auto-refresh"
+                        type="checkbox" 
+                        checked={autoRefresh}
+                        onChange={(e) => setAutoRefresh(e.target.checked)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      🔄 Auto Refresh
+                    </label>
+                    
+                    <label htmlFor="auto-scroll" className="flex items-center gap-2 text-sm text-gray-700">
+                      <input 
+                        id="auto-scroll"
+                        name="auto-scroll"
+                        type="checkbox" 
+                        checked={autoScroll}
+                        onChange={(e) => setAutoScroll(e.target.checked)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      📜 Auto Scroll
+                    </label>
+                  </div>
+
+                  {/* Time Range Control */}
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="time-range" className="text-sm font-medium text-gray-700">⏰ Time Range:</label>
+                    <select
+                      id="time-range"
+                      value={selectedTimeRange}
+                      onChange={(e) => setSelectedTimeRange(e.target.value)}
+                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="1m">Last 1 min</option>
+                      <option value="5m">Last 5 min</option>
+                      <option value="10m">Last 10 min</option>
+                      <option value="30m">Last 30 min</option>
+                      <option value="1h">Last 1 hour</option>
+                      <option value="1d">Last 24 hours</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Log Limits Controls */}
+              <div className="border-t pt-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <div>
+                    <label htmlFor="max-logs" className="block text-xs font-medium text-gray-600 mb-1">📊 Max Total Logs</label>
+                    <input
+                      id="max-logs"
+                      type="range"
+                      min="50"
+                      max="1000"
+                      step="50"
+                      value={maxLogs}
+                      onChange={(e) => setMaxLogs(Number(e.target.value))}
+                      className="w-full"
+                    />
+                    <div className="text-xs text-gray-500 text-center">{maxLogs}</div>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="max-errors" className="block text-xs font-medium text-gray-600 mb-1">❌ Max Errors</label>
+                    <input
+                      id="max-errors"
+                      type="range"
+                      min="10"
+                      max="200"
+                      step="10"
+                      value={maxErrors}
+                      onChange={(e) => setMaxErrors(Number(e.target.value))}
+                      className="w-full"
+                    />
+                    <div className="text-xs text-gray-500 text-center">{maxErrors}</div>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="max-warnings" className="block text-xs font-medium text-gray-600 mb-1">⚠️ Max Warnings</label>
+                    <input
+                      id="max-warnings"
+                      type="range"
+                      min="10"
+                      max="200"
+                      step="10"
+                      value={maxWarnings}
+                      onChange={(e) => setMaxWarnings(Number(e.target.value))}
+                      className="w-full"
+                    />
+                    <div className="text-xs text-gray-500 text-center">{maxWarnings}</div>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="max-info" className="block text-xs font-medium text-gray-600 mb-1">ℹ️ Max Info</label>
+                    <input
+                      id="max-info"
+                      type="range"
+                      min="10"
+                      max="200"
+                      step="10"
+                      value={maxInfo}
+                      onChange={(e) => setMaxInfo(Number(e.target.value))}
+                      className="w-full"
+                    />
+                    <div className="text-xs text-gray-500 text-center">{maxInfo}</div>
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="max-debug" className="block text-xs font-medium text-gray-600 mb-1">🐛 Max Debug</label>
+                    <input
+                      id="max-debug"
+                      type="range"
+                      min="10"
+                      max="200"
+                      step="10"
+                      value={maxDebug}
+                      onChange={(e) => setMaxDebug(Number(e.target.value))}
+                      className="w-full"
+                    />
+                    <div className="text-xs text-gray-500 text-center">{maxDebug}</div>
+                  </div>
+                </div>
+              </div>
+
+
             </div>
           </div>
 
@@ -854,7 +1180,7 @@ User Agent: ${log.userAgent || 'N/A'}
               </div>
             </div>
             
-            <div className="logs-container max-h-96 overflow-y-auto">
+            <div className="logs-container h-[calc(100vh-24rem)] overflow-y-auto">
               {logs.length === 0 ? (
                 <div className="p-8 text-center text-gray-800 font-medium">
                   <div className="text-4xl mb-2">📝</div>
@@ -874,80 +1200,6 @@ User Agent: ${log.userAgent || 'N/A'}
                 ))
               )}
               <div ref={logsEndRef} />
-            </div>
-          </div>
-
-          {/* Quick Actions Footer - Enhanced */}
-          <div className="mt-6 p-6 bg-white border rounded-lg shadow-sm">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
-              🛠️ Quick Testing & Analysis Tools
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <a 
-                href="/test-console-logging"
-                className="group relative overflow-hidden p-6 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-              >
-                <div className="relative z-10">
-                  <div className="text-2xl mb-2">🧪</div>
-                  <h4 className="text-xl font-bold mb-2">Test Console Logging</h4>
-                  <p className="text-blue-100 text-sm">
-                    Generate various types of console logs to test the logging system. 
-                    Perfect for debugging console interception and log capture functionality.
-                  </p>
-                  <div className="mt-3 text-xs text-blue-200 font-medium">
-                    ▶️ Features: Error simulation, console override testing, message formatting
-                  </div>
-                </div>
-                <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-300"></div>
-              </a>
-              
-              <a 
-                href="/auto-log-review"
-                className="group relative overflow-hidden p-6 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-              >
-                <div className="relative z-10">
-                  <div className="text-2xl mb-2">🔍</div>
-                  <h4 className="text-xl font-bold mb-2">Auto Log Analysis</h4>
-                  <p className="text-purple-100 text-sm">
-                    Intelligent analysis of log patterns, error detection, and automated insights. 
-                    AI-powered log review for proactive issue identification.
-                  </p>
-                  <div className="mt-3 text-xs text-purple-200 font-medium">
-                    ▶️ Features: Pattern detection, anomaly alerts, performance insights
-                  </div>
-                </div>
-                <div className="absolute top-0 right-0 w-20 h-20 bg-white opacity-10 rounded-full -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-300"></div>
-              </a>
-            </div>
-            
-            {/* Additional Tools Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <a 
-                href="/test-log-generation"
-                className="group p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors text-center"
-              >
-                <div className="text-xl mb-1">⚡</div>
-                <h5 className="font-semibold text-green-800 text-sm">Log Generator</h5>
-                <p className="text-green-600 text-xs mt-1">Generate test logs with various scenarios</p>
-              </a>
-              
-              <button
-                onClick={testConsoleLogging}
-                className="group p-4 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors text-center"
-              >
-                <div className="text-xl mb-1">🎯</div>
-                <h5 className="font-semibold text-orange-800 text-sm">Quick Test</h5>
-                <p className="text-orange-600 text-xs mt-1">Generate sample logs right here</p>
-              </button>
-              
-              <button
-                onClick={exportLogs}
-                className="group p-4 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors text-center"
-              >
-                <div className="text-xl mb-1">�</div>
-                <h5 className="font-semibold text-indigo-800 text-sm">Export Data</h5>
-                <p className="text-indigo-600 text-xs mt-1">Download logs as JSON file</p>
-              </button>
             </div>
           </div>
         </div>
