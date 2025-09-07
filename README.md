@@ -1,28 +1,36 @@
-# Family Command Center
+# 🛡️ Dayboard - Proprietary Household Command Center
 
-> A comprehensive family management dashboard built with Next.js, designed for tablets and Echo Show devices.
+> **IMPORTANT:** This is proprietary software owned by Kyle Wade (kyle.wade.ktw@gmail.com). Unauthorized copying, distribution, or commercial use by large corporations is strictly prohibited.
+
+**Copyright (c) 2025 Kyle Wade. All rights reserved.**
+
+## ⚖️ Legal Notice
+
+This application contains proprietary code and algorithms. Large corporations and competing services are **PROHIBITED** from copying, mirroring, or creating derivative works. Violation may result in legal action and damages up to $100,000.
+
+**License:** Proprietary - See [DMCA_PROTECTION.md](./DMCA_PROTECTION.md) for full legal terms.
 
 ## ✨ Features
 
 ### 🏠 **Dashboard Hub**
 - **Weather Integration**: 6-day forecast with current conditions
-- **Family Calendar**: Color-coded events for all family members
+- **Household Calendar**: Color-coded events for all household members
 - **Meal Planning**: Weekly dinner suggestions and favorites
 - **Quick Lists**: Urgent grocery items and daily todos
-- **Project Tracking**: Active family projects with progress bars
+- **Project Tracking**: Active household projects with progress bars
 - **Quick Actions**: Common tasks like adding meals, starting timers
 
 ### 🍽️ **Meal Planning**
-- **Recipe Library**: 50+ family-tested recipes with ratings
+- **Recipe Library**: 50+ household-tested recipes with ratings
 - **Weekly Planner**: Drag-and-drop meal scheduling
 - **Favorites Management**: Save and organize preferred dishes
 - **Shopping Integration**: Auto-generate grocery lists from meal plans
 
 ### 📝 **Smart Lists**
 - **Grocery Lists**: Organized by categories (Produce, Dairy, etc.)
-- **Todo Management**: Family task tracking with completion status
+- **Todo Management**: Household task tracking with completion status
 - **Shopping Lists**: Progress tracking and shared access
-- **Real-time Sync**: Updates across all family devices
+- **Real-time Sync**: Updates across all household devices
 
 ### 💼 **Work & Project Management**
 - **Time Tracking**: Built-in timers for work sessions
@@ -30,10 +38,10 @@
 - **Schedule Management**: Daily events and meeting coordination
 - **Analytics**: Productivity insights and time allocation
 
-### 👨‍👩‍👧‍👦 **Family Profiles**
+### 👨‍👩‍👧‍👦 **Household Profiles**
 - **Member Management**: Individual profiles with roles and responsibilities
 - **Household Settings**: Shared preferences and configurations
-- **Achievement Tracking**: Celebrate family member accomplishments
+- **Achievement Tracking**: Celebrate household member accomplishments
 
 ## 🎨 Design Highlights
 
@@ -100,7 +108,7 @@ See [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) for detailed development timeline
 - ✅ Complete meal planning system
 - ✅ Multi-list management (grocery, todo, shopping)
 - ✅ Work time tracking and project management
-- ✅ Family profile and household management
+- ✅ Household profile and household management
 - ✅ Responsive navigation with collapsible sidebar
 
 ### Next Up
@@ -110,7 +118,7 @@ See [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) for detailed development timeline
 
 ## 🤝 Contributing
 
-This is a personal family management project. While not currently open for contributions, feedback and suggestions are welcome!
+This is a personal household management project. While not currently open for contributions, feedback and suggestions are welcome!
 
 ## 📄 License
 
@@ -122,4 +130,4 @@ For questions or support, please open an issue in the GitHub repository.
 
 ---
 
-Built with ❤️ for families who want to stay organized and connected.
+Built with ❤️ for households who want to stay organized and connected.

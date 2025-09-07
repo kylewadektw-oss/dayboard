@@ -1,3 +1,49 @@
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 🧭 LOGGING NAV - Navigation Component for Logging Suite
+ * 
+ * PURPOSE: Unified navigation and filtering interface for all logging-related pages
+ * 
+ * FEATURES:
+ * - Sidebar and horizontal navigation modes
+ * - Real-time log filtering and search
+ * - Time range selection with quick buttons
+ * - Log level filtering with statistics
+ * - Component and source filtering
+ * - Collapsible sidebar with responsive design
+ * 
+ * VARIANTS:
+ * - sidebar: Full-featured sidebar with filters (used in logging pages)
+ * - horizontal: Compact top navigation (fallback)
+ * 
+ * NAVIGATION ROUTES:
+ * - /logs-dashboard: Real-time log monitoring
+ * - /test-log-generation: Log generation testing
+ * - /auto-log-review: Automated analysis
+ * - /test-console-logging: Console testing suite
+ * 
+ * TECHNICAL:
+ * - React.memo for performance optimization
+ * - Next.js Link components for client-side navigation
+ * - Responsive design with Tailwind CSS
+ * - Lucide React icons for consistent UI
+ */
+
 'use client';
 
 import Link from 'next/link';
@@ -34,13 +80,12 @@ const loggingRoutes = [
 ];
 
 const timeRangeOptions = [
+  { value: '1m', label: '1 minute' },
   { value: '5m', label: '5 minutes' },
+  { value: '10m', label: '10 minutes' },
   { value: '30m', label: '30 minutes' },
   { value: '1h', label: '1 hour' },
-  { value: '6h', label: '6 hours' },
-  { value: '12h', label: '12 hours' },
   { value: '1d', label: '1 day' },
-  { value: '1w', label: '1 week' },
   { value: 'all', label: 'All time' }
 ];
 
@@ -117,7 +162,22 @@ const LoggingNav = memo(function LoggingNav({
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           {!isCollapsed && (
-            <h2 className="font-semibold text-gray-800">🔧 Logging Tools</h2>
+            <div className="flex-1">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-3 p-3 rounded-lg transition-colors mb-2 group text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+              >
+                <span className="text-lg">🏠</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate text-gray-900">
+                    Back to Dashboard
+                  </div>
+                  <div className="text-xs truncate text-gray-800 font-semibold">
+                    Return to main dashboard
+                  </div>
+                </div>
+              </Link>
+            </div>
           )}
           <button
             onClick={onToggleCollapse}
@@ -145,13 +205,13 @@ const LoggingNav = memo(function LoggingNav({
                 }`}
                 title={isCollapsed ? route.label : ''}
               >
-                <Icon size={20} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-gray-500'}`} />
+                <Icon size={20} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-gray-700'}`} />
                 {!isCollapsed && (
                   <div className="flex-1 min-w-0">
                     <div className={`font-medium truncate ${isActive ? 'text-white' : 'text-gray-900'}`}>
                       {route.label}
                     </div>
-                    <div className={`text-xs truncate ${isActive ? 'text-blue-100' : 'text-gray-500'}`}>
+                    <div className={`text-xs truncate ${isActive ? 'text-blue-100' : 'text-gray-800 font-semibold'}`}>
                       {route.description}
                     </div>
                   </div>
@@ -161,34 +221,14 @@ const LoggingNav = memo(function LoggingNav({
           })}
         </div>
 
-        {/* Dashboard Navigation */}
-        {!isCollapsed && (
-          <div className="p-2 border-t border-gray-200">
-            <Link
-              href="/dashboard"
-              className="w-full flex items-center gap-3 p-3 rounded-lg transition-colors mb-1 group text-gray-700 hover:bg-gray-100"
-            >
-              <span className="text-lg">🏠</span>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium truncate text-gray-900">
-                  Back to Dashboard
-                </div>
-                <div className="text-xs truncate text-gray-500">
-                  Return to main dashboard
-                </div>
-              </div>
-            </Link>
-          </div>
-        )}
-
         {/* Filters Section for Logs Dashboard */}
         {isLogsPage && !isCollapsed && (
           <div className="border-t border-gray-200">
             {/* Time Range Filter - Button Grid */}
             <div className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Clock size={16} className="text-gray-500" />
-                <h3 className="text-sm font-medium text-gray-700">
+                <Clock size={16} className="text-gray-800" />
+                <h3 className="text-sm font-semibold text-gray-900">
                   Time Range
                 </h3>
               </div>
@@ -214,8 +254,8 @@ const LoggingNav = memo(function LoggingNav({
             {!isCollapsed && logStats && (
               <div className="p-4 border-t border-gray-200">
                 <div className="flex items-center gap-2 mb-3">
-                  <BarChart3 size={16} className="text-gray-500" />
-                  <h3 className="text-sm font-medium text-gray-700">
+                  <BarChart3 size={16} className="text-gray-800" />
+                  <h3 className="text-sm font-semibold text-gray-900">
                     Quick Filters
                   </h3>
                 </div>
@@ -230,9 +270,9 @@ const LoggingNav = memo(function LoggingNav({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">📊</span>
-                        <span className="text-sm font-medium text-gray-700">All Logs</span>
+                        <span className="text-sm font-semibold text-gray-900">All Logs</span>
                       </div>
-                      <span className="text-lg font-bold text-gray-700">{logStats.total}</span>
+                      <span className="text-lg font-bold text-gray-900">{logStats.total}</span>
                     </div>
                   </button>
                   
@@ -245,9 +285,9 @@ const LoggingNav = memo(function LoggingNav({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">❌</span>
-                        <span className="text-sm font-medium text-red-600">Errors</span>
+                        <span className="text-sm font-semibold text-red-700">Errors</span>
                       </div>
-                      <span className="text-lg font-bold text-red-600">{logStats.errors}</span>
+                      <span className="text-lg font-bold text-red-700">{logStats.errors}</span>
                     </div>
                   </button>
                   
@@ -260,9 +300,9 @@ const LoggingNav = memo(function LoggingNav({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">⚠️</span>
-                        <span className="text-sm font-medium text-yellow-600">Warnings</span>
+                        <span className="text-sm font-semibold text-yellow-700">Warnings</span>
                       </div>
-                      <span className="text-lg font-bold text-yellow-600">{logStats.warnings}</span>
+                      <span className="text-lg font-bold text-yellow-700">{logStats.warnings}</span>
                     </div>
                   </button>
                   
@@ -275,9 +315,9 @@ const LoggingNav = memo(function LoggingNav({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">ℹ️</span>
-                        <span className="text-sm font-medium text-blue-600">Info</span>
+                        <span className="text-sm font-semibold text-blue-700">Info</span>
                       </div>
-                      <span className="text-lg font-bold text-blue-600">{logStats.info}</span>
+                      <span className="text-lg font-bold text-blue-700">{logStats.info}</span>
                     </div>
                   </button>
                   
@@ -290,9 +330,9 @@ const LoggingNav = memo(function LoggingNav({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-lg">🐛</span>
-                        <span className="text-sm font-medium text-gray-600">Debug</span>
+                        <span className="text-sm font-semibold text-gray-700">Debug</span>
                       </div>
-                      <span className="text-lg font-bold text-gray-600">{logStats.debug}</span>
+                      <span className="text-lg font-bold text-gray-700">{logStats.debug}</span>
                     </div>
                   </button>
                 </div>
@@ -311,7 +351,7 @@ const LoggingNav = memo(function LoggingNav({
               >
                 <div className="flex items-center gap-2">
                   <Filter size={16} />
-                  <span className="font-medium text-gray-700">
+                  <span className="font-semibold text-gray-900">
                     Filters {hasActiveFilters && <span className="text-blue-600">({
                       [selectedLevel !== 'all', selectedSide !== 'all', selectedComponent !== 'all', searchQuery.trim()].filter(Boolean).length
                     })</span>}
@@ -327,7 +367,7 @@ const LoggingNav = memo(function LoggingNav({
                 <div className="mt-3 space-y-4">
                   {/* Search Filter */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-2">🔍 Search</label>
+                    <label className="block text-xs font-semibold text-gray-800 mb-2">🔍 Search</label>
                     <div className="relative">
                       <input
                         type="text"
@@ -349,7 +389,7 @@ const LoggingNav = memo(function LoggingNav({
 
                   {/* Level Filter */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-2">📊 Log Level</label>
+                    <label className="block text-xs font-semibold text-gray-800 mb-2">📊 Log Level</label>
                     <div className="space-y-1 max-h-32 overflow-y-auto">
                       {logLevels.map((level) => (
                         <button
@@ -370,7 +410,7 @@ const LoggingNav = memo(function LoggingNav({
 
                   {/* Source Filter */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-2">🌍 Source</label>
+                    <label className="block text-xs font-semibold text-gray-800 mb-2">🌍 Source</label>
                     <div className="space-y-1">
                       {sourceSides.map((side) => (
                         <button
@@ -392,7 +432,7 @@ const LoggingNav = memo(function LoggingNav({
                   {/* Component Filter */}
                   {availableComponents.length > 1 && (
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-2">🧩 Component</label>
+                      <label className="block text-xs font-semibold text-gray-800 mb-2">🧩 Component</label>
                       <div className="space-y-1 max-h-32 overflow-y-auto">
                         {availableComponents.map((component) => (
                           <button
@@ -416,7 +456,7 @@ const LoggingNav = memo(function LoggingNav({
                     <div className="pt-2 border-t border-gray-200">
                       <button
                         onClick={onClearFilters}
-                        className="w-full px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm transition-colors"
+                        className="w-full px-3 py-2 bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg text-sm transition-colors font-semibold"
                       >
                         🗑️ Clear All Filters
                       </button>
@@ -431,7 +471,7 @@ const LoggingNav = memo(function LoggingNav({
         {/* Sidebar Footer */}
         {!isCollapsed && (
           <div className="mt-auto p-4 border-t border-gray-200 bg-gray-50">
-            <div className="text-xs text-gray-500 text-center">
+            <div className="text-xs text-gray-800 text-center font-semibold">
               💡 Real-time logging & monitoring
             </div>
           </div>
@@ -452,11 +492,11 @@ const LoggingNav = memo(function LoggingNav({
               className={`px-4 py-2 rounded-lg border transition-colors ${
                 pathname === route.href
                   ? 'bg-blue-500 text-white border-blue-500'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  : 'bg-white text-gray-800 border-gray-300 hover:bg-gray-50 font-medium'
               }`}
             >
-              <div className="font-medium">{route.label}</div>
-              <div className="text-xs opacity-75">{route.description}</div>
+              <div className="font-semibold">{route.label}</div>
+              <div className="text-xs opacity-90 font-medium">{route.description}</div>
             </Link>
           ))}
         </div>

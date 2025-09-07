@@ -1,3 +1,82 @@
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 🧩 PAGE COMPONENT - Reusable UI Element
+ * 
+ * PURPOSE: Reusable page component for household management interfaces
+ * 
+ * PROPS:
+ * - [List component props and their types]
+ * - [Optional vs required properties]
+ * - [Callback functions and event handlers]
+ * 
+ * FEATURES:
+ * - [Interactive elements and behaviors]
+ * - [Visual design and styling approach]
+ * - [Data handling and display logic]
+ * - [Accessibility considerations]
+ * 
+ * USAGE:
+ * ```tsx
+ * <🧩 
+ *   prop1="value"
+ *   onAction={handleAction}
+ * />
+ * ```
+ * 
+ * TECHNICAL:
+ * - [Implementation details]
+ * - [Performance considerations]
+ * - [Testing approach]
+ */
+
+
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kylewadektw-oss)
+ * 
+ * This file is part of Dayboard, a proprietary family command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: [your-email@domain.com]
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
 'use client';
 
 import { Suspense, useEffect, lazy } from 'react';
@@ -110,7 +189,7 @@ export default function DashboardPage() {
             <QuickActionsHub />
           </div>
 
-          {/* Middle Row - Core Family Features */}
+          {/* Middle Row - Core Household Features */}
           <div className="lg:col-span-1">
             <Suspense fallback={<WidgetSkeleton />}>
               <MealsWidget />
@@ -129,7 +208,7 @@ export default function DashboardPage() {
             </Suspense>
           </div>
 
-          {/* Family Updates Row */}
+          {/* Household Updates Row */}
           <div className="lg:col-span-2">
             <Suspense fallback={<WidgetSkeleton />}>
               <DaycareWidget />
@@ -141,7 +220,7 @@ export default function DashboardPage() {
         <div className="mt-6 p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl border-2 border-dashed border-purple-300">
           <h3 className="text-lg font-semibold text-purple-800 mb-2">✨ Premium Features Coming Soon</h3>
           <p className="text-purple-600 text-sm">
-            Sports ticker, financial snapshot, package tracker, and AI-powered family coordination will be available with Premium subscription.
+            Sports ticker, financial snapshot, package tracker, and AI-powered household coordination will be available with Premium subscription.
           </p>
         </div>
 

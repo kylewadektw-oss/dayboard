@@ -1,12 +1,55 @@
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 🧪 TEST LOG GENERATION - Controlled Log Testing Environment
+ * 
+ * PURPOSE: Generate various types of logs for testing the logging system functionality
+ * 
+ * FEATURES:
+ * - Generate individual log types (ERROR, WARN, INFO, DEBUG)
+ * - Batch log generation (10, 50, 100+ logs with mixed types)
+ * - Stress testing with rapid log generation
+ * - Component-specific logs to test source detection
+ * - Custom message templates and error simulation
+ * - Real-time generation counter and status indicators
+ * 
+ * ACCESS: Public - No authentication required (development/testing tool)
+ * 
+ * TECHNICAL:
+ * - Uses enhanced logger with circular reference protection
+ * - Generates realistic log scenarios for testing
+ * - Performance-optimized batch operations
+ * - Integrates with real-time logs dashboard
+ * 
+ * NAVIGATION: Part of logging suite with LoggingNav sidebar
+ * Best used with: logs-dashboard (open in another tab to see generated logs)
+ */
+
 'use client';
 
 import { useState } from 'react';
 import { logger, LogLevel } from '@/utils/logger';
 import Link from 'next/link';
+import LoggingNav from '@/components/logging/LoggingNav';
 
 export default function TestLogGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedCount, setGeneratedCount] = useState(0);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const generateTestLogs = async () => {
     setIsGenerating(true);
@@ -48,7 +91,7 @@ export default function TestLogGeneration() {
             errorMessage: error.message,
             stackTrace: error.stack,
             context: 'User profile rendering'
-          }, error);
+          });
         }
       },
       
@@ -223,120 +266,134 @@ export default function TestLogGeneration() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">🧪 Log Generation Testing</h1>
-          <Link 
-            href="/logs-dashboard"
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            📊 View Logs Dashboard
-          </Link>
-        </div>
-        
-        <div className="grid gap-6">
-          {/* Comprehensive Test Suite */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              🎯 Comprehensive Test Suite
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Generates a variety of realistic logs including errors, warnings, info, and debug messages 
-              across different components and services.
-            </p>
-            <button
-              onClick={generateTestLogs}
-              disabled={isGenerating}
-              className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isGenerating ? `Generating... (${generatedCount}/15)` : 'Generate Test Logs'}
-            </button>
-          </div>
-
-          {/* Critical Error Simulation */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              🚨 Critical Error Simulation
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Simulates a cascading system failure with multiple related critical errors 
-              to test error handling and alerting systems.
-            </p>
-            <button
-              onClick={generateCriticalErrorBurst}
-              disabled={isGenerating}
-              className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isGenerating ? 'Generating Critical Errors...' : 'Simulate System Failure'}
-            </button>
-          </div>
-
-          {/* High Volume Traffic */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              📈 High Volume Traffic Test
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Generates rapid-fire logs to test dashboard performance and filtering 
-              under high-volume conditions.
-            </p>
-            <button
-              onClick={generateHighVolumeTraffic}
-              disabled={isGenerating}
-              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isGenerating ? 'Generating High Volume...' : 'Generate Traffic Burst'}
-            </button>
-          </div>
-
-          {/* Quick Individual Tests */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              ⚡ Quick Individual Tests
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <button
-                onClick={() => logger.error('Test error message', 'TestComponent', { testData: 'error test' })}
-                className="px-4 py-2 bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors"
+    <>
+      {/* Sidebar Navigation */}
+      <LoggingNav 
+        variant="sidebar"
+        isCollapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
+      
+      {/* Main Content Area */}
+      <div className={`transition-all duration-300 ${
+        sidebarCollapsed ? 'ml-16' : 'ml-80'
+      }`}>
+        <div className="min-h-screen bg-gray-50 p-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">🧪 Log Generation Testing</h1>
+              <Link 
+                href="/logs-dashboard"
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
-                ❌ Error
-              </button>
-              <button
-                onClick={() => logger.warn('Test warning message', 'TestComponent', { testData: 'warning test' })}
-                className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors"
-              >
-                ⚠️ Warning
-              </button>
-              <button
-                onClick={() => logger.info('Test info message', 'TestComponent', { testData: 'info test' })}
-                className="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors"
-              >
-                ℹ️ Info
-              </button>
-              <button
-                onClick={() => logger.debug('Test debug message', 'TestComponent', { testData: 'debug test' })}
-                className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                🐛 Debug
-              </button>
+                📊 View Logs Dashboard
+              </Link>
             </div>
-          </div>
+            
+            <div className="grid gap-6">
+              {/* Comprehensive Test Suite */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900">
+                  🎯 Comprehensive Test Suite
+                </h2>
+                <p className="text-gray-900 font-semibold mb-4">
+                  Generates a variety of realistic logs including errors, warnings, info, and debug messages 
+                  across different components and services.
+                </p>
+                <button
+                  onClick={generateTestLogs}
+                  disabled={isGenerating}
+                  className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isGenerating ? `Generating... (${generatedCount}/15)` : 'Generate Test Logs'}
+                </button>
+              </div>
 
-          {/* Instructions */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-3">📋 Testing Instructions</h3>
-            <ul className="space-y-2 text-blue-800">
-              <li>• <strong>Comprehensive Test:</strong> Generates 15 realistic logs across all levels</li>
-              <li>• <strong>Critical Errors:</strong> Tests error handling with cascading failures</li>
-              <li>• <strong>High Volume:</strong> Tests dashboard performance with rapid log generation</li>
-              <li>• <strong>Individual Tests:</strong> Quick single-log generation for specific testing</li>
-              <li>• Open the <strong>Logs Dashboard</strong> to see real-time results</li>
-              <li>• Test the new <strong>time range buttons</strong> to filter by time periods</li>
-            </ul>
+              {/* Critical Error Simulation */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900">
+                  🚨 Critical Error Simulation
+                </h2>
+                <p className="text-gray-900 font-semibold mb-4">
+                  Simulates a cascading system failure with multiple related critical errors 
+                  to test error handling and alerting systems.
+                </p>
+                <button
+                  onClick={generateCriticalErrorBurst}
+                  disabled={isGenerating}
+                  className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isGenerating ? 'Generating Critical Errors...' : 'Simulate System Failure'}
+                </button>
+              </div>
+
+              {/* High Volume Traffic */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900">
+                  📈 High Volume Traffic Test
+                </h2>
+                <p className="text-gray-900 font-semibold mb-4">
+                  Generates rapid-fire logs to test dashboard performance and filtering 
+                  under high-volume conditions.
+                </p>
+                <button
+                  onClick={generateHighVolumeTraffic}
+                  disabled={isGenerating}
+                  className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isGenerating ? 'Generating High Volume...' : 'Generate Traffic Burst'}
+                </button>
+              </div>
+
+              {/* Quick Individual Tests */}
+              <div className="bg-white rounded-lg shadow p-6">
+                <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-900">
+                  ⚡ Quick Individual Tests
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <button
+                    onClick={() => logger.error('Test error message', 'TestComponent', { testData: 'error test' })}
+                    className="px-4 py-2 bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors"
+                  >
+                    ❌ Error
+                  </button>
+                  <button
+                    onClick={() => logger.warn('Test warning message', 'TestComponent', { testData: 'warning test' })}
+                    className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors"
+                  >
+                    ⚠️ Warning
+                  </button>
+                  <button
+                    onClick={() => logger.info('Test info message', 'TestComponent', { testData: 'info test' })}
+                    className="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors"
+                  >
+                    ℹ️ Info
+                  </button>
+                  <button
+                    onClick={() => logger.debug('Test debug message', 'TestComponent', { testData: 'debug test' })}
+                    className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    🐛 Debug
+                  </button>
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-blue-900 mb-3">📋 Testing Instructions</h3>
+                <ul className="space-y-2 text-blue-900 font-semibold">
+                  <li>• <strong>Comprehensive Test:</strong> Generates 15 realistic logs across all levels</li>
+                  <li>• <strong>Critical Errors:</strong> Tests error handling with cascading failures</li>
+                  <li>• <strong>High Volume:</strong> Tests dashboard performance with rapid log generation</li>
+                  <li>• <strong>Individual Tests:</strong> Quick single-log generation for specific testing</li>
+                  <li>• Open the <strong>Logs Dashboard</strong> to see real-time results</li>
+                  <li>• Test the new <strong>time range buttons</strong> to filter by time periods</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -1,9 +1,40 @@
-The MIT License (MIT)
+DAYBOARD PROPRIETARY LICENSE
 
-Copyright (c) 2024 Vercel, Inc.
+Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+This software and associated documentation files (the "Software") are proprietary 
+and confidential to Kyle Wade and the Dayboard project.
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+RESTRICTIONS:
+1. NO COMMERCIAL USE: This software may not be used for commercial purposes 
+   without explicit written permission from the copyright holder.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+2. NO COPYING/MIRRORING: Large corporations, competing services, or any entity 
+   with revenue exceeding $1M annually are strictly prohibited from copying, 
+   mirroring, or creating derivative works.
+
+3. NO REDISTRIBUTION: You may not distribute, sublicense, or sell copies of 
+   this software without explicit written permission.
+
+4. PERSONAL USE ONLY: Individual developers may use this for learning purposes 
+   only, with proper attribution required.
+
+5. NO TRADEMARK USE: You may not use "Dayboard" or related trademarks without 
+   explicit permission.
+
+PERMITTED USES:
+- Personal learning and education
+- Contributing to this specific project via pull requests
+- Running your own instance for personal/household use (non-commercial)
+
+VIOLATION ENFORCEMENT:
+Unauthorized use will result in immediate legal action including but not limited to:
+- Cease and desist orders
+- DMCA takedown requests
+- Legal damages up to $100,000 per violation
+- Injunctive relief
+
+For licensing inquiries or commercial use permissions, contact:
+Kyle Wade - kyle.wade.ktw@gmail.com
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.

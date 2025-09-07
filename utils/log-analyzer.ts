@@ -1,3 +1,85 @@
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 📋 LOG-ANALYZER TYPES - Type Definitions
+ * 
+ * PURPOSE: TypeScript type definitions for log-analyzer data structures
+ * 
+ * TYPES:
+ * - [List main type definitions]
+ * - [Interface declarations]
+ * - [Enum definitions]
+ * - [Utility types and generics]
+ * 
+ * USAGE:
+ * ```typescript
+ * import type { TypeName } from '@/types/log-analyzer';
+ * 
+ * const example: TypeName = {
+ *   // properties
+ * };
+ * ```
+ * 
+ * FEATURES:
+ * - [Type safety guarantees]
+ * - [Validation patterns]
+ * - [Extensibility and composition]
+ * - [Integration with other types]
+ * 
+ * TECHNICAL:
+ * - [Type system design]
+ * - [Runtime validation]
+ * - [Performance implications]
+ * - [Compatibility considerations]
+ */
+
+
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kylewadektw-oss)
+ * 
+ * This file is part of Dayboard, a proprietary family command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: [your-email@domain.com]
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
 import { logger, LogLevel, LogEntry } from './logger';
 
 export interface LogAnalysis {
@@ -57,6 +139,19 @@ export class LogAnalyzer {
     };
   }
 
+  /**
+   * Get filtered logs for display purposes
+   */
+  async getFilteredLogs(level?: string, minutes: number = 30): Promise<LogEntry[]> {
+    const logs = await this.getRecentLogs(minutes);
+    
+    if (!level || level === 'all') {
+      return logs.slice(0, 100); // Limit for performance
+    }
+    
+    return logs.filter(log => log.level === level).slice(0, 100);
+  }
+
   private async getSessionLogs(sessionId: string): Promise<LogEntry[]> {
     try {
       // For now, get from memory logs that match session
@@ -72,7 +167,29 @@ export class LogAnalyzer {
     try {
       const cutoffTime = new Date(Date.now() - minutes * 60 * 1000);
       const allLogs = await logger.getAllLogsIncludingDatabase();
-      return allLogs.filter(log => new Date(log.timestamp) >= cutoffTime);
+      const recentLogs = allLogs.filter(log => new Date(log.timestamp) >= cutoffTime);
+      
+      // Limit each log level to 100 entries for better performance and focused analysis
+      const limitedLogs: LogEntry[] = [];
+      const limits = { error: 100, warn: 100, info: 100, debug: 100 };
+      const counts = { error: 0, warn: 0, info: 0, debug: 0 };
+      
+      // Sort by timestamp (newest first) to get most recent logs
+      const sortedLogs = recentLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      
+      for (const log of sortedLogs) {
+        const level = log.level.toLowerCase() as keyof typeof counts;
+        if (counts[level] < limits[level]) {
+          limitedLogs.push(log);
+          counts[level]++;
+        }
+        
+        // Stop if we've reached the total limit (400 logs max)
+        if (limitedLogs.length >= 400) break;
+      }
+      
+      // Sort back to chronological order for analysis
+      return limitedLogs.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
     } catch (error) {
       console.error('Failed to get recent logs:', error);
       return logger.getAllLogs();
@@ -292,25 +409,169 @@ export class LogAnalyzer {
     const errors = logs.filter(l => l.level === LogLevel.ERROR);
     const warnings = logs.filter(l => l.level === LogLevel.WARN);
 
-    if (errors.length > 5) {
-      recommendations.push('High error count detected. Review error logs for patterns and fix critical issues.');
-    }
+    // Specific error pattern analysis with actionable recommendations
+    const errorMessages = errors.map(e => e.message.toLowerCase());
+    const warningMessages = warnings.map(w => w.message.toLowerCase());
 
-    if (warnings.length > 10) {
-      recommendations.push('Many warnings detected. Consider addressing these to prevent future errors.');
-    }
-
-    // Check for missing error handling
-    const uncaughtErrors = errors.filter(e => 
-      e.message.toLowerCase().includes('uncaught') ||
-      !e.stack
+    // Database/Supabase specific issues
+    const dbErrors = errors.filter(e => 
+      e.message.toLowerCase().includes('supabase') ||
+      e.message.toLowerCase().includes('database') ||
+      e.message.toLowerCase().includes('connection') ||
+      e.message.toLowerCase().includes('timeout')
     );
+    if (dbErrors.length > 0) {
+      recommendations.push(`�️ Database Issues (${dbErrors.length} errors):`);
+      recommendations.push(`  → Check Supabase connection status and API keys`);
+      recommendations.push(`  → Review database query timeouts and connection limits`);
+      recommendations.push(`  → Consider implementing connection pooling or retry logic`);
+    }
 
-    if (uncaughtErrors.length > 0) {
-      recommendations.push('Add proper error handling to prevent uncaught exceptions.');
+    // Authentication/OAuth specific issues
+    const authErrors = errors.filter(e =>
+      e.message.toLowerCase().includes('auth') ||
+      e.message.toLowerCase().includes('oauth') ||
+      e.message.toLowerCase().includes('token') ||
+      e.message.toLowerCase().includes('unauthorized') ||
+      e.message.toLowerCase().includes('403') ||
+      e.message.toLowerCase().includes('401')
+    );
+    if (authErrors.length > 0) {
+      recommendations.push(`🔐 Authentication Issues (${authErrors.length} errors):`);
+      recommendations.push(`  → Verify OAuth configuration and redirect URLs`);
+      recommendations.push(`  → Check token expiration and refresh logic`);
+      recommendations.push(`  → Review PKCE implementation for OAuth flows`);
+    }
+
+    // Network/API specific issues
+    const networkErrors = errors.filter(e =>
+      e.message.toLowerCase().includes('fetch') ||
+      e.message.toLowerCase().includes('network') ||
+      e.message.toLowerCase().includes('cors') ||
+      e.message.toLowerCase().includes('500') ||
+      e.message.toLowerCase().includes('502') ||
+      e.message.toLowerCase().includes('503')
+    );
+    if (networkErrors.length > 0) {
+      recommendations.push(`🌐 Network/API Issues (${networkErrors.length} errors):`);
+      recommendations.push(`  → Check API endpoint availability and status`);
+      recommendations.push(`  → Review CORS configuration for cross-origin requests`);
+      recommendations.push(`  → Implement proper error handling and retry mechanisms`);
+    }
+
+    // React/Hydration specific issues
+    const reactErrors = errors.filter(e =>
+      e.message.toLowerCase().includes('hydration') ||
+      e.message.toLowerCase().includes('react') ||
+      e.message.toLowerCase().includes('hook') ||
+      e.message.toLowerCase().includes('component')
+    );
+    if (reactErrors.length > 0) {
+      recommendations.push(`⚛️ React/Component Issues (${reactErrors.length} errors):`);
+      recommendations.push(`  → Fix hydration mismatches between server and client`);
+      recommendations.push(`  → Review useEffect dependencies and cleanup functions`);
+      recommendations.push(`  → Ensure proper component lifecycle management`);
+    }
+
+    // Type/TypeScript specific warnings
+    const typeWarnings = warnings.filter(w =>
+      w.message.toLowerCase().includes('type') ||
+      w.message.toLowerCase().includes('typescript') ||
+      w.message.toLowerCase().includes('any') ||
+      w.message.toLowerCase().includes('unknown')
+    );
+    if (typeWarnings.length > 0) {
+      recommendations.push(`📝 TypeScript Issues (${typeWarnings.length} warnings):`);
+      recommendations.push(`  → Add proper type definitions for better type safety`);
+      recommendations.push(`  → Replace 'any' types with specific interfaces`);
+      recommendations.push(`  → Run 'npm run lint' to identify and fix type issues`);
+    }
+
+    // Performance specific warnings
+    const performanceWarnings = warnings.filter(w =>
+      w.message.toLowerCase().includes('slow') ||
+      w.message.toLowerCase().includes('performance') ||
+      w.message.toLowerCase().includes('timeout') ||
+      w.message.toLowerCase().includes('memory')
+    );
+    if (performanceWarnings.length > 0) {
+      recommendations.push(`⚡ Performance Issues (${performanceWarnings.length} warnings):`);
+      recommendations.push(`  → Optimize slow queries and API calls`);
+      recommendations.push(`  → Implement proper caching strategies`);
+      recommendations.push(`  → Consider code splitting and lazy loading`);
+    }
+
+    // Deprecation warnings
+    const deprecationWarnings = warnings.filter(w =>
+      w.message.toLowerCase().includes('deprecat') ||
+      w.message.toLowerCase().includes('legacy')
+    );
+    if (deprecationWarnings.length > 0) {
+      recommendations.push(`� Deprecation Issues (${deprecationWarnings.length} warnings):`);
+      recommendations.push(`  → Update deprecated APIs and libraries to latest versions`);
+      recommendations.push(`  → Review migration guides for breaking changes`);
+      recommendations.push(`  → Plan upgrade timeline for deprecated features`);
+    }
+
+    // Component-specific analysis with specific actions
+    const componentErrors = errors.reduce((acc, error) => {
+      const comp = error.component || 'Unknown';
+      acc[comp] = (acc[comp] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const problemComponents = Object.entries(componentErrors)
+      .filter(([_, count]) => count > 2)
+      .sort(([,a], [,b]) => b - a);
+
+    if (problemComponents.length > 0) {
+      recommendations.push(`🔧 Component-Specific Actions:`);
+      problemComponents.forEach(([component, count]) => {
+        recommendations.push(`  → ${component}: ${count} errors - Add error boundaries and defensive coding`);
+      });
+    }
+
+    // Urgent vs Non-urgent classification
+    if (errors.length > 10) {
+      recommendations.push(`🚨 URGENT: ${errors.length} errors detected - Immediate action required`);
+      recommendations.push(`  → Stop new deployments until critical errors are resolved`);
+      recommendations.push(`  → Set up error monitoring alerts for real-time notifications`);
+    } else if (errors.length > 0) {
+      recommendations.push(`⚠️ MODERATE: ${errors.length} errors need attention within 24 hours`);
+    }
+
+    // Success case with specific improvements
+    if (errors.length === 0 && warnings.length < 3) {
+      recommendations.push(`✅ System Health: Excellent - Consider these enhancements:`);
+      recommendations.push(`  → Implement accessibility improvements (ARIA labels, focus management)`);
+      recommendations.push(`  → Add end-to-end testing for critical user flows`);
+      recommendations.push(`  → Review and optimize bundle size and loading times`);
+      recommendations.push(`  → Consider implementing advanced monitoring (performance metrics, user analytics)`);
     }
 
     return recommendations;
+  }
+
+  private categorizeWarning(message: string): string {
+    const lowerMessage = message.toLowerCase();
+    
+    if (lowerMessage.includes('deprecat') || lowerMessage.includes('legacy')) {
+      return 'deprecation';
+    }
+    if (lowerMessage.includes('performance') || lowerMessage.includes('slow')) {
+      return 'performance';
+    }
+    if (lowerMessage.includes('accessibility') || lowerMessage.includes('contrast')) {
+      return 'accessibility';
+    }
+    if (lowerMessage.includes('security') || lowerMessage.includes('unsafe')) {
+      return 'security';
+    }
+    if (lowerMessage.includes('type') || lowerMessage.includes('typescript')) {
+      return 'type safety';
+    }
+    
+    return 'general';
   }
 
   private generateOAuthRecommendations(authErrors: LogEntry[], pkceIssues: LogEntry[], redirectIssues: LogEntry[]): string[] {

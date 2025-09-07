@@ -1,0 +1,31 @@
+{
+  "timestamp": "2025-09-07T03:37:20.293Z",
+  "signatures_checked": 8,
+  "manual_search_urls": [
+    "https://www.google.com/search?q=%22Dayboard%20Family%20Command%20Center%22",
+    "https://www.google.com/search?q=%22DAYBOARD%20PROPRIETARY%20CODE%22",
+    "https://www.google.com/search?q=%22Kyle%20Wade%20(kylewadektw-oss)%22",
+    "https://www.google.com/search?q=%22Family%20Command%20Center%20built%20with%20Next.js%22",
+    "https://www.google.com/search?q=%22WeeklyMealPlan%22",
+    "https://www.google.com/search?q=%22MealPlanningHeader%22",
+    "https://www.google.com/search?q=%22LoggingNav%20component%22",
+    "https://www.google.com/search?q=%22Enhanced%20Logs%20Dashboard%22"
+  ],
+  "github_search_urls": [
+    "https://github.com/search?q=%22Dayboard%20Family%20Command%20Center%22&type=code",
+    "https://github.com/search?q=%22DAYBOARD%20PROPRIETARY%20CODE%22&type=code",
+    "https://github.com/search?q=%22Kyle%20Wade%20(kylewadektw-oss)%22&type=code",
+    "https://github.com/search?q=%22Family%20Command%20Center%20built%20with%20Next.js%22&type=code",
+    "https://github.com/search?q=%22WeeklyMealPlan%22&type=code",
+    "https://github.com/search?q=%22MealPlanningHeader%22&type=code",
+    "https://github.com/search?q=%22LoggingNav%20component%22&type=code",
+    "https://github.com/search?q=%22Enhanced%20Logs%20Dashboard%22&type=code"
+  ],
+  "recommended_actions": [
+    "Review search results manually for potential violations",
+    "Check GitHub for unauthorized repositories",
+    "Monitor domain registrations similar to \"dayboard\"",
+    "Set up Google Alerts for your unique code signatures",
+    "Check app stores for similar applications"
+  ]
+}

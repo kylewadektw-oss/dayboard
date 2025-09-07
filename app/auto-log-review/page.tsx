@@ -1,6 +1,80 @@
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kylewadektw-oss)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: [your-email@domain.com]
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 🔍 AUTO LOG REVIEW - Intelligent Log Analysis & Monitoring
+ * 
+ * PURPOSE: Automated analysis of application logs to identify issues, patterns, and health metrics
+ * 
+ * FEATURES:
+ * - Comprehensive log analysis with health scoring (0-100)
+ * - OAuth/authentication error detection and recommendations
+ * - Repeated error pattern identification
+ * - Performance issue detection (high-volume components, suspicious patterns)
+ * - Auto-review mode (analyzes every 5 minutes, refreshes every 30 seconds)
+ * - Component activity statistics and error categorization
+ * - Actionable insights and recommendations
+ * 
+ * ACCESS: Public - No authentication required (monitoring tool)
+ * 
+ * TECHNICAL:
+ * - Uses log-analyzer utility for intelligent pattern recognition
+ * - Real-time analysis with configurable time ranges (default: 30 minutes)
+ * - Background auto-review with cleanup functions
+ * - Comprehensive error classification and health metrics
+ * 
+ * NAVIGATION: Part of logging suite with LoggingNav sidebar
+ * Best used with: logs-dashboard and test-console-logging for comprehensive monitoring
+ */
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { logAnalyzer, LogAnalysis } from '@/utils/log-analyzer';
 import LoggingNav from '@/components/logging/LoggingNav';
 
@@ -11,8 +85,10 @@ export default function AutoLogReview() {
   const [autoReviewInterval, setAutoReviewInterval] = useState<(() => void) | null>(null);
   const [lastReviewTime, setLastReviewTime] = useState<string>('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [selectedLogLevel, setSelectedLogLevel] = useState<string | null>(null);
+  const [filteredLogs, setFilteredLogs] = useState<any[]>([]);
 
-  const runAnalysis = async (timeRangeMinutes: number = 30) => {
+  const runAnalysis = useCallback(async (timeRangeMinutes: number = 30) => {
     setIsAnalyzing(true);
     try {
       const result = await logAnalyzer.analyzeSession(undefined, timeRangeMinutes);
@@ -23,9 +99,9 @@ export default function AutoLogReview() {
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, []);
 
-  const toggleAutoReview = async () => {
+  const toggleAutoReview = useCallback(async () => {
     if (autoReviewEnabled) {
       // Stop auto review
       if (autoReviewInterval) {
@@ -42,7 +118,7 @@ export default function AutoLogReview() {
       // Run initial analysis
       runAnalysis();
     }
-  };
+  }, [autoReviewEnabled, autoReviewInterval, runAnalysis]);
 
   // Auto-refresh every 30 seconds when auto-review is enabled
   useEffect(() => {
@@ -54,17 +130,34 @@ export default function AutoLogReview() {
     }
   }, [autoReviewEnabled]);
 
-  const getHealthScoreColor = (score: number) => {
+  const getHealthScoreColor = useMemo(() => (score: number) => {
     if (score >= 80) return 'text-green-600 bg-green-100';
     if (score >= 60) return 'text-yellow-600 bg-yellow-100';
     return 'text-red-600 bg-red-100';
-  };
+  }, []);
 
-  const getHealthScoreEmoji = (score: number) => {
+  const getHealthScoreEmoji = useMemo(() => (score: number) => {
     if (score >= 80) return '✅';
     if (score >= 60) return '⚠️';
     return '❌';
-  };
+  }, []);
+
+  const handleLogLevelClick = useCallback(async (level: string) => {
+    if (selectedLogLevel === level) {
+      setSelectedLogLevel(null);
+      setFilteredLogs([]);
+      return;
+    }
+
+    setSelectedLogLevel(level);
+    try {
+      const logs = await logAnalyzer.getFilteredLogs(level, 30); // Get last 30 minutes
+      setFilteredLogs(logs);
+    } catch (error) {
+      console.error('Failed to fetch filtered logs:', error);
+      setFilteredLogs([]);
+    }
+  }, [selectedLogLevel]);
 
   return (
     <>
@@ -77,11 +170,12 @@ export default function AutoLogReview() {
       
       {/* Main Content Area */}
       <div className={`transition-all duration-300 ${
-        sidebarCollapsed ? 'ml-16' : 'ml-64'
+        sidebarCollapsed ? 'ml-16' : 'ml-80'
       }`}>
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="min-h-screen bg-gray-50 p-8">
+          <div className="max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">🔍 Automated Log Review</h1>
+        <h1 className="text-3xl font-bold text-gray-900">🔍 Automated Log Review</h1>
         
         <div className="flex gap-4">
           <button
@@ -142,28 +236,108 @@ export default function AutoLogReview() {
           {/* Metrics Overview */}
           <div className="p-6 bg-gray-50 border-b border-gray-200">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="text-center p-4 bg-white rounded-lg shadow-sm border">
+              <button
+                onClick={() => handleLogLevelClick('all')}
+                className={`text-center p-4 bg-white rounded-lg shadow-sm border transition-all hover:shadow-md ${
+                  selectedLogLevel === 'all' ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                }`}
+              >
                 <div className="text-2xl font-bold text-gray-900">{analysis.summary.totalLogs}</div>
                 <div className="text-sm text-gray-800 font-semibold">Total Logs</div>
-              </div>
-              <div className="text-center p-4 bg-white rounded-lg shadow-sm border border-red-200">
+              </button>
+              <button
+                onClick={() => handleLogLevelClick('error')}
+                className={`text-center p-4 bg-white rounded-lg shadow-sm border border-red-200 transition-all hover:shadow-md ${
+                  selectedLogLevel === 'error' ? 'ring-2 ring-red-500 bg-red-50' : ''
+                }`}
+              >
                 <div className="text-2xl font-bold text-red-800">{analysis.summary.errorCount}</div>
                 <div className="text-sm text-red-800 font-bold">Errors</div>
-              </div>
-              <div className="text-center p-4 bg-white rounded-lg shadow-sm border border-yellow-200">
+              </button>
+              <button
+                onClick={() => handleLogLevelClick('warn')}
+                className={`text-center p-4 bg-white rounded-lg shadow-sm border border-yellow-200 transition-all hover:shadow-md ${
+                  selectedLogLevel === 'warn' ? 'ring-2 ring-yellow-500 bg-yellow-50' : ''
+                }`}
+              >
                 <div className="text-2xl font-bold text-yellow-800">{analysis.summary.warningCount}</div>
                 <div className="text-sm text-yellow-800 font-bold">Warnings</div>
-              </div>
-              <div className="text-center p-4 bg-white rounded-lg shadow-sm border border-blue-200">
+              </button>
+              <button
+                onClick={() => handleLogLevelClick('info')}
+                className={`text-center p-4 bg-white rounded-lg shadow-sm border border-blue-200 transition-all hover:shadow-md ${
+                  selectedLogLevel === 'info' ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                }`}
+              >
                 <div className="text-2xl font-bold text-blue-800">{analysis.summary.infoCount}</div>
                 <div className="text-sm text-blue-800 font-bold">Info</div>
-              </div>
-              <div className="text-center p-4 bg-white rounded-lg shadow-sm border">
+              </button>
+              <button
+                onClick={() => handleLogLevelClick('debug')}
+                className={`text-center p-4 bg-white rounded-lg shadow-sm border transition-all hover:shadow-md ${
+                  selectedLogLevel === 'debug' ? 'ring-2 ring-gray-500 bg-gray-50' : ''
+                }`}
+              >
                 <div className="text-2xl font-bold text-gray-800">{analysis.summary.debugCount}</div>
                 <div className="text-sm text-gray-800 font-semibold">Debug</div>
-              </div>
+              </button>
             </div>
           </div>
+
+          {/* Filtered Logs Window */}
+          {selectedLogLevel && (
+            <div className="p-6 bg-blue-50 border-b border-blue-200">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-blue-900">
+                  📋 {selectedLogLevel === 'all' ? 'All Logs' : `${selectedLogLevel.charAt(0).toUpperCase() + selectedLogLevel.slice(1)} Logs`} 
+                  <span className="ml-2 text-sm font-normal">({filteredLogs.length} entries)</span>
+                </h3>
+                <button
+                  onClick={() => {
+                    setSelectedLogLevel(null);
+                    setFilteredLogs([]);
+                  }}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  ✕ Close
+                </button>
+              </div>
+              
+              <div className="max-h-96 overflow-y-auto bg-white rounded-lg border border-blue-200">
+                {filteredLogs.length > 0 ? (
+                  <div className="divide-y divide-gray-200">
+                    {filteredLogs.map((log, index) => (
+                      <div key={index} className="p-3 hover:bg-gray-50">
+                        <div className="flex items-start gap-3">
+                          <span className={`text-xs px-2 py-1 rounded font-bold ${
+                            log.level === 'error' ? 'bg-red-100 text-red-800' :
+                            log.level === 'warn' ? 'bg-yellow-100 text-yellow-800' :
+                            log.level === 'info' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {log.level.toUpperCase()}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-gray-900 break-words">
+                              {log.message}
+                            </div>
+                            <div className="text-xs text-gray-700 mt-1 font-medium">
+                              {log.component} • {new Date(log.timestamp).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-700 font-medium">
+                    <div className="text-2xl mb-2">📭</div>
+                    <p>No logs found for this filter</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* OAuth Analysis */}
           {(analysis.oauth.authEvents.length > 0 || analysis.oauth.authErrors.length > 0) && (
@@ -283,11 +457,31 @@ export default function AutoLogReview() {
               </div>
             )}
 
+            {/* Always show section with conditional message */}
             {analysis.insights.errorPatterns.length === 0 && analysis.insights.recommendations.length === 0 && (
-              <div className="text-center py-8 text-gray-600">
+              <div className="text-center py-8 text-gray-700">
                 <div className="text-4xl mb-2">✨</div>
                 <p className="text-gray-900 font-semibold">No specific insights or recommendations at this time.</p>
-                <p className="text-sm text-gray-700 mt-1">This is good news - your logs look healthy!</p>
+                <p className="text-sm text-gray-800 mt-1 font-medium">This is good news - your logs look healthy!</p>
+              </div>
+            )}
+
+            {/* Show warning-based insights when there are warnings */}
+            {analysis.summary.warningCount > 0 && analysis.insights.recommendations.length === 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h3 className="font-semibold text-yellow-800 mb-2">⚠️ Warning Analysis:</h3>
+                <p className="text-sm text-yellow-900 font-semibold mb-2">
+                  Found {analysis.summary.warningCount} warnings in your logs. Common causes:
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-sm text-yellow-900 font-semibold">
+                  <li>TypeScript type issues that need attention</li>
+                  <li>Performance warnings from slow operations</li>
+                  <li>Deprecated API usage that should be updated</li>
+                  <li>Component lifecycle or hydration warnings</li>
+                </ul>
+                <p className="text-sm text-yellow-800 mt-2 font-medium">
+                  💡 Click the "Warnings" button above to see specific warning details.
+                </p>
               </div>
             )}
           </div>
@@ -310,10 +504,10 @@ export default function AutoLogReview() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-600">
+              <div className="text-center py-8 text-gray-700">
                 <div className="text-4xl mb-2">📊</div>
                 <p className="text-gray-900 font-semibold">No component activity data available.</p>
-                <p className="text-sm text-gray-700 mt-1">Generate more logs to see component statistics.</p>
+                <p className="text-sm text-gray-800 mt-1 font-medium">Generate more logs to see component statistics.</p>
               </div>
             )}
           </div>
@@ -358,6 +552,7 @@ export default function AutoLogReview() {
           🧪 Test Console Logging
         </a>
       </div>
+          </div>
         </div>
       </div>
     </>

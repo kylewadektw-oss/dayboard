@@ -1,7 +1,21 @@
 {
+  "name": "dayboard-household-command-center",
+  "version": "1.0.0",
+  "description": "Proprietary household command center application - Unauthorized copying prohibited",
+  "author": {
+    "name": "Kyle Wade",
+    "email": "kyle.wade.ktw@gmail.com",
+    "url": "https://github.com/kylewadektw-oss"
+  },
+  "license": "PROPRIETARY",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kylewadektw-oss/dayboard_official"
+  },
+  "copyright": "Copyright (c) 2025 Kyle Wade. All rights reserved.",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
     "build": "next build",
     "build:staging": "env-cmd -f .env.staging next build",
     "build:production": "env-cmd -f .env.production next build",
@@ -10,6 +24,8 @@
     "start:production": "env-cmd -f .env.production next start",
     "lint": "next lint",
     "prettier-fix": "prettier --write .",
+    "protect-code": "node scripts/add-copyright-headers.js",
+    "monitor-violations": "node scripts/monitor-copyright-violations.js",
     "env:check": "echo 'Checking environment variables...' && node -e 'console.log({NODE_ENV: process.env.NODE_ENV, NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME, NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0,20) + \"...\"})'",
     "test:logs": "node scripts/generate-test-logs.js mixed 15",
     "test:logs:errors": "node scripts/generate-test-logs.js error 10",

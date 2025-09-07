@@ -1,4 +1,108 @@
-// User Role System for Family Command Center
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kylewadektw-oss)
+ * 
+ * This file is part of Dayboard, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: [your-email@domain.com]
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+/*
+ * 👥 USER ROLES & PERMISSIONS SYSTEM - Access Control Management
+ * 
+ * PURPOSE: Comprehensive role-based access control (RBAC) system for the Dayboard application
+ * Manages user permissions, household access, and feature availability across different user types
+ * 
+ * FEATURES:
+ * - Three-tier role system (super_admin, admin, member)
+ * - Granular permission control for all features
+ * - Household-based access management
+ * - Subscription tier integration
+ * - Dynamic navigation based on permissions
+ * - Feature flag system for gradual rollouts
+ * 
+ * ROLE HIERARCHY:
+ * - SUPER_ADMIN: Full system access, global feature control, analytics
+ * - ADMIN: Household management, user management, billing control
+ * - MEMBER: Basic access with configurable features
+ * 
+ * USAGE:
+ * ```typescript
+ * import { hasPermission, canAccessPage, getVisibleNavigationItems } from '@/types/user-roles';
+ * 
+ * // Check specific permission
+ * if (hasPermission(user.permissions, 'ai_features')) {
+ *   // Show AI features
+ * }
+ * 
+ * // Check page access
+ * const canViewWork = canAccessPage(user.role, user.permissions, 'work');
+ * 
+ * // Get navigation items
+ * const navItems = getVisibleNavigationItems(user.permissions, user.role);
+ * ```
+ * 
+ * PERMISSION CATEGORIES:
+ * - Core Pages: dashboard, meals, lists, work, projects, profile
+ * - Premium Features: sports_ticker, financial_tracking, ai_features
+ * - Admin Features: household_management, user_management, feature_management, billing_management
+ * - Super Admin: system_admin, global_feature_control, analytics_dashboard
+ * 
+ * SECURITY:
+ * - Server-side permission validation
+ * - Row Level Security (RLS) integration
+ * - Household-scoped data access
+ * - Feature-level access control
+ * 
+ * TECHNICAL:
+ * - TypeScript-first design for compile-time safety
+ * - Default permissions by role
+ * - Helper functions for permission checks
+ * - Integration with Supabase auth and database
+ * 
+ * ACCESS: Used throughout the application for access control and feature gating
+ */
+
+// User Role System for Household Command Center
 export type UserRole = 'super_admin' | 'admin' | 'member';
 
 export interface UserPermissions {
@@ -44,7 +148,7 @@ export interface HouseholdSettings {
   name: string;
   admin_id: string;
   enabled_features: Partial<UserPermissions>;
-  subscription_tier: 'free' | 'premium' | 'family_plus';
+  subscription_tier: 'free' | 'premium' | 'household_plus';
   created_at: string;
   updated_at: string;
 }
