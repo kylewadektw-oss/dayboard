@@ -406,6 +406,200 @@ export interface Database {
           }
         ]
       }
+      households: {
+        Row: {
+          id: string
+          name: string
+          address: string | null
+          city: string | null
+          state: string | null
+          zip: string | null
+          income: number | null
+          members_count: number
+          created_by: string
+          created_at: string
+          updated_at: string
+          household_code: string
+          admin_id: string | null
+          subscription_tier: string | null
+          subscription_id: string | null
+          trial_ends_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          address?: string | null
+          city?: string | null
+          state?: string | null
+          zip?: string | null
+          income?: number | null
+          members_count?: number
+          created_by: string
+          created_at?: string
+          updated_at?: string
+          household_code: string
+          admin_id?: string | null
+          subscription_tier?: string | null
+          subscription_id?: string | null
+          trial_ends_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          address?: string | null
+          city?: string | null
+          state?: string | null
+          zip?: string | null
+          income?: number | null
+          members_count?: number
+          created_by?: string
+          created_at?: string
+          updated_at?: string
+          household_code?: string
+          admin_id?: string | null
+          subscription_tier?: string | null
+          subscription_id?: string | null
+          trial_ends_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "households_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "households_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      household_members: {
+        Row: {
+          id: string
+          household_id: string
+          user_id: string
+          role: string
+          joined_at: string
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          user_id: string
+          role: string
+          joined_at?: string
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          user_id?: string
+          role?: string
+          joined_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_members_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      household_invitations: {
+        Row: {
+          id: string
+          household_id: string
+          inviter_user_id: string | null
+          invitee_user_id: string | null
+          household_code: string
+          status: string
+          invited_at: string
+          responded_at: string | null
+          expires_at: string
+          created_at: string
+          updated_at: string
+          invitation_code: string
+          created_by: string | null
+          invitee_email: string | null
+          invitee_name: string | null
+          role: string
+          used_by: string | null
+          used_at: string | null
+          invited_email: string | null
+          invited_by: string | null
+          invitation_token: string | null
+          accepted_at: string | null
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          inviter_user_id?: string | null
+          invitee_user_id?: string | null
+          household_code: string
+          status?: string
+          invited_at?: string
+          responded_at?: string | null
+          expires_at: string
+          created_at?: string
+          updated_at?: string
+          invitation_code: string
+          created_by?: string | null
+          invitee_email?: string | null
+          invitee_name?: string | null
+          role: string
+          used_by?: string | null
+          used_at?: string | null
+          invited_email?: string | null
+          invited_by?: string | null
+          invitation_token?: string | null
+          accepted_at?: string | null
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          inviter_user_id?: string | null
+          invitee_user_id?: string | null
+          household_code?: string
+          status?: string
+          invited_at?: string
+          responded_at?: string | null
+          expires_at?: string
+          created_at?: string
+          updated_at?: string
+          invitation_code?: string
+          created_by?: string | null
+          invitee_email?: string | null
+          invitee_name?: string | null
+          role?: string
+          used_by?: string | null
+          used_at?: string | null
+          invited_email?: string | null
+          invited_by?: string | null
+          invitation_token?: string | null
+          accepted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_invitations_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       users: {
         Row: {
           avatar_url: string | null

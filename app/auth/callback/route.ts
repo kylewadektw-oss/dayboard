@@ -117,6 +117,16 @@ export async function GET(request: NextRequest) {
             userId: user.id, 
             profileId: insertedProfile.id 
           });
+          
+          // New users always need to complete household setup
+          serverAuthLogger.info(`🏠 Redirecting new user to profile setup`);
+          return NextResponse.redirect(
+            getStatusRedirect(
+              `${requestUrl.origin}/profile/setup`,
+              'Welcome to Dayboard!',
+              'Please complete your profile and household setup.'
+            )
+          );
         }
       } else if (profile) {
         serverAuthLogger.info(`👤 Existing profile found`, { 
@@ -124,6 +134,39 @@ export async function GET(request: NextRequest) {
           profileId: profile.id,
           displayName: profile.display_name 
         });
+
+        // Check if household setup is complete
+        if (!profile.household_id || !profile.onboarding_completed || !profile.full_name) {
+          serverAuthLogger.info(`🏠 Redirecting to profile setup - incomplete household/profile`, {
+            userId: user.id,
+            hasHousehold: !!profile.household_id,
+            hasFullName: !!profile.full_name,
+            onboardingCompleted: profile.onboarding_completed
+          });
+          return NextResponse.redirect(
+            getStatusRedirect(
+              `${requestUrl.origin}/profile/setup`,
+              'Welcome back!',
+              'Please complete your profile and household setup.'
+            )
+          );
+        }
+        // Check if household setup is complete
+        if (!profile.household_id || !profile.onboarding_completed || !profile.full_name) {
+          serverAuthLogger.info(`🏠 Redirecting to profile setup - incomplete household/profile`, {
+            userId: user.id,
+            hasHousehold: !!profile.household_id,
+            hasFullName: !!profile.full_name,
+            onboardingCompleted: profile.onboarding_completed
+          });
+          return NextResponse.redirect(
+            getStatusRedirect(
+              `${requestUrl.origin}/profile/setup`,
+              'Welcome back!',
+              'Please complete your profile and household setup.'
+            )
+          );
+        }
       } else if (profileSelectError) {
         serverAuthLogger.error(`❌ Error checking for existing profile`, { 
           userId: user.id, 
