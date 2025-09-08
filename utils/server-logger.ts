@@ -74,7 +74,7 @@ class ServerLogger {
           user_agent: entry.userAgent,
           url: entry.url,
           timestamp: entry.timestamp,
-          side: entry.side || 'server' // Explicitly mark as server
+          side: entry.side || 'server' // Now that the column exists, we can use it again
         });
 
       if (error) {

@@ -300,9 +300,14 @@ class Logger {
     };
   }
 
-  private getBrowserVersion(ua: string): string {
-    const match = ua.match(/(Chrome|Firefox|Safari|Edge)\/(\d+)/);
-    return match ? match[2] : 'Unknown';
+  private getBrowserVersion(ua: string, browserName?: string): string {
+    const regex = browserName === 'Chrome' ? /Chrome\/(\d+)/ :
+                  browserName === 'Firefox' ? /Firefox\/(\d+)/ :
+                  browserName === 'Safari' ? /Version\/(\d+)/ :
+                  browserName === 'Edg' ? /Edg\/(\d+)/ : null;
+    
+    const match = regex ? ua.match(regex) : null;
+    return match ? match[1] : 'Unknown';
   }
 
   // Collect performance information
@@ -1058,9 +1063,9 @@ class Logger {
     // Authentication/Login errors
     if (lowerMessage.includes('auth') || lowerMessage.includes('token') || lowerMessage.includes('unauthorized')) {
       if (level === LogLevel.ERROR) {
-        return "There was a problem signing you in or keeping you signed in. You might need to log in again.";
+        return "There was a problem signing you in or verifying your account. Please try logging in again.";
       }
-      return "The app is working on your login status. This usually resolves automatically.";
+      return "The app is checking your login information. This helps keep your account secure.";
     }
 
     // Network/Connection errors
@@ -1128,7 +1133,7 @@ class Logger {
     }
   }
 
-  // Determine severity and impact
+  // Determine severity and impact assessment for logged messages
   private getSeverityAndImpact(message: string, level: LogLevel): { severity: string; impact: string; suggestedAction: string } {
     const lowerMessage = message.toLowerCase();
 
@@ -1343,8 +1348,8 @@ class Logger {
         stack_trace: entry.stack,
         user_agent: entry.userAgent,
         url: entry.url,
-        timestamp: entry.timestamp
-        // Omitting 'side' column to avoid database errors
+        timestamp: entry.timestamp,
+        side: entry.side || 'client' // Now that the column exists, we can use it
       }));
 
       const { error } = await (this.supabase as any)
@@ -1391,8 +1396,8 @@ class Logger {
           stack_trace: entry.stack,
           user_agent: entry.userAgent,
           url: entry.url,
-          timestamp: entry.timestamp
-          // Omitting 'side' column to avoid database errors
+          timestamp: entry.timestamp,
+          side: entry.side || 'client' // Now that the column exists, we can use it
         });
 
       if (error) {
@@ -1535,7 +1540,7 @@ class Logger {
     try {
       let query = (this.supabase as any)
         .from('application_logs')
-        .select('id, user_id, session_id, level, message, component, data, stack_trace, user_agent, url, timestamp, created_at')
+        .select('id, user_id, session_id, level, message, component, data, stack_trace, user_agent, url, timestamp, created_at, side')
         .order('timestamp', { ascending: false });
 
       // Apply time range filter if specified
@@ -1565,7 +1570,7 @@ class Logger {
         userAgent: row.user_agent,
         url: row.url,
         timestamp: row.timestamp,
-        side: 'client' // Default to 'client' since side column doesn't exist yet
+        side: row.side || 'client' // Use the side column from database
       })) || [];
     } catch (error) {
       console.error('❌ Database fetch failed:', {

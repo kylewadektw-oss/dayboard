@@ -745,7 +745,7 @@ User Agent: ${log.userAgent || 'N/A'}
     setLastLogCount(logs.length);
   }, [logs.length, autoScroll, autoRefresh, isPaused, lastLogCount]);
 
-  // Computed statistics - removed debug
+  // Computed statistics with enhanced analytics
   const logStats = useMemo(() => {
     const total = logs.length;
     const errors = logs.filter(log => log.level === LogLevel.ERROR).length;
@@ -758,6 +758,116 @@ User Agent: ${log.userAgent || 'N/A'}
     
     return { total, errors, warnings, info, consoleMessages, issues };
   }, [logs]);
+
+  // Enhanced analytics for Top 3 insights
+  const getTop3Analytics = useMemo(() => {
+    if (logs.length === 0) return { components: [], errorTypes: [], timeHotspots: [] };
+
+    // Top 3 Components by Issue Count
+    const componentIssues = logs
+      .filter(log => log.level === LogLevel.ERROR || log.level === LogLevel.WARN)
+      .reduce((acc, log) => {
+        const comp = log.component || 'Unknown';
+        acc[comp] = (acc[comp] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+    const topComponents = Object.entries(componentIssues)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([component, count]) => ({ component, count }));
+
+    // Top 3 Error Types/Patterns
+    const errorPatterns = logs
+      .filter(log => log.level === LogLevel.ERROR)
+      .reduce((acc, log) => {
+        const message = log.message.toLowerCase();
+        let pattern = 'Unknown Error';
+        
+        if (message.includes('cors') || message.includes('cross-origin')) pattern = 'CORS/Network Issues';
+        else if (message.includes('auth') || message.includes('token') || message.includes('unauthorized')) pattern = 'Authentication Failures';
+        else if (message.includes('database') || message.includes('sql') || message.includes('supabase')) pattern = 'Database Connection Issues';
+        else if (message.includes('hydration') || message.includes('component') || message.includes('react')) pattern = 'React Hydration/Component Issues';
+        else if (message.includes('undefined') || message.includes('null') || message.includes('reference')) pattern = 'Null/Undefined References';
+        else if (message.includes('fetch') || message.includes('network') || message.includes('timeout')) pattern = 'API/Network Timeouts';
+        else if (message.includes('parse') || message.includes('json') || message.includes('syntax')) pattern = 'Data Parsing Errors';
+        
+        acc[pattern] = (acc[pattern] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+    const topErrorTypes = Object.entries(errorPatterns)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([type, count]) => ({ type, count }));
+
+    // Top 3 Time Hotspots (hours of day with most issues)
+    const hourlyIssues = logs
+      .filter(log => log.level === LogLevel.ERROR || log.level === LogLevel.WARN)
+      .reduce((acc, log) => {
+        const hour = new Date(log.timestamp).getHours();
+        acc[hour] = (acc[hour] || 0) + 1;
+        return acc;
+      }, {} as Record<number, number>);
+
+    const topTimeHotspots = Object.entries(hourlyIssues)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([hour, count]) => ({ 
+        hour: parseInt(hour), 
+        count, 
+        timeRange: `${hour.padStart(2, '0')}:00-${(parseInt(hour) + 1).toString().padStart(2, '0')}:00` 
+      }));
+
+    return { components: topComponents, errorTypes: topErrorTypes, timeHotspots: topTimeHotspots };
+  }, [logs]);
+
+  // Get specific fixes for top error patterns
+  const getSpecificFixes = (errorType: string): string[] => {
+    const fixesMap: Record<string, string[]> = {
+      'CORS/Network Issues': [
+        'Add proper CORS headers in your API: Access-Control-Allow-Origin, Access-Control-Allow-Methods',
+        'Configure proxy in next.config.js for API calls during development',
+        'Ensure your API server is running and accessible from the client domain'
+      ],
+      'Authentication Failures': [
+        'Check if tokens are properly stored in localStorage/cookies and not expired',
+        'Implement token refresh logic before API calls',
+        'Verify Supabase auth configuration and session management'
+      ],
+      'Database Connection Issues': [
+        'Check Supabase connection string and API keys in environment variables',
+        'Verify database is not hitting connection limits or is temporarily down',
+        'Implement connection retry logic with exponential backoff'
+      ],
+      'React Hydration/Component Issues': [
+        'Ensure server and client render the same content initially',
+        'Use useEffect for client-only code that differs from server',
+        'Check for missing dependencies in useEffect arrays'
+      ],
+      'Null/Undefined References': [
+        'Add null/undefined checks before accessing object properties',
+        'Use optional chaining (?.) and nullish coalescing (??)',
+        'Initialize variables with default values'
+      ],
+      'API/Network Timeouts': [
+        'Increase timeout values for slow API endpoints',
+        'Add retry logic for failed network requests',
+        'Implement loading states and error boundaries'
+      ],
+      'Data Parsing Errors': [
+        'Validate API response structure before parsing',
+        'Use try-catch blocks around JSON.parse operations',
+        'Add schema validation for incoming data'
+      ]
+    };
+
+    return fixesMap[errorType] || [
+      'Review the specific error message for clues',
+      'Check browser console for stack traces',
+      'Consider adding more detailed error logging'
+    ];
+  };
 
   const components = useMemo(() => {
     return ['all', ...Array.from(new Set(logs.map(log => log.component).filter(Boolean) as string[]))];
@@ -1032,10 +1142,10 @@ User Agent: ${log.userAgent || 'N/A'}
             </div>
           </div>
           
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
+          {/* Statistics Cards - Streamlined */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <button 
-              onClick={() => setSelectedLevel(selectedLevel === 'all' ? 'all' : 'all')}
+              onClick={() => setSelectedLevel('all')}
               className={`p-6 bg-white rounded-2xl shadow-sm border-2 text-center transition-all hover:shadow-lg ${
                 selectedLevel === 'all' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
               }`}
@@ -1054,28 +1164,6 @@ User Agent: ${log.userAgent || 'N/A'}
               <div className="text-sm text-blue-600 font-medium flex items-center justify-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                 Console
-              </div>
-            </button>
-            
-            <button
-              onClick={() => {
-                // Filter to show only errors and warnings (issues)
-                if (selectedLevel === LogLevel.ERROR || selectedLevel === LogLevel.WARN) {
-                  setSelectedLevel('all');
-                } else {
-                  setSelectedLevel(LogLevel.ERROR); // Show errors first as they're more critical
-                }
-              }}
-              className={`p-6 rounded-2xl shadow-sm border-2 text-center transition-all hover:shadow-lg ${
-                selectedLevel === LogLevel.ERROR || selectedLevel === LogLevel.WARN 
-                  ? 'border-orange-500 bg-orange-50' 
-                  : 'border-orange-200 hover:border-orange-300 bg-gradient-to-r from-orange-50 to-red-50'
-              }`}
-            >
-              <div className="text-3xl font-bold text-orange-600 mb-2">{logStats.issues}</div>
-              <div className="text-sm text-orange-600 font-medium flex items-center justify-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-                Issues
               </div>
             </button>
             
@@ -1104,84 +1192,226 @@ User Agent: ${log.userAgent || 'N/A'}
                 Warnings
               </div>
             </button>
-            
-            <button 
-              onClick={() => setSelectedLevel(selectedLevel === LogLevel.INFO ? 'all' : LogLevel.INFO)}
-              className={`p-6 bg-white rounded-2xl shadow-sm border-2 text-center transition-all hover:shadow-lg ${
-                selectedLevel === LogLevel.INFO ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
-              }`}
-            >
-              <div className="text-3xl font-bold text-blue-600 mb-2">{logStats.info}</div>
-              <div className="text-sm text-blue-600 font-medium flex items-center justify-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                Info
-              </div>
-            </button>
           </div>
 
-          {/* System Health Alert */}
+          {/* Enhanced System Health Alert with Top 3 Analytics */}
           {(logStats.errors > 0 || logStats.warnings > 0) && (
             <div className="bg-white rounded-2xl shadow-sm border-2 border-amber-200 p-6 mb-8">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
                     <div className="w-3 h-3 rounded-full bg-white"></div>
                   </div>
-                  <h2 className="text-lg font-bold text-gray-900">System Health Status</h2>
+                  <h2 className="text-lg font-bold text-gray-900">System Health & Analytics</h2>
                 </div>
                 <button
                   onClick={() => setInsightsCollapsed(!insightsCollapsed)}
-                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                  className="text-gray-500 hover:text-gray-700 transition-colors font-medium"
                 >
-                  {insightsCollapsed ? '▼ Show Details' : '▲ Hide Details'}
+                  {insightsCollapsed ? '▼ Show Insights & Fixes' : '▲ Hide Insights'}
                 </button>
               </div>
               
               {!insightsCollapsed && (
-                <div className="grid md:grid-cols-2 gap-6">
-                  {logStats.errors > 0 && (
+                <div className="space-y-8">
+                  {/* Top 3 Analytics Row */}
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {/* Top 3 Problem Components */}
+                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-5">
+                      <h4 className="font-bold text-purple-800 mb-3 flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-purple-500"></div>
+                        Top 3 Problem Components
+                      </h4>
+                      {getTop3Analytics.components.length > 0 ? (
+                        <ul className="space-y-2">
+                          {getTop3Analytics.components.map((comp, idx) => (
+                            <li key={comp.component} className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-purple-700">
+                                {idx + 1}. {comp.component}
+                              </span>
+                              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-bold">
+                                {comp.count}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-purple-600">No problematic components identified</p>
+                      )}
+                    </div>
+
+                    {/* Top 3 Error Types */}
                     <div className="bg-red-50 border border-red-200 rounded-xl p-5">
                       <h4 className="font-bold text-red-800 mb-3 flex items-center gap-2">
                         <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                        Critical Issues ({logStats.errors} errors)
+                        Top 3 Error Patterns
                       </h4>
-                      <ul className="space-y-2 text-sm text-red-700">
-                        <li className="flex items-start gap-2">
-                          <span>•</span>
-                          <span>These break functionality and impact users</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span>•</span>
-                          <span>Requires immediate attention from developers</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span>•</span>
-                          <span>Check the technical details for debugging info</span>
-                        </li>
-                      </ul>
+                      {getTop3Analytics.errorTypes.length > 0 ? (
+                        <ul className="space-y-2">
+                          {getTop3Analytics.errorTypes.map((error, idx) => (
+                            <li key={error.type} className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-red-700">
+                                {idx + 1}. {error.type}
+                              </span>
+                              <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-bold">
+                                {error.count}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-red-600">No error patterns detected</p>
+                      )}
                     </div>
-                  )}
 
-                  {logStats.warnings > 0 && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
-                      <h4 className="font-bold text-yellow-800 mb-3 flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
-                        Potential Problems ({logStats.warnings} warnings)
+                    {/* Top 3 Time Hotspots */}
+                    <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
+                      <h4 className="font-bold text-orange-800 mb-3 flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-orange-500"></div>
+                        Top 3 Problem Times
                       </h4>
-                      <ul className="space-y-2 text-sm text-yellow-700">
-                        <li className="flex items-start gap-2">
-                          <span>•</span>
-                          <span>May become errors if not addressed</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span>•</span>
-                          <span>Often related to deprecated code or performance</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <span>•</span>
-                          <span>Consider scheduling fixes during maintenance</span>
-                        </li>
-                      </ul>
+                      {getTop3Analytics.timeHotspots.length > 0 ? (
+                        <ul className="space-y-2">
+                          {getTop3Analytics.timeHotspots.map((time, idx) => (
+                            <li key={time.hour} className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-orange-700">
+                                {idx + 1}. {time.timeRange}
+                              </span>
+                              <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-bold">
+                                {time.count}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-orange-600">No time patterns detected</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actionable Fixes Section */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {logStats.errors > 0 && (
+                      <div className="bg-gradient-to-br from-red-50 to-pink-50 border border-red-200 rounded-xl p-5">
+                        <h4 className="font-bold text-red-800 mb-4 flex items-center gap-2">
+                          <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                          🚨 Critical Issues ({logStats.errors} errors)
+                        </h4>
+                        
+                        {/* Top Error Pattern Fixes */}
+                        {getTop3Analytics.errorTypes.length > 0 && (
+                          <div className="mb-4">
+                            <h5 className="text-sm font-semibold text-red-700 mb-2">
+                              Quick Fix for: {getTop3Analytics.errorTypes[0].type}
+                            </h5>
+                            <ul className="space-y-1 text-sm text-red-600">
+                              {getSpecificFixes(getTop3Analytics.errorTypes[0].type).slice(0, 2).map((fix, idx) => (
+                                <li key={idx} className="flex items-start gap-2">
+                                  <span className="text-red-500 font-bold">⚡</span>
+                                  <span>{fix}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <div className="border-t border-red-200 pt-3">
+                          <h5 className="text-sm font-semibold text-red-700 mb-2">General Actions:</h5>
+                          <ul className="space-y-1 text-sm text-red-600">
+                            <li className="flex items-start gap-2">
+                              <span>•</span>
+                              <span>These break functionality and impact users directly</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span>•</span>
+                              <span>Requires immediate developer attention</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span>•</span>
+                              <span>Check stack traces for exact failure points</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
+                    {logStats.warnings > 0 && (
+                      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-5">
+                        <h4 className="font-bold text-yellow-800 mb-4 flex items-center gap-2">
+                          <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
+                          ⚠️ Potential Problems ({logStats.warnings} warnings)
+                        </h4>
+                        
+                        <div className="mb-4">
+                          <h5 className="text-sm font-semibold text-yellow-700 mb-2">
+                            Recommended Actions:
+                          </h5>
+                          <ul className="space-y-1 text-sm text-yellow-600">
+                            <li className="flex items-start gap-2">
+                              <span className="text-yellow-500 font-bold">🔧</span>
+                              <span>Schedule fixes during next maintenance window</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="text-yellow-500 font-bold">📊</span>
+                              <span>Monitor for escalation to errors</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span className="text-yellow-500 font-bold">🔍</span>
+                              <span>Review for deprecated code patterns</span>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div className="border-t border-yellow-200 pt-3">
+                          <h5 className="text-sm font-semibold text-yellow-700 mb-2">Prevention Tips:</h5>
+                          <ul className="space-y-1 text-sm text-yellow-600">
+                            <li className="flex items-start gap-2">
+                              <span>•</span>
+                              <span>Update dependencies regularly</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span>•</span>
+                              <span>Run linters in pre-commit hooks</span>
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <span>•</span>
+                              <span>Add TypeScript strict mode checks</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quick Action Buttons */}
+                  {(getTop3Analytics.errorTypes.length > 0 || getTop3Analytics.components.length > 0) && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                      <h5 className="text-sm font-semibold text-gray-700 mb-3">Quick Filter Actions:</h5>
+                      <div className="flex flex-wrap gap-2">
+                        {getTop3Analytics.errorTypes.slice(0, 2).map((error, idx) => (
+                          <button
+                            key={error.type}
+                            onClick={() => {
+                              setSearchQuery(error.type.split(' ')[0].toLowerCase());
+                              setSelectedLevel(LogLevel.ERROR);
+                            }}
+                            className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors"
+                          >
+                            Filter {error.type} ({error.count})
+                          </button>
+                        ))}
+                        {getTop3Analytics.components.slice(0, 2).map((comp, idx) => (
+                          <button
+                            key={comp.component}
+                            onClick={() => {
+                              setSelectedComponent(comp.component);
+                            }}
+                            className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium hover:bg-purple-200 transition-colors"
+                          >
+                            Filter {comp.component} ({comp.count})
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
