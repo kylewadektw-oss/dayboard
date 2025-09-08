@@ -52,11 +52,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userMetadata: currentUser.user_metadata
       });
       
-      // Fetch profile
+      // Fetch profile - use user_id as foreign key to auth.users
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', currentUser.id)
+        .eq('user_id', currentUser.id)
         .maybeSingle(); // Use maybeSingle to avoid error if no profile
 
       if (profileError) {
