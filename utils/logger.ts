@@ -125,6 +125,85 @@ export interface LogEntry {
     previousAction?: string;
     feature?: string;
     userJourney?: string;
+    // Enhanced URL and routing context
+    fullUrl?: string;
+    pathname?: string;
+    search?: string;
+    hash?: string;
+    origin?: string;
+    // Browser context
+    viewportSize?: string;
+    scrollPosition?: string;
+    documentTitle?: string;
+    // Session context
+    sessionDuration?: number;
+    pageLoadTime?: number;
+    timeOnPage?: number;
+    // User interaction context
+    lastClickTarget?: string;
+    formFieldsInteracted?: string;
+    buttonsClicked?: string;
+  };
+  // New enhanced fields
+  networkInfo?: {
+    online?: boolean;
+    connectionType?: string;
+    downlink?: number | null;
+    rtt?: number | null;
+    saveData?: boolean;
+    userAgent?: string;
+    language?: string;
+    languages?: string[];
+    cookieEnabled?: boolean;
+    doNotTrack?: string | null;
+  };
+  browserCapabilities?: {
+    localStorage?: boolean;
+    sessionStorage?: boolean;
+    indexedDB?: boolean;
+    geolocation?: boolean;
+    webWorkers?: boolean;
+    serviceWorkers?: boolean;
+    pushNotifications?: boolean;
+    notifications?: boolean;
+    pixelRatio?: number;
+    colorDepth?: number | null;
+    screenResolution?: string;
+    availableResolution?: string;
+    webGL?: boolean;
+    webGL2?: boolean;
+    webAssembly?: boolean;
+    secureContext?: boolean;
+    crossOriginIsolated?: boolean;
+  };
+  errorContext?: {
+    name?: string;
+    message?: string;
+    stack?: string;
+    stackLines?: string[];
+    sourceFile?: string;
+    lineNumber?: number;
+    columnNumber?: number;
+    category?: string;
+    commonCause?: string;
+  };
+  clientMetrics?: {
+    domContentLoaded?: number;
+    pageLoadComplete?: number;
+    firstPaint?: number;
+    resources?: number;
+    navigationType?: string;
+    usedMemory?: number | null;
+    totalMemory?: number | null;
+    memoryLimit?: number | null;
+  };
+  engagementMetrics?: {
+    timeSpentOnSite?: number;
+    pageViews?: number;
+    interactionEvents?: number;
+    clickDepth?: number;
+    scrollDepth?: number;
+    bounceRate?: number;
   };
 }
 
@@ -153,6 +232,8 @@ class Logger {
     // Initialize global error capture on the client side
     if (typeof window !== 'undefined') {
       this.initializeGlobalErrorCapture();
+      this.initializeInteractionTracking();
+      this.initializePageTracking();
     }
   }
 
@@ -254,8 +335,298 @@ class Logger {
       referrer: document.referrer || 'direct',
       previousAction: sessionStorage.getItem('lastAction') || 'unknown',
       feature: this.detectCurrentFeature(),
-      userJourney: this.detectUserJourney()
+      userJourney: this.detectUserJourney(),
+      // Enhanced URL and routing context
+      fullUrl: window.location.href,
+      pathname: window.location.pathname,
+      search: window.location.search,
+      hash: window.location.hash,
+      origin: window.location.origin,
+      // Browser context
+      viewportSize: `${window.innerWidth}x${window.innerHeight}`,
+      scrollPosition: `${window.scrollX},${window.scrollY}`,
+      documentTitle: document.title,
+      // Session context
+      sessionDuration: this.getSessionDuration(),
+      pageLoadTime: this.getPageLoadTime(),
+      timeOnPage: this.getTimeOnCurrentPage(),
+      // User interaction context
+      lastClickTarget: sessionStorage.getItem('lastClickTarget') || 'unknown',
+      formFieldsInteracted: sessionStorage.getItem('formFieldsInteracted') || '0',
+      buttonsClicked: sessionStorage.getItem('buttonsClicked') || '0'
     };
+  }
+
+  // Enhanced timing and session tracking methods
+  private getSessionDuration(): number {
+    if (typeof window === 'undefined') return 0;
+    const sessionStart = sessionStorage.getItem('sessionStartTime');
+    if (!sessionStart) {
+      sessionStorage.setItem('sessionStartTime', Date.now().toString());
+      return 0;
+    }
+    return Date.now() - parseInt(sessionStart);
+  }
+
+  private getPageLoadTime(): number {
+    if (typeof window === 'undefined' || !window.performance) return 0;
+    const navigation = window.performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    if (navigation) {
+      return navigation.loadEventEnd - navigation.fetchStart;
+    }
+    return 0;
+  }
+
+  private getTimeOnCurrentPage(): number {
+    if (typeof window === 'undefined') return 0;
+    const pageStartTime = sessionStorage.getItem('currentPageStartTime');
+    if (!pageStartTime) {
+      sessionStorage.setItem('currentPageStartTime', Date.now().toString());
+      return 0;
+    }
+    return Date.now() - parseInt(pageStartTime);
+  }
+
+  // Enhanced user interaction tracking
+  private initializeInteractionTracking(): void {
+    if (typeof window === 'undefined') return;
+
+    // Track clicks
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      sessionStorage.setItem('lastClickTarget', target.tagName + (target.id ? `#${target.id}` : '') + (target.className ? `.${target.className.split(' ')[0]}` : ''));
+      
+      // Increment button clicks if it's a button
+      if (target.tagName === 'BUTTON' || (target as HTMLInputElement).type === 'submit') {
+        const current = parseInt(sessionStorage.getItem('buttonsClicked') || '0');
+        sessionStorage.setItem('buttonsClicked', (current + 1).toString());
+      }
+    });
+
+    // Track form interactions
+    document.addEventListener('focusin', (event) => {
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+        const current = parseInt(sessionStorage.getItem('formFieldsInteracted') || '0');
+        sessionStorage.setItem('formFieldsInteracted', (current + 1).toString());
+      }
+    });
+
+    // Reset page timer when navigating
+    const resetPageTimer = () => {
+      sessionStorage.setItem('currentPageStartTime', Date.now().toString());
+    };
+    
+    // Listen for page changes (for SPAs)
+    let currentPath = window.location.pathname;
+    const checkForPageChange = () => {
+      if (window.location.pathname !== currentPath) {
+        currentPath = window.location.pathname;
+        resetPageTimer();
+      }
+    };
+    setInterval(checkForPageChange, 1000);
+  }
+
+  // Initialize page tracking for analytics
+  private initializePageTracking(): void {
+    if (typeof window === 'undefined') return;
+
+    // Track page views
+    const currentPageViews = parseInt(sessionStorage.getItem('pageViews') || '0');
+    sessionStorage.setItem('pageViews', (currentPageViews + 1).toString());
+
+    // Track total interactions
+    const trackInteraction = () => {
+      const current = parseInt(sessionStorage.getItem('totalInteractions') || '0');
+      sessionStorage.setItem('totalInteractions', (current + 1).toString());
+    };
+
+    // Track various interaction types
+    ['click', 'keydown', 'scroll', 'touch'].forEach(eventType => {
+      document.addEventListener(eventType, trackInteraction, { passive: true });
+    });
+
+    // Track click depth
+    document.addEventListener('click', () => {
+      const current = parseInt(sessionStorage.getItem('clickDepth') || '0');
+      sessionStorage.setItem('clickDepth', (current + 1).toString());
+    });
+
+    // Track referrer information
+    if (document.referrer && !sessionStorage.getItem('sessionReferrer')) {
+      sessionStorage.setItem('sessionReferrer', document.referrer);
+    }
+
+    // Track user agent if not already stored
+    if (!sessionStorage.getItem('sessionUserAgent')) {
+      sessionStorage.setItem('sessionUserAgent', navigator.userAgent);
+    }
+  }
+
+  // Enhanced network information collection
+  private getNetworkInfo(): any {
+    if (typeof window === 'undefined' || !navigator) return null;
+
+    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+    
+    return {
+      online: navigator.onLine,
+      connectionType: connection?.effectiveType || 'unknown',
+      downlink: connection?.downlink || null,
+      rtt: connection?.rtt || null,
+      saveData: connection?.saveData || false,
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      languages: navigator.languages || [navigator.language],
+      cookieEnabled: navigator.cookieEnabled,
+      doNotTrack: navigator.doNotTrack
+    };
+  }
+
+  // Browser capabilities and environment info
+  private getBrowserCapabilities(): any {
+    if (typeof window === 'undefined') return null;
+
+    return {
+      // Storage capabilities
+      localStorage: !!window.localStorage,
+      sessionStorage: !!window.sessionStorage,
+      indexedDB: !!window.indexedDB,
+      
+      // API capabilities
+      geolocation: !!navigator.geolocation,
+      webWorkers: !!window.Worker,
+      serviceWorkers: 'serviceWorker' in navigator,
+      pushNotifications: 'PushManager' in window,
+      notifications: 'Notification' in window,
+      
+      // Display and media
+      pixelRatio: window.devicePixelRatio || 1,
+      colorDepth: screen.colorDepth || null,
+      screenResolution: `${screen.width}x${screen.height}`,
+      availableResolution: `${screen.availWidth}x${screen.availHeight}`,
+      
+      // JavaScript features
+      webGL: !!window.WebGLRenderingContext,
+      webGL2: !!window.WebGL2RenderingContext,
+      webAssembly: !!window.WebAssembly,
+      
+      // Security
+      secureContext: window.isSecureContext,
+      crossOriginIsolated: window.crossOriginIsolated || false
+    };
+  }
+
+  // Enhanced error context with source mapping and call stack analysis
+  private getEnhancedErrorContext(error?: Error, message?: string): any {
+    if (!error) return null;
+
+    const context: any = {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      stackLines: error.stack ? error.stack.split('\n').slice(1, 6) : [], // Top 5 stack frames
+    };
+
+    // Try to extract file and line information
+    if (error.stack) {
+      const stackMatch = error.stack.match(/at.*\((.*):(\d+):(\d+)\)/);
+      if (stackMatch) {
+        context.sourceFile = stackMatch[1];
+        context.lineNumber = parseInt(stackMatch[2]);
+        context.columnNumber = parseInt(stackMatch[3]);
+      }
+    }
+
+    // Categorize error type
+    if (error.name === 'TypeError') {
+      context.category = 'Type Error';
+      context.commonCause = 'Variable is undefined/null or wrong type';
+    } else if (error.name === 'ReferenceError') {
+      context.category = 'Reference Error';
+      context.commonCause = 'Variable or function not defined';
+    } else if (error.name === 'SyntaxError') {
+      context.category = 'Syntax Error';
+      context.commonCause = 'Invalid JavaScript syntax';
+    } else if (error.message?.includes('fetch')) {
+      context.category = 'Network Error';
+      context.commonCause = 'API call or network request failed';
+    } else if (error.message?.includes('auth')) {
+      context.category = 'Authentication Error';
+      context.commonCause = 'Login or permission issue';
+    } else {
+      context.category = 'General Error';
+      context.commonCause = 'Unknown error type';
+    }
+
+    return context;
+  }
+
+  // Collect client-side performance metrics
+  private getClientMetrics(): any {
+    if (typeof window === 'undefined' || !window.performance) return null;
+
+    const timing = window.performance.timing;
+    const navigation = window.performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    
+    return {
+      // Page load performance
+      domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart,
+      pageLoadComplete: timing.loadEventEnd - timing.navigationStart,
+      firstPaint: navigation?.responseStart - navigation?.requestStart || 0,
+      
+      // Resource performance
+      resources: window.performance.getEntriesByType('resource').length,
+      
+      // Navigation type
+      navigationType: navigation?.type || 'unknown',
+      
+      // Current memory usage (if available)
+      usedMemory: (window.performance as any).memory?.usedJSHeapSize || null,
+      totalMemory: (window.performance as any).memory?.totalJSHeapSize || null,
+      memoryLimit: (window.performance as any).memory?.jsHeapSizeLimit || null
+    };
+  }
+
+  // Track user engagement metrics
+  private getUserEngagementMetrics(): any {
+    if (typeof window === 'undefined') return null;
+
+    const engagementData = {
+      timeSpentOnSite: this.getSessionDuration(),
+      pageViews: parseInt(sessionStorage.getItem('pageViews') || '1'),
+      interactionEvents: parseInt(sessionStorage.getItem('totalInteractions') || '0'),
+      clickDepth: parseInt(sessionStorage.getItem('clickDepth') || '0'),
+      scrollDepth: this.getScrollDepth(),
+      bounceRate: this.calculateBounceRate()
+    };
+
+    return engagementData;
+  }
+
+  private getScrollDepth(): number {
+    if (typeof window === 'undefined') return 0;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const documentHeight = Math.max(
+      document.body.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.clientHeight,
+      document.documentElement.scrollHeight,
+      document.documentElement.offsetHeight
+    );
+    const windowHeight = window.innerHeight;
+    return Math.round((scrollTop + windowHeight) / documentHeight * 100);
+  }
+
+  private calculateBounceRate(): number {
+    const sessionStart = sessionStorage.getItem('sessionStartTime');
+    const pageViews = parseInt(sessionStorage.getItem('pageViews') || '1');
+    
+    if (!sessionStart || pageViews > 1) return 0; // Not a bounce if multiple pages viewed
+    
+    const sessionDuration = Date.now() - parseInt(sessionStart);
+    return sessionDuration < 30000 ? 1 : 0; // Bounce if less than 30 seconds on single page
   }
 
   private detectCurrentFeature(): string {
@@ -840,6 +1211,11 @@ class Logger {
     const deviceInfo = this.getDeviceInfo();
     const performanceInfo = this.getPerformanceInfo();
     const contextInfo = this.getContextInfo();
+    const networkInfo = this.getNetworkInfo();
+    const browserCapabilities = this.getBrowserCapabilities();
+    const errorContext = this.getEnhancedErrorContext(error, message);
+    const clientMetrics = this.getClientMetrics();
+    const engagementMetrics = this.getUserEngagementMetrics();
     
     // Generate layman's explanation and severity info
     const laymanExplanation = this.generateLaymanExplanation(message, level, component);
@@ -851,7 +1227,8 @@ class Logger {
       currentActions.push({
         timestamp: new Date().toISOString(),
         action: component || 'unknown',
-        url: window.location.href
+        url: window.location.href,
+        pageTitle: document.title
       });
       // Keep only last 20 actions
       if (currentActions.length > 20) {
@@ -880,7 +1257,12 @@ class Logger {
       suggestedAction,
       deviceInfo,
       performanceInfo,
-      contextInfo
+      contextInfo,
+      networkInfo,
+      browserCapabilities,
+      errorContext,
+      clientMetrics,
+      engagementMetrics
     };
   }
 
@@ -1393,11 +1775,194 @@ class Logger {
     }
   }
 
+  // Enhanced debugging summary for developers
+  async getDebugSummary(includeFullContext: boolean = false): Promise<any> {
+    const userInfo = await this.getCurrentUserInfo();
+    const deviceInfo = this.getDeviceInfo();
+    const contextInfo = this.getContextInfo();
+    const networkInfo = this.getNetworkInfo();
+    const browserCapabilities = this.getBrowserCapabilities();
+    const clientMetrics = this.getClientMetrics();
+    const engagementMetrics = this.getUserEngagementMetrics();
+
+    const summary = {
+      timestamp: new Date().toISOString(),
+      sessionId: this.sessionId,
+      currentUrl: typeof window !== 'undefined' ? window.location.href : 'N/A',
+      
+      // Essential context
+      user: userInfo,
+      environment: {
+        platform: deviceInfo?.platform,
+        browser: deviceInfo?.browser,
+        online: networkInfo?.online,
+        connectionType: networkInfo?.connectionType
+      },
+      
+      // Performance snapshot
+      performance: {
+        memoryUsage: clientMetrics?.usedMemory,
+        pageLoadTime: clientMetrics?.pageLoadComplete,
+        resourceCount: clientMetrics?.resources
+      },
+      
+      // User behavior
+      engagement: engagementMetrics,
+      
+      // Recent activity
+      recentLogs: this.logs.slice(-10).map(log => ({
+        timestamp: log.timestamp,
+        level: log.level,
+        message: log.message,
+        component: log.component,
+        severity: log.severity
+      }))
+    };
+
+    if (includeFullContext) {
+      return {
+        ...summary,
+        fullContext: {
+          deviceInfo,
+          contextInfo,
+          networkInfo,
+          browserCapabilities,
+          clientMetrics
+        },
+        allLogs: this.logs
+      };
+    }
+
+    return summary;
+  }
+
+  // Enhanced error reporting with full context
+  async reportCriticalIssue(description: string, additionalData?: any): Promise<void> {
+    const debugSummary = await this.getDebugSummary(true);
+    
+    await this.error(
+      `CRITICAL ISSUE REPORT: ${description}`,
+      'Critical-Issue-Reporter',
+      {
+        reportedAt: new Date().toISOString(),
+        additionalData,
+        fullDebugContext: debugSummary,
+        automaticDiagnostics: {
+          suspectedCauses: this.analyzePotentialCauses(debugSummary),
+          recommendedActions: this.getRecommendedActions(debugSummary)
+        }
+      }
+    );
+  }
+
+  private analyzePotentialCauses(debugSummary: any): string[] {
+    const causes: string[] = [];
+    
+    if (!debugSummary.environment.online) {
+      causes.push('Network connectivity issues');
+    }
+    
+    if (debugSummary.performance.memoryUsage > 50000000) { // 50MB
+      causes.push('High memory usage may be causing performance issues');
+    }
+    
+    if (debugSummary.performance.pageLoadTime > 5000) { // 5 seconds
+      causes.push('Slow page load times detected');
+    }
+    
+    if (debugSummary.engagement.bounceRate === 1) {
+      causes.push('User may be experiencing usability issues (high bounce rate)');
+    }
+    
+    const errorLogs = debugSummary.recentLogs.filter((log: any) => log.level === 'error');
+    if (errorLogs.length > 3) {
+      causes.push('Multiple recent errors detected');
+    }
+    
+    return causes.length > 0 ? causes : ['Unknown - requires manual investigation'];
+  }
+
+  private getRecommendedActions(debugSummary: any): string[] {
+    const actions: string[] = [];
+    
+    if (!debugSummary.environment.online) {
+      actions.push('Check internet connection and retry');
+    }
+    
+    if (debugSummary.performance.memoryUsage > 50000000) {
+      actions.push('Consider refreshing the page to clear memory');
+    }
+    
+    if (!debugSummary.user?.id) {
+      actions.push('User authentication may need to be verified');
+    }
+    
+    actions.push('Contact support with this debug report if issue persists');
+    
+    return actions;
+  }
+
   // ...existing methods...
 }
 
 // Singleton instance
 export const logger = new Logger();
+
+// Enhanced logging helpers with full context capture
+export const enhancedLogger = {
+  // Log with automatic web address and full context
+  async logWithFullContext(level: LogLevel, message: string, component?: string, data?: any) {
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : 'N/A';
+    const enhancedMessage = `[${currentUrl}] ${message}`;
+    
+    switch (level) {
+      case LogLevel.ERROR:
+        await logger.error(enhancedMessage, component, data);
+        break;
+      case LogLevel.WARN:
+        await logger.warn(enhancedMessage, component, data);
+        break;
+      case LogLevel.INFO:
+        await logger.info(enhancedMessage, component, data);
+        break;
+      case LogLevel.DEBUG:
+        await logger.debug(enhancedMessage, component, data);
+        break;
+    }
+  },
+
+  // Quick debug snapshot
+  async debugSnapshot(description: string, includeFullData: boolean = false) {
+    const summary = await logger.getDebugSummary(includeFullData);
+    console.group(`🔍 Debug Snapshot: ${description}`);
+    console.log('📊 Summary:', summary);
+    console.log('🌐 Current URL:', summary.currentUrl);
+    console.log('👤 User:', summary.user);
+    console.log('⚡ Performance:', summary.performance);
+    console.log('📈 Engagement:', summary.engagement);
+    console.groupEnd();
+    
+    await logger.info(`Debug snapshot: ${description}`, 'Enhanced-Logger', summary);
+  },
+
+  // Report issue with full diagnostic data
+  async reportIssue(title: string, description: string, additionalData?: any) {
+    await logger.reportCriticalIssue(`${title}: ${description}`, additionalData);
+  },
+
+  // Track user journey with context
+  async trackJourneyStep(stepName: string, stepData?: any) {
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : 'N/A';
+    const context = {
+      step: stepName,
+      url: currentUrl,
+      timestamp: new Date().toISOString(),
+      data: stepData
+    };
+    
+    await logger.info(`Journey Step: ${stepName}`, 'User-Journey', context);
+  }
+};
 
 // OAuth-specific logging helpers
 export const oauthLogger = {
@@ -1432,3 +1997,45 @@ export const authLogger = {
   debug: async (message: string, data?: any) => 
     await logger.debug(message, 'Auth', data),
 };
+
+/*
+ * ENHANCED LOGGING USAGE EXAMPLES:
+ * 
+ * // Basic logging with automatic URL capture
+ * await enhancedLogger.logWithFullContext(LogLevel.ERROR, 'Payment failed', 'Checkout', errorData);
+ * 
+ * // Quick debugging snapshot
+ * await enhancedLogger.debugSnapshot('User authentication issue');
+ * 
+ * // Report critical issue with full diagnostic data
+ * await enhancedLogger.reportIssue('Payment Processing', 'Credit card validation failed', { cardType, amount });
+ * 
+ * // Track user journey
+ * await enhancedLogger.trackJourneyStep('Started checkout process', { productId, quantity });
+ * 
+ * // Get full debug context
+ * const fullContext = await logger.getDebugSummary(true);
+ * console.log('Full diagnostic data:', fullContext);
+ * 
+ * // OAuth specific logging
+ * await oauthLogger.error('Token refresh failed', { tokenExpiry, attemptCount }, refreshError);
+ * await authLogger.warn('Multiple login attempts detected', { attempts, timeWindow });
+ * 
+ * CAPTURED DATA INCLUDES:
+ * ✅ Exact web address/URL where issue occurred
+ * ✅ User information and authentication state
+ * ✅ Device and browser capabilities
+ * ✅ Network connection details
+ * ✅ Page performance metrics
+ * ✅ User engagement and interaction data
+ * ✅ Memory usage and resource loading
+ * ✅ Error stack traces with source mapping
+ * ✅ User journey and action history
+ * ✅ Session duration and page timing
+ * ✅ Scroll depth and click tracking
+ * ✅ Viewport size and screen resolution
+ * ✅ Browser feature support detection
+ * ✅ Automatic error categorization
+ * ✅ Layman explanations for technical issues
+ * ✅ Suggested troubleshooting actions
+ */

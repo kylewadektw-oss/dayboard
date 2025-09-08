@@ -21,7 +21,7 @@
  * 
  * FEATURES:
  * - Real-time log streaming with auto-refresh (every 2 seconds)
- * - Advanced filtering by log level (ERROR, WARN, INFO, DEBUG), component, and side (client/server)
+ * - Advanced filtering by log level (ERROR, WARN, INFO), component, and side (client/server)
  * - Export functionality (JSON, CSV, TXT formats)
  * - Performance metrics and component statistics
  * - Color-coded log levels with search highlighting
@@ -63,7 +63,7 @@ const translateLogMessage = (log: LogEntry): {
   // Network/API Issues
   if (message.includes('fetch') || message.includes('network') || message.includes('cors') || message.includes('api')) {
     category = 'Network/API';
-    userFriendly = '🌐 Network connection or API communication issue';
+    userFriendly = 'Network connection or API communication issue';
     technicalDetails = 'The app is having trouble connecting to external services or APIs';
     severity = message.includes('cors') ? 'high' : 'medium';
   }
@@ -71,7 +71,7 @@ const translateLogMessage = (log: LogEntry): {
   // Authentication Issues
   else if (message.includes('auth') || message.includes('token') || message.includes('unauthorized') || message.includes('403') || message.includes('401')) {
     category = 'Authentication';
-    userFriendly = '🔐 User authentication or permission issue';
+    userFriendly = 'User authentication or permission issue';
     technicalDetails = 'Problems with user login, session, or access permissions';
     severity = 'high';
   }
@@ -79,7 +79,7 @@ const translateLogMessage = (log: LogEntry): {
   // Database Issues
   else if (message.includes('database') || message.includes('sql') || message.includes('supabase') || message.includes('query')) {
     category = 'Database';
-    userFriendly = '🗄️ Database connection or data retrieval issue';
+    userFriendly = 'Database connection or data retrieval issue';
     technicalDetails = 'Problems accessing or updating information in the database';
     severity = 'critical';
   }
@@ -87,7 +87,7 @@ const translateLogMessage = (log: LogEntry): {
   // React/UI Issues
   else if (message.includes('hydration') || message.includes('component') || message.includes('react') || message.includes('render')) {
     category = 'UI/Component';
-    userFriendly = '🎨 User interface display or component issue';
+    userFriendly = 'User interface display or component issue';
     technicalDetails = 'Problems with how the page displays or interactive elements';
     severity = 'medium';
   }
@@ -95,7 +95,7 @@ const translateLogMessage = (log: LogEntry): {
   // JavaScript Errors
   else if (message.includes('undefined') || message.includes('null') || message.includes('typeerror') || message.includes('referenceerror')) {
     category = 'Code Logic';
-    userFriendly = '⚠️ Programming logic error affecting functionality';
+    userFriendly = 'Programming logic error affecting functionality';
     technicalDetails = 'Code trying to use data that doesn\'t exist or is invalid';
     severity = 'high';
   }
@@ -103,7 +103,7 @@ const translateLogMessage = (log: LogEntry): {
   // Performance Issues
   else if (message.includes('slow') || message.includes('performance') || message.includes('timeout') || message.includes('memory')) {
     category = 'Performance';
-    userFriendly = '🐌 Application performance or speed issue';
+    userFriendly = 'Application performance or speed issue';
     technicalDetails = 'App is running slower than expected or using too many resources';
     severity = 'medium';
   }
@@ -111,13 +111,13 @@ const translateLogMessage = (log: LogEntry): {
   // Security Issues
   else if (message.includes('security') || message.includes('xss') || message.includes('injection') || message.includes('vulnerability')) {
     category = 'Security';
-    userFriendly = '🛡️ Security vulnerability or protection issue';
+    userFriendly = 'Security vulnerability or protection issue';
     technicalDetails = 'Potential security risks that need immediate attention';
     severity = 'critical';
   }
   
   // Console vs Issues distinction
-  if (log.level === 'debug' || log.level === 'info') {
+  if (log.level === 'info') {
     category = category + ' (Console Info)';
   } else if (log.level === 'warn' || log.level === 'error') {
     category = category + ' (Issue)';
@@ -137,69 +137,277 @@ const getSeverityStyles = (severity: 'low' | 'medium' | 'high' | 'critical') => 
   }
 };
 
-// Memoized log item component for better performance
-const LogItem = memo(({ log, index, getSideIndicator, getLogLevelStyles, copyToClipboard }: {
+// Memoized log item component with completely new design
+const LogItem = memo(({ log, index, getSideIndicator, getLogLevelStyles, copyToClipboard, isSelected, onToggleSelection }: {
   log: LogEntry;
   index: number;
   getSideIndicator: (side: 'client' | 'server' | undefined) => JSX.Element;
   getLogLevelStyles: (level: LogLevel) => string;
   copyToClipboard: (log: LogEntry) => void;
+  isSelected: boolean;
+  onToggleSelection: (logId: string) => void;
 }) => {
   const translation = translateLogMessage(log);
+  const logId = `${log.timestamp}-${index}`;
   
   return (
-    <div key={`${log.id}-${index}`} className="p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-3">
-            <span className={`px-2 py-1 text-xs font-bold rounded ${getLogLevelStyles(log.level)}`}>
+    <div className={`border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 mb-4 overflow-hidden ${
+      isSelected ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-200' : 'bg-white'
+    }`}>
+      {/* Header */}
+      <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => onToggleSelection(logId)}
+                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="sr-only">Select this log entry</span>
+            </label>
+            <span className={`px-3 py-1 text-xs font-bold rounded-full ${getLogLevelStyles(log.level)}`}>
               {log.level.toUpperCase()}
             </span>
             {getSideIndicator(log.side)}
-            <span className={`px-2 py-1 text-xs font-medium rounded border ${getSeverityStyles(translation.severity)}`}>
+            <span className={`px-3 py-1 text-xs font-medium rounded-full border ${getSeverityStyles(translation.severity)}`}>
               {translation.category}
             </span>
             {log.component && (
-              <span className="px-2 py-1 bg-gray-200 text-gray-800 text-xs rounded-full font-medium">
+              <span className="px-3 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full font-medium">
                 {log.component}
               </span>
             )}
           </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-600 font-medium">
+              {new Date(log.timestamp).toLocaleTimeString()}
+            </span>
+            <button
+              onClick={() => copyToClipboard(log)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-700"
+              title="Copy log details"
+            >
+              📋
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="px-6 py-5">
+        {/* User-Friendly Message */}
+        <div className="mb-4">
+          <div className="text-lg font-semibold text-gray-900 mb-2">{translation.userFriendly}</div>
+          {translation.technicalDetails && (
+            <div className="text-sm text-gray-600 italic">{translation.technicalDetails}</div>
+          )}
+        </div>
+        
+        {/* Collapsible Technical Details */}
+        <details className="group">
+          <summary className="flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer hover:text-gray-900 transition-colors mb-3">
+            <span className="w-5 h-5 flex items-center justify-center bg-gray-100 rounded-full group-open:bg-blue-100 group-open:text-blue-600 transition-colors">
+              🔧
+            </span>
+            Technical Details
+            <span className="ml-auto text-xs text-gray-500 group-open:hidden">Click to expand</span>
+          </summary>
           
-          {/* Combined User-Friendly Translation and Technical Details */}
-          <div className="mb-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="text-sm font-semibold text-blue-900 mb-2">📝 What this means:</div>
-            <div className="text-sm text-blue-800 mb-3">{translation.userFriendly}</div>
-            {translation.technicalDetails && (
-              <div className="text-xs text-blue-700 mb-3 italic">{translation.technicalDetails}</div>
-            )}
-            
-            {/* Technical Details */}
-            <div className="border-t border-blue-200 pt-3">
-              <div className="text-xs font-semibold text-blue-900 mb-1">🔧 Technical Details:</div>
-              <div className="text-sm font-medium text-blue-900 break-words leading-relaxed">
-                {log.message}
-              </div>
-              {log.stack && (
-                <div className="mt-2 text-xs text-blue-800 font-medium">
-                  <strong>Stack:</strong> {log.stack}
+          <div className="space-y-4 pl-7 border-l-2 border-gray-100">
+            {/* Enhanced Data in Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* User Information */}
+              {log.userInfo && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 font-semibold text-blue-900 mb-3">
+                    <span className="w-5 h-5 bg-blue-200 rounded-full flex items-center justify-center text-xs">👤</span>
+                    User Information
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-blue-700 font-medium">ID:</span>
+                      <span className="text-blue-800">{log.userInfo.id || 'Anonymous'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700 font-medium">Email:</span>
+                      <span className="text-blue-800">{log.userInfo.email || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700 font-medium">Role:</span>
+                      <span className="text-blue-800">{log.userInfo.role || 'user'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700 font-medium">Name:</span>
+                      <span className="text-blue-800">{log.userInfo.displayName || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Device Information */}
+              {log.deviceInfo && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 font-semibold text-green-900 mb-3">
+                    <span className="w-5 h-5 bg-green-200 rounded-full flex items-center justify-center text-xs">📱</span>
+                    Device Detection
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-green-700 font-medium">Browser:</span>
+                      <span className="text-green-800">{log.deviceInfo.browser} {log.deviceInfo.version}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-green-700 font-medium">Platform:</span>
+                      <span className="text-green-800">{log.deviceInfo.platform}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-green-700 font-medium">Screen:</span>
+                      <span className="text-green-800">{log.deviceInfo.screenSize}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-green-700 font-medium">Mobile:</span>
+                      <span className="text-green-800">{log.deviceInfo.mobile ? 'Yes' : 'No'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Performance Metrics */}
+              {log.performanceInfo && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 font-semibold text-yellow-900 mb-3">
+                    <span className="w-5 h-5 bg-yellow-200 rounded-full flex items-center justify-center text-xs">⚡</span>
+                    Performance
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-yellow-700 font-medium">Memory:</span>
+                      <span className="text-yellow-800">{log.performanceInfo.memoryUsage ? `${log.performanceInfo.memoryUsage} MB` : 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-yellow-700 font-medium">Load Time:</span>
+                      <span className="text-yellow-800">{log.performanceInfo.loadTime ? `${log.performanceInfo.loadTime} ms` : 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-yellow-700 font-medium">Network:</span>
+                      <span className="text-yellow-800">{log.performanceInfo.networkSpeed || 'unknown'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Network Information */}
+              {log.networkInfo && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 font-semibold text-purple-900 mb-3">
+                    <span className="w-5 h-5 bg-purple-200 rounded-full flex items-center justify-center text-xs">🌐</span>
+                    Network Status
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-purple-700 font-medium">Online:</span>
+                      <span className="text-purple-800">{log.networkInfo.online ? 'Yes' : 'No'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-purple-700 font-medium">Type:</span>
+                      <span className="text-purple-800">{log.networkInfo.connectionType || 'unknown'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-purple-700 font-medium">Speed:</span>
+                      <span className="text-purple-800">{log.networkInfo.downlink ? `${log.networkInfo.downlink} Mbps` : 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-purple-700 font-medium">Language:</span>
+                      <span className="text-purple-800">{log.networkInfo.language || 'N/A'}</span>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
+
+            {/* Context Information - Full Width */}
+            {log.contextInfo && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 font-semibold text-indigo-900 mb-3">
+                  <span className="w-5 h-5 bg-indigo-200 rounded-full flex items-center justify-center text-xs">🔗</span>
+                  Context & Location
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-indigo-700 font-medium">URL:</span>
+                    <span className="text-indigo-800 truncate ml-2">{log.contextInfo.fullUrl || log.url || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-indigo-700 font-medium">Feature:</span>
+                    <span className="text-indigo-800">{log.contextInfo.feature || 'General'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-indigo-700 font-medium">Viewport:</span>
+                    <span className="text-indigo-800">{log.contextInfo.viewportSize || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-indigo-700 font-medium">Journey:</span>
+                    <span className="text-indigo-800">{log.contextInfo.userJourney || 'unknown'}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Error Context for Errors */}
+            {log.errorContext && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 font-semibold text-red-900 mb-3">
+                  <span className="w-5 h-5 bg-red-200 rounded-full flex items-center justify-center text-xs">🚨</span>
+                  Error Analysis
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-red-700 font-medium">Category:</span>
+                    <span className="text-red-800">{log.errorContext.category || 'General Error'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-red-700 font-medium">Cause:</span>
+                    <span className="text-red-800">{log.errorContext.commonCause || 'Unknown'}</span>
+                  </div>
+                  {log.errorContext.sourceFile && (
+                    <div className="flex justify-between">
+                      <span className="text-red-700 font-medium">Source:</span>
+                      <span className="text-red-800 font-mono text-xs">{log.errorContext.sourceFile}:{log.errorContext.lineNumber}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Raw Data */}
+            {log.data && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
+                  <span className="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center text-xs">📦</span>
+                  Raw Data
+                </div>
+                <pre className="text-xs text-gray-700 font-mono bg-white p-3 rounded border overflow-x-auto">
+                  {JSON.stringify(log.data, null, 2)}
+                </pre>
+              </div>
+            )}
+
+            {/* Stack Trace */}
+            {log.stack && (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
+                  <span className="w-5 h-5 bg-gray-200 rounded-full flex items-center justify-center text-xs">📋</span>
+                  Stack Trace
+                </div>
+                <pre className="text-xs text-gray-700 font-mono bg-white p-3 rounded border overflow-x-auto">
+                  {log.stack}
+                </pre>
+              </div>
+            )}
           </div>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-xs text-gray-800 whitespace-nowrap font-semibold">
-            {new Date(log.timestamp).toLocaleTimeString()}
-          </span>
-          <button
-            onClick={() => copyToClipboard(log)}
-            className="p-1 hover:bg-gray-200 rounded transition-colors"
-            title="Copy log details"
-          >
-            📋
-          </button>
-        </div>
+        </details>
       </div>
     </div>
   );
@@ -212,25 +420,25 @@ export default function LogsDashboard() {
   const [selectedSide, setSelectedSide] = useState<'client' | 'server' | 'all'>('all');
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [maxLogs, setMaxLogs] = useState(250); // Changed default from 150 to 250
+  const [maxLogs, setMaxLogs] = useState(1000); // Increased default to max
   const [isPaused, setIsPaused] = useState(false);
-  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('1h'); // Changed default from '1d' to '1h'
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('1m');
   const [showStackTrace, setShowStackTrace] = useState(false);
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [insightsCollapsed, setInsightsCollapsed] = useState(false);
-  const [filtersExpanded, setFiltersExpanded] = useState(false); // Collapsed by default
+  const [insightsCollapsed, setInsightsCollapsed] = useState(true);
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [selectedLogForFix, setSelectedLogForFix] = useState<LogEntry | null>(null);
   const [showFixPopout, setShowFixPopout] = useState(false);
+  const [selectedLogIds, setSelectedLogIds] = useState<Set<string>>(new Set());
   const logsEndRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(false);
   const [lastLogCount, setLastLogCount] = useState(0);
 
-  // New slider controls for log limits
-  const [maxErrors, setMaxErrors] = useState(50);
-  const [maxWarnings, setMaxWarnings] = useState(50);
-  const [maxInfo, setMaxInfo] = useState(50);
-  const [maxDebug, setMaxDebug] = useState(50);
+  // Updated slider controls - removed debug entirely
+  const [maxErrors, setMaxErrors] = useState(200); // Increased to max
+  const [maxWarnings, setMaxWarnings] = useState(200); // Increased to max
+  const [maxInfo, setMaxInfo] = useState(200); // Increased to max
 
   // Load advanced configuration if available
   useEffect(() => {
@@ -244,12 +452,12 @@ export default function LogsDashboard() {
             1: '1h',
             24: '1d'
           };
-          const closestRange = timeRangeMap[config.timeRangeHours] || '1h';
+          const closestRange = timeRangeMap[config.timeRangeHours] || '1m';
           setSelectedTimeRange(closestRange);
         }
         
         // Set max logs based on combined limits from config
-        const totalConfiguredLogs = config.maxErrors + config.maxWarnings + config.maxInfo + config.maxDebug;
+        const totalConfiguredLogs = config.maxErrors + config.maxWarnings + config.maxInfo;
         if (totalConfiguredLogs > 0) {
           setMaxLogs(Math.min(totalConfiguredLogs, 1000)); // Cap at 1000 for performance
         }
@@ -278,7 +486,6 @@ export default function LogsDashboard() {
       case LogLevel.ERROR: return 'text-red-800 bg-red-100 border-red-200 font-bold';
       case LogLevel.WARN: return 'text-yellow-800 bg-yellow-100 border-yellow-200 font-semibold';
       case LogLevel.INFO: return 'text-blue-800 bg-blue-100 border-blue-200 font-medium';
-      case LogLevel.DEBUG: return 'text-gray-700 bg-gray-50 border-gray-200 font-medium';
       default: return 'text-gray-700 bg-gray-50 border-gray-200 font-medium';
     }
   }, []);
@@ -295,7 +502,8 @@ export default function LogsDashboard() {
             : 'bg-purple-100 text-purple-800'
         }`}
       >
-        {isClient ? '🌐 Client' : '⚙️ Server'}
+        <div className={`w-2 h-2 rounded-full mr-1 ${isClient ? 'bg-blue-500' : 'bg-purple-500'}`}></div>
+        {isClient ? 'Client' : 'Server'}
       </span>
     );
   };
@@ -457,14 +665,13 @@ User Agent: ${log.userAgent || 'N/A'}
       // Removed dashboard internal logging to prevent feedback loop
     }
     
-    // Apply slider-based filtering by log type
+    // Apply slider-based filtering by log type (removed debug)
     const errorLogs = filteredLogs.filter(log => log.level === LogLevel.ERROR).slice(0, maxErrors);
     const warnLogs = filteredLogs.filter(log => log.level === LogLevel.WARN).slice(0, maxWarnings);
     const infoLogs = filteredLogs.filter(log => log.level === LogLevel.INFO).slice(0, maxInfo);
-    const debugLogs = filteredLogs.filter(log => log.level === LogLevel.DEBUG).slice(0, maxDebug);
     
     // Combine filtered logs
-    filteredLogs = [...errorLogs, ...warnLogs, ...infoLogs, ...debugLogs];
+    filteredLogs = [...errorLogs, ...warnLogs, ...infoLogs];
     
     // Level filtering (if specific level is selected, override slider filtering)
     if (selectedLevel !== 'all') {
@@ -511,7 +718,7 @@ User Agent: ${log.userAgent || 'N/A'}
     const finalLogs = filteredLogs.slice(0, maxLogs);
     // Removed dashboard internal logging to prevent feedback loop
     setLogs(finalLogs);
-  }, [isPaused, selectedTimeRange, maxLogs, selectedLevel, selectedComponent, selectedSide, searchQuery, sortOrder, maxErrors, maxWarnings, maxInfo, maxDebug]);
+  }, [isPaused, selectedTimeRange, maxLogs, selectedLevel, selectedComponent, selectedSide, searchQuery, sortOrder, maxErrors, maxWarnings, maxInfo]);
 
   useEffect(() => {
     logger.setupConsoleInterception();
@@ -538,19 +745,18 @@ User Agent: ${log.userAgent || 'N/A'}
     setLastLogCount(logs.length);
   }, [logs.length, autoScroll, autoRefresh, isPaused, lastLogCount]);
 
-  // Computed statistics
+  // Computed statistics - removed debug
   const logStats = useMemo(() => {
     const total = logs.length;
     const errors = logs.filter(log => log.level === LogLevel.ERROR).length;
     const warnings = logs.filter(log => log.level === LogLevel.WARN).length;
     const info = logs.filter(log => log.level === LogLevel.INFO).length;
-    const debug = logs.filter(log => log.level === LogLevel.DEBUG).length;
     
     // Console vs Issues breakdown
-    const consoleMessages = logs.filter(log => log.level === LogLevel.INFO || log.level === LogLevel.DEBUG).length;
+    const consoleMessages = logs.filter(log => log.level === LogLevel.INFO).length;
     const issues = logs.filter(log => log.level === LogLevel.ERROR || log.level === LogLevel.WARN).length;
     
-    return { total, errors, warnings, info, debug, consoleMessages, issues };
+    return { total, errors, warnings, info, consoleMessages, issues };
   }, [logs]);
 
   const components = useMemo(() => {
@@ -566,14 +772,13 @@ User Agent: ${log.userAgent || 'N/A'}
     setSelectedLevel('all');
     setSelectedComponent('all');
     setSelectedSide('all');
-    setSelectedTimeRange('1h'); // Reset to default
+    setSelectedTimeRange('1m'); // Reset to 1 minute default
     setSearchQuery('');
     // Reset slider values to defaults
-    setMaxLogs(250);
-    setMaxErrors(50);
-    setMaxWarnings(50);
-    setMaxInfo(50);
-    setMaxDebug(50);
+    setMaxLogs(1000); // Reset to max default
+    setMaxErrors(200);
+    setMaxWarnings(200);
+    setMaxInfo(200);
   };
 
   const testConsoleLogging = () => {
@@ -678,18 +883,16 @@ User Agent: ${log.userAgent || 'N/A'}
       case LogLevel.ERROR: return 'text-red-600 bg-red-50 border-red-200';
       case LogLevel.WARN: return 'text-yellow-600 bg-yellow-50 border-yellow-200';
       case LogLevel.INFO: return 'text-blue-600 bg-blue-50 border-blue-200';
-      case LogLevel.DEBUG: return 'text-gray-700 bg-gray-50 border-gray-200 font-medium';
       default: return 'text-gray-700 bg-gray-50 border-gray-200 font-medium';
     }
   };
 
   const getLevelEmoji = (level: LogLevel) => {
     switch (level) {
-      case LogLevel.ERROR: return '❌';
-      case LogLevel.WARN: return '⚠️';
-      case LogLevel.INFO: return 'ℹ️';
-      case LogLevel.DEBUG: return '🐛';
-      default: return '📝';
+      case LogLevel.ERROR: return 'ERR';
+      case LogLevel.WARN: return 'WARN';
+      case LogLevel.INFO: return 'INFO';
+      default: return 'LOG';
     }
   };
 
@@ -703,6 +906,51 @@ User Agent: ${log.userAgent || 'N/A'}
     if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
     
     return date.toLocaleString();
+  };
+
+  // Multi-selection functions
+  const toggleLogSelection = (logId: string) => {
+    const newSelection = new Set(selectedLogIds);
+    if (newSelection.has(logId)) {
+      newSelection.delete(logId);
+    } else {
+      newSelection.add(logId);
+    }
+    setSelectedLogIds(newSelection);
+  };
+
+  const selectAllVisibleLogs = () => {
+    const allVisibleIds = new Set(logs.map((_, index) => `${logs[index].timestamp}-${index}`));
+    setSelectedLogIds(allVisibleIds);
+  };
+
+  const clearSelection = () => {
+    setSelectedLogIds(new Set());
+  };
+
+  const exportSelectedLogs = () => {
+    const selectedLogs = logs.filter((_, index) => selectedLogIds.has(`${logs[index].timestamp}-${index}`));
+    if (selectedLogs.length === 0) {
+      alert('No logs selected for export');
+      return;
+    }
+
+    const exportData = {
+      exported_at: new Date().toISOString(),
+      total_selected: selectedLogs.length,
+      logs: selectedLogs
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `selected-logs-${selectedLogs.length}-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    // Clear selection after export
+    clearSelection();
   };
 
   return (
@@ -733,471 +981,406 @@ User Agent: ${log.userAgent || 'N/A'}
         onMaxWarningsChange={setMaxWarnings}
         maxInfo={maxInfo}
         onMaxInfoChange={setMaxInfo}
-        maxDebug={maxDebug}
-        onMaxDebugChange={setMaxDebug}
       />
       
-      {/* Main Content Area */}
+      {/* Main Content Area - Completely Revamped */}
       <div className={`transition-all duration-300 ${
         sidebarCollapsed ? 'ml-16' : 'ml-80'
       }`}>
-        <div className="p-4 max-w-full mx-auto bg-gray-50 min-h-screen">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">📊 Enhanced Logs Dashboard</h1>
-            <div className="flex items-center gap-2">
-              <div className={`px-2 py-1 rounded text-xs font-medium ${
+        <div className="p-6 max-w-full mx-auto bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Application Logs</h1>
+              <p className="text-gray-600">Real-time monitoring and diagnostics</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setInsightsCollapsed(!insightsCollapsed)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all hover:shadow-md ${
+                  logStats.errors === 0 && logStats.warnings < 5 
+                    ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                    : logStats.errors > 0 
+                      ? 'bg-red-100 text-red-800 hover:bg-red-200' 
+                      : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                }`}
+                title={`Click to ${insightsCollapsed ? 'view' : 'hide'} detailed health insights`}
+              >
+                <span className="w-2 h-2 rounded-full bg-current inline-block mr-2"></span>
+                {logStats.errors === 0 && logStats.warnings < 5 
+                  ? 'Healthy' 
+                  : logStats.errors > 0 
+                    ? 'Critical' 
+                    : 'Warning'}
+              </button>
+              <div className={`px-4 py-2 rounded-full text-sm font-medium ${
                 isPaused ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
               }`}>
-                {isPaused ? '⏸️ Paused' : '🔄 Live'}
+                <span className={`w-2 h-2 rounded-full inline-block mr-2 ${
+                  isPaused ? 'bg-yellow-500' : 'bg-green-500 animate-pulse'
+                }`}></span>
+                {isPaused ? 'Paused' : 'Live'}
               </div>
               <button
                 onClick={() => setIsPaused(!isPaused)}
-                className={`px-3 py-1 text-sm rounded transition-colors ${
+                className={`px-4 py-2 text-sm font-medium rounded-full transition-colors ${
                   isPaused ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'
                 }`}
               >
-                {isPaused ? '▶️ Resume' : '⏸️ Pause'}
-              </button>
-              <button
-                onClick={() => {
-                  logger.clearDbCache();
-                  refreshLogs();
-                }}
-                className="px-3 py-1 text-sm rounded bg-purple-500 hover:bg-purple-600 text-white transition-colors"
-                title="Clear cache and refresh from database"
-              >
-                🔄 Refresh Cache
+                {isPaused ? 'Resume' : 'Pause'}
               </button>
             </div>
           </div>
           
-          {/* Statistics Panel */}
-          <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-4">
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
             <button 
               onClick={() => setSelectedLevel(selectedLevel === 'all' ? 'all' : 'all')}
-              className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
-                selectedLevel === 'all' ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-gray-50'
+              className={`p-6 bg-white rounded-2xl shadow-sm border-2 text-center transition-all hover:shadow-lg ${
+                selectedLevel === 'all' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <div className="text-2xl font-bold text-gray-900">{logStats.total}</div>
-              <div className="text-sm text-gray-800 font-semibold">Total Logs</div>
+              <div className="text-3xl font-bold text-gray-900 mb-2">{logStats.total}</div>
+              <div className="text-sm text-gray-600 font-medium">Total Logs</div>
             </button>
             
-            <div className="p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg shadow-sm border text-center">
-              <div className="text-2xl font-bold text-blue-600">{logStats.consoleMessages}</div>
-              <div className="text-sm text-blue-600 font-semibold">💬 Console</div>
-            </div>
+            <button
+              onClick={() => setSelectedLevel(selectedLevel === LogLevel.INFO ? 'all' : LogLevel.INFO)}
+              className={`p-6 rounded-2xl shadow-sm border-2 text-center transition-all hover:shadow-lg ${
+                selectedLevel === LogLevel.INFO ? 'border-blue-500 bg-blue-50' : 'border-blue-200 hover:border-blue-300 bg-gradient-to-r from-green-50 to-blue-50'
+              }`}
+            >
+              <div className="text-3xl font-bold text-blue-600 mb-2">{logStats.consoleMessages}</div>
+              <div className="text-sm text-blue-600 font-medium flex items-center justify-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                Console
+              </div>
+            </button>
             
-            <div className="p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg shadow-sm border text-center">
-              <div className="text-2xl font-bold text-orange-600">{logStats.issues}</div>
-              <div className="text-sm text-orange-600 font-semibold">⚠️ Issues</div>
-            </div>
+            <button
+              onClick={() => {
+                // Filter to show only errors and warnings (issues)
+                if (selectedLevel === LogLevel.ERROR || selectedLevel === LogLevel.WARN) {
+                  setSelectedLevel('all');
+                } else {
+                  setSelectedLevel(LogLevel.ERROR); // Show errors first as they're more critical
+                }
+              }}
+              className={`p-6 rounded-2xl shadow-sm border-2 text-center transition-all hover:shadow-lg ${
+                selectedLevel === LogLevel.ERROR || selectedLevel === LogLevel.WARN 
+                  ? 'border-orange-500 bg-orange-50' 
+                  : 'border-orange-200 hover:border-orange-300 bg-gradient-to-r from-orange-50 to-red-50'
+              }`}
+            >
+              <div className="text-3xl font-bold text-orange-600 mb-2">{logStats.issues}</div>
+              <div className="text-sm text-orange-600 font-medium flex items-center justify-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                Issues
+              </div>
+            </button>
             
             <button 
               onClick={() => setSelectedLevel(selectedLevel === LogLevel.ERROR ? 'all' : LogLevel.ERROR)}
-              className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
-                selectedLevel === LogLevel.ERROR ? 'ring-2 ring-red-500 bg-red-50' : 'hover:bg-red-50'
+              className={`p-6 bg-white rounded-2xl shadow-sm border-2 text-center transition-all hover:shadow-lg ${
+                selectedLevel === LogLevel.ERROR ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-red-300'
               }`}
             >
-              <div className="text-2xl font-bold text-red-600">{logStats.errors}</div>
-              <div className="text-sm text-red-600 font-semibold">❌ Errors</div>
+              <div className="text-3xl font-bold text-red-600 mb-2">{logStats.errors}</div>
+              <div className="text-sm text-red-600 font-medium flex items-center justify-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                Errors
+              </div>
             </button>
+            
             <button 
               onClick={() => setSelectedLevel(selectedLevel === LogLevel.WARN ? 'all' : LogLevel.WARN)}
-              className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
-                selectedLevel === LogLevel.WARN ? 'ring-2 ring-yellow-500 bg-yellow-50' : 'hover:bg-yellow-50'
+              className={`p-6 bg-white rounded-2xl shadow-sm border-2 text-center transition-all hover:shadow-lg ${
+                selectedLevel === LogLevel.WARN ? 'border-yellow-500 bg-yellow-50' : 'border-gray-200 hover:border-yellow-300'
               }`}
             >
-              <div className="text-2xl font-bold text-yellow-600">{logStats.warnings}</div>
-              <div className="text-sm text-yellow-600 font-semibold">⚠️ Warnings</div>
+              <div className="text-3xl font-bold text-yellow-600 mb-2">{logStats.warnings}</div>
+              <div className="text-sm text-yellow-600 font-medium flex items-center justify-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                Warnings
+              </div>
             </button>
+            
             <button 
               onClick={() => setSelectedLevel(selectedLevel === LogLevel.INFO ? 'all' : LogLevel.INFO)}
-              className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
-                selectedLevel === LogLevel.INFO ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:bg-blue-50'
+              className={`p-6 bg-white rounded-2xl shadow-sm border-2 text-center transition-all hover:shadow-lg ${
+                selectedLevel === LogLevel.INFO ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
               }`}
             >
-              <div className="text-2xl font-bold text-blue-600">{logStats.info}</div>
-              <div className="text-sm text-blue-600 font-semibold">ℹ️ Info</div>
-            </button>
-            <button 
-              onClick={() => setSelectedLevel(selectedLevel === LogLevel.DEBUG ? 'all' : LogLevel.DEBUG)}
-              className={`p-4 bg-white rounded-lg shadow-sm border text-center transition-all hover:shadow-md ${
-                selectedLevel === LogLevel.DEBUG ? 'ring-2 ring-gray-500 bg-gray-50' : 'hover:bg-gray-50'
-              }`}
-            >
-              <div className="text-2xl font-bold text-gray-700">{logStats.debug}</div>
-              <div className="text-sm text-gray-800 font-semibold">🐛 Debug</div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">{logStats.info}</div>
+              <div className="text-sm text-blue-600 font-medium flex items-center justify-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                Info
+              </div>
             </button>
           </div>
 
-          {/* Insights and Recommendations Section - Show when there are warnings or errors */}
+          {/* System Health Alert */}
           {(logStats.errors > 0 || logStats.warnings > 0) && (
-            <div className="mb-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">💡</span>
-                  <h2 className="text-sm font-bold text-gray-900">Smart Insights & Issue Translation</h2>
+            <div className="bg-white rounded-2xl shadow-sm border-2 border-amber-200 p-6 mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                    <div className="w-3 h-3 rounded-full bg-white"></div>
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-900">System Health Status</h2>
                 </div>
                 <button
                   onClick={() => setInsightsCollapsed(!insightsCollapsed)}
-                  className="text-gray-500 hover:text-gray-700 text-sm"
+                  className="text-gray-500 hover:text-gray-700 transition-colors"
                 >
-                  {insightsCollapsed ? '▼' : '▲'}
+                  {insightsCollapsed ? '▼ Show Details' : '▲ Hide Details'}
                 </button>
               </div>
               
               {!insightsCollapsed && (
-                <div className="space-y-4">
-                  {/* Console vs Issues Breakdown */}
-                  <div className="bg-white rounded-lg p-4 border border-gray-200">
-                    <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm">
-                      <span>📊</span>
-                      What You're Seeing: Console Messages vs Real Issues
-                    </h4>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                        <div className="text-lg font-bold text-blue-900">{logStats.consoleMessages}</div>
-                        <div className="text-sm font-semibold text-blue-800">💬 Console Messages</div>
-                        <div className="text-xs text-blue-700 mt-1">
-                          Normal information and debugging data - these are expected
-                        </div>
-                      </div>
-                      <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-                        <div className="text-lg font-bold text-orange-900">{logStats.issues}</div>
-                        <div className="text-sm font-semibold text-orange-800">⚠️ Actual Issues</div>
-                        <div className="text-xs text-orange-700 mt-1">
-                          Problems that may affect user experience - needs attention
-                        </div>
-                      </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {logStats.errors > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+                      <h4 className="font-bold text-red-800 mb-3 flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                        Critical Issues ({logStats.errors} errors)
+                      </h4>
+                      <ul className="space-y-2 text-sm text-red-700">
+                        <li className="flex items-start gap-2">
+                          <span>•</span>
+                          <span>These break functionality and impact users</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>•</span>
+                          <span>Requires immediate attention from developers</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>•</span>
+                          <span>Check the technical details for debugging info</span>
+                        </li>
+                      </ul>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {/* Error Analysis */}
-                    {logStats.errors > 0 && (
-                      <div className="bg-white rounded-lg p-3 border border-red-200">
-                        <h4 className="font-semibold text-red-800 mb-2 flex items-center gap-2 text-sm">
-                          <span>🚨</span>
-                          Critical Issues ({logStats.errors} errors)
-                        </h4>
-                        <div className="space-y-1 text-xs">
-                          <div className="flex items-center gap-1 text-red-700">
-                            <span>•</span>
-                            <span>These break functionality and frustrate users</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-red-700">
-                            <span>•</span>
-                            <span>Check for patterns in error messages and affected pages</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-red-700">
-                            <span>•</span>
-                            <span>Look at the "What this means" section above for each error</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Warning Analysis */}
-                    {logStats.warnings > 0 && (
-                      <div className="bg-white rounded-lg p-3 border border-yellow-200">
-                        <h4 className="font-semibold text-yellow-800 mb-2 flex items-center gap-2 text-sm">
-                          <span>⚠️</span>
-                          Potential Problems ({logStats.warnings} warnings)
-                        </h4>
-                        <div className="space-y-1 text-xs">
-                          <div className="flex items-center gap-1 text-yellow-700">
-                            <span>•</span>
-                            <span>May become errors if not addressed</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-yellow-700">
-                            <span>•</span>
-                            <span>Often related to deprecated code or accessibility</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-yellow-700">
-                            <span>•</span>
-                            <span>Can impact performance or user experience</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  {logStats.warnings > 0 && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-5">
+                      <h4 className="font-bold text-yellow-800 mb-3 flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
+                        Potential Problems ({logStats.warnings} warnings)
+                      </h4>
+                      <ul className="space-y-2 text-sm text-yellow-700">
+                        <li className="flex items-start gap-2">
+                          <span>•</span>
+                          <span>May become errors if not addressed</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>•</span>
+                          <span>Often related to deprecated code or performance</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <span>•</span>
+                          <span>Consider scheduling fixes during maintenance</span>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
-
-              {/* System Health Status - Always visible but compact */}
-              <div className="mt-2 p-2 bg-white rounded-lg border border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">🏥</span>
-                    <span className="font-semibold text-gray-900 text-sm">System Health</span>
-                  </div>
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    logStats.errors === 0 && logStats.warnings < 5 
-                      ? 'bg-green-100 text-green-800' 
-                      : logStats.errors > 0 
-                        ? 'bg-red-100 text-red-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {logStats.errors === 0 && logStats.warnings < 5 
-                      ? '✅ Healthy' 
-                      : logStats.errors > 0 
-                        ? '🚨 Needs Attention' 
-                        : '⚠️ Monitor Closely'}
-                  </div>
-                </div>
-                {(logStats.errors === 0 && logStats.warnings < 5) && (
-                  <div className="mt-2 text-sm text-gray-800 font-medium">
-                    <span>💡 System running smoothly! Consider checking accessibility analytics for optimization opportunities.</span>
-                  </div>
-                )}
-              </div>
             </div>
           )}
 
-
-
-          {/* Quick Actions & Controls - Enhanced with Filters and Additional Controls */}
-          <div className="bg-white border rounded-lg shadow-sm p-4 mb-4">
-            <div className="space-y-4">
-              {/* Action Buttons Row */}
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <h3 className="text-sm font-semibold text-gray-900">🎛️ Quick Actions:</h3>
-                  
-                  <button 
-                    onClick={refreshLogs}
-                    disabled={isPaused}
-                    className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm disabled:bg-gray-400 transition-colors"
-                  >
-                    🔄 Refresh
-                  </button>
-
-                  <button 
-                    onClick={clearLogs}
-                    className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm transition-colors"
-                  >
-                    🗑️ Clear All
-                  </button>
-
-                  <button 
-                    onClick={exportLogs}
-                    className="px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm transition-colors"
-                  >
-                    📁 Export JSON
-                  </button>
-
-                  <button 
-                    onClick={testConsoleLogging}
-                    className="px-3 py-1 bg-purple-500 text-white rounded-md hover:bg-purple-600 text-sm transition-colors"
-                  >
-                    🧪 Generate Test Logs
-                  </button>
-
-                  <button 
-                    onClick={clearAllFilters}
-                    className="px-3 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600 text-sm transition-colors"
-                  >
-                    🗑️ Clear Filters
-                  </button>
-                </div>
+          {/* Quick Actions */}
+          <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-200 p-6 mb-8">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="w-5 h-5 rounded-lg bg-gray-800 flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-white"></div>
               </div>
+              Quick Actions
+            </h3>
+            
+            <div className="flex flex-wrap gap-3 mb-6">
+              <button 
+                onClick={refreshLogs}
+                disabled={isPaused}
+                className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 disabled:bg-gray-400 transition-colors font-medium"
+              >
+                Refresh
+              </button>
 
-              {/* Live Statistics and Controls Row */}
-              <div className="border-t pt-4">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <h4 className="text-sm font-medium text-gray-700">📊 Live Statistics & Controls:</h4>
-                    
-                    <label htmlFor="auto-refresh" className="flex items-center gap-2 text-sm text-gray-700">
-                      <input 
-                        id="auto-refresh"
-                        name="auto-refresh"
-                        type="checkbox" 
-                        checked={autoRefresh}
-                        onChange={(e) => setAutoRefresh(e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      🔄 Auto Refresh
-                    </label>
-                    
-                    <label htmlFor="auto-scroll" className="flex items-center gap-2 text-sm text-gray-700">
-                      <input 
-                        id="auto-scroll"
-                        name="auto-scroll"
-                        type="checkbox" 
-                        checked={autoScroll}
-                        onChange={(e) => setAutoScroll(e.target.checked)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                      📜 Auto Scroll
-                    </label>
-                  </div>
+              <button 
+                onClick={clearLogs}
+                className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors font-medium"
+              >
+                Clear All
+              </button>
 
-                  {/* Time Range Control */}
-                  <div className="flex items-center gap-2">
-                    <label htmlFor="time-range" className="text-sm font-medium text-gray-700">⏰ Time Range:</label>
-                    <select
-                      id="time-range"
-                      value={selectedTimeRange}
-                      onChange={(e) => setSelectedTimeRange(e.target.value)}
-                      className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="1m">Last 1 min</option>
-                      <option value="5m">Last 5 min</option>
-                      <option value="10m">Last 10 min</option>
-                      <option value="30m">Last 30 min</option>
-                      <option value="1h">Last 1 hour</option>
-                      <option value="1d">Last 24 hours</option>
-                    </select>
-                  </div>
-                </div>
+              <button 
+                onClick={exportLogs}
+                className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors font-medium"
+              >
+                Export
+              </button>
+
+              <button 
+                onClick={testConsoleLogging}
+                className="px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600 transition-colors font-medium"
+              >
+                Test Logs
+              </button>
+
+              <button 
+                onClick={clearAllFilters}
+                className="px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors font-medium"
+              >
+                Clear Filters
+              </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-6">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <input 
+                  type="checkbox" 
+                  checked={autoRefresh}
+                  onChange={(e) => setAutoRefresh(e.target.checked)}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                Auto Refresh
+              </label>
+              
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <input 
+                  type="checkbox" 
+                  checked={autoScroll}
+                  onChange={(e) => setAutoScroll(e.target.checked)}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                Auto Scroll
+              </label>
+
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700">Time Range:</label>
+                <select
+                  value={selectedTimeRange}
+                  onChange={(e) => setSelectedTimeRange(e.target.value)}
+                  className="px-3 py-1 border border-gray-300 rounded-lg text-sm font-medium text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[140px]"
+                >
+                  <option value="1m">Last 1 min</option>
+                  <option value="5m">Last 5 min</option>
+                  <option value="10m">Last 10 min</option>
+                  <option value="30m">Last 30 min</option>
+                  <option value="1h">Last 1 hour</option>
+                  <option value="1d">Last 24 hours</option>
+                </select>
               </div>
-
-              {/* Log Limits Controls */}
-              <div className="border-t pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                  <div>
-                    <label htmlFor="max-logs" className="block text-xs font-medium text-gray-600 mb-1">📊 Max Total Logs</label>
-                    <input
-                      id="max-logs"
-                      type="range"
-                      min="50"
-                      max="1000"
-                      step="50"
-                      value={maxLogs}
-                      onChange={(e) => setMaxLogs(Number(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="text-xs text-gray-500 text-center">{maxLogs}</div>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="max-errors" className="block text-xs font-medium text-gray-600 mb-1">❌ Max Errors</label>
-                    <input
-                      id="max-errors"
-                      type="range"
-                      min="10"
-                      max="200"
-                      step="10"
-                      value={maxErrors}
-                      onChange={(e) => setMaxErrors(Number(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="text-xs text-gray-500 text-center">{maxErrors}</div>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="max-warnings" className="block text-xs font-medium text-gray-600 mb-1">⚠️ Max Warnings</label>
-                    <input
-                      id="max-warnings"
-                      type="range"
-                      min="10"
-                      max="200"
-                      step="10"
-                      value={maxWarnings}
-                      onChange={(e) => setMaxWarnings(Number(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="text-xs text-gray-500 text-center">{maxWarnings}</div>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="max-info" className="block text-xs font-medium text-gray-600 mb-1">ℹ️ Max Info</label>
-                    <input
-                      id="max-info"
-                      type="range"
-                      min="10"
-                      max="200"
-                      step="10"
-                      value={maxInfo}
-                      onChange={(e) => setMaxInfo(Number(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="text-xs text-gray-500 text-center">{maxInfo}</div>
-                  </div>
-                  
-                  <div>
-                    <label htmlFor="max-debug" className="block text-xs font-medium text-gray-600 mb-1">🐛 Max Debug</label>
-                    <input
-                      id="max-debug"
-                      type="range"
-                      min="10"
-                      max="200"
-                      step="10"
-                      value={maxDebug}
-                      onChange={(e) => setMaxDebug(Number(e.target.value))}
-                      className="w-full"
-                    />
-                    <div className="text-xs text-gray-500 text-center">{maxDebug}</div>
-                  </div>
-                </div>
-              </div>
-
-
             </div>
           </div>
 
           {/* Logs Display */}
-          <div className="bg-white border rounded-lg shadow-sm">
-            <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
-              <h2 className="font-semibold text-gray-900">
-                📋 Recent Logs ({logs.length} shown)
-              </h2>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={copyMessagesOnly}
-                  className="px-3 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded transition-colors"
-                  title="Copy just messages (compact format)"
-                >
-                  📝 Messages
-                </button>
-                <button
-                  onClick={copyAllVisibleLogs}
-                  className="px-3 py-1 text-xs bg-green-100 text-green-700 hover:bg-green-200 rounded transition-colors"
-                  title="Copy all visible logs to clipboard"
-                >
-                  📋 Full Details
-                </button>
-                <button
-                  onClick={scrollToTop}
-                  className="px-3 py-1 text-xs bg-gray-100 text-gray-800 hover:bg-gray-200 rounded transition-colors font-medium"
-                  title="Scroll to top"
-                >
-                  ⬆️ Top
-                </button>
-                <button
-                  onClick={scrollToBottom}
-                  className="px-3 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded transition-colors"
-                  title="Scroll to bottom"
-                >
-                  ⬇️ Bottom
-                </button>
-                <div className="text-sm text-gray-800 font-semibold">
-                  {autoRefresh && !isPaused && '🔄 Live updating'}
-                  {isPaused && '⏸️ Updates paused'}
+          <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-200 overflow-hidden">
+            <div className="p-6 border-b bg-gradient-to-r from-gray-50 to-white">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-lg bg-gray-200 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-gray-700"></div>
+                  </div>
+                  Recent Logs ({logs.length} shown)
+                </h2>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={copyMessagesOnly}
+                    className="px-3 py-2 text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg transition-colors font-medium"
+                    title="Copy just messages"
+                  >
+                    Messages
+                  </button>
+                  <button
+                    onClick={copyAllVisibleLogs}
+                    className="px-3 py-2 text-sm bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition-colors font-medium"
+                    title="Copy all visible logs"
+                  >
+                    Full Details
+                  </button>
+                  <button
+                    onClick={scrollToTop}
+                    className="px-3 py-2 text-sm bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+                    title="Scroll to top"
+                  >
+                    Top
+                  </button>
+                  <button
+                    onClick={scrollToBottom}
+                    className="px-3 py-2 text-sm bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg transition-colors font-medium"
+                    title="Scroll to bottom"
+                  >
+                    Bottom
+                  </button>
+                </div>
+              </div>
+              
+              {/* Selection Controls */}
+              <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-3">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-gray-400 rounded"></div>
+                    Multi-Selection:
+                  </span>
+                  <span className="text-sm text-gray-600">
+                    {selectedLogIds.size} of {logs.length} selected
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={selectAllVisibleLogs}
+                    className="px-3 py-1.5 text-sm bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-lg transition-colors font-medium"
+                    title="Select all visible logs"
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={clearSelection}
+                    className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+                    title="Clear selection"
+                    disabled={selectedLogIds.size === 0}
+                  >
+                    Clear
+                  </button>
+                  <button
+                    onClick={exportSelectedLogs}
+                    className="px-3 py-1.5 text-sm bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition-colors font-medium"
+                    title="Export selected logs as JSON"
+                    disabled={selectedLogIds.size === 0}
+                  >
+                    Export ({selectedLogIds.size})
+                  </button>
                 </div>
               </div>
             </div>
             
-            <div className="logs-container h-[calc(100vh-24rem)] overflow-y-auto">
+            <div className="logs-container h-[calc(100vh-28rem)] overflow-y-auto p-6 bg-gray-50">
               {logs.length === 0 ? (
-                <div className="p-8 text-center text-gray-800 font-medium">
-                  <div className="text-4xl mb-2">📝</div>
-                  <div className="text-lg font-medium mb-1">No logs found</div>
-                  <div className="text-sm">Try adjusting your filters or generate some test logs</div>
+                <div className="text-center py-16">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-200 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-gray-400"></div>
+                  </div>
+                  <div className="text-xl font-bold text-gray-900 mb-2">No logs found</div>
+                  <div className="text-gray-600">Try adjusting your filters or generate some test logs</div>
                 </div>
               ) : (
-                logs.map((log, index) => (
-                  <LogItem
-                    key={`${log.timestamp}-${index}`}
-                    log={log}
-                    index={index}
-                    getSideIndicator={getSideIndicator}
-                    getLogLevelStyles={getLogLevelStyles}
-                    copyToClipboard={copyLogEntry}
-                  />
-                ))
+                logs.map((log, index) => {
+                  const logId = `${log.timestamp}-${index}`;
+                  return (
+                    <LogItem
+                      key={logId}
+                      log={log}
+                      index={index}
+                      getSideIndicator={getSideIndicator}
+                      getLogLevelStyles={getLogLevelStyles}
+                      copyToClipboard={copyLogEntry}
+                      isSelected={selectedLogIds.has(logId)}
+                      onToggleSelection={toggleLogSelection}
+                    />
+                  );
+                })
               )}
               <div ref={logsEndRef} />
             </div>
@@ -1212,8 +1395,11 @@ User Agent: ${log.userAgent || 'N/A'}
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  🔧 Suggested Fixes
-                  <span className="text-lg">{getLevelEmoji(selectedLogForFix.level)}</span>
+                  <div className="w-5 h-5 rounded-lg bg-blue-500 flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white"></div>
+                  </div>
+                  Suggested Fixes
+                  <span className="text-lg font-mono text-gray-600">{getLevelEmoji(selectedLogForFix.level)}</span>
                 </h3>
                 <button
                   onClick={() => setShowFixPopout(false)}
@@ -1251,7 +1437,10 @@ User Agent: ${log.userAgent || 'N/A'}
 
               {/* Suggested Fixes */}
               <div className="mb-6">
-                <h4 className="text-lg font-semibold text-gray-900 mb-3">💡 Suggested Solutions:</h4>
+                <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                  Suggested Solutions:
+                </h4>
                 <ul className="space-y-2">
                   {getSuggestedFixes(selectedLogForFix).map((fix, index) => (
                     <li key={index} className="flex items-start gap-2">
@@ -1268,7 +1457,8 @@ User Agent: ${log.userAgent || 'N/A'}
                   onClick={() => copyErrorDetails(selectedLogForFix)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
-                  📋 Copy Full Error Details
+                  <div className="w-3 h-3 border border-white rounded"></div>
+                  Copy Full Error Details
                 </button>
                 <button
                   onClick={() => setShowFixPopout(false)}

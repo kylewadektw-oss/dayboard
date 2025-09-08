@@ -3,7 +3,31 @@
  * 
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
  * 
- * This file is part of Dayboard, a proprietary household command center application.
+ * This file is part of Dayboard, a proprieta// Log level// Log level options - modernized without emojis
+const LOG_LEVELS_OLD = [
+  { value: 'all', label: 'All Levels', color: 'gray', dot: true },
+  { value: 'error', label: 'Errors', color: 'red', dot: true },
+  { value: 'warn', label: 'Warnings', color: 'yellow', dot: true },
+  { value: 'info', label: 'Info', color: 'blue', dot: true }
+];
+
+const sourceSides_OLD = [
+  { value: 'all', label: 'All Sources', color: 'gray', dot: true },
+  { value: 'client', label: 'Client', color: 'blue', dot: true },
+  { value: 'server', label: 'Server', color: 'purple', dot: true }
+];dernized without emojis
+const LOG_LEVELS = [
+  { value: 'all', label: 'All Levels', color: 'gray', dot: true },
+  { value: 'error', label: 'Errors', color: 'red', dot: true },
+  { value: 'warn', label: 'Warnings', color: 'yellow', dot: true },
+  { value: 'info', label: 'Info', color: 'blue', dot: true }
+];
+
+const sourceSides = [
+  { value: 'all', label: 'All Sources', color: 'gray', dot: true },
+  { value: 'client', label: 'Client', color: 'blue', dot: true },
+  { value: 'server', label: 'Server', color: 'purple', dot: true }
+];command center application.
  * 
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
@@ -55,72 +79,83 @@ import { LogLevel } from '@/utils/logger';
 const loggingRoutes = [
   {
     href: '/logs-dashboard',
-    label: '📊 Logs Dashboard',
+    label: 'Logs Dashboard',
     description: 'Real-time console log monitoring',
-    icon: BarChart3
+    icon: BarChart3,
+    color: 'blue'
   },
   {
     href: '/test-log-generation',
-    label: '🧪 Log Generator',
+    label: 'Log Generator',
     description: 'Generate realistic test logs',
-    icon: Zap
+    icon: Zap,
+    color: 'yellow'
   },
   {
     href: '/auto-log-review',
-    label: '🔍 Auto Log Review',
+    label: 'Auto Log Review',
     description: 'Automated analysis & insights',
-    icon: Search
+    icon: Search,
+    color: 'green'
   },
   {
     href: '/test-console-logging',
-    label: '🔧 Console Test',
+    label: 'Console Test',
     description: 'Basic console log testing',
-    icon: TestTube
+    icon: TestTube,
+    color: 'purple'
   }
 ];
 
 const analyticsRoutes = [
   {
     href: '/logs-dashboard/user-analytics',
-    label: '👥 User Analytics',
+    label: 'User Analytics',
     description: 'User behavior & interaction tracking',
-    icon: Component
+    icon: Component,
+    color: 'indigo'
   },
   {
     href: '/logs-dashboard/performance-analytics',
-    label: '⚡ Performance Analytics',
+    label: 'Performance Analytics',
     description: 'Core Web Vitals & performance metrics',
-    icon: Zap
+    icon: Zap,
+    color: 'orange'
   },
   {
     href: '/logs-dashboard/feature-analytics',
-    label: '🎯 Feature Analytics',
+    label: 'Feature Analytics',
     description: 'Feature adoption & A/B testing',
-    icon: Settings
+    icon: Settings,
+    color: 'teal'
   },
   {
     href: '/logs-dashboard/security-monitoring',
-    label: '🛡️ Security Monitoring',
+    label: 'Security Monitoring',
     description: 'Security events & threat detection',
-    icon: Filter
+    icon: Filter,
+    color: 'red'
   },
   {
     href: '/logs-dashboard/accessibility-metrics',
-    label: '♿ Accessibility Metrics',
+    label: 'Accessibility Metrics',
     description: 'WCAG compliance & inclusive design',
-    icon: Search
+    icon: Search,
+    color: 'pink'
   },
   {
     href: '/logs-dashboard/business-intelligence',
-    label: '💼 Business Intelligence',
+    label: 'Business Intelligence',
     description: 'KPIs & strategic business metrics',
-    icon: BarChart3
+    icon: BarChart3,
+    color: 'emerald'
   },
   {
     href: '/logs-dashboard/system-health',
-    label: '🏥 System Health',
+    label: 'System Health',
     description: 'Infrastructure & operational monitoring',
-    icon: TestTube
+    icon: TestTube,
+    color: 'cyan'
   }
 ];
 
@@ -134,12 +169,12 @@ const timeRangeOptions = [
   { value: 'all', label: 'All time' }
 ];
 
-const logLevels = [
-  { value: 'all', label: 'All Levels', emoji: '📝' },
+// Log level options - removed debug
+const LOG_LEVELS = [
+  { value: 'all', label: 'All Levels', emoji: '�' },
   { value: 'error', label: 'Errors', emoji: '❌' },
   { value: 'warn', label: 'Warnings', emoji: '⚠️' },
-  { value: 'info', label: 'Info', emoji: 'ℹ️' },
-  { value: 'debug', label: 'Debug', emoji: '🐛' }
+  { value: 'info', label: 'Info', emoji: 'ℹ️' }
 ];
 
 const sourceSides = [
@@ -165,15 +200,14 @@ interface LoggingNavProps {
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
   onClearFilters?: () => void;
-  // Log statistics for sidebar display
+  // Log statistics for sidebar display - removed debug
   logStats?: {
     total: number;
     errors: number;
     warnings: number;
     info: number;
-    debug: number;
   };
-  // Slider controls for log limits
+  // Slider controls for log limits - removed debug
   maxLogs?: number;
   onMaxLogsChange?: (max: number) => void;
   maxErrors?: number;
@@ -182,8 +216,6 @@ interface LoggingNavProps {
   onMaxWarningsChange?: (max: number) => void;
   maxInfo?: number;
   onMaxInfoChange?: (max: number) => void;
-  maxDebug?: number;
-  onMaxDebugChange?: (max: number) => void;
 }
 
 const LoggingNav = memo(function LoggingNav({ 
@@ -205,14 +237,12 @@ const LoggingNav = memo(function LoggingNav({
   logStats,
   maxLogs = 250,
   onMaxLogsChange,
-  maxErrors = 50,
+  maxErrors = 200, // Increased default to match max
   onMaxErrorsChange,
-  maxWarnings = 50,
+  maxWarnings = 200, // Increased default to match max  
   onMaxWarningsChange,
-  maxInfo = 50,
-  onMaxInfoChange,
-  maxDebug = 50,
-  onMaxDebugChange
+  maxInfo = 200, // Increased default to match max
+  onMaxInfoChange
 }: LoggingNavProps) {
   const pathname = usePathname();
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -233,7 +263,9 @@ const LoggingNav = memo(function LoggingNav({
                 href="/dashboard"
                 className="flex items-center gap-3 p-3 rounded-lg transition-colors mb-2 group text-gray-700 hover:bg-blue-50 hover:text-blue-700"
               >
-                <span className="text-lg">🏠</span>
+                <div className="w-5 h-5 rounded-lg bg-gray-200 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-gray-600"></div>
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate text-gray-900">
                     Back to Dashboard
@@ -262,6 +294,18 @@ const LoggingNav = memo(function LoggingNav({
               const Icon = route.icon;
               const isActive = pathname === route.href;
               
+              const getColorClasses = (color: string, isActive: boolean) => {
+                if (isActive) return 'bg-blue-500 text-white';
+                
+                const colorMap: { [key: string]: string } = {
+                  blue: 'text-blue-600 bg-blue-50 hover:bg-blue-100',
+                  yellow: 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100',
+                  green: 'text-green-600 bg-green-50 hover:bg-green-100',
+                  purple: 'text-purple-600 bg-purple-50 hover:bg-purple-100'
+                };
+                return colorMap[color] || 'text-gray-600 bg-gray-50 hover:bg-gray-100';
+              };
+              
               return (
                 <Link
                   key={route.href}
@@ -273,13 +317,17 @@ const LoggingNav = memo(function LoggingNav({
                   }`}
                   title={isCollapsed ? route.label : ''}
                 >
-                  <Icon size={20} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-gray-700'}`} />
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    isActive ? 'bg-blue-400' : getColorClasses(route.color, false).split(' ')[1] + ' ' + getColorClasses(route.color, false).split(' ')[2]
+                  }`}>
+                    <Icon size={14} className={`${isActive ? 'text-white' : getColorClasses(route.color, false).split(' ')[0]}`} />
+                  </div>
                   {!isCollapsed && (
                     <div className="flex-1 min-w-0">
                       <div className={`font-medium truncate ${isActive ? 'text-white' : 'text-gray-900'}`}>
                         {route.label}
                       </div>
-                      <div className={`text-xs truncate ${isActive ? 'text-blue-100' : 'text-gray-800 font-semibold'}`}>
+                      <div className={`text-xs truncate ${isActive ? 'text-blue-100' : 'text-gray-600'}`}>
                         {route.description}
                       </div>
                     </div>
@@ -298,6 +346,21 @@ const LoggingNav = memo(function LoggingNav({
               const Icon = route.icon;
               const isActive = pathname === route.href;
               
+              const getColorClasses = (color: string, isActive: boolean) => {
+                if (isActive) return 'bg-purple-500 text-white';
+                
+                const colorMap: { [key: string]: string } = {
+                  indigo: 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100',
+                  orange: 'text-orange-600 bg-orange-50 hover:bg-orange-100',
+                  teal: 'text-teal-600 bg-teal-50 hover:bg-teal-100',
+                  red: 'text-red-600 bg-red-50 hover:bg-red-100',
+                  pink: 'text-pink-600 bg-pink-50 hover:bg-pink-100',
+                  emerald: 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100',
+                  cyan: 'text-cyan-600 bg-cyan-50 hover:bg-cyan-100'
+                };
+                return colorMap[color] || 'text-purple-600 bg-purple-50 hover:bg-purple-100';
+              };
+              
               return (
                 <Link
                   key={route.href}
@@ -309,13 +372,17 @@ const LoggingNav = memo(function LoggingNav({
                   }`}
                   title={isCollapsed ? route.label : ''}
                 >
-                  <Icon size={20} className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-purple-600'}`} />
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    isActive ? 'bg-purple-400' : getColorClasses(route.color, false).split(' ')[1] + ' ' + getColorClasses(route.color, false).split(' ')[2]
+                  }`}>
+                    <Icon size={14} className={`${isActive ? 'text-white' : getColorClasses(route.color, false).split(' ')[0]}`} />
+                  </div>
                   {!isCollapsed && (
                     <div className="flex-1 min-w-0">
                       <div className={`font-medium truncate ${isActive ? 'text-white' : 'text-gray-900'}`}>
                         {route.label}
                       </div>
-                      <div className={`text-xs truncate ${isActive ? 'text-purple-100' : 'text-gray-800 font-semibold'}`}>
+                      <div className={`text-xs truncate ${isActive ? 'text-purple-100' : 'text-gray-600'}`}>
                         {route.description}
                       </div>
                     </div>
@@ -338,24 +405,32 @@ const LoggingNav = memo(function LoggingNav({
           <div className="mt-auto border-t border-gray-200 bg-gray-50">
             {/* Understanding Log Types & Notifications */}
             <div className="p-4">
-              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-                🔍 Understanding Logs
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <div className="w-4 h-4 rounded-lg bg-blue-500 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-white"></div>
+                </div>
+                Understanding Logs
               </h4>
               
               <div className="space-y-3">
                 {/* Console Messages */}
                 <div className="bg-white p-3 rounded-lg border border-blue-200">
-                  <h5 className="text-xs font-semibold text-blue-800 mb-2">💬 Console Messages (Normal)</h5>
+                  <h5 className="text-xs font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    Console Messages (Normal)
+                  </h5>
                   <div className="space-y-1 text-xs text-blue-700">
-                    <div>• <strong>Info:</strong> Status updates</div>
-                    <div>• <strong>Debug:</strong> Technical details</div>
+                    <div>• <strong>Info:</strong> Status updates and application information</div>
                     <div className="italic text-blue-600">Expected monitoring data</div>
                   </div>
                 </div>
                 
                 {/* Issues */}
                 <div className="bg-white p-3 rounded-lg border border-orange-200">
-                  <h5 className="text-xs font-semibold text-orange-800 mb-2">⚠️ Issues (Need Attention)</h5>
+                  <h5 className="text-xs font-semibold text-orange-800 mb-2 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                    Issues (Need Attention)
+                  </h5>
                   <div className="space-y-1 text-xs text-orange-700">
                     <div>• <strong>Warnings:</strong> Potential problems</div>
                     <div>• <strong>Errors:</strong> Broken functionality</div>
@@ -365,19 +440,32 @@ const LoggingNav = memo(function LoggingNav({
                 
                 {/* Why Logs Come and Go */}
                 <div className="bg-white p-3 rounded-lg border border-purple-200">
-                  <h5 className="text-xs font-semibold text-purple-800 mb-2">🔄 Why Logs Come & Go</h5>
+                  <h5 className="text-xs font-semibold text-purple-800 mb-2 flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                    Why Logs Come & Go
+                  </h5>
                   <div className="space-y-1 text-xs text-purple-700">
-                    <div>• 🔄 Page refresh fixed it</div>
-                    <div>• 🌐 Network reconnected</div>
-                    <div>• ⏱️ Temporary timing issue</div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      <span>Page refresh fixed it</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      <span>Network reconnected</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                      <span>Temporary timing issue</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             
             <div className="p-4 border-t border-gray-200">
-              <div className="text-xs text-gray-800 text-center font-semibold">
-                💡 Real-time logging & monitoring
+              <div className="text-xs text-gray-800 text-center font-semibold flex items-center justify-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                Real-time logging & monitoring
               </div>
             </div>
           </div>
@@ -391,37 +479,57 @@ const LoggingNav = memo(function LoggingNav({
     <div className="sticky top-0 z-50 bg-white border-b border-gray-200 p-4 shadow-sm">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-wrap gap-4 mb-4">
-          <h3 className="text-sm font-semibold text-gray-900 w-full mb-2">Core Logging Tools</h3>
+          <h3 className="text-sm font-semibold text-gray-900 w-full mb-2 flex items-center gap-2">
+            <div className="w-4 h-4 rounded-lg bg-blue-500 flex items-center justify-center">
+              <div className="w-2 h-2 rounded-full bg-white"></div>
+            </div>
+            Core Logging Tools
+          </h3>
           {loggingRoutes.map((route) => (
             <Link
               key={route.href}
               href={route.href}
-              className={`px-4 py-2 rounded-lg border transition-colors ${
+              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
                 pathname === route.href
                   ? 'bg-blue-500 text-white border-blue-500'
                   : 'bg-white text-gray-800 border-gray-300 hover:bg-gray-50 font-medium'
               }`}
             >
-              <div className="font-semibold">{route.label}</div>
-              <div className="text-xs opacity-90 font-medium">{route.description}</div>
+              <div className={`w-4 h-4 rounded ${pathname === route.href ? 'bg-blue-400' : `bg-${route.color}-100`} flex items-center justify-center`}>
+                <div className={`w-2 h-2 rounded-full ${pathname === route.href ? 'bg-white' : `bg-${route.color}-500`}`}></div>
+              </div>
+              <div>
+                <div className="font-semibold">{route.label}</div>
+                <div className="text-xs opacity-90 font-medium">{route.description}</div>
+              </div>
             </Link>
           ))}
         </div>
         
         <div className="flex flex-wrap gap-4">
-          <h3 className="text-sm font-semibold text-gray-900 w-full mb-2">Analytics Dashboard</h3>
+          <h3 className="text-sm font-semibold text-gray-900 w-full mb-2 flex items-center gap-2">
+            <div className="w-4 h-4 rounded-lg bg-purple-500 flex items-center justify-center">
+              <div className="w-2 h-2 rounded-full bg-white"></div>
+            </div>
+            Analytics Dashboard
+          </h3>
           {analyticsRoutes.map((route) => (
             <Link
               key={route.href}
               href={route.href}
-              className={`px-4 py-2 rounded-lg border transition-colors ${
+              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
                 pathname === route.href
                   ? 'bg-purple-500 text-white border-purple-500'
                   : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-50 font-medium'
               }`}
             >
-              <div className="font-semibold">{route.label}</div>
-              <div className="text-xs opacity-90 font-medium">{route.description}</div>
+              <div className={`w-4 h-4 rounded ${pathname === route.href ? 'bg-purple-400' : `bg-${route.color}-100`} flex items-center justify-center`}>
+                <div className={`w-2 h-2 rounded-full ${pathname === route.href ? 'bg-white' : `bg-${route.color}-500`}`}></div>
+              </div>
+              <div>
+                <div className="font-semibold">{route.label}</div>
+                <div className="text-xs opacity-90 font-medium">{route.description}</div>
+              </div>
             </Link>
           ))}
         </div>

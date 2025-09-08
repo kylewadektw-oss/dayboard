@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { enhancedLogger, LogLevel } from '../../utils/logger';
 
 interface SessionExpiredProps {
   onRetry?: () => void;
@@ -11,14 +12,49 @@ interface SessionExpiredProps {
 export default function SessionExpired({ onRetry }: SessionExpiredProps) {
   const router = useRouter();
 
-  const handleSignIn = () => {
+  useEffect(() => {
+    // Log session expiry with full context
+    enhancedLogger.logWithFullContext(
+      LogLevel.WARN, 
+      'User session expired - showing session expired page', 
+      'SessionExpired',
+      {
+        hasRetryCallback: !!onRetry,
+        timestamp: new Date().toISOString()
+      }
+    );
+
+    // Track this step in user journey
+    enhancedLogger.trackJourneyStep('Session Expired Page Displayed', {
+      source: 'SessionExpired Component',
+      hasRetryOption: !!onRetry
+    });
+  }, [onRetry]);
+
+  const handleSignIn = async () => {
+    await enhancedLogger.logWithFullContext(
+      LogLevel.INFO,
+      'User clicked Sign In Again from session expired page',
+      'SessionExpired'
+    );
+    
     router.push('/signin');
   };
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
+    await enhancedLogger.logWithFullContext(
+      LogLevel.INFO,
+      'User clicked Try Again from session expired page',
+      'SessionExpired',
+      { hasCustomRetry: !!onRetry }
+    );
+
     if (onRetry) {
       onRetry();
     } else {
+      await enhancedLogger.trackJourneyStep('Page Reload Attempted', {
+        reason: 'Session expired retry'
+      });
       window.location.reload();
     }
   };
