@@ -131,7 +131,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await authLogger.info(`🔄 [AUTH] Refreshing user session`);
       
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const { data: { user: currentUser }, error } = await supabase.auth.getUser();
+      
+      // Handle refresh token errors specifically
+      if (error && error.message?.includes('refresh_token_not_found')) {
+        await authLogger.warn(`🔄 [AUTH] Refresh token expired, clearing session`, {
+          error: error.message,
+          code: error.status
+        });
+        
+        // Clear local state and force sign out
+        setUser(null);
+        setProfile(null);
+        setPermissions(null);
+        
+        // Clear any stored session
+        await supabase.auth.signOut();
+        return;
+      }
+      
+      if (error) {
+        throw error;
+      }
+      
       setUser(currentUser);
       
       if (currentUser) {
@@ -151,6 +173,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error: error,
         stack: error instanceof Error ? error.stack : undefined
       });
+      
+      // If there's any auth error, clear the session
+      setUser(null);
+      setProfile(null);
+      setPermissions(null);
     } finally {
       setLoading(false);
     }
