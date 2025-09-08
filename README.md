@@ -142,11 +142,11 @@ This is a personal household management project. While not currently open for co
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+**PROPRIETARY LICENSE** - This project contains proprietary code owned by Kyle Wade (kyle.wade.ktw@gmail.com). Unauthorized copying, distribution, or commercial use is strictly prohibited. See the [DMCA_PROTECTION.md](DMCA_PROTECTION.md) file for full legal terms.
 
 ## 🙋‍♀️ Support
 
-For questions or support, please open an issue in the GitHub repository.
+For questions or support, please contact kyle.wade.ktw@gmail.com or open an issue in the GitHub repository.
 
 ---
 

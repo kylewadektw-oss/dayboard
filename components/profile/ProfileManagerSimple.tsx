@@ -20,8 +20,8 @@ export default function ProfileManager() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    preferred_name: '',
+    full_name: '',
+    display_name: '',
     bio: '',
     phone_number: '',
     pronouns: '',
@@ -34,60 +34,41 @@ export default function ProfileManager() {
   // Initialize form data
   useEffect(() => {
     if (profile) {
-      // Profile exists in database - use it (handle both old and new column names)
       setFormData({
-        name: (profile as any).name || profile.full_name || '',
-        preferred_name: (profile as any).preferred_name || profile.display_name || '',
+        full_name: profile.full_name || '',
+        display_name: profile.display_name || '',
         bio: profile.bio || '',
         phone_number: profile.phone_number || '',
         pronouns: profile.pronouns || '',
         timezone: profile.timezone || 'America/New_York',
         language: profile.language || 'en'
       });
-    } else if (user?.user_metadata) {
-      // No profile in database yet - use Google metadata and enable editing
-      setFormData({
-        name: user.user_metadata.full_name || user.user_metadata.name || '',
-        preferred_name: user.user_metadata.name || '',
-        bio: '',
-        phone_number: '',
-        pronouns: '',
-        timezone: 'America/New_York',
-        language: 'en'
-      });
-      setEditing(true); // Auto-enable editing for new profiles
     }
-  }, [profile, user]);
+  }, [profile]);
 
   const updateProfile = async () => {
     if (!user) return;
     
     setSaving(true);
     try {
-      // Use the correct database column names based on the actual schema
-      // Bypass TypeScript checking since the types are outdated
       const { error } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: user.id,
-          name: formData.name,
-          preferred_name: formData.preferred_name,
+        .update({
+          full_name: formData.full_name,
+          display_name: formData.display_name,
           bio: formData.bio,
           phone_number: formData.phone_number,
           pronouns: formData.pronouns,
           timezone: formData.timezone,
           language: formData.language,
-          google_avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
           updated_at: new Date().toISOString()
-        } as any);
+        })
+        .eq('id', user.id);
 
       if (error) throw error;
       
       setEditing(false);
       console.log('Profile updated successfully');
-      
-      // Refresh the user data to get the updated profile
-      window.location.reload();
     } catch (error) {
       console.error('Error updating profile:', error);
     } finally {
@@ -113,13 +94,6 @@ export default function ProfileManager() {
       <div className="text-center">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Your Profile</h1>
         <p className="text-gray-600">Manage your personal information and preferences</p>
-        {!profile && (
-          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm text-amber-800">
-              👋 Welcome! Your profile hasn't been created yet. Fill out the information below and click "Save Changes" to create your profile.
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Profile Header */}
@@ -127,9 +101,9 @@ export default function ProfileManager() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center">
-              {(profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture) ? (
+              {profile?.avatar_url ? (
                 <img 
-                  src={profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture} 
+                  src={profile.avatar_url} 
                   alt="Profile" 
                   className="w-20 h-20 rounded-full object-cover"
                 />
@@ -139,16 +113,13 @@ export default function ProfileManager() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                {formData.name || formData.preferred_name || user?.user_metadata?.name || 'No name set'}
+                {formData.full_name || formData.display_name || 'No name set'}
               </h2>
               <p className="text-gray-600">
                 {user.email}
               </p>
               {profile?.onboarding_completed && (
                 <p className="text-sm text-green-600">Profile Complete</p>
-              )}
-              {!profile && (
-                <p className="text-sm text-amber-600">Profile not yet saved</p>
               )}
             </div>
           </div>
@@ -190,9 +161,9 @@ export default function ProfileManager() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
             <input
               type="text"
-              value={formData.name}
+              value={formData.full_name}
               disabled={!editing}
-              onChange={(e) => updateField('name', e.target.value)}
+              onChange={(e) => updateField('full_name', e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50"
               placeholder="Enter your full name"
             />
@@ -202,9 +173,9 @@ export default function ProfileManager() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
             <input
               type="text"
-              value={formData.preferred_name}
+              value={formData.display_name}
               disabled={!editing}
-              onChange={(e) => updateField('preferred_name', e.target.value)}
+              onChange={(e) => updateField('display_name', e.target.value)}
               className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-50"
               placeholder="What should we call you?"
             />

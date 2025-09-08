@@ -14,18 +14,22 @@
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-
-// Middleware temporarily disabled since Google authentication has been removed
-// This eliminates redirect loops and simplifies navigation during development
-
 import { type NextRequest } from 'next/server';
+import { updateSession } from '@/utils/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
-  // No authentication checks - allow all requests to pass through
-  return;
+  return await updateSession(request);
 }
 
 export const config = {
-  // Disable middleware by matching nothing
-  matcher: []
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico, robots.txt, etc. (public files)
+     * - Landing page (/) is public
+     */
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|^/$).*)',
+  ],
 };

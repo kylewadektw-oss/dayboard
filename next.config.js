@@ -29,6 +29,43 @@ const nextConfig = {
   images: {
     domains: [], // Removed Google OAuth profile images domain
   },
+  
+  // Simplified webpack optimization to avoid conflicts
+  webpack: (config, { dev, isServer }) => {
+    // Only apply optimizations in production builds
+    if (!dev && !isServer) {
+      // Optimize bundle splitting for large files without breaking existing config
+      if (config.optimization && config.optimization.splitChunks) {
+        const existingCacheGroups = config.optimization.splitChunks.cacheGroups || {};
+        
+        config.optimization.splitChunks.cacheGroups = {
+          ...existingCacheGroups,
+          // Separate chunk for large logging utilities
+          logger: {
+            test: /[\\/]utils[\\/]logger\.ts$/,
+            name: 'logger',
+            chunks: 'all',
+            priority: 20,
+          },
+          // Separate chunk for database types
+          dbTypes: {
+            test: /[\\/]types_db\.ts$/,
+            name: 'db-types', 
+            chunks: 'all',
+            priority: 20,
+          },
+        };
+      }
+    }
+
+    return config;
+  },
+  
+  // Remove experimental CSS optimization that requires 'critters'
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@supabase/supabase-js'],
+  },
+  
   // async headers() {
   //   // CSP completely disabled for OAuth debugging
   //   return [];

@@ -79,30 +79,35 @@ export const createClient = (request: NextRequest) => {
 
 export const updateSession = async (request: NextRequest) => {
   try {
-    // This `try/catch` block is only here for the interactive tutorial.
-    // Feel free to remove once you have Supabase connected.
     const { supabase, response } = createClient(request);
 
     // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Define protected routes (removed /profile since auth is disabled)
-    const protectedRoutes = ['/dashboard', '/meals', '/lists', '/work', '/projects'];
-    const isProtectedRoute = protectedRoutes.some(route => 
-      request.nextUrl.pathname.startsWith(route)
-    );
+    // Define public routes that don't require authentication
+    const publicRoutes = [
+      '/', // Landing page
+      '/auth/callback', // OAuth callback
+      '/auth/reset_password', // Password reset
+    ];
+    
+    // Check if the current path is public
+    const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname);
 
-    // Define auth routes
+    // If accessing a public route, allow access regardless of auth status
+    if (isPublicRoute) {
+      return response;
+    }
+
+    // Define auth routes (signin, signup)
     const authRoutes = ['/signin', '/signup'];
     const isAuthRoute = authRoutes.some(route => 
       request.nextUrl.pathname.startsWith(route)
     );
 
-    // If user is not authenticated and trying to access protected route
-    if (!user && isProtectedRoute) {
-      // Since Google auth is disabled, redirect to profile instead of signin
-      const redirectUrl = new URL('/profile', request.url);
+    // If user is not authenticated and not on a public or auth route, redirect to signin
+    if (!user && !isAuthRoute) {
+      const redirectUrl = new URL('/signin', request.url);
       return NextResponse.redirect(redirectUrl);
     }
 
@@ -115,7 +120,7 @@ export const updateSession = async (request: NextRequest) => {
   } catch (e) {
     // If you are here, a Supabase client could not be created!
     // This is likely because you have not set up environment variables.
-    // Check out http://localhost:3000 for Next Steps.
+    console.error('Supabase client creation failed:', e);
     return NextResponse.next({
       request: {
         headers: request.headers

@@ -22,19 +22,12 @@ import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Home, UtensilsCrossed, ClipboardList, Briefcase, FolderOpen, User, Settings, ChevronLeft, ChevronRight, LogOut, FileText, Bug, Activity } from 'lucide-react';
 import Logo from '@/components/icons/Logo';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function AppNavigation() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  
-  // Mock user data since auth is disabled
-  const user = { email: 'dev@example.com' };
-  const profile = {
-    display_name: 'Development User',
-    full_name: 'Dev User',
-    role: 'household_admin',
-    avatar_url: null
-  };
+  const { user, profile, signOut } = useAuth();
   
   // Add class to body to adjust main content
   useEffect(() => {
@@ -54,8 +47,15 @@ export function AppNavigation() {
   }, [isCollapsed]);
 
   const handleSignOut = async () => {
-    // Auth disabled - redirect to landing page
-    window.location.href = '/';
+    try {
+      await signOut();
+      // Redirect to landing page after successful sign out
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Sign out error:', error);
+      // Still redirect even if there's an error
+      window.location.href = '/';
+    }
   };
   
   const navigation = [
@@ -120,7 +120,7 @@ export function AppNavigation() {
               )}
               <div className="ml-3 min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {profile?.display_name || profile?.full_name || user.email}
+                  {profile?.display_name || profile?.full_name || user?.email || 'Guest'}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
                   {profile?.role?.replace('_', ' ').toUpperCase() || 'Member'}
