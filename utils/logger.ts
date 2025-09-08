@@ -399,7 +399,34 @@ class Logger {
     // Track clicks
     document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
-      sessionStorage.setItem('lastClickTarget', target.tagName + (target.id ? `#${target.id}` : '') + (target.className ? `.${target.className.split(' ')[0]}` : ''));
+      
+      // Safely get className - handle SVG elements and non-string className values
+      let className = '';
+      try {
+        if (target.className) {
+          if (typeof target.className === 'string') {
+            className = target.className.split(' ')[0];
+          } else if (target.className && 'baseVal' in target.className) {
+            // SVG elements have className.baseVal
+            className = (target.className as any).baseVal.split(' ')[0];
+          } else {
+            // Try to convert to string
+            const classNameStr = String(target.className);
+            if (classNameStr && classNameStr !== '[object Object]') {
+              className = classNameStr.split(' ')[0];
+            }
+          }
+        }
+      } catch {
+        // Fallback - just use empty string if we can't get className
+        className = '';
+      }
+      
+      sessionStorage.setItem('lastClickTarget', 
+        target.tagName + 
+        (target.id ? `#${target.id}` : '') + 
+        (className ? `.${className}` : '')
+      );
       
       // Increment button clicks if it's a button
       if (target.tagName === 'BUTTON' || (target as HTMLInputElement).type === 'submit') {
@@ -664,47 +691,12 @@ class Logger {
   // Check if message is a dashboard refresh alert - ALWAYS PREVENT (no longer configurable)
   private isDashboardRefreshAlert(message: string): boolean {
     // COMPLETE PREVENTION: Always check patterns, no configuration toggle needed
-    const lowerMessage = message.toLowerCase();
-    const refreshPatterns = [
-      'dashboard refresh',
-      'refreshing dashboard', 
-      'dashboard updated',
-      'dashboard reload',
-      'dashboard data',
-      'auto-refresh',
-      'live updating',
-      'dashboard sync',
-      'dashboard polling',
-      'dashboard state',
-      'dashboard mounted',
-      'dashboard component',
-      'refreshing data',
-      'updating dashboard',
-      'dashboard load',
-      'dashboard ready',
-      'dayboard proprietary',
-      'batch of',
-      'logs persisted to database',
-      'dashboard refresh - time range:'
-    ];
-
-    const refreshEmojis = ['📊', '🔄', '⚡', '🔃', '↻', '🛡️', '✅'];
+    // Use compiled regex for better performance instead of multiple includes()
+    const refreshPatternRegex = /dashboard refresh|refreshing dashboard|dashboard updated|dashboard reload|dashboard data|auto-refresh|live updating|dashboard sync|dashboard polling|dashboard state|dashboard mounted|dashboard component|refreshing data|updating dashboard|dashboard load|dashboard ready|dayboard proprietary|batch of|logs persisted to database|dashboard refresh - time range:/i;
     
-    // Check for refresh patterns
-    for (const pattern of refreshPatterns) {
-      if (lowerMessage.includes(pattern)) {
-        return true;
-      }
-    }
+    const refreshEmojiRegex = /📊|🔄|⚡|🔃|↻|🛡️|✅/;
     
-    // Check for refresh emojis
-    for (const emoji of refreshEmojis) {
-      if (message.includes(emoji)) {
-        return true;
-      }
-    }
-    
-    return false;
+    return refreshPatternRegex.test(message) || refreshEmojiRegex.test(message);
   }
 
   // Public method to configure dashboard filtering (legacy compatibility - prevention always active)
@@ -768,26 +760,21 @@ class Logger {
         return;
       }
       
-      // Check for dashboard-specific logging messages to prevent feedback loops
-      const messageStr = args.join(' ');
+      // Early performance optimization: convert args to string once
+      const messageStr = args.length === 1 && typeof args[0] === 'string' 
+        ? args[0] 
+        : args.join(' ');
+      
+      // Performance: Skip empty or very short messages early
+      if (!messageStr || messageStr.length < 3) return;
       
       // Performance: Early exit for dashboard-specific logs to prevent recursive logging
       if (typeof window !== 'undefined' && window.location.pathname.includes('/logs-dashboard')) {
-        // Only skip dashboard-internal logs, not ALL logs
-        if (messageStr.includes('📊') || 
-            messageStr.includes('Dashboard') || 
-            messageStr.includes('LogsDashboard') ||
-            messageStr.includes('Refreshing logs') ||
-            messageStr.includes('Retrieved') ||
-            messageStr.includes('Time filter') ||
-            messageStr.includes('Final result') ||
-            messageStr.includes('🛡️ Dayboard Proprietary') ||
-            messageStr.includes('✅ Batch of') ||
-            messageStr.includes('logs persisted to database') ||
-            messageStr.includes('Dashboard refresh - Time range:')) {
+        // Use a single regex for better performance instead of multiple includes()
+        const dashboardPatterns = /📊|Dashboard|LogsDashboard|Refreshing logs|Retrieved|Time filter|Final result|🛡️ Dayboard Proprietary|✅ Batch of|logs persisted to database|Dashboard refresh - Time range:/;
+        if (dashboardPatterns.test(messageStr)) {
           return; // Skip dashboard internal logging only
         }
-        // Allow all other logs (errors, warnings, etc.) to be captured
       }
       
       // Use the helper method to check for dashboard refresh alerts - PREVENT CAPTURE ENTIRELY
@@ -795,39 +782,9 @@ class Logger {
         return; // COMPLETE PREVENTION: Do not capture, process, store, or make available
       }
       
-      // Additional specific patterns for logging dashboard
-      if (messageStr.includes('📊 Refreshing logs') || 
-          messageStr.includes('📊 Retrieved') || 
-          messageStr.includes('� Time filter') || 
-          messageStr.includes('📊 Final result') ||
-          messageStr.includes('🛡️ Dayboard Proprietary') ||
-          messageStr.includes('✅ Batch of') ||
-          messageStr.includes('logs persisted to database') ||
-          messageStr.includes('Dashboard refresh - Time range:')) {
-        return; // COMPLETE PREVENTION: Skip dashboard internal logging entirely
-      }
-      
-      // Convert console arguments to a readable message (more efficient)
-      const message = args.length === 1 && typeof args[0] === 'string' 
-        ? args[0] 
-        : args.map(arg => {
-            if (typeof arg === 'string') return arg;
-            if (typeof arg === 'object') {
-              try {
-                return JSON.stringify(arg);
-              } catch {
-                return '[Circular Object]';
-              }
-            }
-            return String(arg);
-          }).join(' ');
-      
-      // Performance: Skip empty or very short messages
-      if (!message || message.length < 3) return;
-
-      // Enhanced component detection and tagging
-      const component = this.detectMessageSource(message, args);
-      const tags = this.generateMessageTags(message, args, level);
+      // Enhanced component detection and tagging (only if we're going to process)
+      const component = this.detectMessageSource(messageStr, args);
+      const tags = this.generateMessageTags(messageStr, args, level);
 
       // Extract any error objects for stack traces
       const error = args.find(arg => arg instanceof Error);
@@ -835,11 +792,11 @@ class Logger {
       // Safely serialize arguments to prevent circular reference issues
       const safeArgs = this.safeSerializeArgs(args);
 
-      this.writeLog(this.createLogEntry(level, message, component, {
+      this.writeLog(this.createLogEntry(level, messageStr, component, {
         originalArgs: safeArgs,
         tags: tags,
-        messageType: this.categorizeMessage(message),
-        source: this.detectThirdPartySource(message)
+        messageType: this.categorizeMessage(messageStr),
+        source: this.detectThirdPartySource(messageStr)
       }, error));
     } catch (err) {
       // Fallback to prevent infinite loops
@@ -848,11 +805,25 @@ class Logger {
   }
 
   // Safe serialization to prevent circular reference errors
+  // Safe serialization to prevent circular reference errors - optimized for performance
   private safeSerializeArgs(args: any[]): any {
+    // Early exit for empty or single primitive arguments
+    if (args.length === 0) return [];
+    if (args.length === 1) {
+      const arg = args[0];
+      if (arg === null || arg === undefined || typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') {
+        return [arg];
+      }
+    }
+    
     try {
       return args.map(arg => {
-        if (arg === null || arg === undefined) return arg;
-        if (typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') return arg;
+        // Fast path for primitives
+        if (arg === null || arg === undefined || typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') {
+          return arg;
+        }
+        
+        // Handle Errors
         if (arg instanceof Error) {
           return {
             name: arg.name,
@@ -860,33 +831,35 @@ class Logger {
             stack: arg.stack
           };
         }
+        
+        // Handle objects
         if (typeof arg === 'object') {
-          // Check if it's a DOM element
-          if (arg.nodeType && arg.nodeName) {
-            return `[DOM Element: ${arg.nodeName}]`;
+          // DOM element checks (most common first)
+          if (arg.nodeType) {
+            return `[DOM Element: ${arg.nodeName || 'Unknown'}]`;
           }
-          // Check if it's an HTMLElement
-          if (arg instanceof HTMLElement) {
-            return `[HTML Element: ${arg.tagName}]`;
-          }
-          // Check if it's a React component or has React Fiber properties
+          
+          // React component checks (use single regex for better performance)
           if (arg._reactInternalFiber || arg.__reactFiber || 
-              (arg.constructor && arg.constructor.name && 
-               (arg.constructor.name.includes('Fiber') || arg.constructor.name.includes('React')))) {
+              (arg.constructor?.name && /Fiber|React/.test(arg.constructor.name))) {
             return '[React Component/Fiber]';
           }
-          // Check for React Fiber properties in object keys
-          const objectKeys = Object.keys(arg);
-          if (objectKeys.some(key => key.includes('__reactFiber') || key.includes('_reactInternalFiber'))) {
+          
+          // Quick check for React Fiber in keys (limited to first few keys for performance)
+          const keys = Object.keys(arg);
+          if (keys.length > 0 && keys.slice(0, 5).some(key => key.includes('__reactFiber') || key.includes('_reactInternalFiber'))) {
             return '[React Fiber Object]';
           }
-          // Try to safely serialize the object
+          
+          // Try to serialize (with size limit for performance)
           try {
-            return JSON.parse(JSON.stringify(arg));
+            const str = JSON.stringify(arg);
+            return str.length > 1000 ? '[Large Object]' : JSON.parse(str);
           } catch {
             return '[Circular Object]';
           }
         }
+        
         return String(arg);
       });
     } catch {
@@ -895,33 +868,25 @@ class Logger {
   }
 
 
-  // Enhanced message source detection
+  // Enhanced message source detection - optimized with regex patterns
   private detectMessageSource(message: string, args: any[]): string {
-    // Check for Next.js specific messages
-    if (message.includes('[Fast Refresh]') || message.includes('Fast Refresh')) {
+    // Use compiled regex patterns for better performance
+    if (/\[Fast Refresh\]|Fast Refresh/i.test(message)) {
       return 'Next.js-HMR';
     }
-    if (message.includes('Compiled') || message.includes('compiling')) {
+    if (/Compiled|compiling/i.test(message)) {
       return 'Next.js-Build';
     }
-    
-    // Check for authentication/OAuth related
-    if (message.includes('OAuth') || message.includes('auth') || message.includes('token') || message.includes('login')) {
+    if (/OAuth|auth|token|login/i.test(message)) {
       return 'Auth-System';
     }
-    
-    // Check for routing related
-    if (message.includes('Route') || message.includes('router') || message.includes('navigation')) {
+    if (/Route|router|navigation/i.test(message)) {
       return 'Routing';
     }
-    
-    // Check for API related
-    if (message.includes('fetch') || message.includes('API') || message.includes('request')) {
+    if (/fetch|API|request/i.test(message)) {
       return 'API-Client';
     }
-    
-    // Check for database related
-    if (message.includes('database') || message.includes('supabase') || message.includes('sql')) {
+    if (/database|supabase|sql/i.test(message)) {
       return 'Database';
     }
     
@@ -1275,9 +1240,9 @@ class Logger {
     const resolvedEntry = await entry;
     this.logs.push(resolvedEntry);
     
-    // Keep only last 500 logs in memory (reduced from 1000)
-    if (this.logs.length > 500) {
-      this.logs = this.logs.slice(-500);
+    // More aggressive memory management: keep only last 300 logs and trim more frequently
+    if (this.logs.length > 300) {
+      this.logs = this.logs.slice(-250); // Keep fewer logs for better performance
     }
 
     // Check for auto-review triggers (only for errors)
@@ -1320,18 +1285,24 @@ class Logger {
   private throttledPersistToDatabase(entry: LogEntry) {
     this.pendingLogs.push(entry);
     
-    // Clear existing timeout
+    // Clear existing timeout only if we're about to create a new one
     if (this.persistTimeout) {
       clearTimeout(this.persistTimeout);
+      this.persistTimeout = null;
     }
     
-    // Batch database writes every 2 seconds or when we have 10+ logs
+    // More aggressive batching: batch immediately at 15+ logs, or after 1.5 seconds for smaller batches
+    const batchSize = this.pendingLogs.length;
+    const timeout = batchSize >= 15 ? 50 : (batchSize >= 5 ? 800 : 1500);
+    
     this.persistTimeout = setTimeout(() => {
       if (this.pendingLogs.length > 0) {
-        this.batchPersistToDatabase([...this.pendingLogs]);
-        this.pendingLogs = [];
+        const logsToProcess = [...this.pendingLogs];
+        this.pendingLogs = []; // Clear immediately to prevent race conditions
+        this.batchPersistToDatabase(logsToProcess);
       }
-    }, this.pendingLogs.length >= 10 ? 100 : 2000);
+      this.persistTimeout = null;
+    }, timeout);
   }
 
   private async batchPersistToDatabase(entries: LogEntry[]) {

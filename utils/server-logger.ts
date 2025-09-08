@@ -82,7 +82,10 @@ class ServerLogger {
         throw error;
       }
       
-      console.log(`✅ Server log saved: [${entry.level.toUpperCase()}] ${entry.message}`);
+      // Reduce console output in production for performance
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ Server log saved: [${entry.level.toUpperCase()}] ${entry.message}`);
+      }
     } catch (error) {
       // Always output to console as fallback, but don't block the process
       console.error('❌ Server database logging failed:', error);
@@ -95,37 +98,48 @@ class ServerLogger {
     const entry = this.createLogEntry(LogLevel.ERROR, message, component, data, error);
     // Fire and forget - don't await
     this.writeLogToDatabase(entry).catch(() => {
-      // Fallback logging if database fails
-      console.error(`🚨 [SERVER ERROR] ${message}`, data);
+      // Fallback logging if database fails - only in development to reduce noise
+      if (process.env.NODE_ENV === 'development') {
+        console.error(`🚨 [SERVER ERROR] ${message}`, data);
+      }
     });
-    // Immediate console logging for development
-    console.error(`🚨 [SERVER ERROR] ${message}`, data);
+    // Immediate console logging for development only
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`🚨 [SERVER ERROR] ${message}`, data);
+    }
   }
 
   warn(message: string, component?: string, data?: any) {
     const entry = this.createLogEntry(LogLevel.WARN, message, component, data);
     this.writeLogToDatabase(entry).catch(() => {
-      console.warn(`⚠️ [SERVER WARN] ${message}`, data);
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`⚠️ [SERVER WARN] ${message}`, data);
+      }
     });
-    console.warn(`⚠️ [SERVER WARN] ${message}`, data);
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`⚠️ [SERVER WARN] ${message}`, data);
+    }
   }
 
   info(message: string, component?: string, data?: any) {
     const entry = this.createLogEntry(LogLevel.INFO, message, component, data);
     this.writeLogToDatabase(entry).catch(() => {
-      console.info(`ℹ️ [SERVER INFO] ${message}`, data);
-    });
-    console.info(`ℹ️ [SERVER INFO] ${message}`, data);
-  }
-
-  debug(message: string, component?: string, data?: any) {
-    const entry = this.createLogEntry(LogLevel.DEBUG, message, component, data);
-    this.writeLogToDatabase(entry).catch(() => {
       if (process.env.NODE_ENV === 'development') {
-        console.debug(`🔍 [SERVER DEBUG] ${message}`, data);
+        console.info(`ℹ️ [SERVER INFO] ${message}`, data);
       }
     });
     if (process.env.NODE_ENV === 'development') {
+      console.info(`ℹ️ [SERVER INFO] ${message}`, data);
+    }
+  }
+
+  debug(message: string, component?: string, data?: any) {
+    // Debug logging only in development
+    if (process.env.NODE_ENV === 'development') {
+      const entry = this.createLogEntry(LogLevel.DEBUG, message, component, data);
+      this.writeLogToDatabase(entry).catch(() => {
+        console.debug(`🔍 [SERVER DEBUG] ${message}`, data);
+      });
       console.debug(`🔍 [SERVER DEBUG] ${message}`, data);
     }
   }
