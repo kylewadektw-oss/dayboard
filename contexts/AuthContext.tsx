@@ -52,11 +52,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userMetadata: currentUser.user_metadata
       });
       
-      // Fetch profile - use user_id as foreign key to auth.users
+      // Fetch profile - use id as foreign key to auth.users
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', currentUser.id)
+        .eq('id', currentUser.id)  // Use 'id' instead of 'user_id'
         .maybeSingle(); // Use maybeSingle to avoid error if no profile
 
       if (profileError) {
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: permissionsData, error: permissionsError } = await supabase
           .from('user_permissions')
           .select('*')
-          .eq('user_id', currentUser.id)
+          .eq('user_id', currentUser.id)  // This should still be user_id based on the schema
           .maybeSingle();
 
         if (permissionsError && permissionsError.message.includes("Could not find the table")) {
