@@ -45,13 +45,22 @@ export function updateSession(request: NextRequest) {
       });
     }
 
+    const authed = hasSupabaseAuthCookie(request);
+
+    // If authenticated user hits the landing page '/', send them to dashboard
+    if (authed && cleanPath === '/') {
+      const url = new URL('/dashboard', request.url);
+      const res = NextResponse.redirect(url, 307);
+      res.headers.set('x-auth-redirect', 'root-to-dashboard');
+      return res;
+    }
+
     // Always allow explicit public routes
     if (PUBLIC_ROUTES.has(cleanPath)) {
-      return NextResponse.next({ headers: { 'x-auth-route': 'public' } });
+      return NextResponse.next({ headers: { 'x-auth-route': 'public', 'x-auth-user-cookie': authed ? '1':'0' } });
     }
 
     const isAuthRoute = AUTH_ROUTES.some(r => cleanPath.startsWith(r));
-    const authed = hasSupabaseAuthCookie(request);
 
     // Not authenticated & not an auth/public route => redirect to /signin
     if (!authed && !isAuthRoute) {
