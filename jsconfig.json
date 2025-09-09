@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "jsx": "preserve"
+  },
+  "typeAcquisition": {
+    "enable": false
+  },
+  "exclude": [
+    "node_modules",
+    "fixtures",
+    "scripts",
+    "public",
+    "**/*.sql",
+    "types_db.ts",
+    ".next"
+  ]
+}
