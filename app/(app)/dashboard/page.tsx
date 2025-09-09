@@ -54,7 +54,7 @@ export default function DashboardPage() {
       authLogger.info('🏠 Dashboard accessed successfully', {
         userId: user?.id,
         profileId: profile.id,
-        displayName: profile.display_name,
+        displayName: profile.name,
         role: profile.role,
         householdId: profile.household_id,
         url: typeof window !== 'undefined' ? window.location.href : 'unknown'
@@ -81,7 +81,10 @@ export default function DashboardPage() {
   }
 
   // Redirect to sign-in if not authenticated (this should be handled by middleware, but good fallback)
-  if (!user || !profile) {
+  if (!user) {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/signin';
+    }
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
         <div className="text-center">
@@ -92,6 +95,27 @@ export default function DashboardPage() {
             className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
             Sign In
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if profile is incomplete and redirect to setup
+  if (!profile || !profile.household_id || !profile.onboarding_completed || !profile.name) {
+    if (typeof window !== 'undefined') {
+      window.location.href = '/profile/setup';
+    }
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Profile Setup Required</h2>
+          <p className="text-gray-600 mb-4">Please complete your profile and household setup.</p>
+          <a 
+            href="/profile/setup" 
+            className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Complete Setup
           </a>
         </div>
       </div>
@@ -193,7 +217,7 @@ export default function DashboardPage() {
           <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
             <h3 className="text-sm font-medium text-green-800 mb-1">Welcome back!</h3>
             <p className="text-sm text-green-700">
-              Hello {profile.display_name || profile.full_name || 'there'}! 
+              Hello {profile.name || 'there'}! 
               Your household dashboard is ready with {profile.role} access.
             </p>
           </div>

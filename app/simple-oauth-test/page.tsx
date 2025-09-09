@@ -28,6 +28,20 @@ export default function SimpleOAuthTest() {
 
   return (
     <div className="p-8 max-w-2xl mx-auto">
+      <div className="mb-6 flex flex-wrap gap-3">
+        <a
+          href="/dashboard"
+          className="inline-flex items-center px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors"
+        >
+          ← Back to Dashboard
+        </a>
+        <a
+          href="/auth-debug"
+          className="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition-colors"
+        >
+          🛡️ Auth Debug
+        </a>
+      </div>
       <h1 className="text-2xl font-bold mb-6">OAuth Test (Disabled)</h1>
       
       <button

@@ -1,0 +1,6 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npm run types:check || (echo "\nSupabase types out of sync. Run npm run types:update" && exit 1)
+
+npm run migrations:lint || (echo "\nMigration lint failed." && exit 1)

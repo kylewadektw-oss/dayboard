@@ -2,69 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design Tokens */
+:root {
+  --color-bg: #ffffff;
+  --color-bg-alt: #f8fafc; /* slate-50 */
+  --color-text: #1f2937; /* gray-800 */
+  --color-text-muted: #4b5563; /* gray-600 */
+  --color-border: #e5e7eb; /* gray-200 */
+  --color-focus: #ec4899; /* pink-500 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0f1115;
+    --color-bg-alt: #1a1d21;
+    --color-text: #f1f5f9;
+    --color-text-muted: #cbd5e1;
+    --color-border: #334155;
+  }
+}
+
 *,
 *:before,
-*:after {
-  box-sizing: inherit;
-}
+*:after { box-sizing: inherit; }
 
+/* Replaced @apply with explicit utilities (keeps non-tailwind linters quiet) */
 *:focus:not(ol) {
-  @apply outline-none ring-2 ring-pink-500 ring-opacity-50;
+  outline: 0;
+  --tw-ring-inset: var(--tw-empty,/*!*/ /*!*/);
+  --tw-ring-offset-width: 2px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgba(236,72,153,0.5); /* pink-500 at 50% */
+  --tw-ring-offset-shadow: 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow,0 0 #0000);
 }
 
-html {
-  height: 100%;
-  box-sizing: border-box;
-  touch-action: manipulation;
-  font-feature-settings:
-    'case' 1,
-    'rlig' 1,
-    'calt' 0;
-}
+html { height: 100%; box-sizing: border-box; touch-action: manipulation; font-feature-settings: 'case' 1,'rlig' 1,'calt' 0; }
 
-html,
-body {
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Helvetica Neue',
-    'Helvetica', sans-serif;
+html, body {
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Helvetica Neue','Helvetica', sans-serif;
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;
-  @apply text-white bg-zinc-800 antialiased;
+  color: var(--color-text);
+  background: var(--color-bg);
 }
 
-body {
-  position: relative;
-  min-height: 100%;
-  margin: 0;
-}
+/* Optional dark wrapper (expanded instead of @apply) */
+.theme-dark { background-color:#18181b; color:#ffffff; }
+.theme-dark a { color:#a5b4fc; }
+.theme-dark a:hover { color:#c7d2fe; }
 
-a {
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-}
+/* Readability utilities */
+.readable { color: var(--color-text); }
+.readable-muted { color: var(--color-text-muted); }
 
-p a {
-  @apply hover:underline;
-}
+/* Ensure base typography never inherits low-contrast accidental colors */
+:where(h1,h2,h3,h4,h5,h6,p,li,dt,dd,span,label) { color: inherit; }
 
-.animated {
-  -webkit-animation-duration: 1s;
-  animation-duration: 1s;
-  -webkit-animation-duration: 1s;
-  animation-duration: 1s;
-  -webkit-animation-fill-mode: both;
-  animation-fill-mode: both;
-}
+/* Elevate contrast for small, secondary text */
+.small-muted { font-size: .8125rem; line-height: 1.1rem; color: var(--color-text-muted); }
 
-.height-screen-helper {
-  min-height: calc(100vh - 80px);
-}
+/* Accessibility helper: outline on forced-high-contrast mode */
+@media (forced-colors: active) { a, button { outline: 1px solid CanvasText; } }
+
+body { position: relative; min-height: 100%; margin: 0; }
+
+a { -webkit-tap-highlight-color: rgba(0,0,0,0); }
+
+/* Replaced @apply hover:underline */
+p a { text-decoration:none; }
+p a:hover { text-decoration:underline; }
+
+.animated { animation-duration: 1s; animation-fill-mode: both; }
+
+.height-screen-helper { min-height: calc(100vh - 80px); }
 
 /* Sidebar Navigation States */
 @media (min-width: 768px) {
-  .sidebar-collapsed main {
-    margin-left: 4rem; /* 64px */
-  }
-  
-  .sidebar-expanded main {
-    margin-left: 16rem; /* 256px */
-  }
+  .sidebar-collapsed main { margin-left: 4rem; }
+  .sidebar-expanded main { margin-left: 16rem; }
 }
+
+/* High-contrast enforcement utility (apply where dynamic bg images exist) */
+.contrast-layer { position: relative; }
+.contrast-layer::after { content: ""; position: absolute; inset:0; background: linear-gradient(to bottom, rgba(0,0,0,.35), rgba(0,0,0,.35)); pointer-events:none; mix-blend-mode:multiply; opacity:0; transition:opacity .3s; }
+.contrast-layer[data-enhance="true"]::after { opacity:1; }
+
+/* Focus ring tweak for better visibility on light + dark */
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }

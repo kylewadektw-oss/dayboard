@@ -340,6 +340,51 @@ A comprehensive household management dashboard optimized for tablets and Echo Sh
   - [ ] Voice commands for navigation
   - [ ] Hands-free kitchen operation
 
+### 3.6 Unified Household OS Enhancements (Differentiators)
+- [ ] Linked Calendar ↔ Meal Planner (drag meal onto calendar to auto-create event & grocery diff)
+- [ ] Meal → Grocery Auto-Consolidation (aggregate ingredients across week, de-duplicate & categorize)
+- [ ] Calendar ↔ Project Task Linking (tasks with due dates surface in calendar & agenda widget)
+- [ ] Daycare / School Feed v2 (real-time updates + photo attachments + pickup status)
+- [ ] Cross-module Global Tagging (e.g. “Birthday”, “Vacation” ties events, meals, tasks)
+- [ ] Household Health Timeline (aggregate key events: meals planned, tasks completed, projects progress)
+
+### 3.7 Family Chores & Kids System (MVP)
+- [ ] Chore Templates Library (age-appropriate presets)
+- [ ] Assign Chores to Members (repeat rules: daily / weekly / custom)
+- [ ] Gamified Points & Streaks Engine
+- [ ] Reward Catalog (parent configurable) & Redemption Flow
+- [ ] Allowance Tracking (points → monetary conversion optional)
+- [ ] Parent Override & Audit Log (edit / approve completions)
+- [ ] Child-Friendly Dashboard Mode (reduced UI, large buttons)
+
+### 3.8 Location & Safety (Foundational)
+- [ ] Real-Time Household Location Sharing (opt‑in, low frequency polling)
+- [ ] Last Known Location Snapshot in Overview Widget
+- [ ] Geofence Basics (Home / School) arrival & departure events
+- [ ] Emergency Share Link (temporary location sharing token)
+- [ ] Privacy & Consent Settings (granular per-member toggles)
+
+### 3.9 Home & Maintenance
+- [ ] Cleaning Schedule Generator (rooms + frequency matrix)
+- [ ] Maintenance Reminders (HVAC filter, batteries, seasonal tasks)
+- [ ] Home Inventory (appliances, warranty data, model/serial storage)
+- [ ] Document & Manual Attachments (Supabase storage integration)
+- [ ] Smart Reminder Priority (overdue escalation + grouping)
+
+### 3.10 Grocery & Meal Intelligence
+- [ ] Recipe Import (URL scraping + normalization pipeline)
+- [ ] AI Meal Suggestions (based on past selections + dietary preferences)
+- [ ] Pantry Mode (track staples & depletion estimates)
+- [ ] Smart Substitutions (dietary restriction aware)
+- [ ] Auto Nutrition Summary (basic macros per planned week)
+- [ ] Grocery Export Integrations (Instacart / Amazon Fresh placeholder hooks)
+
+### 3.11 Finance & Budget (Foundational – Non-Premium Core Hooks)
+- [ ] Allowance Ledger (ties to Chore Points)
+- [ ] Household Expense Log (manual entries + categories)
+- [ ] Subscription Tracker (renewal reminders)
+- [ ] Budget Categories (lightweight, sets stage for premium analytics)
+
 ---
 
 ## 💰 **PHASE 4: Premium Features & Monetization** - *PLANNED*
@@ -355,12 +400,32 @@ A comprehensive household management dashboard optimized for tablets and Echo Sh
 - [ ] Cloud sync across multiple devices
 - [ ] Advanced project templates
 - [ ] AI-powered suggestions
+- [ ] **Ad-Free Experience** (remove marketing / external promos)
+- [ ] **Multiple Event Reminders** (custom reminder sequences)
+- [ ] **Birthday & Anniversary Tracker** (auto-surface upcoming dates)
+- [ ] **Extended Storage Tier** (photo/doc quota increase)
+- [ ] **Advanced Chore Rewards & Allowance Automation** (auto payouts/export)
+- [ ] **Location History & Geofence Alerts** (timeline + notification rules)
+- [ ] **Advanced Meal & Nutrition Analytics** (macro trends, dietary compliance)
+- [ ] **AI Grocery Optimization** (cost & waste reduction suggestions)
+- [ ] **Home Maintenance Forecasting** (predictive scheduling)
+- [ ] **Financial Insights Dashboard** (spend trends, allowance forecasting)
+- [ ] **Smart Household Insights** (cross-domain correlations: chores ↔ meals ↔ calendar load)
+- [ ] **Priority Support Channel**
 
-### 4.3 Integrations
-- [ ] Calendar sync (Google, Apple, Outlook)
-- [ ] Grocery delivery services
-- [ ] Smart home device integration
-- [ ] Recipe import from websites
+### 4.3 Integrations (Expanded)
+- [ ] Calendar Sync (Google, Apple, Outlook) – bi-directional w/ conflict detection
+- [ ] Grocery Delivery (Instacart / Amazon Fresh abstraction layer)
+- [ ] Smart Home Hooks (Phase 1: Webhook ingestion, Phase 2: device action shortcuts)
+- [ ] Banking / Allowance APIs (Greenlight / Plaid feasibility research)
+- [ ] Location Provider Abstraction (Apple / Google / Life360 interoperability layer)
+
+### 4.4 Premium Packaging & Tiering
+- [ ] Free vs Gold Feature Matrix (UI comparison module)
+- [ ] In-App Upgrade Flow (contextual nudges on locked features)
+- [ ] Trials & Expiration Handling (grace period logic)
+- [ ] Feature Flag Guard Rails (global_feature_toggles + tier constraints)
+- [ ] Usage Telemetry Funnel (conversion metrics instrumentation)
 
 ---
 
@@ -544,160 +609,129 @@ A comprehensive household management dashboard optimized for tablets and Echo Sh
     - [ ] Edge function deployment for auth middleware
     - [ ] Load testing and capacity planning
 
-### 5.2 Accessibility & Usability
-- [ ] WCAG compliance
-- [ ] Screen reader compatibility
-- [ ] High contrast mode
-- [ ] Font size preferences
-
-### 5.3 Testing & QA
-- [ ] Comprehensive test suite
-- [ ] Cross-device testing
-- [ ] User acceptance testing
-- [ ] Performance benchmarking
-
----
-
-## � **FUTURE LOGGING & DEBUGGING INNOVATIONS**
-
-> **Game-Changing Debugging Capabilities**: Advanced error analysis and monitoring
-
-### **🤖 AI-Powered Error Intelligence** - *Revolutionary Debugging*
-- [ ] **Machine Learning Error Analysis**
-  - [ ] Intelligent error pattern recognition and classification
-  - [ ] Automatic root cause analysis with contextual suggestions
-  - [ ] Similar issue detection across user sessions
-  - [ ] Smart error grouping to reduce debugging noise
-- [ ] **Predictive Problem Detection**
-  - [ ] Performance degradation early warning system
-  - [ ] Error trend analysis with impact assessment
-  - [ ] Resource usage prediction and optimization alerts
-  - [ ] User experience impact scoring (critical vs. minor issues)
-
-### **📊 Real-Time Production Monitoring** - *Enterprise-Grade Insights*
-- [ ] **Advanced Performance Dashboards**
-  - [ ] Core Web Vitals and response time monitoring
-  - [ ] User journey tracking with error correlation
-  - [ ] Database query analysis and optimization suggestions
-  - [ ] API response monitoring for all external services
-- [ ] **Live User Session Analysis**
-  - [ ] Privacy-compliant screen recording for error reproduction
-  - [ ] Console log correlation with user actions
-  - [ ] Click/touch heatmaps for UX optimization
-  - [ ] Error moment capture (30-second replay buffers)
-
-### **🚨 Intelligent Alerting Ecosystem** - *Proactive Issue Resolution*
-- [ ] **Smart Notification Engine**
-  - [ ] Slack/Discord integration for critical errors
-  - [ ] Email digest reports with actionable insights
-  - [ ] Mobile push notifications for production issues
-  - [ ] Escalation rules with automatic manager alerts
-- [ ] **Context-Aware Alert Intelligence**
-  - [ ] User impact assessment (premium vs. free tier effects)
-  - [ ] Business logic validation (payment/revenue impact analysis)
-  - [ ] Geographic and device correlation patterns
-  - [ ] Time-based pattern recognition (peak usage errors)
-
-### **🔬 Advanced Developer Experience** - *Next-Generation Debugging*
-- [ ] **Interactive Log Exploration**
-  - [ ] Graph visualization of error relationships
-  - [ ] Timeline view for event sequence analysis
-  - [ ] Multi-user log correlation across household members
-  - [ ] Performance flame graphs for bottleneck identification
-- [ ] **Automated Issue Resolution**
-  - [ ] Self-healing scripts for common problems
-  - [ ] Automatic rollback triggers for problematic deployments
-  - [ ] Database optimization suggestions and automated fixes
-  - [ ] AI-powered code improvement recommendations
-
-### **💼 Enterprise & Security Features** - *Production-Scale Logging*
-- [ ] **Multi-Environment Management**
-  - [ ] Development/staging/production environment separation
-  - [ ] A/B testing integration with error correlation
-  - [ ] Feature flag impact analysis on error rates
-  - [ ] Deployment tracking with automated issue correlation
-- [ ] **Advanced Security & Compliance**
-  - [ ] Automatic PII scrubbing from sensitive logs
-  - [ ] Comprehensive audit trails for log access
-  - [ ] GDPR-compliant retention policies and data deletion
-  - [ ] SOC 2 compliance for enterprise customers
-
-### **📈 Business Intelligence Integration** - *Data-Driven Development*
-- [ ] **Product Analytics Correlation**
-  - [ ] Feature usage analysis vs. error rate correlation
-  - [ ] User onboarding funnel debugging and optimization
-  - [ ] Conversion funnel error impact assessment
-  - [ ] Customer success metrics with technical health correlation
-- [ ] **Automated Strategic Reporting**
-  - [ ] Weekly engineering health reports with trend analysis
-  - [ ] Product stakeholder dashboards with business impact metrics
-  - [ ] Customer impact assessments for revenue/experience effects
-  - [ ] Technical debt tracking with error-based quality metrics
+### 5.4 Marketing Site & Competitive Positioning
+- [ ] Competitive Positioning Document (see `COMPETITIVE_POSITIONING.md`)
+- [ ] Landing Page Information Architecture
+  - [ ] Hero: Unified Household OS (Calendar • Meals • Projects • Lists • Daycare Updates)
+  - [ ] Problem Section: "Families juggle 2–4 apps" (fragmentation pain)
+  - [ ] Value Pillars (Unified • Smart Automation • Family Roles & Safety • Privacy • Extensible)
+  - [ ] Interactive Feature Matrix (Dayboard vs Fragmented Stack)
+  - [ ] Dynamic Scenario Stories (Meal → Grocery, Event → Project Task, Daycare update → Household Notification)
+  - [ ] Comparison Blocks (Cozi / Mealime / Life360 / OurHome etc.)
+  - [ ] Social Proof / Early Access Waitlist CTA
+  - [ ] Premium Upsell Strip (what Gold unlocks vs free)
+  - [ ] Trust & Privacy Section (data ownership, granular permissions)
+  - [ ] Footer Navigation & Legal
+- [ ] Visual Assets
+  - [ ] Unified Dashboard Screenshot
+  - [ ] Animated Meal→Grocery consolidation
+  - [ ] Role-based permissions UI capture
+  - [ ] Mobile + Tablet responsive mockups
+- [ ] Copy & Messaging
+  - [ ] Tagline A/B variants
+  - [ ] Value pillar one-liners
+  - [ ] Email capture incentive copy
+- [ ] Technical
+  - [ ] Static marketing routes (`/`, `/pricing`, `/compare`)
+  - [ ] Comparison dynamic page generation (structured data for SEO)
+  - [ ] OG meta images per section
+  - [ ] Performance budget (LCP < 1.8s on 4G)
+  - [ ] Analytics events (hero CTA, waitlist signup, pricing interactions)
+- [ ] Launch Readiness
+  - [ ] Pre-launch waitlist collection
+  - [ ] Early adopter onboarding sequence
+  - [ ] Press / announcement kit (logo, palette, screenshots)
+  - [ ] Post-signup nurture email flow
 
 ---
 
-## �📊 **Current Status**
+## 🔮 Backlog / Future Considerations
 
-**Overall Progress: 50% Complete**
+- [ ] **Phase 6: AI & Automation Features**
+  
+  #### Core Intelligence & Assistants
+  - [ ] AI-powered household personal assistant (context-aware, per-member profiles)
+  - [ ] Voice-activated household commands (hands-free modes)
+  - [ ] Smart scheduling & conflict resolution (calendar + chores + meals)
+  - [ ] Cross-domain insight engine (correlate chores ↔ meals ↔ calendar load ↔ wellness)
+  
+  #### Meals & Grocery
+  - [ ] Predictive meal planning (usage patterns + dietary prefs)
+  - [ ] Recipe import & normalization enhancements (semantic ingredient clustering)
+  - [ ] AI grocery optimization (cost, waste reduction, substitution recommendations)
+  - [ ] Automated grocery ordering & delivery slot suggestions
+  - [ ] Pantry depletion prediction & smart restock list generation
+  - [ ] Nutrition trend analysis (macro compliance & energy balance hints)
+  
+  #### Chores, Allowance & Kids
+  - [ ] Automated chore rotation & fairness engine
+  - [ ] Smart allowance / points → monetary conversion rules
+  - [ ] Contract / ruleset templates (optional smart contract exploration)
+  - [ ] Adaptive reward recommendations (engagement retention)
+  
+  #### Home Maintenance & Assets
+  - [ ] Predictive maintenance forecasting (appliances, seasonal tasks)
+  - [ ] Warranty & document auto-expiry reminders
+  - [ ] Auto-generated maintenance calendar (priority scoring)
+  - [ ] Device health ingestion (webhook → normalized asset telemetry)
+  
+  #### Security, Safety & Location
+  - [ ] Anomaly detection (unexpected location patterns / schedule deviations)
+  - [ ] Geofence rule editor (custom zones + conditional alerts)
+  - [ ] Home security event aggregation (camera / sensor webhook normalization)
+  - [ ] Emergency share mode (temporary high-frequency tracking + audit)
+  
+  #### Health & Wellness
+  - [ ] Family wellness timeline (sleep, meal balance, activity placeholders)
+  - [ ] AI wellness nudges (hydration, meal spacing, movement reminders)
+  - [ ] Sleep environment optimization suggestions
+  - [ ] Developmental / age-guided activity hints (kids milestones)
+  
+  #### Finance & Budget
+  - [ ] Spend trend clustering (categorical drift detection)
+  - [ ] Subscription churn & renewal risk scoring
+  - [ ] Allowance forecast & behavior-based adjustments
+  - [ ] Micro-budget anomaly alerts (unexpected spikes)
+  
+  #### Inventory & Supplies
+  - [ ] Smart household inventory (usage velocity + restock ETA)
+  - [ ] Auto bundle suggestions (grouped purchases for cost saving)
+  - [ ] Perishable spoilage risk alerts (based on planned meals vs on-hand)
+  
+  #### Environment & Energy
+  - [ ] Adaptive thermostat schedule recommendations (pattern + weather fusion)
+  - [ ] Energy usage anomaly detection
+  - [ ] Weather-based proactive task prompts (prep, maintenance, travel impact)
+  
+  #### Transportation & Logistics
+  - [ ] Commute prediction & departure suggestion engine
+  - [ ] Multi-stop errand route optimizer (tie into grocery / pickup tasks)
+  - [ ] Package delivery prediction & consolidation alerts
+  
+  #### Communication & Coordination
+  - [ ] AI summary digest (daily: what changed, what’s upcoming, risks)
+  - [ ] Intent extraction from free-form notes → structured tasks/events
+  - [ ] Family priority escalation (important items bubble to dashboard)
+  
+  #### Education, Pets & Garden
+  - [ ] Learning & development planner (curriculum suggestion scaffolding)
+  - [ ] Pet care automation (feeding, medication, grooming reminders)
+  - [ ] Garden / plant health schedule (seasonal + watering cadence)
+  
+  #### Data, Privacy & Resilience
+  - [ ] Local-first sync prototype (offline mutation queue + merge policy)
+  - [ ] Encrypted selective sharing (guest / sitter scoped access)
+  - [ ] Automated backup & recovery validation jobs
+  - [ ] Anonymized telemetry pipeline for feature usage modeling
+  
+  #### Advanced UX & Delivery
+  - [ ] Adaptive UI density (context-aware simplification for child mode)
+  - [ ] Predictive surfacing (preload likely next interactions)
+  - [ ] Proactive friction alerts (detect repeated failed flows)
+  
+  #### Stretch / Exploratory
+  - [ ] AR overlay concepts (spatial chores / inventory labeling)
+  - [ ] Federated model fine-tuning (privacy-preserving personalization)
+  - [ ] Edge inference for low-latency location & safety cues
 
-- ✅ **Phase 1**: 100% Complete (Core UI & Mock Data)
-- ✅ **Phase 2**: 85% Complete (Database Integration - Schema ✅, Auth ✅, Enterprise Logging ✅, Data Migration 🚧)
-- ⏳ **Phase 3**: 0% Complete (Advanced Features)
-- ⏳ **Phase 4**: 0% Complete (Premium Features)
-- ⏳ **Phase 5**: 0% Complete (Polish & Launch)
-
-**Recent Major Achievements**: 
-- ✅ **Enterprise Logging Infrastructure** - Professional debugging system with real-time monitoring
-- ✅ **Interactive Log Dashboard** - Copy functionality, filtering, visual feedback
-- ✅ **Production-Ready Debugging** - Comprehensive error tracking and analysis tools
-
-**Next Priority**: Complete Phase 2.3 - Replace mock data with real database queries and implement real-time updates.
-
-**Critical Infrastructure Task**: Verify and optimize Vercel deployment configuration for smooth production builds, proper environment variables, and optimal performance.
-
----
-
-## 🛠 **Technical Stack**
-
-### Frontend
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
-- **State Management**: React useState/useEffect
-
-### Backend & Database
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Real-time**: Supabase Subscriptions
-- **Storage**: Supabase Storage
-
-### Deployment & Infrastructure
-- **Hosting**: Vercel with automatic deployments
-- **Build System**: Next.js with TypeScript compilation
-- **Environment Management**: Vercel environment variables (development, preview, production)
-- **Analytics**: Vercel Analytics (Core Web Vitals, page views, user insights)
-- **Payments**: Stripe with webhook handling
-- **Domain**: Custom domain (TBD) with SSL/TLS encryption
-- **CDN**: Vercel Edge Network for global content delivery
-- **Monitoring**: Vercel Functions monitoring and error tracking
-
-### Performance & Optimization *(Recently Enhanced)*
-- **Bundle Optimization**: Achieved 62% dashboard bundle reduction (11KB → 4.11KB)
-- **Component Performance**: React.memo, useCallback, useMemo optimizations implemented
-- **Memory Management**: Logger memory footprint reduced by 50%
-- **Database Performance**: 30-second caching with 2-second batch writes
-- **Build Optimization**: Improved compilation times and chunk generation
-- **Lazy Loading**: Dashboard widgets load on-demand with React.lazy()
-- **Performance Utilities**: Custom debounce/throttle, performance monitoring tools
-- **Navigation Enhancement**: Seamless user flow with dashboard access throughout app
-
----
-
-## 🎯 **Design Philosophy**
-
-- **Feminine Minimalist**: Soft gradients, rounded corners, purple/pink color palette
-- **Household-Focused**: Multi-user support with role-based features
-- **Device-Optimized**: Primarily designed for tablets and Echo Show devices
-- **Progressive Enhancement**: Mobile-responsive with desktop functionality
-- **Accessibility First**: Screen reader support and keyboard navigation
+  > NOTE: Previous raw backlog list was de-duplicated and normalized into themed clusters for clarity and prioritization.

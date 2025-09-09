@@ -6,6 +6,10 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export type HouseholdType = 'solo_user' | 'roommate_household' | 'couple_no_kids' | 'family_household' | 'single_parent_household' | 'multi_generational_household'
+
+export type FamilyRole = 'parent_guardian' | 'mom' | 'dad' | 'child' | 'spouse_partner' | 'roommate' | 'guest' | 'caregiver' | 'pet'
+
 export interface Database {
   public: {
     Tables: {
@@ -165,40 +169,57 @@ export interface Database {
       profiles: {
         Row: {
           id: string
-          email: string
-          full_name: string | null
-          display_name: string | null
+          user_id: string
+          name: string | null
+          preferred_name: string | null
+          age: number | null
+          profession: string | null
+          household_id: string | null
           avatar_url: string | null
+          dietary_preferences: string[] | null
+          allergies: string[] | null
+          created_at: string
+          updated_at: string
+          household_status: string | null
+          household_role: string | null
+          requested_household_id: string | null
           date_of_birth: string | null
+          profile_photo_url: string | null
+          google_avatar_url: string | null
           phone_number: string | null
           bio: string | null
-          preferred_name: string | null
-          pronouns: string | null
           address: Json | null
           emergency_contact: Json | null
           timezone: string
           language: string
           notification_preferences: Json
           privacy_settings: Json
-          role: Database["public"]["Enums"]["user_role"]
-          household_id: string | null
-          family_role: string | null
-          dietary_restrictions: string[] | null
-          allergies: string[] | null
-          is_active: boolean
-          last_seen_at: string | null
+          family_role: Database["public"]["Enums"]["family_role"] | null
+          /** @deprecated use dietary_preferences */
+          dietary_restrictions: Json | null
           onboarding_completed: boolean
           profile_completion_percentage: number
-          created_at: string
-          updated_at: string
+          role: Database["public"]["Enums"]["user_role"]
+          is_active: boolean
+          last_seen_at: string | null
         }
         Insert: {
-          id: string
-          email: string
-          full_name?: string | null
-          display_name?: string | null
+          id?: string
+          user_id: string
+          name?: string | null
+          age?: number | null
+          profession?: string | null
+          household_id?: string | null
           avatar_url?: string | null
+          dietary_preferences?: string[] | null
+          created_at?: string
+          updated_at?: string
+          household_status?: string | null
+          household_role?: string | null
+          requested_household_id?: string | null
           date_of_birth?: string | null
+          profile_photo_url?: string | null
+          google_avatar_url?: string | null
           phone_number?: string | null
           bio?: string | null
           preferred_name?: string | null
@@ -209,23 +230,18 @@ export interface Database {
           language?: string
           notification_preferences?: Json
           privacy_settings?: Json
-          role?: Database["public"]["Enums"]["user_role"]
-          household_id?: string | null
-          family_role?: string | null
-          dietary_restrictions?: string[] | null
+          family_role?: Database["public"]["Enums"]["family_role"] | null
+          /** @deprecated use dietary_preferences */
+          dietary_restrictions?: Json | null
           allergies?: string[] | null
-          is_active?: boolean
-          last_seen_at?: string | null
           onboarding_completed?: boolean
           profile_completion_percentage?: number
-          created_at?: string
-          updated_at?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          is_active?: boolean
+          last_seen_at?: string | null
         }
         Update: {
           id?: string
-          email?: string
-          full_name?: string | null
-          display_name?: string | null
           avatar_url?: string | null
           date_of_birth?: string | null
           phone_number?: string | null
@@ -240,8 +256,10 @@ export interface Database {
           privacy_settings?: Json
           role?: Database["public"]["Enums"]["user_role"]
           household_id?: string | null
-          family_role?: string | null
-          dietary_restrictions?: string[] | null
+          family_role?: Database["public"]["Enums"]["family_role"] | null
+          /** @deprecated use dietary_preferences */
+          dietary_restrictions?: Json | null
+          dietary_preferences?: string[] | null
           allergies?: string[] | null
           is_active?: boolean
           last_seen_at?: string | null
@@ -249,6 +267,14 @@ export interface Database {
           profile_completion_percentage?: number
           created_at?: string
           updated_at?: string
+          name?: string | null
+          age?: number | null
+          profession?: string | null
+          requested_household_id?: string | null
+          household_status?: string | null
+          household_role?: string | null
+          google_avatar_url?: string | null
+          profile_photo_url?: string | null
         }
         Relationships: [
           {
@@ -410,6 +436,7 @@ export interface Database {
         Row: {
           id: string
           name: string
+          household_type: Database["public"]["Enums"]["household_type"]
           address: string | null
           city: string | null
           state: string | null
@@ -428,6 +455,7 @@ export interface Database {
         Insert: {
           id?: string
           name: string
+          household_type?: Database["public"]["Enums"]["household_type"]
           address?: string | null
           city?: string | null
           state?: string | null
@@ -446,6 +474,7 @@ export interface Database {
         Update: {
           id?: string
           name?: string
+          household_type?: Database["public"]["Enums"]["household_type"]
           address?: string | null
           city?: string | null
           state?: string | null
@@ -652,6 +681,8 @@ export interface Database {
         | "unpaid"
         | "paused"
       user_role: "super_admin" | "admin" | "member"
+      household_type: "solo_user" | "roommate_household" | "couple_no_kids" | "family_household" | "single_parent_household" | "multi_generational_household"
+      family_role: "parent_guardian" | "mom" | "dad" | "child" | "spouse_partner" | "roommate" | "guest" | "caregiver" | "pet"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -671,7 +702,7 @@ export type Enums<
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-    : never = never
+    : never
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]

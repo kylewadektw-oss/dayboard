@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       const { data: profile, error: profileSelectError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)  // Use 'id' instead of 'user_id'
+        .eq('user_id', user.id)  // Use 'user_id' to match actual schema
         .maybeSingle(); // Use maybeSingle instead of single to avoid error if no profile
 
       serverAuthLogger.info(`📊 Profile check result`, { 
@@ -76,10 +76,8 @@ export async function GET(request: NextRequest) {
         serverAuthLogger.info(`🆕 Creating new profile for user`, { userId: user.id });
         
         const newProfile = {
-          id: user.id,  // Add the id field to match schema
-          email: user.email || '',
-          full_name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-          display_name: user.user_metadata?.name || user.user_metadata?.given_name || user.user_metadata?.full_name || '',
+          user_id: user.id,  // Use user_id to match actual schema
+          name: user.user_metadata?.full_name || user.user_metadata?.name || '',
           avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
           role: 'member' as const,
           is_active: true,
@@ -132,15 +130,15 @@ export async function GET(request: NextRequest) {
         serverAuthLogger.info(`👤 Existing profile found`, { 
           userId: user.id, 
           profileId: profile.id,
-          displayName: profile.display_name 
+          displayName: profile.preferred_name || profile.name 
         });
 
         // Check if household setup is complete
-        if (!profile.household_id || !profile.onboarding_completed || !profile.full_name) {
+        if (!profile.household_id || !profile.onboarding_completed || !profile.name) {
           serverAuthLogger.info(`🏠 Redirecting to profile setup - incomplete household/profile`, {
             userId: user.id,
             hasHousehold: !!profile.household_id,
-            hasFullName: !!profile.full_name,
+            hasName: !!profile.name,
             onboardingCompleted: profile.onboarding_completed
           });
           return NextResponse.redirect(
@@ -151,22 +149,19 @@ export async function GET(request: NextRequest) {
             )
           );
         }
-        // Check if household setup is complete
-        if (!profile.household_id || !profile.onboarding_completed || !profile.full_name) {
-          serverAuthLogger.info(`🏠 Redirecting to profile setup - incomplete household/profile`, {
-            userId: user.id,
-            hasHousehold: !!profile.household_id,
-            hasFullName: !!profile.full_name,
-            onboardingCompleted: profile.onboarding_completed
-          });
-          return NextResponse.redirect(
-            getStatusRedirect(
-              `${requestUrl.origin}/profile/setup`,
-              'Welcome back!',
-              'Please complete your profile and household setup.'
-            )
-          );
-        }
+
+        // Profile is complete, redirect to dashboard
+        serverAuthLogger.info(`✅ Profile complete, redirecting to dashboard`, {
+          userId: user.id,
+          profileComplete: true
+        });
+        return NextResponse.redirect(
+          getStatusRedirect(
+            `${requestUrl.origin}/dashboard`,
+            'Welcome back!',
+            'You have been signed in successfully.'
+          )
+        );
       } else if (profileSelectError) {
         serverAuthLogger.error(`❌ Error checking for existing profile`, { 
           userId: user.id, 
@@ -178,15 +173,12 @@ export async function GET(request: NextRequest) {
     }
   } else {
     serverAuthLogger.warn(`⚠️ No authorization code provided in callback`);
+    return NextResponse.redirect(
+      getErrorRedirect(
+        `${requestUrl.origin}/signin`,
+        'AuthCallbackError',
+        'No authorization code provided. Please try signing in again.'
+      )
+    );
   }
-
-  // URL to redirect to after sign in process completes
-  serverAuthLogger.info(`🏠 Redirecting to dashboard after successful authentication`);
-  return NextResponse.redirect(
-    getStatusRedirect(
-      `${requestUrl.origin}/dashboard`,
-      'Success!',
-      'You are now signed in.'
-    )
-  );
 }

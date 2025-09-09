@@ -28,7 +28,9 @@ export function AppNavigation() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user, profile, signOut } = useAuth();
-  
+  const [hasHydrated, setHasHydrated] = useState(false);
+  useEffect(() => { setHasHydrated(true); }, []);
+
   // Add class to body to adjust main content
   useEffect(() => {
     const body = document.body;
@@ -107,8 +109,8 @@ export function AppNavigation() {
           </button>
         </div>
 
-        {/* User Info */}
-        {!isCollapsed && user && (
+        {/* User Info (deferred until after hydration to avoid SSR mismatch) */}
+        {!isCollapsed && hasHydrated && user && (
           <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center">
               {profile?.avatar_url ? (
@@ -120,7 +122,7 @@ export function AppNavigation() {
               )}
               <div className="ml-3 min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {profile?.display_name || profile?.full_name || user?.email || 'Guest'}
+                  {profile?.preferred_name || profile?.name || user?.email || 'Guest'}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
                   {profile?.role?.replace('_', ' ').toUpperCase() || 'Member'}

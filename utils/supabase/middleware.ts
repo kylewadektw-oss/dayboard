@@ -1,130 +1,52 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
- * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
- * This file is part of Dayboard, a proprietary household command center application.
- * 
- * IMPORTANT NOTICE:
- * This code is proprietary and confidential. Unauthorized copying, distribution,
- * or use by large corporations or competing services is strictly prohibited.
- * 
- * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
- * Violation of this notice may result in legal action and damages up to $100,000.
+ * (Lightweight edge-safe middleware version)
  */
 
-
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
-export const createClient = (request: NextRequest) => {
-  // Create an unmodified response
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers
-    }
-  });
+// Public routes that never require auth
+const PUBLIC_ROUTES = new Set([
+  '/',
+  '/auth/callback',
+  '/auth/reset_password'
+]);
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          // If the cookie is updated, update the cookies for the request and response
-          request.cookies.set({
-            name,
-            value,
-            ...options
-          });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers
-            }
-          });
-          response.cookies.set({
-            name,
-            value,
-            ...options
-          });
-        },
-        remove(name: string, options: CookieOptions) {
-          // If the cookie is removed, update the cookies for the request and response
-          request.cookies.set({
-            name,
-            value: '',
-            ...options
-          });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers
-            }
-          });
-          response.cookies.set({
-            name,
-            value: '',
-            ...options
-          });
-        }
-      }
-    }
-  );
+// Auth routes (signin/signup) that should be skipped when unauthenticated
+const AUTH_ROUTES = ['/signin', '/signup'];
 
-  return { supabase, response };
-};
-
-export const updateSession = async (request: NextRequest) => {
+/**
+ * Edge-safe session/update check WITHOUT importing supabase-js (removes build warnings).
+ * We only look for the presence of Supabase auth cookies (sb-*-auth-token pattern).
+ */
+export function updateSession(request: NextRequest) {
   try {
-    const { supabase, response } = createClient(request);
+    const { pathname } = request.nextUrl;
 
-    // This will refresh session if expired - required for Server Components
-    const { data: { user } } = await supabase.auth.getUser();
+    // Early allow auth routes explicitly to avoid accidental loops
+    const isAuthRoute = AUTH_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'));
+    if (isAuthRoute) return NextResponse.next();
 
-    // Define public routes that don't require authentication
-    const publicRoutes = [
-      '/', // Landing page
-      '/auth/callback', // OAuth callback
-      '/auth/reset_password', // Password reset
-    ];
-    
-    // Check if the current path is public
-    const isPublicRoute = publicRoutes.includes(request.nextUrl.pathname);
-
-    // If accessing a public route, allow access regardless of auth status
-    if (isPublicRoute) {
-      return response;
+    // Allow public assets / public routes early
+    if (PUBLIC_ROUTES.has(pathname)) {
+      return NextResponse.next();
     }
 
-    // Define auth routes (signin, signup)
-    const authRoutes = ['/signin', '/signup'];
-    const isAuthRoute = authRoutes.some(route => 
-      request.nextUrl.pathname.startsWith(route)
-    );
+    // Detect any Supabase auth cookie. Format: sb-<project-ref>-auth-token
+    const hasAuthCookie = request.cookies.getAll().some(c => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'));
 
-    // If user is not authenticated and not on a public or auth route, redirect to signin
-    if (!user && !isAuthRoute) {
-      const redirectUrl = new URL('/signin', request.url);
-      return NextResponse.redirect(redirectUrl);
-    }
-
-    // If user is authenticated and trying to access auth routes, redirect to dashboard
-    if (user && isAuthRoute) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-
-    return response;
-  } catch (e) {
-    // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
-    console.error('Supabase client creation failed:', e);
-    return NextResponse.next({
-      request: {
-        headers: request.headers
+    if (!hasAuthCookie) {
+      if (pathname !== '/signin') {
+        return NextResponse.redirect(new URL('/signin', request.url));
       }
-    });
+      return NextResponse.next();
+    }
+
+    // If authenticated and hits auth route (handled above) we would redirect, but already returned.
+    return NextResponse.next();
+  } catch (e) {
+    // Fail open (no hard block) to prevent lockouts if cookie parsing logic changes
+    console.error('[middleware:updateSession] edge-safe auth check failed', e);
+    return NextResponse.next();
   }
-};
+}

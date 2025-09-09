@@ -36,7 +36,8 @@ yarn-error.log*
 # .env.staging  # Uncomment this line if you want to keep staging env private
 # .env.production  # Uncomment this line if you want to keep production env private
 
-# Development roadmap and planning (keep local)
+# Internal strategic & planning docs (keep private / local only)
 ROADMAP.md
+MarketResearch.md
 TODO.md
 NOTES.md

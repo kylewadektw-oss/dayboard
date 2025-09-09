@@ -14,15 +14,15 @@
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { Database } from '@/types_db';
-import { authLogger, LogLevel } from '@/utils/logger';
+import { authLogger } from '@/utils/logger';
 
+// Types
 type Profile = Database['public']['Tables']['profiles']['Row'];
 type UserPermissions = Database['public']['Tables']['user_permissions']['Row'];
 
@@ -43,233 +43,93 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [permissions, setPermissions] = useState<UserPermissions | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+  const envValid = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const FAST_AUTH_LOG = process.env.NEXT_PUBLIC_FAST_AUTH_LOG === '1' || process.env.NEXT_PUBLIC_FAST_AUTH_LOG === 'true';
+
+  // Lightweight no-wait wrappers
+  const fireInfo = (msg: string, data?: any) => { try { if (!FAST_AUTH_LOG) (authLogger as any).info(msg, data); } catch {} };
+  const fireWarn = (msg: string, data?: any) => { try { if (!FAST_AUTH_LOG) (authLogger as any).warn(msg, data); } catch {} };
+  const fireError = (msg: string, data?: any) => { try { if (!FAST_AUTH_LOG) (authLogger as any).error(msg, data); } catch {} };
+
+  // Validate env early
+  useEffect(() => {
+    if (!envValid) {
+      fireError('❌ [AUTH] Missing Supabase env vars (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY)');
+      setLoading(false);
+    }
+  }, [envValid]);
+
+  // Fallback timeout to prevent infinite loading spinner
+  useEffect(() => {
+    if (!loading) return;
+    const t = setTimeout(() => { if (loading) { fireWarn('⚠️ [AUTH] Loading timeout fallback (5s) – forcing UI continuation', { envValid }); setLoading(false); } }, 5000);
+    const safety = setTimeout(() => { if (loading) { fireWarn('⚠️ [AUTH] Secondary safety timeout (12s)', { envValid }); setLoading(false); } }, 12000);
+    return () => { clearTimeout(t); clearTimeout(safety); };
+  }, [loading, envValid]);
 
   const fetchUserData = async (currentUser: User) => {
     try {
-      await authLogger.info(`🔍 [AUTH] Starting profile fetch for user: ${currentUser.id}`, {
-        userId: currentUser.id,
-        userEmail: currentUser.email,
-        userMetadata: currentUser.user_metadata
-      });
-      
-      // Fetch profile - use id as foreign key to auth.users
+      fireInfo('🔍 [AUTH] Fetching profile', { userId: currentUser.id });
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', currentUser.id)  // Use 'id' instead of 'user_id'
-        .maybeSingle(); // Use maybeSingle to avoid error if no profile
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
 
-      if (profileError) {
-        await authLogger.error(`❌ [AUTH] Profile fetch error: ${profileError.message}`, {
-          userId: currentUser.id,
-          error: profileError,
-          errorCode: profileError.code,
-          errorDetails: profileError.details
-        });
-      } else if (profileData) {
-        await authLogger.info(`✅ [AUTH] Profile loaded successfully for user: ${currentUser.email}`, {
-          userId: currentUser.id,
-          profileId: profileData.id,
-          displayName: profileData.display_name,
-          avatar: profileData.avatar_url
-        });
-        setProfile(profileData);
-      } else {
-        await authLogger.warn(`⚠️ [AUTH] No profile found for user: ${currentUser.email}`, {
-          userId: currentUser.id,
-          userEmail: currentUser.email,
-          message: 'Profile might need to be created during initial signup'
-        });
-        setProfile(null);
-      }
+      if (profileError) fireError('❌ [AUTH] Profile fetch error', { userId: currentUser.id, error: profileError });
+      setProfile(profileData ?? null);
 
-      // Try to fetch permissions (table might not exist yet)
       try {
         const { data: permissionsData, error: permissionsError } = await supabase
           .from('user_permissions')
           .select('*')
-          .eq('user_id', currentUser.id)  // This should still be user_id based on the schema
+          .eq('user_id', currentUser.id)
           .maybeSingle();
 
-        if (permissionsError && permissionsError.message.includes("Could not find the table")) {
-          await authLogger.warn(`⚠️ [AUTH] user_permissions table does not exist - using default permissions`, {
-            userId: currentUser.id,
-            fallbackAction: 'default_permissions'
-          });
-          setPermissions(null); // Will default to allowing access
-        } else if (permissionsError) {
-          await authLogger.error(`❌ [AUTH] Permissions fetch error: ${permissionsError.message}`, {
-            userId: currentUser.id,
-            error: permissionsError
-          });
+        if (permissionsError) {
+          if (permissionsError.message.includes('Could not find the table')) fireWarn('⚠️ [AUTH] user_permissions table missing – using defaults', { userId: currentUser.id });
+          else fireError('❌ [AUTH] Permissions fetch error', { userId: currentUser.id, error: permissionsError });
           setPermissions(null);
-        } else {
-          await authLogger.info(`✅ [AUTH] Permissions loaded for user: ${currentUser.email}`, {
-            userId: currentUser.id,
-            permissions: permissionsData
-          });
-          setPermissions(permissionsData);
-        }
-      } catch (permError) {
-        await authLogger.warn(`⚠️ [AUTH] Permissions table access error - using defaults`, {
-          userId: currentUser.id,
-          error: permError,
-          fallbackAction: 'default_permissions'
-        });
-        setPermissions(null); // Will default to allowing access
-      }
-    } catch (error) {
-      await authLogger.error(`❌ [AUTH] Critical error in fetchUserData: ${error}`, {
-        userId: currentUser.id,
-        error: error,
-        stack: error instanceof Error ? error.stack : undefined
-      });
-    }
+        } else setPermissions(permissionsData ?? null);
+      } catch (permErr) { fireWarn('⚠️ [AUTH] Permissions fetch exception – defaults', { userId: currentUser.id, error: permErr }); setPermissions(null); }
+    } catch (err) { fireError('❌ [AUTH] fetchUserData critical error', { userId: currentUser.id, error: err }); }
   };
 
   const refreshUser = async () => {
     try {
-      await authLogger.info(`🔄 [AUTH] Refreshing user session`);
-      
+      fireInfo('🔄 [AUTH] Refreshing session');
       const { data: { user: currentUser }, error } = await supabase.auth.getUser();
-      
-      // Handle refresh token errors specifically
       if (error && error.message?.includes('refresh_token_not_found')) {
-        await authLogger.warn(`🔄 [AUTH] Refresh token expired, clearing session`, {
-          error: error.message,
-          code: error.status
-        });
-        
-        // Clear local state and force sign out
-        setUser(null);
-        setProfile(null);
-        setPermissions(null);
-        
-        // Clear any stored session
-        await supabase.auth.signOut();
-        return;
-      }
-      
-      if (error) {
-        throw error;
-      }
-      
+        fireWarn('🔄 [AUTH] Refresh token expired – clearing session');
+        setUser(null); setProfile(null); setPermissions(null); await supabase.auth.signOut(); return; }
+      if (error) throw error;
       setUser(currentUser);
-      
-      if (currentUser) {
-        await authLogger.info(`✅ [AUTH] User session found: ${currentUser.email}`, {
-          userId: currentUser.id,
-          userEmail: currentUser.email,
-          lastSignIn: currentUser.last_sign_in_at
-        });
-        await fetchUserData(currentUser);
-      } else {
-        await authLogger.info(`ℹ️ [AUTH] No active user session found`);
-        setProfile(null);
-        setPermissions(null);
-      }
-    } catch (error) {
-      await authLogger.error(`❌ [AUTH] Error refreshing user session: ${error}`, {
-        error: error,
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      
-      // If there's any auth error, clear the session
-      setUser(null);
-      setProfile(null);
-      setPermissions(null);
-    } finally {
-      setLoading(false);
-    }
+      if (currentUser) await fetchUserData(currentUser); else { setProfile(null); setPermissions(null); }
+    } catch (err) { fireError('❌ [AUTH] refreshUser error', { error: err }); setUser(null); setProfile(null); setPermissions(null); }
+    finally { setLoading(false); }
   };
 
-  const signOut = async () => {
-    try {
-      await authLogger.info(`🚪 [AUTH] User signing out: ${user?.email || 'unknown'}`, {
-        userId: user?.id,
-        userEmail: user?.email
-      });
-      
-      await supabase.auth.signOut();
-      setUser(null);
-      setProfile(null);
-      setPermissions(null);
-      
-      await authLogger.info(`✅ [AUTH] User signed out successfully`);
-    } catch (error) {
-      await authLogger.error(`❌ [AUTH] Error during sign out: ${error}`, {
-        error: error,
-        userId: user?.id
-      });
-    }
-  };
+  const signOut = async () => { try { fireInfo('🚪 [AUTH] Signing out', { userId: user?.id }); await supabase.auth.signOut(); setUser(null); setProfile(null); setPermissions(null); fireInfo('✅ [AUTH] Sign out complete'); } catch (err) { fireError('❌ [AUTH] signOut error', { error: err }); } };
 
   useEffect(() => {
-    authLogger.info(`🚀 [AUTH] Initializing AuthContext`);
-    
-    // Get initial user
+    if (!envValid) return;
+    fireInfo('🚀 [AUTH] AuthContext init',{ FAST_AUTH_LOG });
     refreshUser();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      fireInfo('🔄 [AUTH] Auth state change', { event, hasSession: !!session });
+      const currentUser = session?.user ?? null; setUser(currentUser);
+      if (currentUser) await fetchUserData(currentUser); else { setProfile(null); setPermissions(null); }
+      setLoading(false);
+    });
+    return () => { fireInfo('🧹 [AUTH] Cleanup'); subscription.unsubscribe(); };
+  }, [envValid]);
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        await authLogger.info(`🔄 [AUTH] Auth state changed: ${event}`, {
-          event: event,
-          hasSession: !!session,
-          userId: session?.user?.id,
-          userEmail: session?.user?.email
-        });
-
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          await authLogger.info(`👤 [AUTH] User authenticated via ${event}: ${currentUser.email}`, {
-            userId: currentUser.id,
-            userEmail: currentUser.email,
-            authEvent: event,
-            provider: currentUser.app_metadata?.provider,
-            lastSignIn: currentUser.last_sign_in_at
-          });
-          await fetchUserData(currentUser);
-        } else {
-          await authLogger.info(`🚪 [AUTH] User session ended via ${event}`, {
-            authEvent: event
-          });
-          setProfile(null);
-          setPermissions(null);
-        }
-        
-        setLoading(false);
-      }
-    );
-
-    return () => {
-      authLogger.info(`🧹 [AUTH] AuthContext cleanup`);
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const value = {
-    user,
-    profile,
-    permissions,
-    loading,
-    signOut,
-    refreshUser
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = { user, profile, permissions, loading, signOut, refreshUser };
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
+  return ctx;
 }

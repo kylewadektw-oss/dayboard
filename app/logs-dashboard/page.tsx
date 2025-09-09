@@ -1195,229 +1195,196 @@ User Agent: ${log.userAgent || 'N/A'}
           </div>
 
           {/* Enhanced System Health Alert with Top 3 Analytics */}
-          {(logStats.errors > 0 || logStats.warnings > 0) && (
-            <div className="bg-white rounded-2xl shadow-sm border-2 border-amber-200 p-6 mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                    <div className="w-3 h-3 rounded-full bg-white"></div>
-                  </div>
-                  <h2 className="text-lg font-bold text-gray-900">System Health & Analytics</h2>
+          <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-200 p-6 mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-lg bg-gray-800 flex items-center justify-center">
+                  <div className="w-3 h-3 rounded-full bg-white"></div>
                 </div>
-                <button
-                  onClick={() => setInsightsCollapsed(!insightsCollapsed)}
-                  className="text-gray-500 hover:text-gray-700 transition-colors font-medium"
-                >
-                  {insightsCollapsed ? '▼ Show Insights & Fixes' : '▲ Hide Insights'}
-                </button>
+                <h2 className="text-lg font-bold text-gray-900">System Health & Analytics</h2>
               </div>
-              
-              {!insightsCollapsed && (
-                <div className="space-y-8">
-                  {/* Top 3 Analytics Row */}
-                  <div className="grid md:grid-cols-3 gap-6">
-                    {/* Top 3 Problem Components */}
-                    <div className="bg-purple-50 border border-purple-200 rounded-xl p-5">
-                      <h4 className="font-bold text-purple-800 mb-3 flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-purple-500"></div>
-                        Top 3 Problem Components
-                      </h4>
-                      {getTop3Analytics.components.length > 0 ? (
-                        <ul className="space-y-2">
-                          {getTop3Analytics.components.map((comp, idx) => (
-                            <li key={comp.component} className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-purple-700">
-                                {idx + 1}. {comp.component}
-                              </span>
-                              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-bold">
-                                {comp.count}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-purple-600">No problematic components identified</p>
-                      )}
-                    </div>
+              <button
+                onClick={() => setInsightsCollapsed(!insightsCollapsed)}
+                className="text-gray-500 hover:text-gray-700 transition-colors font-medium"
+              >
+                {insightsCollapsed ? '▼ Show Insights & Fixes' : '▲ Hide Insights'}
+              </button>
+            </div>
 
-                    {/* Top 3 Error Types */}
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-5">
-                      <h4 className="font-bold text-red-800 mb-3 flex items-center gap-2">
+            {!insightsCollapsed && (
+              <div className="space-y-8">
+                {/* Top 3 Analytics Row */}
+                <div className="grid md:grid-cols-3 gap-6">
+                  {/* Top 3 Problem Components */}
+                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-5">
+                    <h4 className="font-bold text-purple-800 mb-3 flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-purple-500"></div>
+                      Top 3 Problem Components
+                    </h4>
+                    {getTop3Analytics.components.length > 0 ? (
+                      <ul className="space-y-2">
+                        {getTop3Analytics.components.map((comp, idx) => (
+                          <li key={comp.component} className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-purple-700">
+                              {idx + 1}. {comp.component}
+                            </span>
+                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-bold">
+                              {comp.count}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-purple-600">No problematic components identified</p>
+                    )}
+                  </div>
+
+                  {/* Top 3 Error Types */}
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+                    <h4 className="font-bold text-red-800 mb-3 flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                      Top 3 Error Patterns
+                    </h4>
+                    {getTop3Analytics.errorTypes.length > 0 ? (
+                      <ul className="space-y-2">
+                        {getTop3Analytics.errorTypes.map((error, idx) => (
+                          <li key={error.type} className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-red-700">
+                              {idx + 1}. {error.type}
+                            </span>
+                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-bold">
+                              {error.count}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-red-600">No error patterns detected</p>
+                    )}
+                  </div>
+
+                  {/* Top 3 Time Hotspots */}
+                  <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
+                    <h4 className="font-bold text-orange-800 mb-3 flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-orange-500"></div>
+                      Top 3 Problem Times
+                    </h4>
+                    {getTop3Analytics.timeHotspots.length > 0 ? (
+                      <ul className="space-y-2">
+                        {getTop3Analytics.timeHotspots.map((time, idx) => (
+                          <li key={time.hour} className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-orange-700">
+                              {idx + 1}. {time.timeRange}
+                            </span>
+                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-bold">
+                              {time.count}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-orange-600">No time patterns detected</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actionable Fixes Section */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {logStats.errors > 0 && (
+                    <div className="bg-gradient-to-br from-red-50 to-pink-50 border border-red-200 rounded-xl p-5">
+                      <h4 className="font-bold text-red-800 mb-4 flex items-center gap-2">
                         <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                        Top 3 Error Patterns
+                        🚨 Critical Issues ({logStats.errors} errors)
                       </h4>
-                      {getTop3Analytics.errorTypes.length > 0 ? (
-                        <ul className="space-y-2">
-                          {getTop3Analytics.errorTypes.map((error, idx) => (
-                            <li key={error.type} className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-red-700">
-                                {idx + 1}. {error.type}
-                              </span>
-                              <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-bold">
-                                {error.count}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-red-600">No error patterns detected</p>
-                      )}
-                    </div>
 
-                    {/* Top 3 Time Hotspots */}
-                    <div className="bg-orange-50 border border-orange-200 rounded-xl p-5">
-                      <h4 className="font-bold text-orange-800 mb-3 flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-                        Top 3 Problem Times
-                      </h4>
-                      {getTop3Analytics.timeHotspots.length > 0 ? (
-                        <ul className="space-y-2">
-                          {getTop3Analytics.timeHotspots.map((time, idx) => (
-                            <li key={time.hour} className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-orange-700">
-                                {idx + 1}. {time.timeRange}
-                              </span>
-                              <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-bold">
-                                {time.count}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-orange-600">No time patterns detected</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actionable Fixes Section */}
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {logStats.errors > 0 && (
-                      <div className="bg-gradient-to-br from-red-50 to-pink-50 border border-red-200 rounded-xl p-5">
-                        <h4 className="font-bold text-red-800 mb-4 flex items-center gap-2">
-                          <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                          🚨 Critical Issues ({logStats.errors} errors)
-                        </h4>
-                        
-                        {/* Top Error Pattern Fixes */}
-                        {getTop3Analytics.errorTypes.length > 0 && (
-                          <div className="mb-4">
-                            <h5 className="text-sm font-semibold text-red-700 mb-2">
-                              Quick Fix for: {getTop3Analytics.errorTypes[0].type}
-                            </h5>
-                            <ul className="space-y-1 text-sm text-red-600">
-                              {getSpecificFixes(getTop3Analytics.errorTypes[0].type).slice(0, 2).map((fix, idx) => (
-                                <li key={idx} className="flex items-start gap-2">
-                                  <span className="text-red-500 font-bold">⚡</span>
-                                  <span>{fix}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        <div className="border-t border-red-200 pt-3">
-                          <h5 className="text-sm font-semibold text-red-700 mb-2">General Actions:</h5>
-                          <ul className="space-y-1 text-sm text-red-600">
-                            <li className="flex items-start gap-2">
-                              <span>•</span>
-                              <span>These break functionality and impact users directly</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span>•</span>
-                              <span>Requires immediate developer attention</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span>•</span>
-                              <span>Check stack traces for exact failure points</span>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    )}
-
-                    {logStats.warnings > 0 && (
-                      <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-5">
-                        <h4 className="font-bold text-yellow-800 mb-4 flex items-center gap-2">
-                          <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
-                          ⚠️ Potential Problems ({logStats.warnings} warnings)
-                        </h4>
-                        
+                      {/* Top Error Pattern Fixes */}
+                      {getTop3Analytics.errorTypes.length > 0 && (
                         <div className="mb-4">
-                          <h5 className="text-sm font-semibold text-yellow-700 mb-2">
-                            Recommended Actions:
+                          <h5 className="text-sm font-semibold text-red-700 mb-2">
+                            Quick Fix for: {getTop3Analytics.errorTypes[0].type}
                           </h5>
-                          <ul className="space-y-1 text-sm text-yellow-600">
-                            <li className="flex items-start gap-2">
-                              <span className="text-yellow-500 font-bold">🔧</span>
-                              <span>Schedule fixes during next maintenance window</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-yellow-500 font-bold">📊</span>
-                              <span>Monitor for escalation to errors</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span className="text-yellow-500 font-bold">🔍</span>
-                              <span>Review for deprecated code patterns</span>
-                            </li>
+                          <ul className="space-y-1 text-sm text-red-600">
+                            {getSpecificFixes(getTop3Analytics.errorTypes[0].type).slice(0, 2).map((fix, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <span className="text-red-500 font-bold">⚡</span>
+                                <span>{fix}</span>
+                              </li>
+                            ))}
                           </ul>
                         </div>
+                      )}
 
-                        <div className="border-t border-yellow-200 pt-3">
-                          <h5 className="text-sm font-semibold text-yellow-700 mb-2">Prevention Tips:</h5>
-                          <ul className="space-y-1 text-sm text-yellow-600">
-                            <li className="flex items-start gap-2">
-                              <span>•</span>
-                              <span>Update dependencies regularly</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span>•</span>
-                              <span>Run linters in pre-commit hooks</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <span>•</span>
-                              <span>Add TypeScript strict mode checks</span>
-                            </li>
-                          </ul>
-                        </div>
+                      <div className="border-t border-red-200 pt-3">
+                        <h5 className="text-sm font-semibold text-red-700 mb-2">General Actions:</h5>
+                        <ul className="space-y-1 text-sm text-red-600">
+                          <li className="flex items-start gap-2"><span>•</span><span>These break functionality and impact users directly</span></li>
+                          <li className="flex items-start gap-2"><span>•</span><span>Requires immediate developer attention</span></li>
+                          <li className="flex items-start gap-2"><span>•</span><span>Check stack traces for exact failure points</span></li>
+                        </ul>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
 
-                  {/* Quick Action Buttons */}
-                  {(getTop3Analytics.errorTypes.length > 0 || getTop3Analytics.components.length > 0) && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                      <h5 className="text-sm font-semibold text-gray-700 mb-3">Quick Filter Actions:</h5>
-                      <div className="flex flex-wrap gap-2">
-                        {getTop3Analytics.errorTypes.slice(0, 2).map((error, idx) => (
-                          <button
-                            key={error.type}
-                            onClick={() => {
-                              setSearchQuery(error.type.split(' ')[0].toLowerCase());
-                              setSelectedLevel(LogLevel.ERROR);
-                            }}
-                            className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors"
-                          >
-                            Filter {error.type} ({error.count})
-                          </button>
-                        ))}
-                        {getTop3Analytics.components.slice(0, 2).map((comp, idx) => (
-                          <button
-                            key={comp.component}
-                            onClick={() => {
-                              setSelectedComponent(comp.component);
-                            }}
-                            className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium hover:bg-purple-200 transition-colors"
-                          >
-                            Filter {comp.component} ({comp.count})
-                          </button>
-                        ))}
+                  {logStats.warnings > 0 && (
+                    <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-5">
+                      <h4 className="font-bold text-yellow-800 mb-4 flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
+                        ⚠️ Potential Problems ({logStats.warnings} warnings)
+                      </h4>
+                      <div className="mb-4">
+                        <h5 className="text-sm font-semibold text-yellow-700 mb-2">Recommended Actions:</h5>
+                        <ul className="space-y-1 text-sm text-yellow-600">
+                          <li className="flex items-start gap-2"><span className="text-yellow-500 font-bold">🔧</span><span>Schedule fixes during next maintenance window</span></li>
+                          <li className="flex items-start gap-2"><span className="text-yellow-500 font-bold">📊</span><span>Monitor for escalation to errors</span></li>
+                          <li className="flex items-start gap-2"><span className="text-yellow-500 font-bold">🔍</span><span>Review for deprecated code patterns</span></li>
+                        </ul>
+                      </div>
+                      <div className="border-t border-yellow-200 pt-3">
+                        <h5 className="text-sm font-semibold text-yellow-700 mb-2">Prevention Tips:</h5>
+                        <ul className="space-y-1 text-sm text-yellow-600">
+                          <li className="flex items-start gap-2"><span>•</span><span>Update dependencies regularly</span></li>
+                          <li className="flex items-start gap-2"><span>•</span><span>Run linters in pre-commit hooks</span></li>
+                          <li className="flex items-start gap-2"><span>•</span><span>Add TypeScript strict mode checks</span></li>
+                        </ul>
                       </div>
                     </div>
                   )}
                 </div>
-              )}
-            </div>
-          )}
+
+                {/* Quick Action Buttons */}
+                {(getTop3Analytics.errorTypes.length > 0 || getTop3Analytics.components.length > 0) && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <h5 className="text-sm font-semibold text-gray-700 mb-3">Quick Filter Actions:</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {getTop3Analytics.errorTypes.slice(0, 2).map((error, idx) => (
+                        <button
+                          key={error.type}
+                          onClick={() => {
+                            setSearchQuery(error.type.split(' ')[0].toLowerCase());
+                            setSelectedLevel(LogLevel.ERROR);
+                          }}
+                          className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors"
+                        >
+                          Filter {error.type} ({error.count})
+                        </button>
+                      ))}
+                      {getTop3Analytics.components.slice(0, 2).map((comp, idx) => (
+                        <button
+                          key={comp.component}
+                          onClick={() => {
+                            setSelectedComponent(comp.component);
+                          }}
+                          className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium hover:bg-purple-200 transition-colors"
+                        >
+                          Filter {comp.component} ({comp.count})
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Quick Actions */}
           <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-200 p-6 mb-8">

@@ -32,6 +32,10 @@ const nextConfig = {
   
   // Simplified webpack optimization to avoid conflicts
   webpack: (config, { dev, isServer }) => {
+    if (dev) {
+      // Disable problematic filesystem pack cache during development
+      config.cache = false;
+    }
     // Only apply optimizations in production builds
     if (!dev && !isServer) {
       // Optimize bundle splitting for large files without breaking existing config
