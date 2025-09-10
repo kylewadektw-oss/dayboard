@@ -17,6 +17,7 @@
 
 import { Home, Users, Settings, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface HouseholdStats {
   projectsInProgress: number;
@@ -25,16 +26,12 @@ interface HouseholdStats {
   totalMembers: number;
 }
 
-// Mock household data
-const mockHousehold = {
-  name: 'Wade Family',
-  greeting: 'Good evening, Kyle 👋',
-  stats: {
-    projectsInProgress: 3,
-    mealsPlanned: 4,
-    membersHome: 2,
-    totalMembers: 3
-  }
+// Mock household data for stats (will be replaced with real data later)
+const mockStats = {
+  projectsInProgress: 3,
+  mealsPlanned: 4,
+  membersHome: 2,
+  totalMembers: 3
 };
 
 const getTimeBasedGreeting = () => {
@@ -45,8 +42,13 @@ const getTimeBasedGreeting = () => {
 };
 
 export function ProfileStatus() {
-  const { name, stats } = mockHousehold;
-  const greeting = `${getTimeBasedGreeting()}, Kyle 👋`;
+  const { user, profile } = useAuth();
+  
+  // Use real profile data when available, fallback to mock for household name
+  const displayName = profile?.preferred_name || profile?.name || user?.email?.split('@')[0] || 'there';
+  const householdName = 'Wade Family'; // TODO: Replace with real household data
+  const greeting = `${getTimeBasedGreeting()}, ${displayName} 👋`;
+  const stats = mockStats; // TODO: Replace with real household stats
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 mb-4">
@@ -58,7 +60,7 @@ export function ProfileStatus() {
           </div>
           <div className="flex items-center text-sm text-gray-600 mb-3">
             <Home className="h-4 w-4 mr-1" />
-            <span>{name} • {stats.totalMembers} members</span>
+            <span>{householdName} • {stats.totalMembers} members</span>
             <span className="ml-3 text-green-600">
               {stats.membersHome}/{stats.totalMembers} home
             </span>
