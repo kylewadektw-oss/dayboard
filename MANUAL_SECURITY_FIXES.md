@@ -6,30 +6,37 @@ The automated script couldn't connect directly, so please follow these manual st
 
 ### 1. 📋 Copy the SQL Commands
 
-```sql
--- Fix for Supabase Function Search Path Security Issues
--- Copy and paste ALL of these commands into your Supabase SQL Editor
+**✅ VERIFIED:** Based on your actual database query, all 20 vulnerable functions have been identified with correct signatures.
 
-ALTER FUNCTION public.get_user_settings_tabs() SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.create_default_permissions(uuid) SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.user_has_feature_access(text) SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.get_user_navigation() SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.get_household_members(uuid) SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.set_profile_completion(uuid, boolean) SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.update_updated_at_column() SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.join_household_by_code(text) SECURITY DEFINER SET search_path = public;
+```sql
+-- FINAL: Complete Fix for Supabase Function Search Path Security Issues
+-- Based on actual database query results - all 20 functions identified
+
+-- Functions with no parameters (trigger functions)
+ALTER FUNCTION public.assign_household_admin_if_missing() SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.assign_household_code() SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.create_default_permissions() SECURITY DEFINER SET search_path = public;
 ALTER FUNCTION public.generate_household_code() SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.assign_household_code(uuid, text) SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.update_household_admin(uuid, uuid) SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.set_initial_household_role(uuid, uuid) SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.assign_household_admin_if_missing(uuid) SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.set_household_member_role(uuid, text) SECURITY DEFINER SET search_path = public;
 ALTER FUNCTION public.generate_invitation_code() SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.create_household_invitation(uuid, uuid, text) SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.accept_household_invitation(text) SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.manage_household_member(uuid, text, text) SECURITY DEFINER SET search_path = public;
-ALTER FUNCTION public.calculate_age_from_dob(date) SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.set_household_member_role() SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.set_initial_household_role() SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.set_profile_completion() SECURITY DEFINER SET search_path = public;
 ALTER FUNCTION public.update_age_from_dob() SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.update_household_admin() SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.update_updated_at_column() SECURITY DEFINER SET search_path = public;
+
+-- Functions with parameters - using exact signatures from database
+ALTER FUNCTION public.accept_household_invitation(text, uuid) SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.calculate_age_from_dob(date) SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.create_household_invitation(uuid, text, text, text) SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.get_household_members(uuid) SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.get_user_navigation(uuid) SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.get_user_settings_tabs(uuid) SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.join_household_by_code(character varying, uuid) SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.manage_household_member(uuid, character varying, uuid) SECURITY DEFINER SET search_path = public;
+ALTER FUNCTION public.user_has_feature_access(uuid, text) SECURITY DEFINER SET search_path = public;
+
+-- Note: exec() and exec_select() functions already have secure search_path configuration
 ```
 
 ### 2. 🎯 Execution Steps
@@ -49,6 +56,7 @@ After running the fixes, execute this verification query:
 -- Verify all functions are now secure
 SELECT 
     p.proname as function_name,
+    pg_get_function_identity_arguments(p.oid) as arguments,
     p.prosecdef as is_security_definer,
     CASE 
         WHEN p.proconfig IS NULL THEN 'NOT SECURED'
@@ -59,13 +67,13 @@ FROM pg_proc p
 JOIN pg_namespace n ON p.pronamespace = n.oid
 WHERE n.nspname = 'public'
 AND p.proname IN (
-    'get_user_settings_tabs', 'create_default_permissions', 'user_has_feature_access',
-    'get_user_navigation', 'get_household_members', 'set_profile_completion',
-    'update_updated_at_column', 'join_household_by_code', 'generate_household_code',
-    'assign_household_code', 'update_household_admin', 'set_initial_household_role',
-    'assign_household_admin_if_missing', 'set_household_member_role', 'generate_invitation_code',
-    'create_household_invitation', 'accept_household_invitation', 'manage_household_member',
-    'calculate_age_from_dob', 'update_age_from_dob'
+    'assign_household_admin_if_missing', 'assign_household_code', 'create_default_permissions',
+    'generate_household_code', 'generate_invitation_code', 'set_household_member_role',
+    'set_initial_household_role', 'set_profile_completion', 'update_age_from_dob',
+    'update_household_admin', 'update_updated_at_column', 'accept_household_invitation',
+    'calculate_age_from_dob', 'create_household_invitation', 'get_household_members',
+    'get_user_navigation', 'get_user_settings_tabs', 'join_household_by_code',
+    'manage_household_member', 'user_has_feature_access'
 )
 ORDER BY security_status, p.proname;
 ```
@@ -98,7 +106,7 @@ Go to: **Supabase Dashboard > Settings > Infrastructure**
 ## 📊 Success Criteria
 
 After completion, you should have:
-- ✅ 20 database functions secured against SQL injection
+- ✅ 20 database functions secured against SQL injection (all functions from original audit found and fixed)
 - ✅ Enhanced password security enabled
 - ✅ Shorter OTP expiry window
 - ✅ Database upgrade scheduled
