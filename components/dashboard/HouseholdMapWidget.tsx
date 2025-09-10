@@ -20,6 +20,7 @@ import { useState, useEffect, useRef } from 'react';
 import { MapPin, Home, Navigation, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
+import { loadGoogleMaps, GOOGLE_MAPS_LIBRARIES } from '@/utils/googleMaps';
 
 interface Household {
   id: string;
@@ -93,27 +94,18 @@ export function HouseholdMapWidget({ className = '' }: MapWidgetProps) {
 
   // Load Google Maps script
   useEffect(() => {
-    const loadGoogleMaps = () => {
-      if (window.google) {
+    const initializeGoogleMaps = async () => {
+      try {
+        await loadGoogleMaps([...GOOGLE_MAPS_LIBRARIES.GEOMETRY]);
         setIsMapLoaded(true);
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=geometry`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        setIsMapLoaded(true);
-      };
-      script.onerror = () => {
+      } catch (error) {
+        console.error('Failed to load Google Maps:', error);
         setError('Failed to load Google Maps');
-      };
-      document.head.appendChild(script);
+      }
     };
 
     if (process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
-      loadGoogleMaps();
+      initializeGoogleMaps();
     } else {
       setError('Google Maps API key not configured');
     }

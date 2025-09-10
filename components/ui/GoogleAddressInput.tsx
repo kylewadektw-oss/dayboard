@@ -18,6 +18,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { MapPin, Search, AlertCircle } from 'lucide-react';
+import { loadGoogleMaps, GOOGLE_MAPS_LIBRARIES } from '@/utils/googleMaps';
 
 interface AddressComponent {
   long_name: string;
@@ -67,31 +68,17 @@ export function GoogleAddressInput({
 
   // Load Google Places API
   useEffect(() => {
-    const loadGooglePlaces = () => {
-      if (window.google?.maps?.places) {
+    const initializeGooglePlaces = async () => {
+      try {
+        await loadGoogleMaps([...GOOGLE_MAPS_LIBRARIES.PLACES]);
         setIsLoaded(true);
-        return;
-      }
-
-      if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
-        setError('Google Maps API key not configured');
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        setIsLoaded(true);
-      };
-      script.onerror = () => {
+      } catch (error) {
+        console.error('Failed to load Google Places API:', error);
         setError('Failed to load Google Places API');
-      };
-      document.head.appendChild(script);
+      }
     };
 
-    loadGooglePlaces();
+    initializeGooglePlaces();
   }, []);
 
   // Initialize autocomplete when Google Places is loaded
