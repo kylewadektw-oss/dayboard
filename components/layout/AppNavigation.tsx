@@ -20,7 +20,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Home, UtensilsCrossed, ClipboardList, Briefcase, FolderOpen, User, Settings, ChevronLeft, ChevronRight, LogOut, FileText, Bug, Activity } from 'lucide-react';
+import { Home, UtensilsCrossed, ClipboardList, Briefcase, FolderOpen, User, Settings, ChevronLeft, ChevronRight, LogOut, FileText, Bug, Activity, UserCheck } from 'lucide-react';
 import Logo from '@/components/icons/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -70,6 +70,7 @@ export function AppNavigation() {
   ];
 
   const devNavigation = [
+    { name: 'Customer Review', href: '/customer-review', icon: UserCheck, current: pathname === '/customer-review' },
     { name: 'Logs Dashboard', href: '/logs-dashboard', icon: FileText, current: pathname === '/logs-dashboard' },
     { name: 'Simple Logging', href: '/test-logging-simple', icon: Activity, current: pathname === '/test-logging-simple' },
     { name: 'Auth Debug', href: '/auth-debug', icon: Bug, current: pathname === '/auth-debug' },
@@ -208,10 +209,17 @@ export function AppNavigation() {
 
         {/* Settings and Sign Out at Bottom */}
         <div className="p-2 border-t border-gray-200 flex-shrink-0 space-y-1">
-          <button className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors relative ${
-            isCollapsed ? 'justify-center' : ''
-          }`}>
-            <Settings className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-600" />
+          <Link 
+            href="/settings"
+            className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors relative ${
+              pathname === '/settings'
+                ? 'bg-gradient-to-r from-pink-50 to-purple-50 text-purple-700 border-r-2 border-purple-600'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            } ${isCollapsed ? 'justify-center' : ''}`}
+          >
+            <Settings className={`h-5 w-5 flex-shrink-0 ${
+              pathname === '/settings' ? 'text-purple-600' : 'text-gray-400 group-hover:text-gray-600'
+            }`} />
             {!isCollapsed && (
               <span className="ml-3 truncate">Settings</span>
             )}
@@ -222,7 +230,7 @@ export function AppNavigation() {
                 Settings
               </div>
             )}
-          </button>
+          </Link>
 
           {user && (
             <button

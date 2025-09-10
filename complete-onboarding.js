@@ -24,12 +24,12 @@ async function completeOnboarding() {
     console.log('  - Onboarding Complete:', currentProfile.onboarding_completed);
     console.log('  - Profile %:', currentProfile.profile_completion_percentage);
 
-    // Update the profile
+    // Update the profile - let the trigger calculate profile_completion_percentage
     const { data, error } = await supabase
       .from('profiles')
       .update({ 
-        onboarding_completed: true,
-        profile_completion_percentage: 95
+        onboarding_completed: true
+        // Removed static profile_completion_percentage - let database trigger calculate it
       })
       .eq('user_id', '0139a6fc-bf13-426d-8929-604051c4d1f4')
       .select();

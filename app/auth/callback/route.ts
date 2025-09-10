@@ -116,6 +116,24 @@ export async function GET(request: NextRequest) {
             profileId: insertedProfile.id 
           });
           
+          // Create customer review entry for new users
+          const { error: reviewError } = await supabase
+            .from('customer_reviews')
+            .insert({
+              user_id: user.id,
+              status: 'pending'
+            });
+
+          if (reviewError) {
+            serverAuthLogger.warn(`⚠️ Customer review creation failed`, { 
+              userId: user.id, 
+              error: reviewError.message 
+            });
+            // Don't block signup if review creation fails
+          } else {
+            serverAuthLogger.info(`📋 Customer review created for new user`, { userId: user.id });
+          }
+          
           // New users always need to complete household setup
           serverAuthLogger.info(`🏠 Redirecting new user to profile setup`);
           return NextResponse.redirect(

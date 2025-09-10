@@ -340,7 +340,18 @@ A comprehensive household management dashboard optimized for tablets and Echo Sh
   - [ ] Voice commands for navigation
   - [ ] Hands-free kitchen operation
 
-### 3.6 Unified Household OS Enhancements (Differentiators)
+### 3.6 Profile & User Experience Enhancements
+- [ ] **Bio Preset System** *(Requested Enhancement)*
+  - [ ] Common personality descriptors as quick-select options
+  - [ ] Categories: Parent Types ("Soccer mom", "Chef dad", "Organized planner")
+  - [ ] Hobby/Interest Tags ("Fitness enthusiast", "Book lover", "DIY crafter")
+  - [ ] Work Styles ("Early bird", "Night owl", "Multitasker", "Detail-oriented")
+  - [ ] Family Roles ("Family photographer", "Event planner", "Tech support")
+  - [ ] Combination with custom text input for personalization
+  - [ ] Preset suggestions based on household type and family roles
+  - [ ] Easy editing and mixing of presets with custom descriptions
+
+### 3.7 Unified Household OS Enhancements (Differentiators)
 - [ ] Linked Calendar ↔ Meal Planner (drag meal onto calendar to auto-create event & grocery diff)
 - [ ] Meal → Grocery Auto-Consolidation (aggregate ingredients across week, de-duplicate & categorize)
 - [ ] Calendar ↔ Project Task Linking (tasks with due dates surface in calendar & agenda widget)
@@ -358,6 +369,11 @@ A comprehensive household management dashboard optimized for tablets and Echo Sh
 - [ ] Child-Friendly Dashboard Mode (reduced UI, large buttons)
 
 ### 3.8 Location & Safety (Foundational)
+- [ ] **Google Maps API Integration** - *PRIORITY*
+  - [ ] Full address capture with geocoding
+  - [ ] Interactive household location map on dashboard
+  - [ ] Google Places Autocomplete for address input
+  - [ ] Map visualization of household coordinates
 - [ ] Real-Time Household Location Sharing (opt‑in, low frequency polling)
 - [ ] Last Known Location Snapshot in Overview Widget
 - [ ] Geofence Basics (Home / School) arrival & departure events
@@ -608,6 +624,114 @@ A comprehensive household management dashboard optimized for tablets and Echo Sh
     - [ ] CDN configuration for global distribution
     - [ ] Edge function deployment for auth middleware
     - [ ] Load testing and capacity planning
+
+### 5.2 Mobile Platform Preparation
+
+#### 5.2.1 **Apple Store Developer Authorization** - *PRIORITY*
+- [ ] **Apple Developer Program Membership ($99/year)**
+  - [ ] Individual/Organization verification by Apple (verified Developer ID)
+  - [ ] Access to iOS/iPadOS/macOS/tvOS/visionOS/watchOS SDKs and beta releases
+  - [ ] Xcode IDE with app build and upload capabilities
+  - [ ] 25 compute hours/month Xcode Cloud CI/CD included
+  - [ ] TestFlight beta testing platform access (up to 10,000 external testers)
+  - [ ] App Store distribution eligibility (2+ billion active Apple devices)
+  - [ ] Reality Composer Pro for spatial experiences
+  - [ ] Core ML machine learning model integration
+  - [ ] CloudKit storage (up to 1PB per app included)
+  - [ ] WeatherKit API (500,000 calls/month included)
+  - [ ] Push notifications and advanced system integrations
+  - [ ] Background asset hosting (up to 200GB included)
+  - [ ] Face ID/Touch ID biometric authentication
+  - [ ] HomeKit and Matter smart home integration
+  - [ ] Sign in with Apple identity services
+  - [ ] DeviceCheck fraud prevention capabilities
+  - [ ] System Extensions and DriverKit access
+
+#### 5.2.2 **iOS/iPadOS App Development**
+  - [ ] **Native iOS app development with React Native or Swift**
+  - [ ] **iPad-optimized interface** (primary target device for household tablets)
+  - [ ] **iPhone companion app** (secondary priority for on-the-go access)
+  - [ ] **Apple Watch integration** (notifications, quick actions, family location)
+  - [ ] **HomeKit integration** (smart home device control from household dashboard)
+  - [ ] **Siri Shortcuts** (voice-activated household commands and meal planning)
+  - [ ] **Apple ID Sign-In** (seamless authentication with privacy focus)
+  - [ ] **iCloud sync** (cross-device data synchronization)
+  - [ ] **AirPlay support** (stream content to Apple TV/devices)
+  - [ ] **Handoff continuity** (seamless transition between devices)
+
+#### 5.2.3 **App Store Optimization & Compliance**
+  - [ ] **App Store listing optimization** (ASO keywords and metadata)
+  - [ ] **App preview videos** (feature demonstrations and user flows)
+  - [ ] **Screenshot sets** (iPhone, iPad, Apple Watch showcasing household features)
+  - [ ] **App metadata and keywords** (family, household, organization, meal planning)
+  - [ ] **App review compliance** (Apple Human Interface Guidelines)
+  - [ ] **Privacy nutrition labels** (transparent data usage for family trust)
+  - [ ] **Family Sharing compatibility** (shared household subscriptions)
+  - [ ] **Screen Time integration** (parental controls and usage insights)
+
+### 5.3 Launch Preparation
+
+#### 5.3.1 **Business Registration & Legal Foundation** - *PRIORITY*
+- [ ] **Limited Liability Company (LLC) Formation**
+  - [ ] Choose business name and verify availability
+  - [ ] File Articles of Organization with state
+  - [ ] Create Operating Agreement (member structure, profit sharing)
+  - [ ] Obtain registered agent service or designation
+  - [ ] Get LLC certificate and EIN documentation
+- [ ] **Federal Tax Identification (EIN)**
+  - [ ] Apply for Employer Identification Number with IRS
+  - [ ] Set up business bank account using EIN
+  - [ ] Configure business credit card and payment processing
+  - [ ] Establish business accounting system (QuickBooks/similar)
+- [ ] **Business Licenses & Permits**
+  - [ ] Research state and local business license requirements
+  - [ ] Software/technology business permits (if required)
+  - [ ] Sales tax registration (for subscription services)
+  - [ ] Professional liability insurance evaluation
+- [ ] **Intellectual Property Protection**
+  - [ ] Trademark search and registration for "Dayboard"
+  - [ ] Copyright registration for software and marketing materials
+  - [ ] Domain name portfolio protection (.com, .app, .io variations)
+  - [ ] Trade secret protection protocols
+- [ ] **Legal Documentation**
+  - [ ] Terms of Service (user agreements, liability limitations)
+  - [ ] Privacy Policy (GDPR/CCPA compliance, data handling)
+  - [ ] Cookie Policy and consent management
+  - [ ] Subscription terms and refund policies
+  - [ ] Data Processing Agreements (DPA) for enterprise customers
+- [ ] **Compliance Framework**
+  - [ ] COPPA compliance review (children's privacy under 13)
+  - [ ] CCPA compliance (California consumer privacy)
+  - [ ] GDPR compliance (EU data protection requirements)
+  - [ ] SOC 2 Type I security audit preparation
+  - [ ] App Store compliance review (Apple/Google guidelines)
+
+#### 5.3.2 **Financial & Tax Preparation**
+- [ ] **Business Banking & Accounting**
+  - [ ] Business checking account setup
+  - [ ] Business savings account for tax reserves
+  - [ ] Accounting software integration (QuickBooks Online)
+  - [ ] Monthly financial reporting templates
+  - [ ] Tax preparation service evaluation
+- [ ] **Revenue Operations**
+  - [ ] Stripe/payment processing account setup
+  - [ ] Subscription billing system configuration
+  - [ ] Revenue recognition policies (monthly vs annual)
+  - [ ] Refund and chargeback management procedures
+  - [ ] Financial dashboard and KPI tracking
+
+#### 5.3.3 **Operational Infrastructure**
+- [ ] **Customer Support Systems**
+  - [ ] Help desk software setup (Intercom/Zendesk)
+  - [ ] Knowledge base and FAQ development
+  - [ ] Customer onboarding documentation
+  - [ ] Escalation procedures and response time SLAs
+- [ ] **Business Operations**
+  - [ ] Business address establishment (virtual office if remote)
+  - [ ] Professional phone number and voicemail system
+  - [ ] Business email setup (@dayboard.app domain)
+  - [ ] Document management and file storage system
+  - [ ] Backup and disaster recovery procedures
 
 ### 5.4 Marketing Site & Competitive Positioning
 - [ ] Competitive Positioning Document (see `COMPETITIVE_POSITIONING.md`)

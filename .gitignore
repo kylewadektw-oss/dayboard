@@ -34,9 +34,9 @@ yarn-error.log*
 .env.production
 .env*.local
 
-# Environment files (commit .env.staging and .env.production for team use)
-# .env.staging  # Uncomment this line if you want to keep staging env private
-# .env.production  # Uncomment this line if you want to keep production env private
+# Environment files with sensitive data should NEVER be committed
+# Use platform environment variables (Vercel, Railway, etc.) for production
+# Only .env.example should be committed for reference
 
 # Internal strategic & planning docs (keep private / local only)
 ROADMAP.md

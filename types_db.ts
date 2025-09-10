@@ -89,6 +89,64 @@ export interface Database {
           }
         ]
       }
+      customer_reviews: {
+        Row: {
+          id: string
+          user_id: string
+          household_id: string | null
+          status: Database["public"]["Enums"]["customer_review_status"]
+          review_notes: string | null
+          reviewed_by: string | null
+          reviewed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          household_id?: string | null
+          status?: Database["public"]["Enums"]["customer_review_status"]
+          review_notes?: string | null
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          household_id?: string | null
+          status?: Database["public"]["Enums"]["customer_review_status"]
+          review_notes?: string | null
+          reviewed_by?: string | null
+          reviewed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_reviews_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       prices: {
         Row: {
           active: boolean | null
@@ -451,6 +509,8 @@ export interface Database {
           subscription_tier: string | null
           subscription_id: string | null
           trial_ends_at: string | null
+          coordinates: Json | null
+          referral_code: string
         }
         Insert: {
           id?: string
@@ -470,6 +530,8 @@ export interface Database {
           subscription_tier?: string | null
           subscription_id?: string | null
           trial_ends_at?: string | null
+          coordinates?: Json | null
+          referral_code?: string
         }
         Update: {
           id?: string
@@ -489,6 +551,8 @@ export interface Database {
           subscription_tier?: string | null
           subscription_id?: string | null
           trial_ends_at?: string | null
+          coordinates?: Json | null
+          referral_code?: string
         }
         Relationships: [
           {
@@ -661,12 +725,305 @@ export interface Database {
           }
         ]
       }
+      global_feature_control: {
+        Row: {
+          feature_key: string
+          display_name: string
+          description: string | null
+          category: string
+          access_level: string
+          is_enabled_globally: boolean
+          requires_subscription: boolean
+          minimum_tier: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          feature_key: string
+          display_name: string
+          description?: string | null
+          category?: string
+          access_level?: string
+          is_enabled_globally?: boolean
+          requires_subscription?: boolean
+          minimum_tier?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          feature_key?: string
+          display_name?: string
+          description?: string | null
+          category?: string
+          access_level?: string
+          is_enabled_globally?: boolean
+          requires_subscription?: boolean
+          minimum_tier?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      settings_categories: {
+        Row: {
+          category_key: string
+          display_name: string
+          description: string | null
+          icon: string | null
+          sort_order: number
+          required_role: string
+          created_at: string
+        }
+        Insert: {
+          category_key: string
+          display_name: string
+          description?: string | null
+          icon?: string | null
+          sort_order?: number
+          required_role?: string
+          created_at?: string
+        }
+        Update: {
+          category_key?: string
+          display_name?: string
+          description?: string | null
+          icon?: string | null
+          sort_order?: number
+          required_role?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      settings_items: {
+        Row: {
+          id: string
+          category_key: string
+          setting_key: string
+          display_name: string
+          description: string | null
+          setting_type: string
+          default_value: Json | null
+          options: Json | null
+          required_role: string
+          sort_order: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          category_key: string
+          setting_key: string
+          display_name: string
+          description?: string | null
+          setting_type?: string
+          default_value?: Json | null
+          options?: Json | null
+          required_role?: string
+          sort_order?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          category_key?: string
+          setting_key?: string
+          display_name?: string
+          description?: string | null
+          setting_type?: string
+          default_value?: Json | null
+          options?: Json | null
+          required_role?: string
+          sort_order?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settings_items_category_key_fkey"
+            columns: ["category_key"]
+            isOneToOne: false
+            referencedRelation: "settings_categories"
+            referencedColumns: ["category_key"]
+          }
+        ]
+      }
+      user_settings: {
+        Row: {
+          id: string
+          user_id: string
+          setting_key: string
+          setting_value: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          setting_key: string
+          setting_value?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          setting_key?: string
+          setting_value?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      household_settings: {
+        Row: {
+          id: string
+          household_id: string
+          setting_key: string
+          setting_value: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          setting_key: string
+          setting_value?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          setting_key?: string
+          setting_value?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_settings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      household_feature_settings: {
+        Row: {
+          id: string
+          household_id: string
+          feature_key: string
+          is_enabled: boolean
+          enabled_for_admins: boolean
+          enabled_for_members: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          feature_key: string
+          is_enabled?: boolean
+          enabled_for_admins?: boolean
+          enabled_for_members?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          feature_key?: string
+          is_enabled?: boolean
+          enabled_for_admins?: boolean
+          enabled_for_members?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_feature_settings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_feature_settings_feature_key_fkey"
+            columns: ["feature_key"]
+            isOneToOne: false
+            referencedRelation: "global_feature_control"
+            referencedColumns: ["feature_key"]
+          }
+        ]
+      }
+      user_feature_overrides: {
+        Row: {
+          id: string
+          user_id: string
+          feature_key: string
+          is_enabled: boolean
+          override_reason: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          feature_key: string
+          is_enabled?: boolean
+          override_reason?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          feature_key?: string
+          is_enabled?: boolean
+          override_reason?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_feature_overrides_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_feature_overrides_feature_key_fkey"
+            columns: ["feature_key"]
+            isOneToOne: false
+            referencedRelation: "global_feature_control"
+            referencedColumns: ["feature_key"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_settings_tabs: {
+        Args: {
+          user_id_param: string
+        }
+        Returns: {
+          category_key: string
+          display_name: string
+          description: string
+          icon: string
+          sort_order: number
+        }[]
+      }
     }
     Enums: {
       pricing_plan_interval: "day" | "week" | "month" | "year"
@@ -683,6 +1040,7 @@ export interface Database {
       user_role: "super_admin" | "admin" | "member"
       household_type: "solo_user" | "roommate_household" | "couple_no_kids" | "family_household" | "single_parent_household" | "multi_generational_household"
       family_role: "parent_guardian" | "mom" | "dad" | "child" | "spouse_partner" | "roommate" | "guest" | "caregiver" | "pet"
+      customer_review_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never

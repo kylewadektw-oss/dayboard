@@ -274,6 +274,67 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Signup Process Section */}
+      <section className="relative py-20 bg-gradient-to-br from-purple-50 to-blue-50">
+        <div className="mx-auto max-w-4xl px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Quality-First Community
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              We're building a thoughtful community of households. All new signups are personally reviewed to ensure the best experience for everyone.
+            </p>
+          </div>
+          
+          <div className="bg-white rounded-2xl shadow-xl p-8 border border-purple-100">
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-purple-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">1. Sign Up</h3>
+                <p className="text-sm text-gray-600">
+                  Create your account with Google and provide basic household information.
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Shield className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">2. Review Process</h3>
+                <p className="text-sm text-gray-600">
+                  Our team personally reviews each application to maintain community quality.
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">3. Get Started</h3>
+                <p className="text-sm text-gray-600">
+                  Once approved, you'll receive access to your household command center.
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-8 text-center">
+              <p className="text-sm text-gray-500 mb-4">
+                Have a referral code from an existing household? You'll get priority review!
+              </p>
+              <Link
+                href="/signin"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 transition-all duration-300"
+              >
+                Start Your Application
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

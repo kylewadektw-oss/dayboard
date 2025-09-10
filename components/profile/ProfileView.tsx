@@ -428,6 +428,18 @@ export default function ProfileView() {
                       <p className="text-[11px] text-gray-500 mt-1">Share this code for others to join.</p>
                     </div>
                   )}
+                  {household.referral_code && (
+                    <div className="pt-2">
+                      <p className="text-gray-500 text-xs uppercase tracking-wide mb-1 flex items-center gap-1">Referral Code</p>
+                      <div className="flex items-center gap-2">
+                        <code className="px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-mono border border-green-200">{household.referral_code}</code>
+                        <button type="button" onClick={()=>{ navigator?.clipboard?.writeText?.(household.referral_code); toastHelpers.success('Referral code copied'); }} className="text-xs px-2.5 py-1.5 rounded-md border border-green-300 bg-green-50 hover:bg-green-100 text-green-700 font-medium focus:outline-none focus-visible:ring">
+                          Copy
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-gray-500 mt-1">Share this referral code to invite new customers.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

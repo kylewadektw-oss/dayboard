@@ -30,6 +30,7 @@ const ProjectsWidget = lazy(() => import('@/components/dashboard/ProjectsWidget'
 const QuickActionsHub = lazy(() => import('@/components/dashboard/QuickActionsHub').then(m => ({ default: m.QuickActionsHub })));
 const ProfileStatus = lazy(() => import('@/components/dashboard/ProfileStatus').then(m => ({ default: m.ProfileStatus })));
 const DaycareWidget = lazy(() => import('@/components/dashboard/DaycareWidget').then(m => ({ default: m.DaycareWidget })));
+const HouseholdMapWidget = lazy(() => import('@/components/dashboard/HouseholdMapWidget').then(m => ({ default: m.HouseholdMapWidget })));
 
 // Optimized loading component
 const WidgetSkeleton = () => (
@@ -193,6 +194,13 @@ export default function DashboardPage() {
           <div className="lg:col-span-1">
             <Suspense fallback={<WidgetSkeleton />}>
               <ProjectsWidget />
+            </Suspense>
+          </div>
+
+          {/* Household Location Map */}
+          <div className="lg:col-span-1">
+            <Suspense fallback={<WidgetSkeleton />}>
+              <HouseholdMapWidget />
             </Suspense>
           </div>
 

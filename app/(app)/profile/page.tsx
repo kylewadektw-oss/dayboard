@@ -15,8 +15,8 @@
  */
 
 
-import ProfileView from '@/components/profile/ProfileView';
+import ProfileViewImproved from '@/components/profile/ProfileViewImproved';
 
 export default function ProfilePage() {
-  return <ProfileView />;
+  return <ProfileViewImproved />;
 }

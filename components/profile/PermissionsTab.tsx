@@ -1,7 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
 import { Shield, Save, Check } from 'lucide-react';
-import { PERMISSION_METADATA, ALL_PERMISSIONS } from '@/types/permissions';
 import { Database } from '@/types_db';
 
 // Types replicated for isolation
@@ -17,6 +16,41 @@ interface Props {
   savingPermissions: boolean;
   permissionsFeedback: Feedback | null;
 }
+
+// Define permissions metadata based on actual database columns
+const PERMISSION_METADATA = [
+  // Core Features
+  { key: 'dashboard', title: 'Dashboard', description: 'Access to the main dashboard and overview', category: 'Core Features' },
+  { key: 'profile', title: 'Profile Management', description: 'Access to profile settings and personal information', category: 'Core Features' },
+  
+  // Household Management
+  { key: 'household_management', title: 'Household Management', description: 'Manage household settings, members, and configurations', category: 'Household Management' },
+  { key: 'user_management', title: 'User Management', description: 'Manage other users in the household', category: 'Household Management' },
+  
+  // Planning & Organization
+  { key: 'meals', title: 'Meal Planning', description: 'Access to meal planning and grocery list features', category: 'Planning & Organization' },
+  { key: 'lists', title: 'Lists & Tasks', description: 'Create and manage household lists and tasks', category: 'Planning & Organization' },
+  { key: 'work', title: 'Work & Projects', description: 'Access to work tracking and project management', category: 'Planning & Organization' },
+  { key: 'projects', title: 'Project Management', description: 'Advanced project management and collaboration tools', category: 'Planning & Organization' },
+  
+  // Entertainment & Lifestyle
+  { key: 'sports_ticker', title: 'Sports Ticker', description: 'Access to sports updates and ticker information', category: 'Entertainment & Lifestyle' },
+  
+  // Financial
+  { key: 'financial_tracking', title: 'Financial Tracking', description: 'Track expenses, budgets, and financial goals', category: 'Financial' },
+  { key: 'billing_management', title: 'Billing Management', description: 'Manage subscriptions and billing information', category: 'Financial' },
+  
+  // Advanced Features
+  { key: 'ai_features', title: 'AI Features', description: 'Access to AI-powered recommendations and automation', category: 'Advanced Features' },
+  { key: 'analytics_dashboard', title: 'Analytics Dashboard', description: 'View household analytics and insights', category: 'Advanced Features' },
+  
+  // Administration
+  { key: 'feature_management', title: 'Feature Management', description: 'Control which features are enabled for the household', category: 'Administration' },
+  { key: 'global_feature_control', title: 'Global Feature Control', description: 'Administrative control over global feature settings', category: 'Administration' },
+  { key: 'system_admin', title: 'System Administration', description: 'Full system administrative privileges', category: 'Administration' },
+];
+
+const ALL_PERMISSIONS = PERMISSION_METADATA.map(p => p.key);
 
 export default function PermissionsTab({ permissionsForm, setPermissionsForm, savePermissions, savingPermissions, permissionsFeedback }: Props) {
   const [permissionSearch, setPermissionSearch] = useState('');
@@ -35,15 +69,25 @@ export default function PermissionsTab({ permissionsForm, setPermissionsForm, sa
   }, []);
 
   const permissionMeta = (key: string) => {
-    return PERMISSION_MAP[key] ? { label: PERMISSION_MAP[key].key, description: PERMISSION_MAP[key].description, category: PERMISSION_MAP[key].title } : { label: key, description: '', category: 'Other' };
+    return PERMISSION_MAP[key] ? { 
+      label: PERMISSION_MAP[key].title, 
+      description: PERMISSION_MAP[key].description, 
+      category: PERMISSION_MAP[key].category 
+    } : { 
+      label: key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), 
+      description: '', 
+      category: 'Other' 
+    };
   };
 
   const filteredPermissionKeys = useMemo(() => {
-    return Object.keys(permissionsForm)
-      .filter(k => !['id','user_id','created_at','updated_at'].includes(k))
-      .filter(k => (ALL_PERMISSIONS as string[]).includes(k))
-      .filter(k => !debouncedPermissionSearch || k.toLowerCase().includes(debouncedPermissionSearch.toLowerCase()) || permissionMeta(k).description.toLowerCase().includes(debouncedPermissionSearch.toLowerCase()));
-  }, [permissionsForm, debouncedPermissionSearch]);
+    // Show all available permissions, using the form data or defaults
+    return ALL_PERMISSIONS
+      .filter(k => !debouncedPermissionSearch || 
+        k.toLowerCase().includes(debouncedPermissionSearch.toLowerCase()) || 
+        permissionMeta(k).description.toLowerCase().includes(debouncedPermissionSearch.toLowerCase())
+      );
+  }, [debouncedPermissionSearch]);
 
   const groupedPermissionKeys = useMemo(() => {
     const groups: Record<string, string[]> = {};
