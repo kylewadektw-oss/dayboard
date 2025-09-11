@@ -18,18 +18,47 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { Home, UtensilsCrossed, ClipboardList, Briefcase, FolderOpen, User, Settings, ChevronLeft, ChevronRight, LogOut, FileText, Bug, Activity, UserCheck } from 'lucide-react';
 import Logo from '@/components/icons/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 
-export function AppNavigation() {
+function AppNavigationComponent() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user, profile, signOut } = useAuth();
   const [hasHydrated, setHasHydrated] = useState(false);
   useEffect(() => { setHasHydrated(true); }, []);
+
+  // Memoize navigation items to prevent recreation on each render
+  const navigation = useMemo(() => [
+    { name: 'Dashboard', href: '/dashboard', icon: Home, current: pathname === '/dashboard' },
+    { name: 'Meals', href: '/meals', icon: UtensilsCrossed, current: pathname === '/meals' },
+    { name: 'Lists', href: '/lists', icon: ClipboardList, current: pathname === '/lists' },
+    { name: 'Work', href: '/work', icon: Briefcase, current: pathname === '/work' },
+    { name: 'Projects', href: '/projects', icon: FolderOpen, current: pathname === '/projects' },
+    { name: 'Settings', href: '/settings', icon: Settings, current: pathname === '/settings' },
+  ], [pathname]);
+
+  // Memoize dev navigation items
+  const devNavigation = useMemo(() => [
+    { name: 'Logs Dashboard', href: '/logs-dashboard', icon: FileText, current: pathname === '/logs-dashboard' },
+    { name: 'Customer Review', href: '/customer-review', icon: UserCheck, current: pathname === '/customer-review' },
+  ], [pathname]);
+
+  // Memoize user display name
+  const displayName = useMemo(() => 
+    profile?.preferred_name || profile?.name || user?.email || 'Guest',
+    [profile?.preferred_name, profile?.name, user?.email]
+  );
+
+  // Memoize user role
+  const userRole = useMemo(() => 
+    profile?.role?.replace('_', ' ').toUpperCase() || 'Member',
+    [profile?.role]
+  );
 
   // Add class to body to adjust main content
   useEffect(() => {
@@ -48,31 +77,26 @@ export function AppNavigation() {
     };
   }, [isCollapsed]);
 
-  const handleSignOut = async () => {
+  // Memoize the sign out handler to prevent recreation
+  const handleSignOut = useCallback(async () => {
     try {
       await signOut();
-      // Redirect to landing page after successful sign out
-      window.location.href = '/';
+      // Small delay to ensure Supabase session is fully cleared
+      setTimeout(() => {
+        // Use Next.js router to navigate to landing page
+        // This ensures proper client-side navigation and clears auth state
+        router.push('/');
+        router.refresh(); // Refresh to clear any cached auth state
+      }, 100);
     } catch (error) {
       console.error('Sign out error:', error);
       // Still redirect even if there's an error
-      window.location.href = '/';
+      setTimeout(() => {
+        router.push('/');
+      }, 100);
     }
-  };
-  
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home, current: pathname === '/dashboard' },
-    { name: 'Meals', href: '/meals', icon: UtensilsCrossed, current: pathname === '/meals' },
-    { name: 'Lists', href: '/lists', icon: ClipboardList, current: pathname === '/lists' },
-    { name: 'Work', href: '/work', icon: Briefcase, current: pathname === '/work' },
-    { name: 'Projects', href: '/projects', icon: FolderOpen, current: pathname === '/projects' },
-    { name: 'Settings', href: '/settings', icon: Settings, current: pathname === '/settings' },
-  ];
+  }, [signOut, router]);
 
-  const devNavigation = [
-    { name: 'Logs Dashboard', href: '/logs-dashboard', icon: FileText, current: pathname === '/logs-dashboard' },
-    { name: 'Customer Review', href: '/customer-review', icon: UserCheck, current: pathname === '/customer-review' },
-  ];
   return (
     <>
       {/* Left Sidebar Navigation - Desktop */}
@@ -119,10 +143,10 @@ export function AppNavigation() {
               )}
               <div className="ml-3 min-w-0 flex-1">
                 <p className="text-sm font-medium text-white truncate">
-                  {profile?.preferred_name || profile?.name || user?.email || 'Guest'}
+                  {displayName}
                 </p>
                 <p className="text-xs text-gray-300 truncate">
-                  {profile?.role?.replace('_', ' ').toUpperCase() || 'Member'}
+                  {userRole}
                 </p>
               </div>
             </div>
@@ -272,3 +296,6 @@ export function AppNavigation() {
     </>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const AppNavigation = memo(AppNavigationComponent);

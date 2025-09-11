@@ -16,20 +16,32 @@
 
 
 import { Search, Filter, Clock, Users, Star, Download, Loader2, RefreshCw, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { RecipeWithDetails, RecipeFilters, RECIPE_DIFFICULTIES } from '@/types/recipes';
+import { 
+  RecipeWithDetails, 
+  RecipeFilters, 
+  RECIPE_DIFFICULTIES,
+  RecipeIngredient,
+  RecipeDifficulty,
+  RecipeMealType,
+  RecipeDietType
+} from '@/types/recipes';
 import { fetchRecipesFromAPI, RECIPE_SEARCH_QUERIES, type FetchRecipesResponse } from '@/utils/supabase/recipe-fetcher';
 import Button from '@/components/ui/Button';
+import { Tables } from '@/types_db';
 
 const supabase = createClient();
+
+// Type alias for better readability
+type DatabaseRecipe = Tables<'recipes'>;
 
 const getDifficultyColor = (difficulty: RecipeWithDetails['difficulty']) => {
   const difficultyConfig = RECIPE_DIFFICULTIES.find(d => d.value === difficulty);
   return difficultyConfig?.color || 'text-gray-600 bg-gray-100';
 };
 
-export function RecipeLibrary() {
+function RecipeLibraryComponent() {
   const [recipes, setRecipes] = useState<RecipeWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,12 +50,8 @@ export function RecipeLibrary() {
   const [isFetching, setIsFetching] = useState(false);
   const [fetchResults, setFetchResults] = useState<FetchRecipesResponse | null>(null);
 
-  useEffect(() => {
-    loadUserFavorites();
-    loadRecipesFromDatabase();
-  }, [activeFilter, searchTerm]);
-
-  const loadUserFavorites = async () => {
+  // Memoize the loadUserFavorites function
+  const loadUserFavorites = useCallback(async () => {
     try {
       // Note: This would require a user_recipe_favorites table
       // For now, we'll use localStorage as a fallback
@@ -54,27 +62,27 @@ export function RecipeLibrary() {
     } catch (error) {
       console.error('Error loading user favorites:', error);
     }
-  };
+  }, []);
 
   const loadRecipesFromDatabase = async () => {
     setLoading(true);
     
     try {
-      // Build query for Supabase
-      let query = (supabase as any)
+      // Build query for Supabase with proper TypeScript types
+      let query = supabase
         .from('recipes')
         .select('*')
         .order('created_at', { ascending: false });
 
       // Apply search filter
       if (searchTerm && searchTerm.trim()) {
-        query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,tags.cs.{${searchTerm}}`);
+        query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,dietary_tags.cs.{${searchTerm}}`);
       }
 
       // Apply category filter
       if (activeFilter && activeFilter !== 'All') {
         const filterLower = activeFilter.toLowerCase();
-        query = query.contains('meal_type', [filterLower]);
+        query = query.contains('dietary_tags', [filterLower]);
       }
 
       const { data: recipesData, error } = await query.limit(50);
@@ -87,15 +95,26 @@ export function RecipeLibrary() {
       }
 
       // Transform database data to match our interface
-      const transformedRecipes: RecipeWithDetails[] = (recipesData || []).map((recipe: any) => ({
-        ...recipe,
+      const transformedRecipes: RecipeWithDetails[] = (recipesData || []).map((recipe) => ({
+        id: recipe.id,
+        title: recipe.title,
+        // Convert null to undefined for TypeScript compatibility
+        description: recipe.description || undefined,
+        ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients as unknown as RecipeIngredient[] : [],
+        instructions: Array.isArray(recipe.instructions) ? recipe.instructions as unknown as string[] : [],
         // Map database fields to component expected fields
         prep_time_minutes: recipe.prep_time || 15,
         cook_time_minutes: recipe.cook_time || 15,
         total_time_minutes: (recipe.prep_time || 15) + (recipe.cook_time || 15),
+        servings: recipe.servings || 2,
+        difficulty: (recipe.difficulty as RecipeDifficulty) || 'medium',
         image_emoji: recipe.image_url ? '🍽️' : '🥘',
-        meal_type: recipe.dietary_tags || ['dinner'],
-        diet_types: recipe.dietary_tags || [],
+        meal_type: (recipe.dietary_tags || ['dinner']).filter(tag => 
+          ['breakfast', 'lunch', 'dinner', 'snack', 'dessert', 'appetizer', 'beverage'].includes(tag)
+        ) as RecipeMealType[],
+        diet_types: (recipe.dietary_tags || []).filter(tag => 
+          ['none', 'vegetarian', 'vegan', 'gluten_free', 'dairy_free', 'keto', 'paleo', 'low_carb', 'mediterranean'].includes(tag)
+        ) as RecipeDietType[],
         tags: recipe.dietary_tags || [],
         rating: 4.5,
         rating_count: 10,
@@ -111,8 +130,12 @@ export function RecipeLibrary() {
         is_public: true,
         is_verified: false,
         created_by: recipe.user_id || 'unknown',
-        created_at: recipe.created_at || new Date().toISOString(),
-        updated_at: recipe.updated_at || new Date().toISOString()
+        household_id: recipe.household_id || 'unknown',
+        created_at: recipe.created_at,
+        updated_at: recipe.updated_at,
+        // Handle nullable fields
+        source_url: recipe.source_url || undefined,
+        image_url: recipe.image_url || undefined
       }));
 
       setRecipes(transformedRecipes);
@@ -697,3 +720,6 @@ export function RecipeLibrary() {
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const RecipeLibrary = memo(RecipeLibraryComponent);

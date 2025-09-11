@@ -16,6 +16,7 @@
 
 
 import { Calendar, Clock, MapPin } from 'lucide-react';
+import { memo, useMemo } from 'react';
 
 interface CalendarEvent {
   id: string;
@@ -55,6 +56,7 @@ const nextDaysEvents = [
   { day: 'Weekend', count: 6 }
 ];
 
+// Memoize the color function to avoid recreating it on each render
 const getEventColor = (type: CalendarEvent['type']) => {
   switch (type) {
     case 'work':
@@ -70,7 +72,16 @@ const getEventColor = (type: CalendarEvent['type']) => {
   }
 };
 
-export function CalendarWidget() {
+function CalendarWidgetComponent() {
+  // Memoize processed events data
+  const eventColorMapping = useMemo(() => 
+    mockEvents.map(event => ({
+      ...event,
+      colorClass: getEventColor(event.type)
+    })),
+    [] // Empty dependency array since mockEvents is static
+  );
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 h-fit">
       <div className="flex items-center justify-between mb-3">
@@ -80,8 +91,8 @@ export function CalendarWidget() {
 
       {/* Today's Events */}
       <div className="space-y-2 mb-4">
-        {mockEvents.map((event) => (
-          <div key={event.id} className={`p-2 rounded-lg border ${getEventColor(event.type)}`}>
+        {eventColorMapping.map((event) => (
+          <div key={event.id} className={`p-2 rounded-lg border ${event.colorClass}`}>
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate">{event.title}</div>
@@ -121,3 +132,6 @@ export function CalendarWidget() {
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const CalendarWidget = memo(CalendarWidgetComponent);

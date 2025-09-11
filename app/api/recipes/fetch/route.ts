@@ -19,6 +19,14 @@ import { NextResponse } from 'next/server';
 
 const SPOONACULAR_API_KEY = process.env.SPOONACULAR_API_KEY;
 
+export async function GET() {
+  return NextResponse.json({
+    message: 'Recipe fetch API is working',
+    hasApiKey: !!SPOONACULAR_API_KEY,
+    timestamp: new Date().toISOString()
+  });
+}
+
 export async function POST(request: Request) {
   try {
     if (!SPOONACULAR_API_KEY) {
@@ -111,12 +119,12 @@ export async function POST(request: Request) {
     for (const recipe of data.results) {
       try {
         // Check if recipe already exists (by title and source URL)
-        const { data: existingRecipe } = await (supabase as any)
+        const { data: existingRecipe } = await supabase
           .from('recipes')
           .select('id')
           .eq('title', recipe.title)
           .eq('source_url', recipe.sourceUrl)
-          .single();
+          .maybeSingle();
 
         if (existingRecipe) {
           skippedCount++;
@@ -144,7 +152,7 @@ export async function POST(request: Request) {
         };
 
         // Insert into recipes table
-        const { error: insertError } = await (supabase as any)
+        const { error: insertError } = await supabase
           .from('recipes')
           .insert(transformedRecipe);
 

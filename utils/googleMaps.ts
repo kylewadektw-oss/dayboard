@@ -107,11 +107,12 @@ class GoogleMapsLoader {
         script.async = true;
         script.defer = true;
         
-        // Build URL with all required libraries
+        // Build URL with all required libraries and proper async loading
         const libraries = Array.from(this.requiredLibraries).join(',');
         const params = new URLSearchParams({
           key: apiKey,
           callback: callbackName,
+          loading: 'async',  // Explicitly set loading=async for performance
           ...(libraries && { libraries })
         });
         

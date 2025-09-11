@@ -1007,6 +1007,81 @@ export interface Database {
           }
         ]
       }
+      recipes: {
+        Row: {
+          id: string
+          user_id: string | null
+          household_id: string | null
+          title: string
+          description: string | null
+          ingredients: Json | null
+          instructions: Json | null
+          prep_time: number | null
+          cook_time: number | null
+          servings: number | null
+          difficulty: string | null
+          cuisine: string | null
+          dietary_tags: string[] | null
+          source_url: string | null
+          image_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          household_id?: string | null
+          title: string
+          description?: string | null
+          ingredients?: Json | null
+          instructions?: Json | null
+          prep_time?: number | null
+          cook_time?: number | null
+          servings?: number | null
+          difficulty?: string | null
+          cuisine?: string | null
+          dietary_tags?: string[] | null
+          source_url?: string | null
+          image_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          household_id?: string | null
+          title?: string
+          description?: string | null
+          ingredients?: Json | null
+          instructions?: Json | null
+          prep_time?: number | null
+          cook_time?: number | null
+          servings?: number | null
+          difficulty?: string | null
+          cuisine?: string | null
+          dietary_tags?: string[] | null
+          source_url?: string | null
+          image_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipes_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

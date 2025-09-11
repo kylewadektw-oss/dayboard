@@ -16,6 +16,7 @@
 
 
 import { Plus, Calendar, Clock, ChefHat } from 'lucide-react';
+import { memo, useMemo } from 'react';
 
 interface MealPlan {
   id: string;
@@ -49,6 +50,7 @@ const mockMeals: MealPlan[] = [
   }
 ];
 
+// Memoize color functions to avoid recreating on each render
 const getDifficultyColor = (difficulty: MealPlan['difficulty']) => {
   switch (difficulty) {
     case 'easy':
@@ -75,9 +77,12 @@ const getStatusColor = (status: MealPlan['status']) => {
   }
 };
 
-export function MealsWidget() {
-  const todaysDinner = mockMeals.find(meal => meal.meal === 'dinner');
-  const tomorrowsBreakfast = mockMeals.find(meal => meal.meal === 'breakfast');
+function MealsWidgetComponent() {
+  // Memoize meal data to avoid recalculating on each render
+  const { todaysDinner, tomorrowsBreakfast } = useMemo(() => ({
+    todaysDinner: mockMeals.find(meal => meal.meal === 'dinner'),
+    tomorrowsBreakfast: mockMeals.find(meal => meal.meal === 'breakfast')
+  }), []); // Empty dependency since mockMeals is static
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 h-fit">
@@ -152,3 +157,6 @@ export function MealsWidget() {
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const MealsWidget = memo(MealsWidgetComponent);

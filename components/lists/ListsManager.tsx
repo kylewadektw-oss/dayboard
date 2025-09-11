@@ -17,7 +17,7 @@
 
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, memo } from 'react';
 import { Plus, ClipboardList, Check, X, ShoppingCart } from 'lucide-react';
 
 interface ListItem {
@@ -80,11 +80,13 @@ export function ListsManager() {
   const [newItemText, setNewItemText] = useState('');
   const [activeList, setActiveList] = useState(lists[0].id);
 
+  // Memoize current list to avoid recalculation
   const currentList = useMemo(() => 
     lists.find(list => list.id === activeList), 
     [lists, activeList]
   );
 
+  // Memoize toggle function with useCallback to prevent recreation
   const toggleItem = useCallback((listId: string, itemId: string) => {
     setLists(prev => prev.map(list => 
       list.id === listId 
@@ -98,6 +100,7 @@ export function ListsManager() {
     ));
   }, []);
 
+  // Memoize add function
   const addItem = useCallback((listId: string) => {
     if (!newItemText.trim()) return;
 
@@ -116,6 +119,7 @@ export function ListsManager() {
     setNewItemText('');
   }, [newItemText]);
 
+  // Memoize remove function
   const removeItem = useCallback((listId: string, itemId: string) => {
     setLists(prev => prev.map(list =>
       list.id === listId
@@ -123,6 +127,26 @@ export function ListsManager() {
         : list
     ));
   }, []);
+
+  // Memoize completion percentage calculation
+  const completionData = useMemo(() => {
+    if (!currentList || currentList.items.length === 0) {
+      return { completedCount: 0, totalCount: 0, percentage: 0 };
+    }
+    
+    const completedCount = currentList.items.filter(item => item.completed).length;
+    const totalCount = currentList.items.length;
+    const percentage = Math.round((completedCount / totalCount) * 100);
+    
+    return { completedCount, totalCount, percentage };
+  }, [currentList]);
+
+  // Memoize the Enter key handler
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && currentList) {
+      addItem(currentList.id);
+    }
+  }, [addItem, currentList]);
 
   return (
     <div>
@@ -197,7 +221,7 @@ export function ListsManager() {
               type="text"
               value={newItemText}
               onChange={(e) => setNewItemText(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && addItem(currentList.id)}
+              onKeyPress={handleKeyPress}
               placeholder="Add new item..."
               className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
@@ -262,17 +286,17 @@ export function ListsManager() {
           <div className="mt-6 pt-4 border-t border-gray-200">
             <div className="flex justify-between items-center text-sm text-gray-500">
               <span>
-                {currentList.items.filter(item => item.completed).length} of {currentList.items.length} completed
+                {completionData.completedCount} of {completionData.totalCount} completed
               </span>
               <span>
-                {Math.round((currentList.items.filter(item => item.completed).length / currentList.items.length) * 100) || 0}% done
+                {completionData.percentage}% done
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
               <div
                 className={`h-2 rounded-full transition-all ${currentList.color}`}
                 style={{
-                  width: `${(currentList.items.filter(item => item.completed).length / currentList.items.length) * 100 || 0}%`
+                  width: `${completionData.percentage}%`
                 }}
               />
             </div>

@@ -14,9 +14,34 @@
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
+/*
+ * 🗺️ GOOGLE MAPS INTEGRATION NOTES:
+ * 
+ * IMPORTANT: Google Maps styling behavior
+ * - When using mapId: Styles MUST be configured via Google Cloud Console
+ * - When NOT using mapId: Styles can be defined in JavaScript code
+ * - You CANNOT mix both approaches (mapId + local styles = API error)
+ * 
+ * CONFIGURATION OPTIONS:
+ * 1. Use mapId (recommended for advanced features):
+ *    - Set USE_MAP_ID = true
+ *    - Configure styles at: https://console.cloud.google.com/google/maps-apis/studio/maps
+ *    - Supports AdvancedMarkerElement and other modern features
+ * 
+ * 2. Use local styles (simpler setup):
+ *    - Set USE_MAP_ID = false  
+ *    - Define styles in JavaScript (see fallback map example)
+ *    - Limited to legacy marker features
+ * 
+ * ERROR RESOLUTION:
+ * If you see "A Map's styles property cannot be set when a mapId is present":
+ * - Either remove mapId and use local styles
+ * - Or remove local styles and configure via Cloud Console
+ */
+
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { MapPin, Home, Navigation, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
@@ -46,7 +71,7 @@ declare global {
   }
 }
 
-export function HouseholdMapWidget({ className = '' }: MapWidgetProps) {
+function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
   const { profile } = useAuth();
   const supabase = createClient();
   const mapRef = useRef<HTMLDivElement>(null);
@@ -155,26 +180,38 @@ export function HouseholdMapWidget({ className = '' }: MapWidgetProps) {
   const initializeMap = (coordinates: { lat: number; lng: number }) => {
     if (!mapRef.current || !window.google) return;
 
-    const map = new window.google.maps.Map(mapRef.current, {
+    // Choose between mapId (cloud-controlled styles) or local styles
+    // Set USE_MAP_ID to false if you want to use local styles instead
+    const USE_MAP_ID = true;
+    
+    const mapConfig: any = {
       center: coordinates,
       zoom: 15,
-      styles: [
-        {
-          featureType: 'poi',
-          elementType: 'labels',
-          stylers: [{ visibility: 'off' }]
-        }
-      ],
       disableDefaultUI: true,
       zoomControl: true,
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
-      mapId: 'DEMO_MAP_ID' // Required for AdvancedMarkerElement
-    });
+    };
 
-    // Use AdvancedMarkerElement instead of deprecated Marker
-    if (window.google.maps.marker && window.google.maps.marker.AdvancedMarkerElement) {
+    if (USE_MAP_ID) {
+      // Use mapId for advanced marker features (styles managed via Google Cloud Console)
+      mapConfig.mapId = 'DEMO_MAP_ID';
+    } else {
+      // Use local styles (no mapId required, but limited marker options)
+      mapConfig.styles = [
+        {
+          featureType: 'poi',
+          elementType: 'labels',
+          stylers: [{ visibility: 'off' }]
+        }
+      ];
+    }
+    
+    const map = new window.google.maps.Map(mapRef.current, mapConfig);
+
+    // Use AdvancedMarkerElement if mapId is enabled (only works with mapId)
+    if (USE_MAP_ID && window.google.maps.marker && window.google.maps.marker.AdvancedMarkerElement) {
       // Create a custom pin element
       const pinElement = new window.google.maps.marker.PinElement({
         background: '#10B981',
@@ -190,7 +227,7 @@ export function HouseholdMapWidget({ className = '' }: MapWidgetProps) {
         title: household?.name || 'Home'
       });
     } else {
-      // Fallback to regular marker if AdvancedMarkerElement is not available
+      // Fallback to regular marker (works with or without mapId)
       const homeIcon = {
         path: window.google.maps.SymbolPath.CIRCLE,
         fillColor: '#10B981',
@@ -380,3 +417,6 @@ export function HouseholdMapWidget({ className = '' }: MapWidgetProps) {
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const HouseholdMapWidget = memo(HouseholdMapWidgetComponent);

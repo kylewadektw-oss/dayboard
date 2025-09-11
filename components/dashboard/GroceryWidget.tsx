@@ -16,6 +16,7 @@
 
 
 import { ShoppingCart, Plus, Eye, AlertTriangle } from 'lucide-react';
+import { memo, useMemo } from 'react';
 
 interface GroceryItem {
   id: string;
@@ -36,12 +37,7 @@ const mockGroceryItems: GroceryItem[] = [
   { id: '7', name: 'Ground Turkey', category: 'Meat', urgent: false, addedBy: 'Kyle' }
 ];
 
-const pantryStats = {
-  inPantry: 23,
-  needed: mockGroceryItems.length,
-  urgent: mockGroceryItems.filter(item => item.urgent).length
-};
-
+// Memoize category icon function to avoid recreating it on each render
 const getCategoryIcon = (category: string) => {
   switch (category.toLowerCase()) {
     case 'produce':
@@ -57,9 +53,25 @@ const getCategoryIcon = (category: string) => {
   }
 };
 
-export function GroceryWidget() {
-  const topItems = mockGroceryItems.slice(0, 5);
-  const remainingCount = Math.max(0, mockGroceryItems.length - 5);
+function GroceryWidgetComponent() {
+  // Memoize all calculated values
+  const memoizedData = useMemo(() => {
+    const urgent = mockGroceryItems.filter(item => item.urgent).length;
+    const topItems = mockGroceryItems.slice(0, 5);
+    const remainingCount = Math.max(0, mockGroceryItems.length - 5);
+    
+    return {
+      pantryStats: {
+        inPantry: 23,
+        needed: mockGroceryItems.length,
+        urgent
+      },
+      topItems,
+      remainingCount
+    };
+  }, []); // Empty dependency since mockGroceryItems is static
+
+  const { pantryStats, topItems, remainingCount } = memoizedData;
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 h-fit">
@@ -154,3 +166,6 @@ export function GroceryWidget() {
     </div>
   );
 }
+
+// Memoize the component to prevent unnecessary re-renders
+export const GroceryWidget = memo(GroceryWidgetComponent);

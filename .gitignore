@@ -40,6 +40,7 @@ yarn-error.log*
 
 # Internal strategic & planning docs (keep private / local only)
 ROADMAP.md
+PROJECT_ROADMAP.md
 MarketResearch.md
 TODO.md
 NOTES.md
