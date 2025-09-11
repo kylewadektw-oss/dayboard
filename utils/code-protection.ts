@@ -112,10 +112,11 @@ export function validateDomain() {
   
   const authorizedDomains = [
     'localhost',
+    'localhost:3000',
     '127.0.0.1',
-    'dayboard.app',
-    'app.dayboard.com',
-    'your-domain.com' // Replace with your actual domain
+    '127.0.0.1:3000',
+    'bentlolabs.com',
+    'www.bentlolabs.com',
   ];
   
   // Additional patterns for development/preview domains
