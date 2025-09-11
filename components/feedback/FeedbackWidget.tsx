@@ -62,7 +62,7 @@ export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) 
   const supabase = createClient();
 
   // Always show the widget for testing - we'll handle auth in the form submission
-  console.log('FeedbackWidget rendering, profile:', !!profile);
+  // console.log('FeedbackWidget rendering, profile:', !!profile); // Removed to prevent render loops
 
   // Get browser and page info
   const getBrowserInfo = (): BrowserInfo => {

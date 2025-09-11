@@ -553,7 +553,7 @@ export default function ProfileViewImproved() {
             {!overviewEditMode && (
               <button 
                 onClick={() => {
-                  console.log('Profile edit button clicked, enabling inline editing mode');
+                  // console.log('Profile edit button clicked, enabling inline editing mode'); // Removed to prevent render loops
                   setOverviewEditMode(true);
                 }} 
                 className="absolute top-6 right-6 px-4 py-2 rounded-lg bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 text-sm font-semibold hover:from-gray-200 hover:to-gray-300 shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 border-0"

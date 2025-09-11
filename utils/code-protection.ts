@@ -105,6 +105,11 @@ export function initCodeProtection() {
 export function validateDomain() {
   if (typeof window === 'undefined') return true; // Server-side skip
   
+  // Always allow development environments
+  if (process.env.NODE_ENV !== 'production') {
+    return true;
+  }
+  
   const authorizedDomains = [
     'localhost',
     '127.0.0.1',
@@ -121,6 +126,13 @@ export function validateDomain() {
   ];
   
   const currentDomain = window.location.hostname;
+  
+  // Always allow localhost and development environments
+  if (currentDomain.includes('localhost') || 
+      currentDomain.includes('127.0.0.1') || 
+      process.env.NODE_ENV !== 'production') {
+    return true;
+  }
   
   // Check authorized domains
   const isAuthorized = authorizedDomains.some(domain => 

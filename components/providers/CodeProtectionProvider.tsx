@@ -31,37 +31,46 @@ export default function CodeProtection() {
     // Initialize all protection measures
     initAllProtections();
     
-    // Add additional runtime protection
-    const originalLog = console.log;
-    console.log = (...args) => {
-      // Add ownership watermark to console logs
-      if (args.length > 0 && typeof args[0] === 'string') {
-        originalLog('🛡️ Dayboard Proprietary |', ...args);
-      } else {
-        originalLog(...args);
-      }
-    };
+    // Temporarily disable console overrides during development to prevent infinite loops
+    // Only override console in production to avoid development issues
+    // if (process.env.NODE_ENV !== 'development') {
+    //   // Add additional runtime protection
+    //   const originalLog = console.log;
+    //   console.log = (...args) => {
+    //     // Add ownership watermark to console logs
+    //     if (args.length > 0 && typeof args[0] === 'string') {
+    //       originalLog('🛡️ Dayboard Proprietary |', ...args);
+    //     } else {
+    //       originalLog(...args);
+    //     }
+    //   };
+    //   
+    //   return () => {
+    //     console.log = originalLog;
+    //   };
+    // }
     
-    // Detect automated scraping attempts
-    let rapidRequests = 0;
-    const requestTracker = () => {
-      rapidRequests++;
-      if (rapidRequests > 50) {
-        console.warn('🛡️ Potential automated scraping detected');
-        // Could implement rate limiting or other protections here
-      }
-      setTimeout(() => { rapidRequests = Math.max(0, rapidRequests - 1); }, 1000);
-    };
-    
-    // Track page interactions
-    document.addEventListener('click', requestTracker);
-    document.addEventListener('keydown', requestTracker);
-    
-    return () => {
-      console.log = originalLog;
-      document.removeEventListener('click', requestTracker);
-      document.removeEventListener('keydown', requestTracker);
-    };
+    // Detect automated scraping attempts (only in production)
+    if (process.env.NODE_ENV !== 'development') {
+      let rapidRequests = 0;
+      const requestTracker = () => {
+        rapidRequests++;
+        if (rapidRequests > 50) {
+          console.warn('🛡️ Potential automated scraping detected');
+          // Could implement rate limiting or other protections here
+        }
+        setTimeout(() => { rapidRequests = Math.max(0, rapidRequests - 1); }, 1000);
+      };
+      
+      // Track page interactions
+      document.addEventListener('click', requestTracker);
+      document.addEventListener('keydown', requestTracker);
+      
+      return () => {
+        document.removeEventListener('click', requestTracker);
+        document.removeEventListener('keydown', requestTracker);
+      };
+    }
   }, []);
 
   return null; // This component doesn't render anything
