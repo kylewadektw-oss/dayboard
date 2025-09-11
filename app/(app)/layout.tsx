@@ -18,6 +18,7 @@
 import { PropsWithChildren, Suspense } from 'react';
 import { AppNavigation } from '@/components/layout/AppNavigation';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { SettingsProvider } from '@/contexts/SettingsContext';
 import FeedbackWidget from '@/components/feedback/FeedbackWidget';
 
 // Layout loading component
@@ -38,17 +39,19 @@ const LayoutSkeleton = () => (
 export default function AppLayout({ children }: PropsWithChildren) {
   return (
     <AuthProvider>
-      <Suspense fallback={<LayoutSkeleton />}>
-        <AppNavigation />
-        <div className="min-h-screen bg-gray-50">
-          {/* Main content with responsive margin - CSS classes handle sidebar states */}
-          <main className="pt-16 pb-20 md:pt-0 md:pb-0 md:ml-64 transition-all duration-300">
-            {children}
-          </main>
-          {/* Feedback Widget - appears on all app pages */}
-          <FeedbackWidget />
-        </div>
-      </Suspense>
+      <SettingsProvider>
+        <Suspense fallback={<LayoutSkeleton />}>
+          <AppNavigation />
+          <div className="min-h-screen bg-gray-50">
+            {/* Main content with responsive margin - CSS classes handle sidebar states */}
+            <main className="pt-16 pb-20 md:pt-0 md:pb-0 md:ml-64 transition-all duration-300">
+              {children}
+            </main>
+            {/* Feedback Widget - appears on all app pages */}
+            <FeedbackWidget />
+          </div>
+        </Suspense>
+      </SettingsProvider>
     </AuthProvider>
   );
 }

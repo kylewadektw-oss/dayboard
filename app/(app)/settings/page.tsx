@@ -1,7 +1,7 @@
 'use client';
 
-import EnhancedSettingsPage from '@/components/settings/EnhancedSettingsPage';
+import ComprehensiveSettingsDashboard from '@/components/settings/ComprehensiveSettingsDashboard';
 
 export default function SettingsPage() {
-  return <EnhancedSettingsPage />;
+  return <ComprehensiveSettingsDashboard />;
 }
