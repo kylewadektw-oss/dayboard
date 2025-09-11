@@ -104,16 +104,8 @@ function WeatherWidgetComponent({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [lastRequestTime, setLastRequestTime] = useState<number>(0);
 
   const fetchWeather = useCallback(async () => {
-    // Prevent requests more frequent than every 30 seconds
-    const now = Date.now();
-    if (now - lastRequestTime < 30000) {
-      return;
-    }
-    setLastRequestTime(now);
-
     try {
       setLoading(true);
       setError(null);
@@ -154,21 +146,15 @@ function WeatherWidgetComponent({
     } finally {
       setLoading(false);
     }
-  }, [lat, lon, location, lastRequestTime]);
+  }, [lat, lon, location]);
 
   useEffect(() => {
     fetchWeather();
     
-    // Only set up interval if there's no error
-    // Refresh weather every 10 minutes, but with longer intervals if there are errors
-    const interval = setInterval(() => {
-      if (!error) {
-        fetchWeather();
-      }
-    }, error ? 30 * 60 * 1000 : 10 * 60 * 1000); // 30 min if error, 10 min if no error
-    
+    // Refresh weather every 10 minutes
+    const interval = setInterval(fetchWeather, 10 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [fetchWeather, error]);
+  }, [fetchWeather]);
 
   if (loading && !weather) {
     return (

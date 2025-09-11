@@ -18,15 +18,17 @@
 'use client';
 
 import { useState } from 'react';
-import { Heart, Calendar, BookOpen, Zap, FlaskConical, ShoppingCart } from 'lucide-react';
+import { Heart, Calendar, BookOpen, Zap, FlaskConical, ShoppingCart, Martini } from 'lucide-react';
 import { MealFavorites } from './MealFavorites';
 import { WeeklyMealPlan } from './WeeklyMealPlan';
 import { RecipeLibrary } from './RecipeLibrary';
+import { Cocktails } from './Cocktails';
 
 const tabs = [
   { id: 'favorites', name: 'Favorites', icon: Heart, color: 'text-pink-600' },
   { id: 'plan', name: 'This Week', icon: Calendar, color: 'text-blue-600' },
   { id: 'library', name: 'Recipe Library', icon: BookOpen, color: 'text-purple-600' },
+  { id: 'cocktails', name: 'Cocktails', icon: Martini, color: 'text-indigo-600' },
   { id: 'quick', name: 'Quick Meals', icon: Zap, color: 'text-orange-600' },
   { id: 'try', name: 'To-Try', icon: FlaskConical, color: 'text-green-600' },
   { id: 'grocery', name: 'Grocery Builder', icon: ShoppingCart, color: 'text-red-600' },
@@ -65,6 +67,7 @@ export function MealTabs() {
         {activeTab === 'favorites' && <MealFavorites />}
         {activeTab === 'plan' && <WeeklyMealPlan />}
         {activeTab === 'library' && <RecipeLibrary />}
+        {activeTab === 'cocktails' && <Cocktails />}
         {activeTab === 'quick' && <div>Quick Meals - Coming Soon</div>}
         {activeTab === 'try' && <div>To-Try List - Coming Soon</div>}
         {activeTab === 'grocery' && <div>Grocery Builder - Coming Soon</div>}

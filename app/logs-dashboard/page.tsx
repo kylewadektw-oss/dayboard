@@ -639,9 +639,22 @@ User Agent: ${log.userAgent || 'N/A'}
       }
       
       // Get logs from database with time filtering (use maxLogs instead of hardcoded 300)
-      allLogs = await logger.getAllLogsIncludingDatabase(maxLogs * 2, timeRangeMs); // Get 2x to allow for filtering
-      if (process.env.NODE_ENV === 'development') {
-        logger.debug(`📊 Dashboard refresh - Retrieved ${allLogs.length} logs from database`, 'LogsDashboard');
+      // Add timeout protection
+      const timeoutPromise = new Promise<LogEntry[]>((_, reject) => 
+        setTimeout(() => reject(new Error('Logs refresh timeout')), 12000) // 12 second timeout
+      );
+      
+      const logsPromise = logger.getAllLogsIncludingDatabase(maxLogs * 2, timeRangeMs); // Get 2x to allow for filtering
+      
+      try {
+        allLogs = await Promise.race([logsPromise, timeoutPromise]);
+        if (process.env.NODE_ENV === 'development') {
+          logger.debug(`📊 Dashboard refresh - Retrieved ${allLogs.length} logs from database`, 'LogsDashboard');
+        }
+      } catch (dbError) {
+        console.warn('Database query failed or timed out, falling back to memory logs:', dbError);
+        // Fallback to memory logs only
+        allLogs = logger.getAllLogs().slice(0, maxLogs);
       }
     } catch (error) {
       logger.error('❌ Failed to load logs:', 'LogsDashboard', { error: error instanceof Error ? error.message : String(error) });

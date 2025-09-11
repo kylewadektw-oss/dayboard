@@ -70,11 +70,19 @@ export function GoogleAddressInput({
   useEffect(() => {
     const initializeGooglePlaces = async () => {
       try {
+        // Check if Google Maps API key is available
+        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+        if (!apiKey) {
+          console.log('Google Maps API key not configured, using fallback address input');
+          setError('Google Maps API not configured for address autocomplete');
+          return;
+        }
+
         await loadGoogleMaps([...GOOGLE_MAPS_LIBRARIES.PLACES]);
         setIsLoaded(true);
       } catch (error) {
-        console.error('Failed to load Google Places API:', error);
-        setError('Failed to load Google Places API');
+        console.log('Failed to load Google Places API:', error);
+        setError('Address autocomplete not available');
       }
     };
 
@@ -86,10 +94,23 @@ export function GoogleAddressInput({
     if (!isLoaded || !inputRef.current || autocompleteRef.current || disabled) return;
 
     try {
+      // Double-check that Google API is actually available
+      if (!window.google?.maps?.places?.Autocomplete) {
+        console.log('Google Places API not fully loaded, skipping autocomplete initialization');
+        setError('Address autocomplete not available');
+        return;
+      }
+
       const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
         types: ['address'],
         componentRestrictions: { country: 'us' }, // Restrict to US addresses
         fields: ['address_components', 'formatted_address', 'geometry']
+      });
+
+      // Ensure dropdown suggestions are fully visible
+      autocomplete.setOptions({
+        bounds: undefined, // Don't restrict to viewport bounds
+        strictBounds: false, // Allow suggestions outside bounds
       });
 
       autocomplete.addListener('place_changed', () => {
@@ -107,9 +128,12 @@ export function GoogleAddressInput({
       });
 
       autocompleteRef.current = autocomplete;
+      
+      // Clear any previous errors when autocomplete is successfully initialized
+      setError(null);
     } catch (err) {
-      console.error('Error initializing Google Places Autocomplete:', err);
-      setError('Failed to initialize address autocomplete');
+      console.log('Error initializing Google Places Autocomplete:', err);
+      setError('Address autocomplete not available');
     }
   }, [isLoaded, disabled, onAddressSelect]);
 
@@ -161,6 +185,22 @@ export function GoogleAddressInput({
     setError(null);
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // If Google Places API isn't available, allow Enter key to submit the manually typed address
+    if (e.key === 'Enter' && !isLoaded) {
+      e.preventDefault();
+      const manualAddress: AddressData = {
+        address: inputValue,
+        city: '',
+        state: '',
+        zip: '',
+        country: 'US',
+        formattedAddress: inputValue
+      };
+      onAddressSelect(manualAddress);
+    }
+  };
+
   return (
     <div className="relative">
       <div className="relative">
@@ -176,38 +216,80 @@ export function GoogleAddressInput({
           type="text"
           value={inputValue}
           onChange={handleInputChange}
-          placeholder={isLoaded ? placeholder : 'Loading address search...'}
-          disabled={disabled || !isLoaded}
+          onKeyPress={handleKeyPress}
+          placeholder={isLoaded ? placeholder : error ? 'Enter address manually' : 'Loading address search...'}
+          disabled={disabled}
           className={`
             w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md 
             focus:ring-2 focus:ring-blue-500 focus:border-blue-500
             disabled:bg-gray-100 disabled:cursor-not-allowed
-            ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}
+            ${error ? 'border-yellow-300 focus:ring-yellow-500 focus:border-yellow-500' : ''}
             ${className}
           `}
+          style={{
+            position: 'relative',
+            zIndex: 1
+          }}
         />
-        {error && (
+        {error && !error.includes('not configured') && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <AlertCircle className="h-5 w-5 text-red-400" />
+            <AlertCircle className="h-5 w-5 text-yellow-400" />
           </div>
         )}
       </div>
       
-      {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+      {error && error.includes('not configured') && (
+        <p className="mt-1 text-sm text-yellow-600">
+          Address autocomplete not available. Type your address and press Enter.
+        </p>
+      )}
+      
+      {error && !error.includes('not configured') && (
+        <p className="mt-1 text-sm text-yellow-600">{error}</p>
       )}
       
       {!isLoaded && !error && (
         <p className="mt-1 text-sm text-gray-500">
-          Loading Google Places API...
+          Loading address autocomplete...
         </p>
       )}
       
       {isLoaded && !error && (
-        <p className="mt-1 text-sm text-gray-500">
-          Start typing to search for addresses
+        <p className="mt-1 text-sm text-green-600">
+          ✓ Address search ready - start typing to see suggestions
         </p>
       )}
+      
+      <style jsx>{`
+        /* Ensure Google Places dropdown appears above other elements */
+        :global(.pac-container) {
+          z-index: 9999 !important;
+          border: 1px solid #d1d5db !important;
+          border-radius: 0.375rem !important;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+          margin-top: 4px !important;
+        }
+        
+        :global(.pac-item) {
+          padding: 8px 12px !important;
+          border-bottom: 1px solid #f3f4f6 !important;
+          font-size: 14px !important;
+          cursor: pointer !important;
+        }
+        
+        :global(.pac-item:hover) {
+          background-color: #f3f4f6 !important;
+        }
+        
+        :global(.pac-item-selected) {
+          background-color: #dbeafe !important;
+        }
+        
+        :global(.pac-matched) {
+          font-weight: 600 !important;
+          color: #1d4ed8 !important;
+        }
+      `}</style>
     </div>
   );
 }

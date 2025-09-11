@@ -96,7 +96,7 @@ export function HouseholdMapWidget({ className = '' }: MapWidgetProps) {
   useEffect(() => {
     const initializeGoogleMaps = async () => {
       try {
-        await loadGoogleMaps([...GOOGLE_MAPS_LIBRARIES.GEOMETRY]);
+        await loadGoogleMaps([...GOOGLE_MAPS_LIBRARIES.GEOMETRY, 'marker']);
         setIsMapLoaded(true);
       } catch (error) {
         console.error('Failed to load Google Maps:', error);
@@ -169,25 +169,44 @@ export function HouseholdMapWidget({ className = '' }: MapWidgetProps) {
       zoomControl: true,
       mapTypeControl: false,
       streetViewControl: false,
-      fullscreenControl: false
+      fullscreenControl: false,
+      mapId: 'DEMO_MAP_ID' // Required for AdvancedMarkerElement
     });
 
-    // Add custom home marker
-    const homeIcon = {
-      path: window.google.maps.SymbolPath.CIRCLE,
-      fillColor: '#10B981',
-      fillOpacity: 1,
-      strokeColor: '#ffffff',
-      strokeWeight: 3,
-      scale: 8
-    };
+    // Use AdvancedMarkerElement instead of deprecated Marker
+    if (window.google.maps.marker && window.google.maps.marker.AdvancedMarkerElement) {
+      // Create a custom pin element
+      const pinElement = new window.google.maps.marker.PinElement({
+        background: '#10B981',
+        borderColor: '#ffffff',
+        glyphColor: '#ffffff',
+        glyph: '🏠'
+      });
 
-    new window.google.maps.Marker({
-      position: coordinates,
-      map: map,
-      icon: homeIcon,
-      title: household?.name || 'Home'
-    });
+      new window.google.maps.marker.AdvancedMarkerElement({
+        position: coordinates,
+        map: map,
+        content: pinElement.element,
+        title: household?.name || 'Home'
+      });
+    } else {
+      // Fallback to regular marker if AdvancedMarkerElement is not available
+      const homeIcon = {
+        path: window.google.maps.SymbolPath.CIRCLE,
+        fillColor: '#10B981',
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 3,
+        scale: 8
+      };
+
+      new window.google.maps.Marker({
+        position: coordinates,
+        map: map,
+        icon: homeIcon,
+        title: household?.name || 'Home'
+      });
+    }
 
     // Add a circle to show the general area
     new window.google.maps.Circle({

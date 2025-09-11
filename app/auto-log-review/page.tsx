@@ -65,6 +65,8 @@ export default function AutoLogReview() {
       setLastReviewTime(new Date().toLocaleString());
     } catch (error) {
       console.error('Analysis failed:', error);
+      // Show a user-friendly error message
+      alert('Analysis failed - this might be due to a database timeout. Please try again or check the browser console for details.');
     } finally {
       setIsAnalyzing(false);
     }

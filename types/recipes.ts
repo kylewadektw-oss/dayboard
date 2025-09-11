@@ -98,6 +98,15 @@ export interface MealPlan {
   updated_at: string;
 }
 
+export interface MealPlanWithRecipe extends MealPlan {
+  recipe: Recipe;
+  planner?: {
+    id: string;
+    name: string;
+    avatar_url?: string;
+  };
+}
+
 export interface RecipeCollection {
   id: string;
   name: string;

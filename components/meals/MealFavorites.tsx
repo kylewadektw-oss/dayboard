@@ -20,6 +20,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { RecipeWithDetails, RECIPE_DIFFICULTIES } from '@/types/recipes';
 import { Database } from '@/types_db';
+import { AddToMealPlanModal } from './AddToMealPlanModal';
 
 const supabase = createClient();
 
@@ -32,97 +33,111 @@ export function MealFavorites() {
   const [favoriteRecipes, setFavoriteRecipes] = useState<RecipeWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalFavorites, setTotalFavorites] = useState(0);
+  const [selectedRecipe, setSelectedRecipe] = useState<RecipeWithDetails | null>(null);
+  const [showMealPlanModal, setShowMealPlanModal] = useState(false);
+
+  const openMealPlanModal = (recipe: RecipeWithDetails) => {
+    setSelectedRecipe(recipe);
+    setShowMealPlanModal(true);
+  };
+
+  const handleMealPlanSuccess = () => {
+    // Refresh the data or show success message
+    setShowMealPlanModal(false);
+    setSelectedRecipe(null);
+  };
 
   useEffect(() => {
-    fetchFavoriteRecipes();
+    // For now, load mock data until recipe tables are deployed
+    loadMockData();
   }, []);
 
-  const fetchFavoriteRecipes = async () => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
-
-      // Get user's household ID
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('household_id')
-        .eq('id', user.user.id)
-        .single();
-
-      if (!profile?.household_id) return;
-
-      // Fetch favorite recipes with user's favorite status
-      const { data: favoriteData, error } = await supabase
-        .from('recipes')
-        .select(`
-          *,
-          recipe_favorites!inner(user_id),
-          profiles:created_by(id, name, avatar_url)
-        `)
-        .eq('household_id', profile.household_id)
-        .eq('recipe_favorites.user_id', user.user.id)
-        .limit(4)
-        .order('recipe_favorites.created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching favorite recipes:', error);
-        return;
-      }
-
-      // Get total count of favorites
-      const { count } = await supabase
-        .from('recipe_favorites')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.user.id);
-
-      setTotalFavorites(count || 0);
-
-      // Transform data to match our interface
-      const recipes: RecipeWithDetails[] = favoriteData?.map(recipe => ({
-        ...recipe,
+  const loadMockData = () => {
+    const mockRecipes: RecipeWithDetails[] = [
+      {
+        id: '1',
+        title: 'Honey Garlic Chicken',
+        description: 'Tender chicken in sweet and savory honey garlic sauce',
+        image_emoji: '🍗',
+        total_time_minutes: 30,
+        prep_time_minutes: 10,
+        cook_time_minutes: 20,
+        servings: 4,
+        difficulty: 'medium',
+        meal_type: ['dinner'],
+        diet_types: [],
+        ingredients: [
+          { name: 'chicken thighs', amount: '2', unit: 'lbs' },
+          { name: 'garlic cloves', amount: '3', unit: 'cloves' },
+          { name: 'honey', amount: '1/4', unit: 'cup' },
+          { name: 'soy sauce', amount: '2', unit: 'tbsp' }
+        ],
+        instructions: ['Season chicken', 'Cook in pan', 'Add sauce', 'Simmer until done'],
+        tags: ['dinner', 'chicken', 'easy'],
+        rating: 4.8,
+        rating_count: 24,
+        is_favorite: true,
+        is_public: false,
+        is_verified: false,
+        created_by: 'user-1',
+        household_id: 'household-1',
+        created_at: '2025-09-01',
+        updated_at: '2025-09-01',
         user_favorite: true,
-        creator: recipe.profiles ? {
-          id: recipe.profiles.id,
-          name: recipe.profiles.name || 'Unknown',
-          avatar_url: recipe.profiles.avatar_url
-        } : undefined
-      })) || [];
+        creator: { id: 'user-1', name: 'Kyle', avatar_url: undefined }
+      },
+      {
+        id: '2',
+        title: 'Spaghetti Carbonara',
+        description: 'Classic Italian pasta with eggs, cheese, and pancetta',
+        image_emoji: '🍝',
+        total_time_minutes: 25,
+        prep_time_minutes: 10,
+        cook_time_minutes: 15,
+        servings: 2,
+        difficulty: 'medium',
+        meal_type: ['dinner'],
+        diet_types: [],
+        ingredients: [
+          { name: 'spaghetti', amount: '8', unit: 'oz' },
+          { name: 'eggs', amount: '2', unit: 'whole' },
+          { name: 'pecorino cheese', amount: '1/2', unit: 'cup' },
+          { name: 'pancetta', amount: '4', unit: 'oz' }
+        ],
+        instructions: ['Cook pasta', 'Fry pancetta', 'Mix eggs and cheese', 'Combine everything'],
+        tags: ['pasta', 'italian', 'dinner'],
+        rating: 4.9,
+        rating_count: 18,
+        is_favorite: true,
+        is_public: false,
+        is_verified: false,
+        created_by: 'user-1',
+        household_id: 'household-1',
+        created_at: '2025-09-05',
+        updated_at: '2025-09-05',
+        user_favorite: true,
+        creator: { id: 'user-1', name: 'Kyle', avatar_url: undefined }
+      }
+    ];
 
-      setFavoriteRecipes(recipes);
-    } catch (error) {
-      console.error('Error in fetchFavoriteRecipes:', error);
-    } finally {
-      setLoading(false);
-    }
+    setFavoriteRecipes(mockRecipes);
+    setTotalFavorites(mockRecipes.length);
+    setLoading(false);
+  };
+
+  const fetchFavoriteRecipes = async () => {
+    // This will be enabled once recipe tables are deployed
+    console.log('Recipe tables not yet deployed - using mock data');
+    loadMockData();
   };
 
   const toggleFavorite = async (recipeId: string, isFavorite: boolean) => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
-
-      if (isFavorite) {
-        // Remove from favorites
-        await supabase
-          .from('recipe_favorites')
-          .delete()
-          .eq('recipe_id', recipeId)
-          .eq('user_id', user.user.id);
-        
-        setFavoriteRecipes(prev => prev.filter(recipe => recipe.id !== recipeId));
-        setTotalFavorites(prev => prev - 1);
-      } else {
-        // Add to favorites
-        await supabase
-          .from('recipe_favorites')
-          .insert({
-            recipe_id: recipeId,
-            user_id: user.user.id
-          });
-      }
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
+    // For now, just update local state until recipe tables are deployed
+    if (isFavorite) {
+      setFavoriteRecipes(prev => prev.filter(recipe => recipe.id !== recipeId));
+      setTotalFavorites(prev => prev - 1);
     }
+    console.log(`Toggle favorite for recipe ${recipeId}: ${!isFavorite}`);
   };
 
   if (loading) {
@@ -214,7 +229,10 @@ export function MealFavorites() {
                   ))}
                 </div>
 
-                <button className="w-full bg-pink-50 hover:bg-pink-100 text-pink-700 py-2 rounded-lg text-sm font-medium transition-colors">
+                <button 
+                  onClick={() => openMealPlanModal(recipe)}
+                  className="w-full bg-pink-50 hover:bg-pink-100 text-pink-700 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
                   Add to This Week
                 </button>
               </div>
@@ -234,6 +252,19 @@ export function MealFavorites() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Add to Meal Plan Modal */}
+      {selectedRecipe && (
+        <AddToMealPlanModal
+          isOpen={showMealPlanModal}
+          onClose={() => {
+            setShowMealPlanModal(false);
+            setSelectedRecipe(null);
+          }}
+          recipe={selectedRecipe}
+          onSuccess={handleMealPlanSuccess}
+        />
       )}
     </div>
   );

@@ -1522,7 +1522,13 @@ class Logger {
 
       query = query.limit(limit);
 
-      const { data, error } = await query;
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout after 8 seconds')), 8000)
+      );
+
+      const queryPromise = query;
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
 
       if (error) {
         console.error('❌ Database query error:', error);
@@ -1547,7 +1553,8 @@ class Logger {
       console.error('❌ Database fetch failed:', {
         errorMessage: (error as any)?.message || 'Unknown error',
         errorCode: (error as any)?.code || 'NO_CODE',
-        errorDetails: (error as any)?.details || 'No details'
+        errorDetails: (error as any)?.details || 'No details',
+        isTimeout: (error as any)?.message?.includes('timeout')
       });
       return [];
     }

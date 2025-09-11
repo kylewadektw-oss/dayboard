@@ -78,13 +78,23 @@ export class LogAnalyzer {
    * Get filtered logs for display purposes
    */
   async getFilteredLogs(level?: string, minutes: number = 30): Promise<LogEntry[]> {
-    const logs = await this.getRecentLogs(minutes);
-    
-    if (!level || level === 'all') {
-      return logs.slice(0, 100); // Limit for performance
+    try {
+      const logs = await this.getRecentLogs(minutes);
+      
+      if (!level || level === 'all') {
+        return logs.slice(0, 100); // Limit for performance
+      }
+      
+      return logs.filter(log => log.level === level).slice(0, 100);
+    } catch (error) {
+      console.error('Failed to get filtered logs:', error);
+      // Fallback to memory logs
+      const memoryLogs = logger.getAllLogs();
+      if (!level || level === 'all') {
+        return memoryLogs.slice(0, 100);
+      }
+      return memoryLogs.filter(log => log.level === level).slice(0, 100);
     }
-    
-    return logs.filter(log => log.level === level).slice(0, 100);
   }
 
   private async getSessionLogs(sessionId: string): Promise<LogEntry[]> {
@@ -101,7 +111,23 @@ export class LogAnalyzer {
   private async getRecentLogs(minutes: number): Promise<LogEntry[]> {
     try {
       const cutoffTime = new Date(Date.now() - minutes * 60 * 1000);
-      const allLogs = await logger.getAllLogsIncludingDatabase();
+      
+      // Add timeout to prevent hanging on database queries
+      const timeoutPromise = new Promise<LogEntry[]>((_, reject) => 
+        setTimeout(() => reject(new Error('Database query timeout')), 10000) // 10 second timeout
+      );
+      
+      const logsPromise = logger.getAllLogsIncludingDatabase();
+      
+      let allLogs: LogEntry[];
+      try {
+        allLogs = await Promise.race([logsPromise, timeoutPromise]);
+      } catch (dbError) {
+        console.warn('Database query failed or timed out, falling back to memory logs:', dbError);
+        // Fallback to memory logs only
+        allLogs = logger.getAllLogs();
+      }
+      
       const recentLogs = allLogs.filter(log => new Date(log.timestamp) >= cutoffTime);
       
       // Limit each log level to 100 entries for better performance and focused analysis

@@ -15,10 +15,12 @@
  */
 
 
-import { Search, Filter, Clock, Users, Star } from 'lucide-react';
+import { Search, Filter, Clock, Users, Star, Download, Loader2, RefreshCw, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { RecipeWithDetails, RecipeFilters, RECIPE_DIFFICULTIES } from '@/types/recipes';
+import { fetchRecipesFromAPI, RECIPE_SEARCH_QUERIES, type FetchRecipesResponse } from '@/utils/supabase/recipe-fetcher';
+import Button from '@/components/ui/Button';
 
 const supabase = createClient();
 
@@ -33,151 +35,341 @@ export function RecipeLibrary() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [userFavorites, setUserFavorites] = useState<Set<string>>(new Set());
+  const [isFetching, setIsFetching] = useState(false);
+  const [fetchResults, setFetchResults] = useState<FetchRecipesResponse | null>(null);
 
   useEffect(() => {
-    fetchRecipes();
-    fetchUserFavorites();
+    loadMockRecipes();
   }, [activeFilter, searchTerm]);
 
-  const fetchUserFavorites = async () => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
+  const loadMockRecipes = async () => {
+    setLoading(true);
+    
+    // Simulate loading delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      const { data: favorites } = await supabase
-        .from('recipe_favorites')
-        .select('recipe_id')
-        .eq('user_id', user.user.id);
-
-      if (favorites) {
-        setUserFavorites(new Set(favorites.map(f => f.recipe_id)));
+    // Mock recipe data
+    const mockRecipes: RecipeWithDetails[] = [
+      {
+        id: '1',
+        title: 'Honey Garlic Chicken',
+        description: 'Tender chicken in sweet and savory honey garlic sauce',
+        image_emoji: '🍗',
+        total_time_minutes: 30,
+        prep_time_minutes: 10,
+        cook_time_minutes: 20,
+        servings: 4,
+        difficulty: 'medium',
+        meal_type: ['dinner'],
+        diet_types: [],
+        ingredients: [
+          { name: 'chicken thighs', amount: '2', unit: 'lbs' },
+          { name: 'garlic cloves', amount: '3', unit: 'cloves' },
+          { name: 'honey', amount: '1/4', unit: 'cup' },
+          { name: 'soy sauce', amount: '2', unit: 'tbsp' }
+        ],
+        instructions: ['Season chicken', 'Cook in pan', 'Add sauce', 'Simmer until done'],
+        tags: ['dinner', 'chicken', 'easy'],
+        rating: 4.8,
+        rating_count: 24,
+        is_favorite: true,
+        is_public: false,
+        is_verified: false,
+        created_by: 'user-1',
+        household_id: 'household-1',
+        created_at: '2025-09-01',
+        updated_at: '2025-09-01',
+        user_favorite: true,
+        creator: { id: 'user-1', name: 'Kyle', avatar_url: undefined },
+        cuisine: 'Asian'
+      },
+      {
+        id: '2',
+        title: 'Spaghetti Carbonara',
+        description: 'Classic Italian pasta with eggs, cheese, and pancetta',
+        image_emoji: '🍝',
+        total_time_minutes: 25,
+        prep_time_minutes: 10,
+        cook_time_minutes: 15,
+        servings: 2,
+        difficulty: 'medium',
+        meal_type: ['dinner'],
+        diet_types: [],
+        ingredients: [
+          { name: 'spaghetti', amount: '8', unit: 'oz' },
+          { name: 'eggs', amount: '2', unit: 'whole' },
+          { name: 'pecorino cheese', amount: '1/2', unit: 'cup' },
+          { name: 'pancetta', amount: '4', unit: 'oz' }
+        ],
+        instructions: ['Cook pasta', 'Fry pancetta', 'Mix eggs and cheese', 'Combine everything'],
+        tags: ['pasta', 'italian', 'dinner'],
+        rating: 4.9,
+        rating_count: 18,
+        is_favorite: true,
+        is_public: false,
+        is_verified: false,
+        created_by: 'user-1',
+        household_id: 'household-1',
+        created_at: '2025-09-05',
+        updated_at: '2025-09-05',
+        user_favorite: false,
+        creator: { id: 'user-1', name: 'Kyle', avatar_url: undefined },
+        cuisine: 'Italian'
+      },
+      {
+        id: '3',
+        title: 'Quick Veggie Stir Fry',
+        description: 'Fresh vegetables tossed in a savory sauce',
+        image_emoji: '🥗',
+        total_time_minutes: 15,
+        prep_time_minutes: 10,
+        cook_time_minutes: 5,
+        servings: 3,
+        difficulty: 'easy',
+        meal_type: ['lunch', 'dinner'],
+        diet_types: ['vegetarian'],
+        ingredients: [
+          { name: 'mixed vegetables', amount: '2', unit: 'cups' },
+          { name: 'soy sauce', amount: '2', unit: 'tbsp' },
+          { name: 'garlic', amount: '2', unit: 'cloves' },
+          { name: 'ginger', amount: '1', unit: 'inch' }
+        ],
+        instructions: ['Heat oil', 'Add vegetables', 'Stir fry 3-5 minutes', 'Add sauce'],
+        tags: ['vegetarian', 'quick', 'healthy'],
+        rating: 4.5,
+        rating_count: 12,
+        is_favorite: false,
+        is_public: false,
+        is_verified: false,
+        created_by: 'user-1',
+        household_id: 'household-1',
+        created_at: '2025-09-08',
+        updated_at: '2025-09-08',
+        user_favorite: false,
+        creator: { id: 'user-1', name: 'Kyle', avatar_url: undefined },
+        cuisine: 'Asian'
+      },
+      {
+        id: '4',
+        title: 'Beef Tacos',
+        description: 'Seasoned ground beef in soft tortillas with fresh toppings',
+        image_emoji: '🌮',
+        total_time_minutes: 20,
+        prep_time_minutes: 5,
+        cook_time_minutes: 15,
+        servings: 4,
+        difficulty: 'easy',
+        meal_type: ['dinner'],
+        diet_types: [],
+        ingredients: [
+          { name: 'ground beef', amount: '1', unit: 'lb' },
+          { name: 'taco seasoning', amount: '1', unit: 'packet' },
+          { name: 'soft tortillas', amount: '8', unit: 'pieces' },
+          { name: 'cheese', amount: '1', unit: 'cup' }
+        ],
+        instructions: ['Brown beef', 'Add seasoning', 'Warm tortillas', 'Assemble tacos'],
+        tags: ['beef', 'mexican', 'dinner'],
+        rating: 4.7,
+        rating_count: 30,
+        is_favorite: false,
+        is_public: false,
+        is_verified: false,
+        created_by: 'user-1',
+        household_id: 'household-1',
+        created_at: '2025-09-06',
+        updated_at: '2025-09-06',
+        user_favorite: true,
+        creator: { id: 'user-1', name: 'Kyle', avatar_url: undefined },
+        cuisine: 'Mexican'
+      },
+      {
+        id: '5',
+        title: 'Caesar Salad',
+        description: 'Crisp romaine lettuce with homemade caesar dressing',
+        image_emoji: '🥬',
+        total_time_minutes: 10,
+        prep_time_minutes: 10,
+        cook_time_minutes: 0,
+        servings: 2,
+        difficulty: 'easy',
+        meal_type: ['lunch'],
+        diet_types: ['vegetarian'],
+        ingredients: [
+          { name: 'romaine lettuce', amount: '1', unit: 'head' },
+          { name: 'parmesan cheese', amount: '1/2', unit: 'cup' },
+          { name: 'croutons', amount: '1', unit: 'cup' },
+          { name: 'caesar dressing', amount: '1/4', unit: 'cup' }
+        ],
+        instructions: ['Chop lettuce', 'Add dressing', 'Top with cheese and croutons', 'Serve immediately'],
+        tags: ['salad', 'vegetarian', 'quick'],
+        rating: 4.3,
+        rating_count: 8,
+        is_favorite: false,
+        is_public: false,
+        is_verified: false,
+        created_by: 'user-1',
+        household_id: 'household-1',
+        created_at: '2025-09-09',
+        updated_at: '2025-09-09',
+        user_favorite: false,
+        creator: { id: 'user-1', name: 'Kyle', avatar_url: undefined },
+        cuisine: 'American'
+      },
+      {
+        id: '6',
+        title: 'Teriyaki Salmon',
+        description: 'Glazed salmon with steamed rice and vegetables',
+        image_emoji: '🐟',
+        total_time_minutes: 25,
+        prep_time_minutes: 5,
+        cook_time_minutes: 20,
+        servings: 2,
+        difficulty: 'medium',
+        meal_type: ['dinner'],
+        diet_types: [],
+        ingredients: [
+          { name: 'salmon fillets', amount: '2', unit: 'pieces' },
+          { name: 'teriyaki sauce', amount: '1/4', unit: 'cup' },
+          { name: 'rice', amount: '1', unit: 'cup' },
+          { name: 'broccoli', amount: '1', unit: 'cup' }
+        ],
+        instructions: ['Cook rice', 'Pan fry salmon', 'Glaze with teriyaki', 'Steam vegetables'],
+        tags: ['fish', 'healthy', 'asian'],
+        rating: 4.6,
+        rating_count: 15,
+        is_favorite: false,
+        is_public: false,
+        is_verified: false,
+        created_by: 'user-1',
+        household_id: 'household-1',
+        created_at: '2025-09-07',
+        updated_at: '2025-09-07',
+        user_favorite: false,
+        creator: { id: 'user-1', name: 'Kyle', avatar_url: undefined },
+        cuisine: 'Asian'
       }
-    } catch (error) {
-      console.error('Error fetching user favorites:', error);
+    ];
+
+    // Apply filters
+    let filteredRecipes = mockRecipes;
+
+    // Apply search filter
+    if (searchTerm) {
+      filteredRecipes = filteredRecipes.filter(recipe =>
+        recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (recipe.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (recipe.cuisine || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        recipe.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
     }
+
+    // Apply category filters
+    switch (activeFilter) {
+      case 'Quick (<20min)':
+        filteredRecipes = filteredRecipes.filter(recipe => recipe.total_time_minutes <= 20);
+        break;
+      case 'Vegetarian':
+        filteredRecipes = filteredRecipes.filter(recipe => recipe.diet_types.includes('vegetarian'));
+        break;
+      case 'Chicken':
+        filteredRecipes = filteredRecipes.filter(recipe => recipe.tags.includes('chicken'));
+        break;
+      case 'Beef':
+        filteredRecipes = filteredRecipes.filter(recipe => recipe.tags.includes('beef'));
+        break;
+      case 'Italian':
+        filteredRecipes = filteredRecipes.filter(recipe => recipe.cuisine === 'Italian');
+        break;
+      case 'Mexican':
+        filteredRecipes = filteredRecipes.filter(recipe => recipe.cuisine === 'Mexican');
+        break;
+      case 'Asian':
+        filteredRecipes = filteredRecipes.filter(recipe => recipe.cuisine === 'Asian');
+        break;
+    }
+
+    setRecipes(filteredRecipes);
+    setLoading(false);
+  };
+
+  const fetchUserFavorites = async () => {
+    // Mock user favorites - will be replaced with real Supabase call once tables exist
+    console.log('Using mock favorites data until recipe tables are deployed');
   };
 
   const fetchRecipes = async () => {
-    try {
-      setLoading(true);
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
-
-      // Get user's household ID
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('household_id')
-        .eq('id', user.user.id)
-        .single();
-
-      if (!profile?.household_id) return;
-
-      let query = supabase
-        .from('recipes')
-        .select(`
-          *,
-          profiles:created_by(id, name, avatar_url)
-        `)
-        .eq('household_id', profile.household_id);
-
-      // Apply search filter
-      if (searchTerm) {
-        query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,cuisine.ilike.%${searchTerm}%`);
-      }
-
-      // Apply category filters
-      switch (activeFilter) {
-        case 'Quick (<20min)':
-          query = query.lte('total_time_minutes', 20);
-          break;
-        case 'Vegetarian':
-          query = query.contains('diet_types', ['vegetarian']);
-          break;
-        case 'Chicken':
-          query = query.contains('tags', ['chicken']);
-          break;
-        case 'Beef':
-          query = query.contains('tags', ['beef']);
-          break;
-        case 'Italian':
-          query = query.eq('cuisine', 'Italian');
-          break;
-        case 'Mexican':
-          query = query.eq('cuisine', 'Mexican');
-          break;
-        case 'Asian':
-          query = query.in('cuisine', ['Chinese', 'Japanese', 'Thai', 'Korean', 'Vietnamese']);
-          break;
-      }
-
-      const { data: recipeData, error } = await query
-        .order('rating', { ascending: false })
-        .limit(12);
-
-      if (error) {
-        console.error('Error fetching recipes:', error);
-        return;
-      }
-
-      // Transform data to match our interface
-      const transformedRecipes: RecipeWithDetails[] = recipeData?.map(recipe => ({
-        ...recipe,
-        user_favorite: userFavorites.has(recipe.id),
-        creator: recipe.profiles ? {
-          id: recipe.profiles.id,
-          name: recipe.profiles.name || 'Unknown',
-          avatar_url: recipe.profiles.avatar_url
-        } : undefined
-      })) || [];
-
-      setRecipes(transformedRecipes);
-    } catch (error) {
-      console.error('Error in fetchRecipes:', error);
-    } finally {
-      setLoading(false);
-    }
+    // This will be enabled once recipe tables are deployed
+    console.log('Recipe tables not yet deployed - using mock data');
+    loadMockRecipes();
   };
 
   const toggleFavorite = async (recipeId: string, isFavorite: boolean) => {
+    // For now, just update local state until recipe tables are deployed
+    setRecipes(prev => 
+      prev.map(recipe => 
+        recipe.id === recipeId 
+          ? { ...recipe, user_favorite: !isFavorite }
+          : recipe
+      )
+    );
+    console.log(`Toggle favorite for recipe ${recipeId}: ${!isFavorite}`);
+  };
+
+  const fetchRecipesFromSpoonacular = async (searchQuery: string = 'popular') => {
+    setIsFetching(true);
+    setFetchResults(null);
+    
+    // Ensure we always have a valid search query
+    const validSearchQuery = searchQuery.trim() || 'popular';
+    
     try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
-
-      if (isFavorite) {
-        // Remove from favorites
-        await supabase
-          .from('recipe_favorites')
-          .delete()
-          .eq('recipe_id', recipeId)
-          .eq('user_id', user.user.id);
-        
-        setUserFavorites(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(recipeId);
-          return newSet;
-        });
-      } else {
-        // Add to favorites
-        await supabase
-          .from('recipe_favorites')
-          .insert({
-            recipe_id: recipeId,
-            user_id: user.user.id
-          });
-        
-        setUserFavorites(prev => new Set(prev).add(recipeId));
+      const result = await fetchRecipesFromAPI({
+        searchQuery: validSearchQuery,
+        numberOfRecipes: 12
+      });
+      
+      setFetchResults(result);
+      
+      // Refresh the recipe list after fetching
+      if (result.inserted > 0) {
+        loadMockRecipes(); // This will eventually be replaced with real DB call
       }
-
-      // Update the recipe in state
-      setRecipes(prev => 
-        prev.map(recipe => 
-          recipe.id === recipeId 
-            ? { ...recipe, user_favorite: !isFavorite }
-            : recipe
-        )
-      );
-    } catch (error) {
-      console.error('Error toggling favorite:', error);
+      
+      // Show success message
+      const message = `Successfully fetched ${result.totalFetched} recipes! ${result.inserted} new recipes added to your library.`;
+      alert(message);
+    } catch (error: any) {
+      console.error('Error fetching recipes:', error);
+      
+      // Provide helpful error messages
+      let errorMessage = 'Failed to fetch recipes';
+      
+      if (error.message.includes('401')) {
+        errorMessage = 'API Authentication Error: Please check your Spoonacular API key in .env.local file. Make sure you have replaced the placeholder with your actual API key.';
+      } else if (error.message.includes('402')) {
+        errorMessage = 'API Quota Exceeded: You have reached your daily limit for the Spoonacular API. Please wait until tomorrow or upgrade your plan.';
+      } else if (error.message.includes('key not configured')) {
+        errorMessage = 'API Key Missing: Please add your Spoonacular API key to the .env.local file.';
+      } else if (error.message.includes('placeholder')) {
+        errorMessage = 'API Key Setup Required: Please replace the placeholder API key with your actual Spoonacular API key.';
+      } else if (error.message.includes('Network')) {
+        errorMessage = 'Network Error: Please check your internet connection and try again.';
+      } else {
+        errorMessage = `Error: ${error.message}`;
+      }
+      
+      alert(errorMessage);
+      
+      // Set error state for UI feedback
+      setFetchResults({
+        message: 'Failed to fetch recipes',
+        totalFetched: 0,
+        inserted: 0,
+        skipped: 0,
+        searchQuery: validSearchQuery
+      });
+    } finally {
+      setIsFetching(false);
     }
   };
 
@@ -186,17 +378,37 @@ export function RecipeLibrary() {
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         {/* Search */}
         <div className="flex-1">
+          <label htmlFor="recipe-search" className="sr-only">
+            Search recipes, ingredients, or cuisine
+          </label>
           <div className="relative">
             <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
+              id="recipe-search"
+              name="recipeSearch"
               type="text"
               placeholder="Search recipes, ingredients, or cuisine..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              autoComplete="off"
             />
           </div>
         </div>
+
+        {/* Fetch Recipes Button */}
+        <Button
+          onClick={() => fetchRecipesFromSpoonacular('popular')}
+          disabled={isFetching}
+          className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50"
+        >
+          {isFetching ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4 mr-2" />
+          )}
+          {isFetching ? 'Fetching...' : 'Fetch New Recipes'}
+        </Button>
 
         {/* Filters */}
         <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
@@ -221,6 +433,62 @@ export function RecipeLibrary() {
           </button>
         ))}
       </div>
+
+      {/* Quick Fetch Options */}
+      <div className="mb-6">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Quick Recipe Categories:</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+          {RECIPE_SEARCH_QUERIES.slice(0, 6).map((category) => (
+            <Button
+              key={category.query}
+              onClick={() => fetchRecipesFromSpoonacular(category.query)}
+              disabled={isFetching}
+              variant="slim"
+              className="text-xs border border-gray-300 hover:bg-gray-50"
+            >
+              {category.emoji} {category.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Fetch Results */}
+      {fetchResults && (
+        <div className={`mb-6 p-4 border rounded-lg ${
+          fetchResults.totalFetched > 0 
+            ? 'bg-green-50 border-green-200' 
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-center gap-2 mb-2">
+            {fetchResults.totalFetched > 0 ? (
+              <>
+                <Download className="h-4 w-4 text-green-600" />
+                <span className="font-medium text-green-800">Recipe Fetch Results</span>
+              </>
+            ) : (
+              <>
+                <X className="h-4 w-4 text-red-600" />
+                <span className="font-medium text-red-800">Recipe Fetch Failed</span>
+              </>
+            )}
+          </div>
+          <p className={`text-sm ${
+            fetchResults.totalFetched > 0 ? 'text-green-700' : 'text-red-700'
+          }`}>
+            {fetchResults.totalFetched > 0 ? (
+              <>
+                {fetchResults.message} Found {fetchResults.totalFetched} recipes for "{fetchResults.searchQuery}".
+                {fetchResults.inserted > 0 && ` Added ${fetchResults.inserted} new recipes to your library.`}
+                {fetchResults.skipped > 0 && ` Skipped ${fetchResults.skipped} duplicates.`}
+              </>
+            ) : (
+              <>
+                Failed to fetch recipes for "{fetchResults.searchQuery}". Please check the console for more details.
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       {/* Loading State */}
       {loading ? (
@@ -329,10 +597,10 @@ export function RecipeLibrary() {
       )}
 
       {/* Database Integration Notice */}
-      <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-        <h4 className="font-medium text-green-900 mb-1">✅ Connected to Database</h4>
-        <p className="text-sm text-green-700">
-          Recipe data is now stored in your Supabase database with full household sharing, favorites, and meal planning features.
+      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <h4 className="font-medium text-blue-900 mb-1">📝 Using Mock Data</h4>
+        <p className="text-sm text-blue-700">
+          Recipe data is currently using sample data. Once you deploy the recipe database migration, this will automatically connect to your Supabase database with full household sharing, favorites, and meal planning features.
         </p>
       </div>
     </div>

@@ -22,7 +22,7 @@ import { authLogger } from '@/utils/logger';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Lazy load all dashboard widgets for better performance
-const WeatherWidget = lazy(() => import('@/components/dashboard/WeatherWidget').then(m => ({ default: m.WeatherWidget })));
+const WeatherWidget = lazy(() => import('@/components/dashboard/WeatherWidget'));
 const CalendarWidget = lazy(() => import('@/components/dashboard/CalendarWidget').then(m => ({ default: m.CalendarWidget })));
 const MealsWidget = lazy(() => import('@/components/dashboard/MealsWidget').then(m => ({ default: m.MealsWidget })));
 const GroceryWidget = lazy(() => import('@/components/dashboard/GroceryWidget').then(m => ({ default: m.GroceryWidget })));
@@ -144,19 +144,6 @@ export default function DashboardPage() {
         {/* Header with greeting */}
         <div className="mb-6">
           <ProfileStatus />
-          {/* User info display */}
-          {profile && (
-            <div className="mt-2 flex gap-2">
-              <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                Role: {profile.role.replace('_', ' ').toUpperCase()}
-              </div>
-              {profile.household_id && (
-                <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                  Household Member
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Main Dashboard Grid */}
@@ -165,6 +152,13 @@ export default function DashboardPage() {
           <div className="lg:col-span-1">
             <Suspense fallback={<WidgetSkeleton />}>
               <WeatherWidget />
+            </Suspense>
+          </div>
+
+          {/* Household Location Map - Right below weather */}
+          <div className="lg:col-span-1">
+            <Suspense fallback={<WidgetSkeleton />}>
+              <HouseholdMapWidget />
             </Suspense>
           </div>
           
@@ -197,13 +191,6 @@ export default function DashboardPage() {
             </Suspense>
           </div>
 
-          {/* Household Location Map */}
-          <div className="lg:col-span-1">
-            <Suspense fallback={<WidgetSkeleton />}>
-              <HouseholdMapWidget />
-            </Suspense>
-          </div>
-
           {/* Household Updates Row */}
           <div className="lg:col-span-2">
             <Suspense fallback={<WidgetSkeleton />}>
@@ -219,17 +206,6 @@ export default function DashboardPage() {
             Sports ticker, financial snapshot, package tracker, and AI-powered household coordination will be available with Premium subscription.
           </p>
         </div>
-
-        {/* Welcome Message for Authenticated Users */}
-        {profile && (
-          <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-green-800 mb-1">Welcome back!</h3>
-            <p className="text-sm text-green-700">
-              Hello {profile.name || 'there'}! 
-              Your household dashboard is ready with {profile.role} access.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -66,71 +66,67 @@ export function AppNavigation() {
     { name: 'Lists', href: '/lists', icon: ClipboardList, current: pathname === '/lists' },
     { name: 'Work', href: '/work', icon: Briefcase, current: pathname === '/work' },
     { name: 'Projects', href: '/projects', icon: FolderOpen, current: pathname === '/projects' },
-    { name: 'Profile', href: '/profile', icon: User, current: pathname === '/profile' },
+    { name: 'Settings', href: '/settings', icon: Settings, current: pathname === '/settings' },
   ];
 
   const devNavigation = [
-    { name: 'Customer Review', href: '/customer-review', icon: UserCheck, current: pathname === '/customer-review' },
     { name: 'Logs Dashboard', href: '/logs-dashboard', icon: FileText, current: pathname === '/logs-dashboard' },
-    { name: 'Simple Logging', href: '/test-logging-simple', icon: Activity, current: pathname === '/test-logging-simple' },
-    { name: 'Auth Debug', href: '/auth-debug', icon: Bug, current: pathname === '/auth-debug' },
+    { name: 'Customer Review', href: '/customer-review', icon: UserCheck, current: pathname === '/customer-review' },
   ];
   return (
     <>
       {/* Left Sidebar Navigation - Desktop */}
-      <div className={`hidden md:flex md:fixed md:inset-y-0 md:left-0 md:z-50 flex-col bg-white border-r border-gray-200 shadow-sm transition-all duration-300 ${
+      <div className={`hidden md:flex md:fixed md:inset-y-0 md:left-0 md:z-50 flex-col bg-gradient-to-b from-gray-900 to-black border-r border-gray-700 shadow-xl transition-all duration-300 ${
         isCollapsed ? 'w-16' : 'w-64'
       }`}>
-        {/* Logo and Toggle */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
-          {!isCollapsed ? (
-            <Link href="/dashboard" className="flex items-center">
-              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-2 rounded-lg">
-                <Logo className="scale-50" />
-              </div>
-            </Link>
-          ) : (
-            <Link href="/dashboard" className="flex items-center justify-center w-full">
-              <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-2 rounded-lg">
-                <Logo iconOnly className="w-6 h-6" />
-              </div>
-            </Link>
-          )}
-          
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500"
-            aria-label={isCollapsed ? 'Expand navigation' : 'Collapse navigation'}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
+        {/* Logo and Toggle - Black Background with White Text */}
+        <div className="bg-gradient-to-r from-gray-900 to-black p-4 border-b border-gray-700 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            {!isCollapsed ? (
+              <Link href="/dashboard" className="flex items-center">
+                <Logo className="scale-75" />
+              </Link>
             ) : (
-              <ChevronLeft className="h-4 w-4" />
+              <Link href="/dashboard" className="flex items-center justify-center w-full">
+                <Logo iconOnly className="w-8 h-8 text-white" />
+              </Link>
             )}
-          </button>
+            
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="p-1.5 rounded-md text-gray-300 hover:text-white hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+              aria-label={isCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+            >
+              {isCollapsed ? (
+                <ChevronRight className="h-4 w-4" />
+              ) : (
+                <ChevronLeft className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
 
         {/* User Info (deferred until after hydration to avoid SSR mismatch) */}
         {!isCollapsed && hasHydrated && user && (
-          <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <Link href="/profile" className="block px-4 py-3 border-b border-gray-700 bg-gray-800/50 hover:bg-gray-700/50 transition-colors">
             <div className="flex items-center">
               {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="h-8 w-8 rounded-full" />
+                <img src={profile.avatar_url} alt="" className="h-8 w-8 rounded-full border-2 border-gray-600" />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
-                  <User className="h-4 w-4 text-purple-600" />
+                <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-600">
+                  <User className="h-4 w-4 text-gray-300" />
                 </div>
               )}
               <div className="ml-3 min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-white truncate">
                   {profile?.preferred_name || profile?.name || user?.email || 'Guest'}
                 </p>
-                <p className="text-xs text-gray-500 truncate">
+                <p className="text-xs text-gray-300 truncate">
                   {profile?.role?.replace('_', ' ').toUpperCase() || 'Member'}
                 </p>
               </div>
             </div>
-          </div>
+          </Link>
         )}
 
         {/* Navigation Links */}
@@ -144,12 +140,12 @@ export function AppNavigation() {
                   href={item.href}
                   className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors relative ${
                     item.current
-                      ? 'bg-gradient-to-r from-pink-50 to-purple-50 text-purple-700 border-r-2 border-purple-600'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-800'
                   }`}
                 >
                   <Icon className={`h-5 w-5 flex-shrink-0 ${
-                    item.current ? 'text-purple-600' : 'text-gray-400 group-hover:text-gray-600'
+                    item.current ? 'text-white' : 'text-gray-400 group-hover:text-white'
                   }`} />
                   {!isCollapsed && (
                     <span className="ml-3 truncate">{item.name}</span>
@@ -157,7 +153,7 @@ export function AppNavigation() {
                   
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && (
-                    <div className="absolute left-full ml-2 bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50">
+                    <div className="absolute left-full ml-2 bg-white text-black text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
                       {item.name}
                     </div>
                   )}
@@ -168,8 +164,8 @@ export function AppNavigation() {
 
           {/* Development Section */}
           {!isCollapsed && (
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <h3 className="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            <div className="mt-6 pt-4 border-t border-gray-700">
+              <h3 className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Development
               </h3>
             </div>
@@ -184,12 +180,12 @@ export function AppNavigation() {
                   href={item.href}
                   className={`group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors relative ${
                     item.current
-                      ? 'bg-gradient-to-r from-orange-50 to-yellow-50 text-orange-700 border-r-2 border-orange-600'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-gray-800'
                   }`}
                 >
                   <Icon className={`h-5 w-5 flex-shrink-0 ${
-                    item.current ? 'text-orange-600' : 'text-gray-400 group-hover:text-gray-600'
+                    item.current ? 'text-white' : 'text-gray-400 group-hover:text-white'
                   }`} />
                   {!isCollapsed && (
                     <span className="ml-3 truncate">{item.name}</span>
@@ -197,7 +193,7 @@ export function AppNavigation() {
                   
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && (
-                    <div className="absolute left-full ml-2 bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50">
+                    <div className="absolute left-full ml-2 bg-white text-black text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
                       {item.name}
                     </div>
                   )}
@@ -208,45 +204,22 @@ export function AppNavigation() {
         </nav>
 
         {/* Settings and Sign Out at Bottom */}
-        <div className="p-2 border-t border-gray-200 flex-shrink-0 space-y-1">
-          <Link 
-            href="/settings"
-            className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors relative ${
-              pathname === '/settings'
-                ? 'bg-gradient-to-r from-pink-50 to-purple-50 text-purple-700 border-r-2 border-purple-600'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            } ${isCollapsed ? 'justify-center' : ''}`}
-          >
-            <Settings className={`h-5 w-5 flex-shrink-0 ${
-              pathname === '/settings' ? 'text-purple-600' : 'text-gray-400 group-hover:text-gray-600'
-            }`} />
-            {!isCollapsed && (
-              <span className="ml-3 truncate">Settings</span>
-            )}
-            
-            {/* Tooltip for collapsed state */}
-            {isCollapsed && (
-              <div className="absolute left-full ml-2 bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50">
-                Settings
-              </div>
-            )}
-          </Link>
-
+        <div className="p-2 border-t border-gray-700 flex-shrink-0 space-y-1">
           {user && (
             <button
               onClick={handleSignOut}
-              className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors relative ${
+              className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors relative ${
                 isCollapsed ? 'justify-center' : ''
               }`}
             >
-              <LogOut className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-red-500" />
+              <LogOut className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-red-400" />
               {!isCollapsed && (
                 <span className="ml-3 truncate">Sign Out</span>
               )}
               
               {/* Tooltip for collapsed state */}
               {isCollapsed && (
-                <div className="absolute left-full ml-2 bg-gray-900 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50">
+                <div className="absolute left-full ml-2 bg-white text-black text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
                   Sign Out
                 </div>
               )}
@@ -257,18 +230,16 @@ export function AppNavigation() {
 
       {/* Mobile Navigation */}
       <div className="md:hidden">
-        {/* Mobile Header */}
-        <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between z-50">
+        {/* Mobile Header - Matching Black Background */}
+        <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-gray-900 to-black border-b border-gray-700 px-4 py-3 flex items-center justify-between z-50">
           <Link href="/dashboard" className="flex items-center">
-            <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-1 rounded-lg">
-              <Logo className="scale-50" />
-            </div>
+            <Logo className="scale-75" />
           </Link>
           
           {user && (
             <button
               onClick={handleSignOut}
-              className="p-2 text-gray-600 hover:text-red-600 transition-colors"
+              className="p-2 text-gray-300 hover:text-white transition-colors"
             >
               <LogOut className="h-5 w-5" />
             </button>

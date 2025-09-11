@@ -11,8 +11,9 @@
 -- EXPECTED OUTCOME:
 --   1. All navigation items (Dashboard, Meals, Lists, Work, Projects, Profile)
 --      will be added as controllable features in global_feature_control
---   2. Development tools (Logs Dashboard, Simple Logging, Auth Debug) will be
---      added as super admin only features
+--   2. Development tools are now integrated into the Logs Dashboard rather than
+--      being separate navigation items (Simple Logging and Auth Debug are now
+--      tabs/tools within the logs dashboard interface)
 --   3. Settings items will be created for toggle controls in the UI
 --   4. Two new functions will be available:
 --      - user_has_feature_access(): Check if a user can access a feature
@@ -40,7 +41,7 @@
 --
 -- FEATURE CATEGORIES:
 --   - navigation: Main app features (Dashboard, Meals, Lists, etc.)
---   - development: Debug tools (Logs, Auth Debug, etc.)
+--   - development: Debug tools (Logs Dashboard with integrated tools)
 --   - admin: Administrative features
 --   - super_admin: System-wide controls
 --
@@ -90,10 +91,8 @@ INSERT INTO global_feature_control (feature_key, display_name, description, cate
 ('profile_access', 'Profile Access', 'Access to user profile management', 'navigation', 'all', true, false, 'free'),
 ('settings_access', 'Settings Access', 'Access to application settings', 'navigation', 'admin_only', true, false, 'free'),
 
--- Development/Debug Features
-('logs_dashboard_access', 'Logs Dashboard', 'Access to system logs and monitoring', 'development', 'super_admin_only', true, false, 'free'),
-('simple_logging_access', 'Simple Logging Tool', 'Access to basic logging test interface', 'development', 'super_admin_only', true, false, 'free'),
-('auth_debug_access', 'Auth Debug Tool', 'Access to authentication debugging tools', 'development', 'super_admin_only', true, false, 'free'),
+-- Development/Debug Features (Consolidated into Logs Dashboard)
+('logs_dashboard_access', 'Logs Dashboard', 'Access to system logs, monitoring, and integrated debugging tools', 'development', 'super_admin_only', true, false, 'free'),
 
 -- Additional System Features
 ('user_management_access', 'User Management', 'Manage household members and invitations', 'admin', 'admin_only', true, false, 'free'),
@@ -164,10 +163,8 @@ INSERT INTO settings_items (category_key, setting_key, display_name, description
 ('super_admin', 'settings_member_access', '☐ Settings - Member Access', 'Check to allow Members to access application settings (basic settings only)', 'checkbox', 'false', 'super_admin', 70),
 ('super_admin', 'settings_admin_access', '☐ Settings - Admin Access', 'Check to allow Admins to access application settings (household settings)', 'checkbox', 'true', 'super_admin', 71),
 
--- Development Tools (Super Admin only when enabled)
-('super_admin', 'enable_logs_dashboard', '☐ Enable Logs Dashboard (Dev Tool)', 'Check to show/hide Logs Dashboard in navigation - SUPER ADMIN ONLY when enabled', 'checkbox', 'false', 'super_admin', 100),
-('super_admin', 'enable_simple_logging', '☐ Enable Simple Logging Tool (Dev Tool)', 'Check to show/hide Simple Logging test tool - SUPER ADMIN ONLY when enabled', 'checkbox', 'false', 'super_admin', 101),
-('super_admin', 'enable_auth_debug', '☐ Enable Auth Debug Tool (Dev Tool)', 'Check to show/hide Auth Debug tool - SUPER ADMIN ONLY when enabled', 'checkbox', 'false', 'super_admin', 102),
+-- Development Tools (Super Admin only when enabled) - Now integrated into Logs Dashboard
+('enable_logs_dashboard', '☐ Enable Logs Dashboard (Includes all dev tools)', 'Check to show/hide Logs Dashboard with integrated Simple Logging and Auth Debug tools - SUPER ADMIN ONLY when enabled', 'checkbox', 'false', 'super_admin', 100),
 
 -- Admin Role & Business Controls
 ('super_admin', 'max_admin_count', 'Max Admin Roles Allowed', 'Maximum number of admin roles in this household (additional admins require paid upgrade)', 'number', '1', 'super_admin', 200),
@@ -294,10 +291,19 @@ BEGIN
         RETURN role_access_enabled;
     END IF;
     
-    -- For development features, check if they're enabled (super admin only when enabled)
-    IF feature_key_param IN ('logs_dashboard_access', 'simple_logging_access', 'auth_debug_access') THEN
-        -- These are always super admin only features
-        RETURN false;
+    -- For development features, check if logs dashboard is enabled (includes all tools)
+    IF feature_key_param = 'logs_dashboard_access' THEN
+        SELECT COALESCE(
+            (SELECT value::boolean
+             FROM user_settings us
+             JOIN profiles p ON p.id = us.user_id
+             WHERE p.household_id = household_id_val 
+             AND p.role = 'super_admin'
+             AND us.setting_key = 'enable_logs_dashboard'), 
+            false) 
+        INTO role_access_enabled;
+        
+        RETURN role_access_enabled;
     END IF;
     
     -- For other admin features not in the matrix, check if admin role
@@ -369,8 +375,6 @@ BEGIN
             WHEN 'profile_access' THEN '/profile'
             WHEN 'settings_access' THEN '/settings'
             WHEN 'logs_dashboard_access' THEN '/logs-dashboard'
-            WHEN 'simple_logging_access' THEN '/test-logging-simple'
-            WHEN 'auth_debug_access' THEN '/auth-debug'
             ELSE '/'
         END as href,
         CASE gfc.feature_key
@@ -382,8 +386,6 @@ BEGIN
             WHEN 'profile_access' THEN 'User'
             WHEN 'settings_access' THEN 'Settings'
             WHEN 'logs_dashboard_access' THEN 'FileText'
-            WHEN 'simple_logging_access' THEN 'Activity'
-            WHEN 'auth_debug_access' THEN 'Bug'
             ELSE 'Circle'
         END as icon,
         user_has_feature_access(user_id_param, gfc.feature_key) as has_access,
@@ -433,9 +435,10 @@ BEGIN
     AND (setting_key LIKE '%access%' OR setting_key LIKE 'enable_%');
     
     RAISE NOTICE '🎉 Navigation Feature Controls deployed successfully!';
-    RAISE NOTICE '✅ Added % navigation features', nav_feature_count;
+    RAISE NOTICE '✅ Added % navigation features (Simple Logging & Auth Debug now integrated into Logs Dashboard)', nav_feature_count;
     RAISE NOTICE '✅ Added % control settings', settings_count;
     RAISE NOTICE '🔧 Super admin can now control all navigation access via Settings';
+    RAISE NOTICE '📊 Development tools consolidated: Simple Logging and Auth Debug are now accessible within Logs Dashboard';
 END $$;
 
 -- ========================================================================
@@ -444,17 +447,28 @@ END $$;
 --
 -- 1. VERIFY DEPLOYMENT:
 --    Run: SELECT COUNT(*) FROM global_feature_control WHERE category IN ('navigation', 'development');
---    Expected: 10+ features
+--    Expected: 8+ features (reduced from 10+ due to consolidation)
 --
 -- 2. TEST UI ACCESS:
 --    - Visit /settings as super admin
 --    - Go to "Super Admin" tab
 --    - Look for "Navigation Access Control" section
 --    - Verify toggle switches are present and functional
+--    - Note: Simple Logging and Auth Debug are now accessed via /logs-dashboard
 --
 -- 3. TEST PERMISSION FUNCTIONS:
 --    Run: SELECT * FROM get_user_navigation('your-user-id');
---    Expected: List of navigation items with access status
+--    Expected: List of navigation items with access status (fewer development items)
+--
+-- 4. TEST INTEGRATED TOOLS:
+--    a) Logs Dashboard Integration:
+--       - Visit /logs-dashboard as super admin
+--       - Navigate to Simple Logging and Auth Debug tools via logging navigation
+--       - Verify tools are accessible through Core Logging section
+--    
+--    b) Clean Navigation:
+--       - Verify main sidebar no longer shows separate Simple Logging/Auth Debug items
+--       - Confirm cleaner, more organized navigation structure
 --
 -- 4. TEST ACCESS CONTROL & ROLE-BASED PERMISSIONS:
 --    a) Super Admin Testing:

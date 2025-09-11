@@ -8,7 +8,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { Edit, Save, Home, Shield, Bell, Settings, Users, Copy, UserPlus, Star, Gift, Clock, Zap } from 'lucide-react';
+import { Edit, Save, Home, Shield, Bell, Settings, Users, Copy, UserPlus, Star, Gift, Clock, Zap, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
 import { Database } from '@/types_db';
@@ -416,14 +416,40 @@ export default function ProfileViewImproved() {
       setHousehold((prev:any) => ({ ...prev, ...(data || {}) }));
       toastHelpers.success('Household updated');
       setHouseholdFeedback({type:'success', message:'Household updated'});
+      
+      // Redirect back to overview tab after successful save
+      setTimeout(() => {
+        setActiveTab('overview');
+      }, 500); // Small delay to show success message
+      
     } catch (e:any) {
       toastHelpers.error(e.message || 'Failed to update household');
       setHouseholdFeedback({type:'error', message:e.message || 'Failed to update household'});
     } finally { setSavingHousehold(false); }
-  }, [household?.id, householdForm, supabase]);
+  }, [household?.id, householdForm, supabase, setActiveTab]);
 
   const readable = (val: string) => val.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
-  const canHouseholdSettings = permissionsForm.household_management === true && !!household;
+  const canHouseholdSettings = (
+    (permissionsForm.household_management === true) ||
+    (profile?.role === 'super_admin') ||
+    (profile?.role === 'admin') ||
+    (household?.created_by === profile?.user_id) ||
+    (household?.admin_id === profile?.id)
+  ) && !!household;
+
+  // Debug logging for permissions
+  useEffect(() => {
+    console.log('Permission debug:', {
+      household_management: permissionsForm.household_management,
+      profile_role: profile?.role,
+      household_created_by: household?.created_by,
+      profile_user_id: profile?.user_id,
+      household_admin_id: household?.admin_id,
+      profile_id: profile?.id,
+      canHouseholdSettings,
+      hasHousehold: !!household
+    });
+  }, [permissionsForm.household_management, profile?.role, household, canHouseholdSettings]);
 
   // Memoize expensive computations for better performance
   const currentUserMember = useMemo(() => 
@@ -526,10 +552,13 @@ export default function ProfileViewImproved() {
             {/* Edit button moved to top right corner */}
             {!overviewEditMode && (
               <button 
-                onClick={()=>setOverviewEditMode(true)} 
+                onClick={() => {
+                  console.log('Profile edit button clicked, enabling inline editing mode');
+                  setOverviewEditMode(true);
+                }} 
                 className="absolute top-6 right-6 px-4 py-2 rounded-lg bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 text-sm font-semibold hover:from-gray-200 hover:to-gray-300 shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 border-0"
               >
-                <Edit className="w-4 h-4" /> Edit
+                <Edit className="w-4 h-4" /> Edit Profile
               </button>
             )}
             
@@ -799,84 +828,115 @@ export default function ProfileViewImproved() {
           
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Household Members */}
-            {householdMembers.length > 0 && (
+            {/* Household Info with Members */}
+            {household && (
               <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 p-6 hover:shadow-2xl transition-all duration-300">
                 <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center">
-                    <Users className="w-4 h-4 text-white" />
+                  <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
+                    <Home className="w-4 h-4 text-white" />
                   </div>
-                  Household Members
+                  Household
                 </h3>
+                
                 <div className="space-y-4">
-                  {sortedMembers.map(member => (
-                    <div key={member.id} className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-gray-50/50 to-white/50 border border-gray-100/50 hover:from-blue-50/50 hover:to-indigo-50/50 hover:border-blue-200/50 transition-all duration-200 group">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-400 via-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-sm font-bold shadow-lg group-hover:scale-105 transition-transform">
-                        {(member.preferred_name || member.name || 'U').charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
-                          {member.preferred_name || member.name || 'Unnamed'}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                            member.role === 'super_admin' ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700' :
-                            member.role === 'admin' ? 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700' :
-                            'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700'
-                          }`}>
-                            {member.role === 'super_admin' ? 'Super Admin' : readable(member.role)}
-                          </span>
-                          {member.last_seen_at && (
-                            <span className="text-xs text-gray-500 flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {new Date(member.last_seen_at).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {household?.household_code && (
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <p className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Invite new members</p>
-                    <div className="flex items-center gap-3">
-                      <code className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 text-sm font-mono border border-gray-200/50 shadow-inner">
-                        {household.household_code}
-                      </code>
-                      <button 
-                        type="button" 
-                        onClick={() => copyToClipboard(household.household_code, 'Household code copied!')} 
-                        className="px-4 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 border-0"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
-                    </div>
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50/50 to-purple-50/50 border border-indigo-100/50">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Household Name</p>
+                    <p className="text-lg font-bold text-gray-900">{household.name || 'Unnamed Household'}</p>
                   </div>
-                )}
-              </div>
-            )}
-
-            {/* Household Info */}
-            {household && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2"><Home className="w-5 h-5 text-purple-600" /> Household</h3>
-                <div className="space-y-3 text-sm">
-                  <div><p className="text-gray-500 text-xs uppercase tracking-wide">Name</p><p className="font-medium text-gray-800">{household.name}</p></div>
-                  {household.household_type && <div><p className="text-gray-500 text-xs uppercase tracking-wide">Type</p><p className="font-medium text-gray-800">{readable(household.household_type)}</p></div>}
-                  <div><p className="text-gray-500 text-xs uppercase tracking-wide">Members</p><p className="font-medium text-gray-800">{householdMembers.length}</p></div>
+                  
+                  {household.household_type && (
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50/50 to-indigo-50/50 border border-blue-100/50">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Type</p>
+                      <p className="text-sm font-semibold text-gray-800">{readable(household.household_type)}</p>
+                    </div>
+                  )}
+                  
                   {(household.address || household.city || household.state) && (
-                    <div>
-                      <p className="text-gray-500 text-xs uppercase tracking-wide">Address</p>
-                      <p className="font-medium text-gray-800">
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-orange-50/50 to-amber-50/50 border border-orange-100/50">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Address</p>
+                      <p className="text-sm font-semibold text-gray-800 leading-relaxed">
                         {household.address && `${household.address}`}
-                        {household.address && (household.city || household.state) && ', '}
+                        {household.address && (household.city || household.state) && <br />}
                         {household.city && `${household.city}`}
                         {household.city && household.state && ', '}
                         {household.state && `${household.state}`}
                         {household.zip && ` ${household.zip}`}
                       </p>
                     </div>
+                  )}
+                  
+                  {/* Household Members Section - Integrated */}
+                  {householdMembers.length > 0 && (
+                    <div className="pt-4 border-t border-gray-100">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        Household Members
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-blue-500 rounded-full">
+                          {householdMembers.length}
+                        </span>
+                      </p>
+                      <div className="space-y-3">
+                        {sortedMembers.map(member => (
+                          <div key={member.id} className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-gray-50/50 to-white/50 border border-gray-100/50 hover:from-blue-50/50 hover:to-indigo-50/50 hover:border-blue-200/50 transition-all duration-200 group">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 via-purple-500 to-indigo-600 rounded-xl flex items-center justify-center text-white text-xs font-bold shadow-lg group-hover:scale-105 transition-transform">
+                              {(member.preferred_name || member.name || 'U').charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                                {member.preferred_name || member.name || 'Unnamed'}
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                                  member.role === 'super_admin' ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700' :
+                                  member.role === 'admin' ? 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700' :
+                                  'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700'
+                                }`}>
+                                  {member.role === 'super_admin' ? 'Super Admin' : readable(member.role)}
+                                </span>
+                                {member.last_seen_at && (
+                                  <span className="text-xs text-gray-500 flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {new Date(member.last_seen_at).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Household Code for Invites */}
+                  {household?.household_code && (
+                    <div className="pt-4 border-t border-gray-100">
+                      <p className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Invite new members</p>
+                      <div className="flex items-center gap-3">
+                        <code className="flex-1 px-3 py-2 rounded-lg bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 text-sm font-mono border border-gray-200/50 shadow-inner">
+                          {household.household_code}
+                        </code>
+                        <button 
+                          type="button" 
+                          onClick={() => copyToClipboard(household.household_code, 'Household code copied!')} 
+                          className="px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {canHouseholdSettings && (
+                    <button 
+                      onClick={() => {
+                        console.log('Large household edit button clicked, switching to household-settings tab');
+                        setActiveTab('household-settings');
+                      }}
+                      className="w-full mt-4 flex items-center justify-center gap-2 p-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit Household Settings
+                    </button>
                   )}
                 </div>
               </div>
@@ -978,111 +1038,217 @@ export default function ProfileViewImproved() {
   };
 
   const householdSettingsTab = !household ? (
-    <div className="text-sm text-gray-600" id="panel-household-settings" role="tabpanel" aria-labelledby="tab-household-settings">No household found.</div>
+    <div className="bg-white rounded-xl border border-gray-200 p-8 text-center" id="panel-household-settings" role="tabpanel" aria-labelledby="tab-household-settings">
+      <Home className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Household Found</h3>
+      <p className="text-gray-600 mb-4">You don't seem to be part of a household yet.</p>
+      <button 
+        onClick={() => router.push('/profile/setup')}
+        className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+      >
+        <UserPlus className="w-4 h-4" />
+        Set Up Household
+      </button>
+    </div>
   ) : (
-    <form onSubmit={(e)=>{e.preventDefault(); saveHousehold();}} className="space-y-6" id="panel-household-settings" role="tabpanel" aria-labelledby="tab-household-settings">
+    <div className="space-y-8" id="panel-household-settings" role="tabpanel" aria-labelledby="tab-household-settings">
       <div className="sr-only" aria-live="polite">{householdFeedback?.message || ''}</div>
-      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-semibold text-gray-800 mb-1">Household Name</label>
-          <input value={householdForm.name} onChange={e=>setHouseholdForm(f=>({...f,name:e.target.value}))} className="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-purple-500 focus:border-purple-500" />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-gray-800 mb-1">Household Type</label>
-          <select value={householdForm.household_type} onChange={e=>setHouseholdForm(f=>({...f,household_type:e.target.value as typeof f.household_type}))} className="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-purple-500 focus:border-purple-500">
-            <option value="solo_user">Solo User</option>
-            <option value="roommate_household">Roommate Household</option>
-            <option value="couple_no_kids">Couple (No Kids)</option>
-            <option value="family_household">Family Household</option>
-            <option value="single_parent_household">Single Parent Household</option>
-            <option value="multi_generational_household">Multi-Generational</option>
-          </select>
-        </div>
-        <div className="md:col-span-2">
-          <label className="block text-sm font-semibold text-gray-800 mb-1">Address</label>
-          <GoogleAddressInput
-            onAddressSelect={(addressData) => {
-              setHouseholdForm(f => ({
-                ...f,
-                address: addressData.address,
-                city: addressData.city,
-                state: addressData.state,
-                zip: addressData.zip,
-                coordinates: addressData.coordinates
-              }));
-            }}
-            initialValue={`${householdForm.address ? householdForm.address + ', ' : ''}${householdForm.city ? householdForm.city + ', ' : ''}${householdForm.state ? householdForm.state + ' ' : ''}${householdForm.zip || ''}`.trim().replace(/,$/, '')}
-            placeholder="Start typing your address..."
-            className="text-gray-900"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            This will be used to show your household location on the dashboard map
-          </p>
-        </div>
-        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-1">Street Address</label>
-            <input 
-              value={householdForm.address} 
-              onChange={e=>setHouseholdForm(f=>({...f,address:e.target.value}))} 
-              className="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-purple-500 focus:border-purple-500" 
-              placeholder="123 Main St"
-              readOnly
-            />
+      
+      {/* Header Section */}
+      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-200">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl flex items-center justify-center">
+            <Home className="w-6 h-6 text-white" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-1">City</label>
-            <input 
-              value={householdForm.city} 
-              onChange={e=>setHouseholdForm(f=>({...f,city:e.target.value}))} 
-              className="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-purple-500 focus:border-purple-500" 
-              placeholder="City"
-              readOnly
-            />
+            <h2 className="text-2xl font-bold text-gray-900">Household Settings</h2>
+            <p className="text-gray-600">Manage your household information and location</p>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+        </div>
+        
+        {/* Current Household Summary */}
+        <div className="bg-white/70 rounded-xl p-4 border border-white/50">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1">State</label>
-              <input 
-                value={householdForm.state} 
-                onChange={e=>setHouseholdForm(f=>({...f,state:e.target.value}))} 
-                className="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-purple-500 focus:border-purple-500" 
-                placeholder="CA"
-                readOnly
-              />
+              <p className="text-gray-500 font-medium mb-1">Current Name</p>
+              <p className="font-semibold text-gray-900">{household.name || 'Unnamed Household'}</p>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-1">ZIP</label>
-              <input 
-                value={householdForm.zip} 
-                onChange={e=>setHouseholdForm(f=>({...f,zip:e.target.value}))} 
-                className="w-full px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-900 focus:ring-purple-500 focus:border-purple-500" 
-                placeholder="12345"
-                readOnly
-              />
+              <p className="text-gray-500 font-medium mb-1">Type</p>
+              <p className="font-semibold text-gray-900">{readable(household.household_type)}</p>
             </div>
+            <div>
+              <p className="text-gray-500 font-medium mb-1">Members</p>
+              <p className="font-semibold text-gray-900">{householdMembers.length} {householdMembers.length === 1 ? 'member' : 'members'}</p>
+            </div>
+          </div>
+          {(household.address || household.city || household.state) && (
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-gray-500 font-medium mb-1">Current Address</p>
+              <p className="font-semibold text-gray-900">
+                {household.address && `${household.address}`}
+                {household.address && (household.city || household.state) && ', '}
+                {household.city && `${household.city}`}
+                {household.city && household.state && ', '}
+                {household.state && `${household.state}`}
+                {household.zip && ` ${household.zip}`}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Edit Form */}
+      <form onSubmit={(e)=>{e.preventDefault(); saveHousehold();}} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 space-y-8">
+        <div className="border-b border-gray-200 pb-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Basic Information</h3>
+          <p className="text-gray-600">Update your household's basic details</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">Household Name</label>
+            <input 
+              value={householdForm.name} 
+              onChange={e=>setHouseholdForm(f=>({...f,name:e.target.value}))} 
+              placeholder="Enter a name for your household (e.g., The Smith Family)"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors" 
+            />
+            <p className="text-xs text-gray-500 mt-1">This will appear on your dashboard and shared spaces</p>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-2">Household Type</label>
+            <select 
+              value={householdForm.household_type} 
+              onChange={e=>setHouseholdForm(f=>({...f,household_type:e.target.value as typeof f.household_type}))} 
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white text-gray-900 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors"
+            >
+              <option value="solo_user">Solo User</option>
+              <option value="roommate_household">Roommate Household</option>
+              <option value="couple_no_kids">Couple (No Kids)</option>
+              <option value="family_household">Family Household</option>
+              <option value="single_parent_household">Single Parent Household</option>
+              <option value="multi_generational_household">Multi-Generational</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">Choose the type that best describes your living situation</p>
+          </div>
+        </div>
+
+        <div className="border-t border-gray-200 pt-8">
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Location</h3>
+          <p className="text-gray-600 mb-6">Set your household address for location-based features</p>
+          
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-800 mb-2">Address</label>
+              <GoogleAddressInput
+                onAddressSelect={(addressData) => {
+                  setHouseholdForm(f => ({
+                    ...f,
+                    address: addressData.address,
+                    city: addressData.city,
+                    state: addressData.state,
+                    zip: addressData.zip,
+                    coordinates: addressData.coordinates
+                  }));
+                }}
+                initialValue={`${householdForm.address ? householdForm.address + ', ' : ''}${householdForm.city ? householdForm.city + ', ' : ''}${householdForm.state ? householdForm.state + ' ' : ''}${householdForm.zip || ''}`.trim().replace(/,$/, '')}
+                placeholder="Start typing your address and select from suggestions..."
+                className="text-gray-900 px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Start typing and select from the dropdown to automatically fill in your complete address
+              </p>
+            </div>
+            
+            {/* Display selected address details (read-only) */}
+            {(householdForm.address || householdForm.city || householdForm.state || householdForm.zip) && (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-purple-900 mb-2">Selected Address:</h4>
+                <div className="text-sm text-purple-800">
+                  <div>{householdForm.address}</div>
+                  <div>{householdForm.city}, {householdForm.state} {householdForm.zip}</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         
         {/* Household Location Map */}
         {(householdForm.address && householdForm.city && householdForm.state) && (
-          <div className="md:col-span-2">
-            <label className="block text-sm font-semibold text-gray-800 mb-3">Household Location</label>
-            <HouseholdMapWidget className="border border-gray-200" />
-            <p className="text-xs text-gray-500 mt-2">
-              Interactive map showing your household location based on the address above
-            </p>
+          <div className="border-t border-gray-200 pt-8">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Location Preview</h3>
+            <p className="text-gray-600 mb-6">Your household location as it will appear on the dashboard</p>
+            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <HouseholdMapWidget className="border border-gray-300 rounded-lg" />
+              <p className="text-xs text-gray-500 mt-3 text-center">
+                📍 Interactive map showing your household location
+              </p>
+            </div>
           </div>
         )}
         
-        {householdFeedback && <div className={`text-sm md:col-span-2 ${householdFeedback.type==='error'?'text-red-600':householdFeedback.type==='success'?'text-green-600':'text-gray-600'}`}>{householdFeedback.message}</div>}
-        <div className="md:col-span-2 flex justify-end">
-          <button type="submit" disabled={savingHousehold} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-purple-600 text-white font-medium hover:bg-purple-700 disabled:opacity-60 shadow focus:outline-none focus-visible:ring focus-visible:ring-purple-500">
-            {savingHousehold ? <div className="animate-spin h-4 w-4 border-b-2 border-white rounded-full" /> : <Save className="w-4 h-4" />} {savingHousehold ? 'Saving...' : 'Save Household'}
-          </button>
+        {/* Feedback and Actions */}
+        <div className="border-t border-gray-200 pt-8">
+          {householdFeedback && (
+            <div className={`p-4 rounded-lg mb-6 ${
+              householdFeedback.type === 'error' 
+                ? 'bg-red-50 border border-red-200 text-red-700' 
+                : householdFeedback.type === 'success'
+                ? 'bg-green-50 border border-green-200 text-green-700'
+                : 'bg-blue-50 border border-blue-200 text-blue-700'
+            }`}>
+              <div className="flex items-center gap-2">
+                {householdFeedback.type === 'success' && <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center"><div className="w-2 h-2 bg-white rounded-full"></div></div>}
+                {householdFeedback.type === 'error' && <X className="w-5 h-5 text-red-500" />}
+                <span className="font-medium">{householdFeedback.message}</span>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex justify-end gap-4">
+            <button 
+              type="button"
+              onClick={() => {
+                // Reset form to original values
+                if (household) {
+                  setHouseholdForm({
+                    name: household.name || '',
+                    household_type: household.household_type || 'family_household',
+                    address: household.address || '',
+                    city: household.city || '',
+                    state: household.state || '',
+                    zip: household.zip || ''
+                  });
+                }
+                setHouseholdFeedback(null);
+              }}
+              className="px-6 py-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
+            >
+              Reset Changes
+            </button>
+            <button 
+              type="submit" 
+              disabled={savingHousehold} 
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-indigo-700 disabled:opacity-60 shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              {savingHousehold ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-b-2 border-white rounded-full" />
+                  Saving Changes...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Save Household Settings
+                </>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 
   const showLoading = authLoading || initialLoading || householdLoading;

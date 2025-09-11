@@ -104,6 +104,20 @@ const loggingRoutes = [
     description: 'Basic console log testing',
     icon: TestTube,
     color: 'purple'
+  },
+  {
+    href: '/test-logging-simple',
+    label: 'Simple Logging Tool',
+    description: 'Basic logging test interface',
+    icon: TestTube,
+    color: 'orange'
+  },
+  {
+    href: '/auth-debug',
+    label: 'Auth Debug Tool',
+    description: 'Authentication debugging tools',
+    icon: Filter,
+    color: 'red'
   }
 ];
 
@@ -301,7 +315,9 @@ const LoggingNav = memo(function LoggingNav({
                   blue: 'text-blue-600 bg-blue-50 hover:bg-blue-100',
                   yellow: 'text-yellow-600 bg-yellow-50 hover:bg-yellow-100',
                   green: 'text-green-600 bg-green-50 hover:bg-green-100',
-                  purple: 'text-purple-600 bg-purple-50 hover:bg-purple-100'
+                  purple: 'text-purple-600 bg-purple-50 hover:bg-purple-100',
+                  orange: 'text-orange-600 bg-orange-50 hover:bg-orange-100',
+                  red: 'text-red-600 bg-red-50 hover:bg-red-100'
                 };
                 return colorMap[color] || 'text-gray-600 bg-gray-50 hover:bg-gray-100';
               };
