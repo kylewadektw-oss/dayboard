@@ -110,13 +110,12 @@ export async function POST(request: Request) {
     // Process each recipe
     for (const recipe of data.results) {
       try {
-        // Check if recipe already exists (by Spoonacular ID in application_logs)
-        const { data: existingRecipe } = await supabase
-          .from('application_logs')
-          .select('id, data')
-          .eq('component', 'recipe_system')
-          .eq('user_id', user.id)
-          .like('data->>spoonacular_id', `${recipe.id}`)
+        // Check if recipe already exists (by title and source URL)
+        const { data: existingRecipe } = await (supabase as any)
+          .from('recipes')
+          .select('id')
+          .eq('title', recipe.title)
+          .eq('source_url', recipe.sourceUrl)
           .single();
 
         if (existingRecipe) {
@@ -124,47 +123,30 @@ export async function POST(request: Request) {
           continue;
         }
 
-        // Transform Spoonacular recipe to our format
+        // Transform Spoonacular recipe to match our database schema
         const transformedRecipe = {
+          user_id: user.id,
           household_id: profile.household_id,
-          created_by: user.id,
-          spoonacular_id: recipe.id,
           title: recipe.title,
           description: recipe.summary ? 
             recipe.summary.replace(/<[^>]*>/g, '').substring(0, 500) : 
             `Delicious ${recipe.title} recipe`,
-          image_url: recipe.image,
-          image_emoji: getRecipeEmoji(recipe),
-          total_time_minutes: recipe.readyInMinutes || 30,
-          prep_time_minutes: recipe.preparationMinutes || Math.floor((recipe.readyInMinutes || 30) * 0.3),
-          cook_time_minutes: recipe.cookingMinutes || Math.floor((recipe.readyInMinutes || 30) * 0.7),
-          servings: recipe.servings || 4,
-          difficulty: getDifficulty(recipe),
-          meal_type: getMealTypes(recipe),
-          diet_types: getDietTypes(recipe),
-          cuisine: recipe.cuisines?.[0] || 'International',
           ingredients: transformIngredients(recipe.extendedIngredients || []),
           instructions: transformInstructions(recipe.analyzedInstructions || []),
-          tags: getTags(recipe),
-          rating: recipe.spoonacularScore ? Math.round(recipe.spoonacularScore / 20 * 10) / 10 : 4.0,
-          rating_count: Math.floor(Math.random() * 50) + 5, // Simulated rating count
+          prep_time: recipe.preparationMinutes || Math.floor((recipe.readyInMinutes || 30) * 0.3),
+          cook_time: recipe.cookingMinutes || Math.floor((recipe.readyInMinutes || 30) * 0.7),
+          servings: recipe.servings || 4,
+          difficulty: getDifficulty(recipe),
+          cuisine: recipe.cuisines?.[0] || 'International',
+          dietary_tags: getDietTypes(recipe),
           source_url: recipe.sourceUrl,
-          is_public: false,
-          is_verified: true // Spoonacular recipes are considered verified
+          image_url: recipe.image
         };
 
-        // Store recipe in application_logs until recipes table is created
-        const { error: insertError } = await supabase
-          .from('application_logs')
-          .insert({
-            user_id: user.id,
-            session_id: `recipe-${Date.now()}-${recipe.id}`,
-            level: 'info',
-            message: `Recipe saved: ${transformedRecipe.title}`,
-            component: 'recipe_system',
-            data: transformedRecipe,
-            timestamp: new Date().toISOString()
-          });
+        // Insert into recipes table
+        const { error: insertError } = await (supabase as any)
+          .from('recipes')
+          .insert(transformedRecipe);
 
         if (insertError) {
           console.error('Error inserting recipe:', insertError);
