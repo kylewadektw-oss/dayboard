@@ -44,3 +44,18 @@ PROJECT_ROADMAP.md
 MarketResearch.md
 TODO.md
 NOTES.md
+
+# Development documentation and reports (local only)
+*_SUMMARY.md
+*_REPORT.md
+*_CHECKLIST.md
+*_FIX.md
+*_RECOMMENDATION.md
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
+
+# Test and development files (local only)
+app/(app)/dashboard/page-simple.tsx
+app/(app)/dashboard/test-page.tsx
+test-*.js
