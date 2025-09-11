@@ -37,7 +37,7 @@ interface SettingsCategory {
   description: string;
   icon: string;
   sort_order: number;
-  required_role: string;
+  required_role?: string; // Make optional since it might not exist in DB
 }
 
 interface SettingsItem {
@@ -49,7 +49,7 @@ interface SettingsItem {
   setting_type: string;
   default_value: any;
   options?: any;
-  required_role: string;
+  required_role?: string; // Make optional since it might not exist in DB
   sort_order: number;
 }
 
@@ -102,9 +102,11 @@ export default function ComprehensiveSettingsDashboard() {
       if (!profile?.id) return;
 
       try {
-        const { data, error } = await supabase.rpc('get_user_settings_tabs', {
-          user_id_param: profile.id
-        });
+        // Query categories directly from the table to ensure we get all fields
+        const { data, error } = await supabase
+          .from('settings_categories')
+          .select('*')
+          .order('sort_order');
 
         if (error) throw error;
         setCategories(data || []);
