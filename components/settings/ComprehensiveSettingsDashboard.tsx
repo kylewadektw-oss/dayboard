@@ -34,10 +34,11 @@ import { createClient } from '@/utils/supabase/client';
 interface SettingsCategory {
   category_key: string;
   display_name: string;
-  description: string;
-  icon: string;
+  description: string | null;
+  icon: string | null;
   sort_order: number;
-  required_role?: string; // Make optional since it might not exist in DB
+  required_role?: string;
+  created_at?: string;
 }
 
 interface SettingsItem {
@@ -386,14 +387,14 @@ export default function ComprehensiveSettingsDashboard() {
     }
   };
 
-  const getTabIcon = (iconName: string) => {
-    const Icon = IconMap[iconName as keyof typeof IconMap] || Settings;
+  const getTabIcon = (iconName: string | null) => {
+    const Icon = IconMap[(iconName || 'Settings') as keyof typeof IconMap] || Settings;
     return <Icon className="h-4 w-4" />;
   };
 
   const getCategoryDescription = (categoryKey: string) => {
     const category = categories.find(c => c.category_key === categoryKey);
-    return category?.description || '';
+    return category?.description || 'Category settings';
   };
 
   if (loading) {
