@@ -39,8 +39,90 @@ export function RecipeLibrary() {
   const [fetchResults, setFetchResults] = useState<FetchRecipesResponse | null>(null);
 
   useEffect(() => {
-    loadMockRecipes();
+    loadUserFavorites();
+    loadRecipesFromDatabase();
   }, [activeFilter, searchTerm]);
+
+  const loadUserFavorites = async () => {
+    try {
+      // Note: This would require a user_recipe_favorites table
+      // For now, we'll use localStorage as a fallback
+      const savedFavorites = localStorage.getItem('recipe_favorites');
+      if (savedFavorites) {
+        setUserFavorites(new Set(JSON.parse(savedFavorites)));
+      }
+    } catch (error) {
+      console.error('Error loading user favorites:', error);
+    }
+  };
+
+  const loadRecipesFromDatabase = async () => {
+    setLoading(true);
+    
+    try {
+      // Build query for Supabase
+      let query = supabase
+        .from('recipes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      // Apply search filter
+      if (searchTerm && searchTerm.trim()) {
+        query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,tags.cs.{${searchTerm}}`);
+      }
+
+      // Apply category filter
+      if (activeFilter && activeFilter !== 'All') {
+        const filterLower = activeFilter.toLowerCase();
+        query = query.contains('meal_type', [filterLower]);
+      }
+
+      const { data: recipesData, error } = await query.limit(50);
+
+      if (error) {
+        console.error('Error loading recipes:', error);
+        // Fall back to mock data if database fails
+        await loadMockRecipes();
+        return;
+      }
+
+      // Transform database data to match our interface
+      const transformedRecipes: RecipeWithDetails[] = (recipesData || []).map((recipe: any) => ({
+        ...recipe,
+        user_favorite: userFavorites.has(recipe.id),
+        cuisine: recipe.cuisine || 'International',
+        creator: { 
+          id: recipe.created_by || 'unknown', 
+          name: 'Recipe Creator', 
+          avatar_url: undefined 
+        },
+        // Ensure required fields have defaults
+        meal_type: recipe.meal_type || ['dinner'],
+        diet_types: recipe.diet_types || [],
+        ingredients: recipe.ingredients || [],
+        instructions: recipe.instructions || [],
+        tags: recipe.tags || [],
+        rating: recipe.rating || 0,
+        rating_count: recipe.rating_count || 0
+      }));
+
+      setRecipes(transformedRecipes);
+      
+      // If no recipes found, show helpful message
+      if (transformedRecipes.length === 0) {
+        console.log('No recipes found in database. Consider fetching some recipes from the API!');
+      } else {
+        console.log(`✅ Loaded ${transformedRecipes.length} recipes from database`);
+      }
+      
+    } catch (error) {
+      console.error('Error in loadRecipesFromDatabase:', error);
+      // Fall back to mock data
+      await loadMockRecipes();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadMockRecipes = async () => {
     setLoading(true);
@@ -332,7 +414,7 @@ export function RecipeLibrary() {
       
       // Refresh the recipe list after fetching
       if (result.inserted > 0) {
-        loadMockRecipes(); // This will eventually be replaced with real DB call
+        loadRecipesFromDatabase(); // Load real data from database
       }
       
       // Show success message
