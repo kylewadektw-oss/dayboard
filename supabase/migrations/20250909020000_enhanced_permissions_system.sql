@@ -295,8 +295,19 @@ CREATE POLICY "Authenticated users can read settings items" ON settings_items
   FOR SELECT TO authenticated USING (true);
 
 -- User settings (users can manage their own settings)
-CREATE POLICY "Users can manage their own settings" ON user_settings
-  FOR ALL TO authenticated USING (user_id = auth.uid());
+CREATE POLICY "Users can view their own settings" ON user_settings
+  FOR SELECT TO authenticated USING (user_id = auth.uid());
+
+CREATE POLICY "Users can insert their own settings" ON user_settings
+  FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Users can update their own settings" ON user_settings
+  FOR UPDATE TO authenticated 
+  USING (user_id = auth.uid()) 
+  WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Users can delete their own settings" ON user_settings
+  FOR DELETE TO authenticated USING (user_id = auth.uid());
 
 CREATE POLICY "Admins can view household member settings" ON user_settings
   FOR SELECT TO authenticated USING (

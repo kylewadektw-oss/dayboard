@@ -5,8 +5,20 @@
  * 
  * This file is part of Dayboard, a proprietary household command center application.
  * 
- * IMPORTANT NOTICE:
- * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * IMPORTANT N            <button
+              onClick={handleOpenSettings}
+              className={`flex items-center px-4 py-2 rounded-lg transition-colors ${
+                showSettings 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+              {hasUnsavedChanges && (
+                <span className="ml-2 w-2 h-2 bg-orange-500 rounded-full"></span>
+              )}
+            </button>his code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
  * 
  * For licensing inquiries: kyle.wade.ktw@gmail.com
@@ -14,9 +26,9 @@
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
-import { Calendar, Settings, Sparkles, BarChart3, ChevronLeft, ChevronRight, Clock, Star } from 'lucide-react';
+import { Calendar, Settings, Sparkles, BarChart3, ChevronLeft, ChevronRight, Clock, Star, Check, X } from 'lucide-react';
 import { Recipe, MealPlan, RecipeMealType } from '@/types/recipes';
 
 interface EnhancedWeeklyMealPlanProps {
@@ -58,8 +70,55 @@ export function EnhancedWeeklyMealPlan({
   const [showSettings, setShowSettings] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [settings, setSettings] = useState<BasicSettings>(DEFAULT_SETTINGS);
+  const [tempSettings, setTempSettings] = useState<BasicSettings>(DEFAULT_SETTINGS);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedMealType, setSelectedMealType] = useState<RecipeMealType>('dinner');
+
+  // Settings management functions
+  const handleOpenSettings = () => {
+    setTempSettings(settings);
+    setHasUnsavedChanges(false);
+    setShowSettings(true);
+  };
+
+  const handleSaveSettings = () => {
+    setSettings(tempSettings);
+    setHasUnsavedChanges(false);
+    setShowSettings(false);
+  };
+
+  const handleCancelSettings = () => {
+    setTempSettings(settings);
+    setHasUnsavedChanges(false);
+    setShowSettings(false);
+  };
+
+  const handleTempSettingsChange = (newTempSettings: BasicSettings) => {
+    setTempSettings(newTempSettings);
+    setHasUnsavedChanges(
+      JSON.stringify(newTempSettings) !== JSON.stringify(settings)
+    );
+  };
+
+  // Keyboard shortcuts for settings panel
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!showSettings) return;
+      
+      if (event.key === 'Escape') {
+        handleCancelSettings();
+      } else if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+        event.preventDefault();
+        if (hasUnsavedChanges) {
+          handleSaveSettings();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showSettings, hasUnsavedChanges]);
 
   // Generate week days based on current week
   const weekDays = useMemo(() => {
@@ -199,21 +258,29 @@ export function EnhancedWeeklyMealPlan({
       {/* Settings Panel */}
       {showSettings && (
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Week Settings</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Week Settings</h3>
+            {hasUnsavedChanges && (
+              <span className="text-sm text-orange-600 font-medium">Unsaved changes</span>
+            )}
+          </div>
           
           <div className="space-y-4">
             {/* Show Weekends Toggle */}
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium text-gray-700">Show Weekends</label>
               <button
-                onClick={() => setSettings(prev => ({ ...prev, showWeekends: !prev.showWeekends }))}
+                onClick={() => handleTempSettingsChange({ 
+                  ...tempSettings, 
+                  showWeekends: !tempSettings.showWeekends 
+                })}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  settings.showWeekends ? 'bg-blue-600' : 'bg-gray-200'
+                  tempSettings.showWeekends ? 'bg-blue-600' : 'bg-gray-200'
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    settings.showWeekends ? 'translate-x-6' : 'translate-x-1'
+                    tempSettings.showWeekends ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>
@@ -227,15 +294,15 @@ export function EnhancedWeeklyMealPlan({
                   <button
                     key={mealType}
                     onClick={() => {
-                      setSettings(prev => ({
-                        ...prev,
-                        selectedMealTypes: prev.selectedMealTypes.includes(mealType)
-                          ? prev.selectedMealTypes.filter(type => type !== mealType)
-                          : [...prev.selectedMealTypes, mealType]
-                      }));
+                      handleTempSettingsChange({
+                        ...tempSettings,
+                        selectedMealTypes: tempSettings.selectedMealTypes.includes(mealType)
+                          ? tempSettings.selectedMealTypes.filter(type => type !== mealType)
+                          : [...tempSettings.selectedMealTypes, mealType]
+                      });
                     }}
                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors capitalize ${
-                      settings.selectedMealTypes.includes(mealType)
+                      tempSettings.selectedMealTypes.includes(mealType)
                         ? 'bg-blue-100 text-blue-700'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
@@ -243,6 +310,37 @@ export function EnhancedWeeklyMealPlan({
                     {mealType}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-gray-500">
+                  Press <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">Esc</kbd> to cancel or{' '}
+                  <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">⌘S</kbd> to save
+                </div>
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={handleCancelSettings}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveSettings}
+                    disabled={!hasUnsavedChanges}
+                    className={`flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      hasUnsavedChanges
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    <Check className="h-4 w-4 mr-2" />
+                    Save Changes
+                  </button>
+                </div>
               </div>
             </div>
           </div>

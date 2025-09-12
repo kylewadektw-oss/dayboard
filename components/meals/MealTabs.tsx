@@ -18,9 +18,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Heart, Calendar, BookOpen, Zap, FlaskConical, ShoppingCart, Martini } from 'lucide-react';
+import { Heart, Calendar, BookOpen, Zap, FlaskConical, ShoppingCart, Martini, Settings } from 'lucide-react';
 import { MealFavorites } from './MealFavorites';
 import { WeeklyMealPlan } from './WeeklyMealPlan';
+import { EnhancedMealPlanWrapper } from './EnhancedMealPlanWrapper';
 import { RecipeLibrary } from './RecipeLibrary';
 import { Cocktails } from './Cocktails';
 
@@ -36,36 +37,57 @@ const tabs = [
 
 export function MealTabs() {
   const [activeTab, setActiveTab] = useState('plan');
+  const [useEnhancedMode, setUseEnhancedMode] = useState(true); // Default to enhanced mode
 
   return (
     <div className="bg-white rounded-2xl shadow-lg">
       {/* Tab Navigation */}
       <div className="border-b border-gray-200">
-        <div className="flex overflow-x-auto scrollbar-hide">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                  activeTab === tab.id
-                    ? `${tab.color} border-current`
-                    : 'text-gray-500 hover:text-gray-700 border-transparent'
-                }`}
-              >
-                <Icon className="h-4 w-4 mr-2" />
-                {tab.name}
-              </button>
-            );
-          })}
+        <div className="flex items-center justify-between">
+          <div className="flex overflow-x-auto scrollbar-hide">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                    activeTab === tab.id
+                      ? `${tab.color} border-current`
+                      : 'text-gray-500 hover:text-gray-700 border-transparent'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 mr-2" />
+                  {tab.name}
+                </button>
+              );
+            })}
+          </div>
+          
+          {/* Enhanced Mode Toggle - only show on plan tab */}
+          {activeTab === 'plan' && (
+            <div className="flex items-center px-4 py-3">
+              <label className="flex items-center text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={useEnhancedMode}
+                  onChange={(e) => setUseEnhancedMode(e.target.checked)}
+                  className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <Settings className="h-4 w-4 mr-1" />
+                Enhanced Mode
+              </label>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Tab Content */}
       <div className="p-6">
         {activeTab === 'favorites' && <MealFavorites />}
-        {activeTab === 'plan' && <WeeklyMealPlan />}
+        {activeTab === 'plan' && (
+          useEnhancedMode ? <EnhancedMealPlanWrapper /> : <WeeklyMealPlan />
+        )}
         {activeTab === 'library' && <RecipeLibrary />}
         {activeTab === 'cocktails' && <Cocktails />}
         {activeTab === 'quick' && <div>Quick Meals - Coming Soon</div>}

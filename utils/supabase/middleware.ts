@@ -14,6 +14,14 @@ const PUBLIC_ROUTES = new Set([
   '/signup'
 ]);
 
+// API routes that should be accessible (will handle their own auth if needed)
+const API_ROUTES = ['/api/'];
+
+// Helper: check if path is an API route
+function isApiRoute(pathname: string) {
+  return API_ROUTES.some(route => pathname.startsWith(route));
+}
+
 // Legacy auth routes list (kept in case of future branching)
 const AUTH_ROUTES = ['/signin', '/signup'];
 
@@ -55,8 +63,8 @@ export function updateSession(request: NextRequest) {
       return res;
     }
 
-    // Always allow explicit public routes
-    if (PUBLIC_ROUTES.has(cleanPath)) {
+    // Always allow explicit public routes and API routes
+    if (PUBLIC_ROUTES.has(cleanPath) || isApiRoute(cleanPath)) {
       return NextResponse.next({ headers: { 'x-auth-route': 'public', 'x-auth-user-cookie': authed ? '1':'0' } });
     }
 
