@@ -1451,6 +1451,24 @@ User Agent: ${log.userAgent || 'N/A'}
               >
                 🔍 DevTools Monitor
               </a>
+
+              <button 
+                onClick={() => {
+                  setSelectedComponent('RemoteMonitor');
+                  setSearchQuery('');
+                }}
+                className="px-4 py-2 bg-teal-500 text-white rounded-xl hover:bg-teal-600 transition-colors font-medium flex items-center gap-2"
+              >
+                🌐 Remote Sites
+              </button>
+
+              <a
+                href="/REMOTE_MONITORING_SETUP.md"
+                target="_blank"
+                className="px-4 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors font-medium flex items-center gap-2"
+              >
+                📖 Setup Guide
+              </a>
             </div>
 
             <div className="flex flex-wrap items-center gap-6">

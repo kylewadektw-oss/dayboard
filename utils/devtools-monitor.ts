@@ -153,8 +153,8 @@ export interface ErrorReport {
 export class DevToolsMonitor {
   private isActive = false;
   private observers: PerformanceObserver[] = [];
-  private originalFetch: typeof fetch;
-  private originalXHR: typeof XMLHttpRequest;
+  private originalFetch?: typeof fetch;
+  private originalXHR?: typeof XMLHttpRequest;
   
   // Data stores
   private coreWebVitals: CoreWebVitals = {};
@@ -172,13 +172,16 @@ export class DevToolsMonitor {
   private customTimings: Map<string, number> = new Map();
   
   constructor() {
-    this.originalFetch = window.fetch;
-    this.originalXHR = XMLHttpRequest;
+    // Only initialize in browser environment
+    if (typeof window !== 'undefined') {
+      this.originalFetch = window.fetch;
+      this.originalXHR = XMLHttpRequest;
+    }
   }
 
   // Start comprehensive monitoring
   start(): void {
-    if (this.isActive) return;
+    if (this.isActive || typeof window === 'undefined') return;
     
     this.isActive = true;
     this.setupPerformanceObservers();
@@ -199,9 +202,13 @@ export class DevToolsMonitor {
     this.observers.forEach(observer => observer.disconnect());
     this.observers = [];
     
-    // Restore original functions
-    window.fetch = this.originalFetch;
-    (window as any).XMLHttpRequest = this.originalXHR;
+    // Restore original functions (only if in browser)
+    if (typeof window !== 'undefined' && this.originalFetch) {
+      window.fetch = this.originalFetch;
+    }
+    if (typeof window !== 'undefined' && this.originalXHR) {
+      (window as any).XMLHttpRequest = this.originalXHR;
+    }
     
     logger.info('DevTools Monitor stopped', 'DevToolsMonitor');
   }
@@ -324,6 +331,11 @@ export class DevToolsMonitor {
 
   // Network Monitoring Setup
   private setupNetworkMonitoring(): void {
+    // Only setup network monitoring in browser environment
+    if (typeof window === 'undefined' || !this.originalFetch) {
+      return;
+    }
+
     // Monitor fetch requests
     window.fetch = async (...args: Parameters<typeof fetch>): Promise<Response> => {
       const startTime = performance.now();
@@ -331,7 +343,7 @@ export class DevToolsMonitor {
       const method = args[1]?.method || 'GET';
       
       try {
-        const response = await this.originalFetch(...args);
+        const response = await this.originalFetch!(...args);
         const endTime = performance.now();
         
         const networkRequest: NetworkRequest = {

@@ -50,3 +50,4 @@ tsconfig.tsbuildinfo
 app/(app)/dashboard/page-simple.tsx
 app/(app)/dashboard/test-page.tsx
 test-*.js
+.vercel

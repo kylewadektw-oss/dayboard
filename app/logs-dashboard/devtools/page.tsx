@@ -23,7 +23,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { devToolsMonitor, performanceUtils } from '@/utils/devtools-monitor';
 import { logger } from '@/utils/logger';
 import LoggingNav from '@/components/logging/LoggingNav';
 
@@ -41,11 +40,40 @@ export default function DevToolsDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState('5m');
+  const [devToolsMonitor, setDevToolsMonitor] = useState<any>(null);
   const refreshInterval = useRef<NodeJS.Timeout>();
+
+  // Initialize DevTools monitor only on client side
+  useEffect(() => {
+    let monitor: any = null;
+    
+    const initializeMonitor = async () => {
+      try {
+        const { devToolsMonitor: monitorInstance } = await import('@/utils/devtools-monitor');
+        monitor = monitorInstance;
+        setDevToolsMonitor(monitorInstance);
+        
+        // Start monitoring
+        monitorInstance.start();
+        
+        logger.info('DevTools Dashboard initialized', 'DevToolsDashboard');
+      } catch (error) {
+        logger.error('Failed to initialize DevTools monitor', 'DevToolsDashboard', { error });
+      }
+    };
+
+    initializeMonitor();
+
+    return () => {
+      if (monitor) {
+        monitor.stop();
+      }
+    };
+  }, []);
 
   // Refresh data from DevTools monitor
   const refreshData = () => {
-    if (isMonitoring) {
+    if (isMonitoring && devToolsMonitor) {
       const data = devToolsMonitor.getFullReport();
       setMonitorData(data);
     }
@@ -53,10 +81,12 @@ export default function DevToolsDashboard() {
 
   useEffect(() => {
     // Initial data load
-    refreshData();
+    if (devToolsMonitor) {
+      refreshData();
+    }
 
     // Setup auto-refresh
-    if (autoRefresh) {
+    if (autoRefresh && devToolsMonitor) {
       refreshInterval.current = setInterval(refreshData, 2000);
     }
 
@@ -65,9 +95,11 @@ export default function DevToolsDashboard() {
         clearInterval(refreshInterval.current);
       }
     };
-  }, [autoRefresh, isMonitoring]);
+  }, [autoRefresh, isMonitoring, devToolsMonitor]);
 
   const toggleMonitoring = () => {
+    if (!devToolsMonitor) return;
+    
     if (isMonitoring) {
       devToolsMonitor.stop();
     } else {
