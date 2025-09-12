@@ -131,21 +131,30 @@ export interface SpoonacularSearchResponse {
 }
 
 class SpoonacularService {
-  private apiKey: string
+  private apiKey: string | null = null
   private baseUrl = 'https://api.spoonacular.com/recipes'
 
   constructor() {
-    this.apiKey = process.env.SPOONACULAR_API_KEY || ''
-    if (!this.apiKey) {
-      throw new Error('Spoonacular API key not found in environment variables')
+    // Don't validate API key at construction time to avoid build failures
+  }
+
+  private initializeApiKey() {
+    if (this.apiKey === null) {
+      this.apiKey = process.env.SPOONACULAR_API_KEY || ''
+      if (!this.apiKey) {
+        throw new Error('Spoonacular API key not found in environment variables')
+      }
     }
   }
 
   private async fetchFromAPI<T>(endpoint: string, params: Record<string, any> = {}): Promise<T> {
+    // Initialize API key on first use
+    this.initializeApiKey()
+    
     const url = new URL(`${this.baseUrl}${endpoint}`)
     
     // Add API key and default params
-    url.searchParams.append('apiKey', this.apiKey)
+    url.searchParams.append('apiKey', this.apiKey!)
     
     // Add other parameters
     Object.entries(params).forEach(([key, value]) => {

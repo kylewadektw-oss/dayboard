@@ -571,6 +571,51 @@ export interface Database {
           }
         ]
       }
+      magic8_questions: {
+        Row: {
+          id: string
+          household_id: string
+          asked_by: string
+          question: string
+          answer: string
+          theme: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          household_id: string
+          asked_by: string
+          question: string
+          answer: string
+          theme?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          household_id?: string
+          asked_by?: string
+          question?: string
+          answer?: string
+          theme?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "magic8_questions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "magic8_questions_asked_by_fkey"
+            columns: ["asked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       household_members: {
         Row: {
           id: string

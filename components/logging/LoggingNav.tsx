@@ -85,6 +85,13 @@ const loggingRoutes = [
     color: 'blue'
   },
   {
+    href: '/logs-dashboard/devtools',
+    label: 'DevTools Monitor',
+    description: 'Chrome DevTools-style monitoring',
+    icon: Search,
+    color: 'indigo'
+  },
+  {
     href: '/test-log-generation',
     label: 'Log Generator',
     description: 'Generate realistic test logs',

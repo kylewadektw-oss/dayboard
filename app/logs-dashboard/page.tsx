@@ -1110,9 +1110,9 @@ User Agent: ${log.userAgent || 'N/A'}
       <div className={`transition-all duration-300 ${
         sidebarCollapsed ? 'ml-16' : 'ml-80'
       }`}>
-        <div className="p-6 max-w-full mx-auto bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+        <div className="p-6 max-w-full mx-auto bg-gradient-to-br from-gray-50 to-blue-50 h-screen overflow-hidden flex flex-col">
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex justify-between items-center mb-8 flex-shrink-0">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Application Logs</h1>
               <p className="text-gray-600">Real-time monitoring and diagnostics</p>
@@ -1156,7 +1156,7 @@ User Agent: ${log.userAgent || 'N/A'}
           </div>
           
           {/* Statistics Cards - Streamlined */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 flex-shrink-0">
             <button 
               onClick={() => setSelectedLevel('all')}
               className={`p-6 bg-white rounded-2xl shadow-sm border-2 text-center transition-all hover:shadow-lg ${
@@ -1208,7 +1208,7 @@ User Agent: ${log.userAgent || 'N/A'}
           </div>
 
           {/* Enhanced System Health Alert with Top 3 Analytics */}
-          <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-200 p-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-200 p-6 mb-8 flex-shrink-0">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-lg bg-gray-800 flex items-center justify-center">
@@ -1400,7 +1400,7 @@ User Agent: ${log.userAgent || 'N/A'}
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-200 p-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-200 p-6 mb-8 flex-shrink-0">
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
               <div className="w-5 h-5 rounded-lg bg-gray-800 flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-white"></div>
@@ -1444,6 +1444,13 @@ User Agent: ${log.userAgent || 'N/A'}
               >
                 Clear Filters
               </button>
+
+              <a
+                href="/logs-dashboard/devtools"
+                className="px-4 py-2 bg-indigo-500 text-white rounded-xl hover:bg-indigo-600 transition-colors font-medium flex items-center gap-2"
+              >
+                🔍 DevTools Monitor
+              </a>
             </div>
 
             <div className="flex flex-wrap items-center gap-6">
@@ -1486,8 +1493,8 @@ User Agent: ${log.userAgent || 'N/A'}
           </div>
 
           {/* Logs Display */}
-          <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-200 overflow-hidden">
-            <div className="p-6 border-b bg-gradient-to-r from-gray-50 to-white">
+          <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-200 overflow-hidden flex-1 flex flex-col min-h-0">
+            <div className="p-6 border-b bg-gradient-to-r from-gray-50 to-white flex-shrink-0">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                   <div className="w-5 h-5 rounded-lg bg-gray-200 flex items-center justify-center">
@@ -1566,7 +1573,7 @@ User Agent: ${log.userAgent || 'N/A'}
               </div>
             </div>
             
-            <div className="logs-container h-[calc(100vh-28rem)] overflow-y-auto p-6 bg-gray-50">
+            <div className="logs-container flex-1 overflow-y-auto p-6 bg-gray-50 min-h-0">
               {logs.length === 0 ? (
                 <div className="text-center py-16">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-200 flex items-center justify-center">

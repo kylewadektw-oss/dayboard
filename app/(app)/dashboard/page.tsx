@@ -31,6 +31,7 @@ const QuickActionsHub = lazy(() => import('@/components/dashboard/QuickActionsHu
 const ProfileStatus = lazy(() => import('@/components/dashboard/ProfileStatus').then(m => ({ default: m.ProfileStatus })));
 const DaycareWidget = lazy(() => import('@/components/dashboard/DaycareWidget').then(m => ({ default: m.DaycareWidget })));
 const HouseholdMapWidget = lazy(() => import('@/components/dashboard/HouseholdMapWidget').then(m => ({ default: m.HouseholdMapWidget })));
+const Magic8BallWidget = lazy(() => import('@/components/dashboard/Magic8BallWidget'));
 
 // Optimized loading component
 const WidgetSkeleton = () => (
@@ -188,6 +189,16 @@ export default function DashboardPage() {
           <div className="lg:col-span-1">
             <Suspense fallback={<WidgetSkeleton />}>
               <ProjectsWidget />
+            </Suspense>
+          </div>
+
+          {/* Magic 8-Ball Widget - Fun Family Feature */}
+          <div className="lg:col-span-1">
+            <Suspense fallback={<WidgetSkeleton />}>
+              <Magic8BallWidget 
+                householdId={profile?.household_id}
+                userId={user?.id}
+              />
             </Suspense>
           </div>
 
