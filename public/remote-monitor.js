@@ -9,7 +9,7 @@
   'use strict';
   
   // Configuration - Update these URLs to your Dayboard deployment
-  const DAYBOARD_API = 'https://dayboardofficial-de8o3ermr-kw1984.vercel.app'; // Your deployed Dayboard URL
+  const DAYBOARD_API = 'https://monitor.bentlolabs.com'; // Production monitoring subdomain
   const SITE_NAME = 'bentlolabs.com';
   
   class RemoteMonitor {
