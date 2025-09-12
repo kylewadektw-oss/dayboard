@@ -39,18 +39,9 @@ yarn-error.log*
 # Only .env.example should be committed for reference
 
 # Internal strategic & planning docs (keep private / local only)
-ROADMAP.md
-PROJECT_ROADMAP.md
-MarketResearch.md
-TODO.md
-NOTES.md
-
-# Development documentation and reports (local only)
-*_SUMMARY.md
-*_REPORT.md
-*_CHECKLIST.md
-*_FIX.md
-*_RECOMMENDATION.md
+# All markdown files except README.md
+*.md
+!README.md
 
 # TypeScript build cache
 tsconfig.tsbuildinfo
