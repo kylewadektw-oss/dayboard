@@ -1,0 +1,433 @@
+/*
+ * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 
+ * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * 
+ * This file is part of    setInterval(() => {
+      const now = Date.now();
+      for (const [key, entry] of Array.from(this.queryCache.entries())) {
+        if (now - entry.timestamp > entry.ttl) {
+          this.queryCache.delete(key);
+        }
+      }
+    }, 60000); // Clean every minuted, a proprietary household command center application.
+ * 
+ * IMPORTANT NOTICE:
+ * This code is proprietary and confidential. Unauthorized copying, distribution,
+ * or use by large corporations or competing services is strictly prohibited.
+ * 
+ * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * 
+ * Violation of this notice may result in legal action and damages up to $100,000.
+ */
+
+import { createClient } from '@/utils/supabase/client';
+import { enhancedLogger, LogLevel } from '@/utils/logger';
+import { Database } from '@/types_db';
+import { SupabaseClient } from '@supabase/supabase-js';
+
+// 🚀 PERFORMANCE: Query cache interface
+interface CacheEntry<T = any> {
+  data: T;
+  timestamp: number;
+  ttl: number;
+  key: string;
+}
+
+// 🚀 PERFORMANCE: Query optimization interface
+interface QueryOptions {
+  cache?: boolean;
+  cacheTTL?: number; // Time to live in milliseconds
+  retries?: number;
+  timeout?: number;
+  priority?: 'high' | 'medium' | 'low';
+}
+
+// 🚀 PERFORMANCE: Enhanced database client with caching and connection optimization
+class OptimizedDatabaseClient {
+  private client: SupabaseClient<Database>;
+  private queryCache = new Map<string, CacheEntry>();
+  private connectionPool: SupabaseClient<Database>[] = [];
+  private maxConnections = 10;
+  private currentConnections = 0;
+  private queryQueue: Array<() => Promise<any>> = [];
+  private isProcessingQueue = false;
+
+  constructor() {
+    this.client = createClient();
+    this.initializeConnectionPool();
+    this.startCacheCleanup();
+  }
+
+  // 🚀 PERFORMANCE: Initialize connection pool
+  private initializeConnectionPool() {
+    // Create initial connections
+    for (let i = 0; i < Math.min(3, this.maxConnections); i++) {
+      this.connectionPool.push(createClient());
+      this.currentConnections++;
+    }
+  }
+
+  // 🚀 PERFORMANCE: Get available connection from pool
+  private getConnection(): SupabaseClient<Database> {
+    if (this.connectionPool.length > 0) {
+      return this.connectionPool.pop()!;
+    }
+    
+    // Create new connection if under limit
+    if (this.currentConnections < this.maxConnections) {
+      this.currentConnections++;
+      return createClient();
+    }
+    
+    // Fallback to main client
+    return this.client;
+  }
+
+  // 🚀 PERFORMANCE: Return connection to pool
+  private returnConnection(connection: SupabaseClient<Database>) {
+    if (this.connectionPool.length < this.maxConnections) {
+      this.connectionPool.push(connection);
+    }
+  }
+
+  // 🚀 PERFORMANCE: Generate cache key
+  private generateCacheKey(table: string, query: any, filters: any): string {
+    return `${table}:${JSON.stringify({ query, filters })}`;
+  }
+
+  // 🚀 PERFORMANCE: Get from cache
+  private getFromCache<T>(key: string): T | null {
+    const entry = this.queryCache.get(key);
+    if (!entry) return null;
+    
+    const now = Date.now();
+    if (now - entry.timestamp > entry.ttl) {
+      this.queryCache.delete(key);
+      return null;
+    }
+    
+    return entry.data as T;
+  }
+
+  // 🚀 PERFORMANCE: Set cache
+  private setCache<T>(key: string, data: T, ttl: number) {
+    // Limit cache size
+    if (this.queryCache.size >= 1000) {
+      const firstKey = this.queryCache.keys().next().value;
+      if (firstKey) {
+        this.queryCache.delete(firstKey);
+      }
+    }
+    
+    this.queryCache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl,
+      key
+    });
+  }
+
+  // 🚀 PERFORMANCE: Cache cleanup
+  private startCacheCleanup() {
+    setInterval(() => {
+      const now = Date.now();
+      for (const [key, entry] of this.queryCache.entries()) {
+        if (now - entry.timestamp > entry.ttl) {
+          this.queryCache.delete(key);
+        }
+      }
+    }, 60000); // Cleanup every minute
+  }
+
+  // 🚀 PERFORMANCE: Execute query with retry logic
+  private async executeWithRetry<T>(
+    queryFn: () => Promise<T>,
+    retries: number = 3,
+    delay: number = 1000
+  ): Promise<T> {
+    let lastError: Error;
+    
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        return await queryFn();
+      } catch (error) {
+        lastError = error as Error;
+        
+        if (attempt === retries) break;
+        
+        // Exponential backoff
+        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt - 1)));
+        
+        await enhancedLogger.logWithFullContext(
+          LogLevel.WARN,
+          `Database query retry attempt ${attempt}`,
+          'OptimizedDatabaseClient',
+          { error: lastError.message, attempt }
+        );
+      }
+    }
+    
+    throw lastError!;
+  }
+
+  // 🚀 PERFORMANCE: Optimized select query
+  async select<T = any>(
+    table: string,
+    columns: string = '*',
+    filters: Record<string, any> = {},
+    options: QueryOptions = {}
+  ): Promise<{ data: T[] | null; error: any }> {
+    const {
+      cache = true,
+      cacheTTL = 300000, // 5 minutes default
+      retries = 3,
+      timeout = 10000,
+      priority = 'medium'
+    } = options;
+
+    const cacheKey = this.generateCacheKey(table, { columns }, filters);
+    
+    // Check cache first
+    if (cache) {
+      const cachedData = this.getFromCache<T[]>(cacheKey);
+      if (cachedData) {
+        return { data: cachedData, error: null };
+      }
+    }
+
+    const connection = this.getConnection();
+    
+    try {
+      const queryFn = async () => {
+        let query = connection.from(table).select(columns);
+        
+        // Apply filters
+        for (const [key, value] of Object.entries(filters)) {
+          if (Array.isArray(value)) {
+            query = query.in(key, value);
+          } else if (typeof value === 'object' && value !== null) {
+            // Handle range queries, etc.
+            if (value.gte !== undefined) query = query.gte(key, value.gte);
+            if (value.lte !== undefined) query = query.lte(key, value.lte);
+            if (value.gt !== undefined) query = query.gt(key, value.gt);
+            if (value.lt !== undefined) query = query.lt(key, value.lt);
+            if (value.like !== undefined) query = query.like(key, value.like);
+            if (value.ilike !== undefined) query = query.ilike(key, value.ilike);
+          } else {
+            query = query.eq(key, value);
+          }
+        }
+
+        // Add timeout
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Query timeout')), timeout);
+        });
+
+        return Promise.race([query, timeoutPromise]);
+      };
+
+      const result = await this.executeWithRetry(queryFn, retries);
+      
+      // Cache successful results
+      if (cache && result.data && !result.error) {
+        this.setCache(cacheKey, result.data, cacheTTL);
+      }
+
+      await enhancedLogger.logWithFullContext(
+        LogLevel.INFO,
+        `Database query executed successfully`,
+        'OptimizedDatabaseClient',
+        { table, filters, cached: false, priority }
+      );
+
+      return result;
+    } catch (error) {
+      await enhancedLogger.logWithFullContext(
+        LogLevel.ERROR,
+        `Database query failed`,
+        'OptimizedDatabaseClient',
+        { table, filters, error: error instanceof Error ? error.message : 'Unknown error' }
+      );
+      
+      return { data: null, error };
+    } finally {
+      this.returnConnection(connection);
+    }
+  }
+
+  // 🚀 PERFORMANCE: Optimized insert
+  async insert<T = any>(
+    table: string,
+    data: Partial<T> | Partial<T>[],
+    options: QueryOptions = {}
+  ): Promise<{ data: T[] | null; error: any }> {
+    const { retries = 3, timeout = 15000 } = options;
+    
+    const connection = this.getConnection();
+    
+    try {
+      const queryFn = async () => {
+        const query = connection.from(table).insert(data).select();
+        
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Insert timeout')), timeout);
+        });
+
+        return Promise.race([query, timeoutPromise]);
+      };
+
+      const result = await this.executeWithRetry(queryFn, retries);
+      
+      // Invalidate related cache entries
+      this.invalidateTableCache(table);
+
+      await enhancedLogger.logWithFullContext(
+        LogLevel.INFO,
+        `Database insert executed successfully`,
+        'OptimizedDatabaseClient',
+        { table, recordCount: Array.isArray(data) ? data.length : 1 }
+      );
+
+      return result;
+    } catch (error) {
+      await enhancedLogger.logWithFullContext(
+        LogLevel.ERROR,
+        `Database insert failed`,
+        'OptimizedDatabaseClient',
+        { table, error: error instanceof Error ? error.message : 'Unknown error' }
+      );
+      
+      return { data: null, error };
+    } finally {
+      this.returnConnection(connection);
+    }
+  }
+
+  // 🚀 PERFORMANCE: Optimized update
+  async update<T = any>(
+    table: string,
+    data: Partial<T>,
+    filters: Record<string, any>,
+    options: QueryOptions = {}
+  ): Promise<{ data: T[] | null; error: any }> {
+    const { retries = 3, timeout = 15000 } = options;
+    
+    const connection = this.getConnection();
+    
+    try {
+      const queryFn = async () => {
+        let query = connection.from(table).update(data);
+        
+        // Apply filters
+        for (const [key, value] of Object.entries(filters)) {
+          query = query.eq(key, value);
+        }
+
+        query = query.select();
+        
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Update timeout')), timeout);
+        });
+
+        return Promise.race([query, timeoutPromise]);
+      };
+
+      const result = await this.executeWithRetry(queryFn, retries);
+      
+      // Invalidate related cache entries
+      this.invalidateTableCache(table);
+
+      return result;
+    } catch (error) {
+      return { data: null, error };
+    } finally {
+      this.returnConnection(connection);
+    }
+  }
+
+  // 🚀 PERFORMANCE: Batch operations
+  async batchInsert<T = any>(
+    table: string,
+    data: Partial<T>[],
+    batchSize: number = 100
+  ): Promise<{ data: T[] | null; error: any }> {
+    const batches: Partial<T>[][] = [];
+    
+    // Split into batches
+    for (let i = 0; i < data.length; i += batchSize) {
+      batches.push(data.slice(i, i + batchSize));
+    }
+
+    const results: T[] = [];
+    let lastError: any = null;
+
+    // Process batches sequentially to avoid overwhelming the database
+    for (const batch of batches) {
+      const result = await this.insert(table, batch);
+      if (result.error) {
+        lastError = result.error;
+        break;
+      }
+      if (result.data) {
+        results.push(...result.data);
+      }
+    }
+
+    return { data: lastError ? null : results, error: lastError };
+  }
+
+  // 🚀 PERFORMANCE: Cache invalidation
+  private invalidateTableCache(table: string) {
+    for (const [key, entry] of Array.from(this.queryCache.entries())) {
+      if (entry.key.startsWith(`${table}:`)) {
+        this.queryCache.delete(key);
+      }
+    }
+  }
+
+  // 🚀 PERFORMANCE: Manual cache invalidation
+  invalidateCache(pattern?: string) {
+    if (pattern) {
+      for (const [key] of Array.from(this.queryCache.entries())) {
+        if (key.includes(pattern)) {
+          this.queryCache.delete(key);
+        }
+      }
+    } else {
+      this.queryCache.clear();
+    }
+  }
+
+  // 🚀 PERFORMANCE: Get cache stats
+  getCacheStats() {
+    return {
+      size: this.queryCache.size,
+      entries: Array.from(this.queryCache.values()).map(entry => ({
+        key: entry.key,
+        age: Date.now() - entry.timestamp,
+        ttl: entry.ttl
+      }))
+    };
+  }
+
+  // 🚀 PERFORMANCE: Get connection pool stats
+  getConnectionStats() {
+    return {
+      available: this.connectionPool.length,
+      total: this.currentConnections,
+      maxConnections: this.maxConnections
+    };
+  }
+
+  // Original client access for complex queries
+  get rawClient() {
+    return this.client;
+  }
+}
+
+// 🚀 PERFORMANCE: Export singleton instance
+export const optimizedDb = new OptimizedDatabaseClient();
+
+// 🚀 PERFORMANCE: Export for direct access when needed
+export { OptimizedDatabaseClient };

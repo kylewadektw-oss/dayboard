@@ -21,7 +21,7 @@ import { useState } from 'react';
 import { Heart, Calendar, BookOpen, Zap, FlaskConical, ShoppingCart, Martini, Settings } from 'lucide-react';
 import { MealFavorites } from './MealFavorites';
 import { WeeklyMealPlan } from './WeeklyMealPlan';
-import { EnhancedMealPlanWrapper } from './EnhancedMealPlanWrapper';
+import EnhancedMealPlanWrapper from './EnhancedMealPlanWrapper';
 import { RecipeLibrary } from './RecipeLibrary';
 import { Cocktails } from './Cocktails';
 

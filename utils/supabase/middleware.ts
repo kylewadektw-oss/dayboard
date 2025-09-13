@@ -11,7 +11,9 @@ const PUBLIC_ROUTES = new Set([
   '/auth/callback',
   '/auth/reset_password',
   '/signin',
-  '/signup'
+  '/signup',
+  '/lists',  // Temporarily allow lists access for testing
+  '/dev-test'  // Development testing page
 ]);
 
 // API routes that should be accessible (will handle their own auth if needed)

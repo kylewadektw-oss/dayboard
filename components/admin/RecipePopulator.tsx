@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
-import Card from '@/components/ui/Card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Loader2, Search, Plus, ChefHat, Clock, Users } from 'lucide-react'
 
 interface SpoonacularRecipe {
@@ -221,7 +221,11 @@ export default function RecipePopulator() {
 
       {activeTab === 'search' && (
         <div className="space-y-6">
-          <Card title="Recipe Search">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recipe Search</CardTitle>
+            </CardHeader>
+            <CardContent>
             <div className="space-y-4">
               <div className="flex gap-2">
                 <Input
@@ -304,12 +308,17 @@ export default function RecipePopulator() {
                 ))}
               </div>
             </div>
+            </CardContent>
           </Card>
         </div>
       )}
 
       {activeTab === 'categories' && (
-        <Card title="Popular Categories">
+        <Card>
+          <CardHeader>
+            <CardTitle>Popular Categories</CardTitle>
+          </CardHeader>
+          <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {popularCategories.map((category) => (
               <Button
@@ -325,11 +334,16 @@ export default function RecipePopulator() {
               </Button>
             ))}
           </div>
+          </CardContent>
         </Card>
       )}
 
       {activeTab === 'bulk' && (
-        <Card title="Bulk Import">
+        <Card>
+          <CardHeader>
+            <CardTitle>Bulk Import</CardTitle>
+          </CardHeader>
+          <CardContent>
           <div className="space-y-4">
             <textarea
               className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -356,6 +370,7 @@ export default function RecipePopulator() {
               )}
             </Button>
           </div>
+          </CardContent>
         </Card>
       )}
 

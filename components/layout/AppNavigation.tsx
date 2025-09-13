@@ -20,7 +20,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect, useMemo, useCallback, memo } from 'react';
-import { Home, UtensilsCrossed, ClipboardList, Briefcase, FolderOpen, User, Settings, ChevronLeft, ChevronRight, LogOut, FileText, Bug, Activity, UserCheck } from 'lucide-react';
+import { Home, UtensilsCrossed, ClipboardList, Briefcase, FolderOpen, User, Settings, ChevronLeft, ChevronRight, LogOut, FileText, Bug, Activity, UserCheck, DollarSign } from 'lucide-react';
 import Logo from '@/components/icons/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -33,13 +33,14 @@ function AppNavigationComponent() {
   useEffect(() => { setHasHydrated(true); }, []);
 
   // Memoize navigation items to prevent recreation on each render
-  const navigation = useMemo(() => [
+  const navigationItems = useMemo(() => [
     { name: 'Dashboard', href: '/dashboard', icon: Home, current: pathname === '/dashboard' },
-    { name: 'Meals', href: '/meals', icon: UtensilsCrossed, current: pathname === '/meals' },
-    { name: 'Lists', href: '/lists', icon: ClipboardList, current: pathname === '/lists' },
-    { name: 'Work', href: '/work', icon: Briefcase, current: pathname === '/work' },
-    { name: 'Projects', href: '/projects', icon: FolderOpen, current: pathname === '/projects' },
-    { name: 'Settings', href: '/settings', icon: Settings, current: pathname === '/settings' },
+    { name: 'Meals', href: '/meals', icon: UtensilsCrossed, current: pathname?.startsWith('/meals') },
+    { name: 'Lists', href: '/lists', icon: ClipboardList, current: pathname?.startsWith('/lists') },
+    { name: 'Budget', href: '/budget', icon: DollarSign, current: pathname?.startsWith('/budget') },
+    { name: 'Work', href: '/work', icon: Briefcase, current: pathname?.startsWith('/work') },
+    { name: 'Projects', href: '/projects', icon: FolderOpen, current: pathname?.startsWith('/projects') },
+    { name: 'Settings', href: '/settings', icon: Settings, current: pathname?.startsWith('/settings') },
   ], [pathname]);
 
   // Memoize dev navigation items
@@ -156,7 +157,7 @@ function AppNavigationComponent() {
         {/* Navigation Links */}
         <nav className="flex-1 p-2">
           <div className="space-y-1">
-            {navigation.map((item) => {
+            {navigationItems.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
@@ -273,7 +274,7 @@ function AppNavigationComponent() {
         {/* Mobile Bottom Navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
           <div className="grid grid-cols-6 py-1">
-            {navigation.map((item) => {
+            {navigationItems.map((item) => {
               const Icon = item.icon;
               return (
                 <Link

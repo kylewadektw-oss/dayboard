@@ -188,7 +188,8 @@
     
     async sendData() {
       try {
-        const response = await fetch(`${DAYBOARD_API}/api/remote-monitoring`, {
+        // Send to unified Bentlolabs monitoring (internal endpoint)
+        const response = await fetch('/api/bentlolabs-monitor', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

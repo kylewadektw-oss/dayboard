@@ -16,3 +16,4 @@
 
 
 export { default } from './Card';
+export { Card, CardHeader, CardTitle, CardContent, CardFooter, LegacyCard } from './Card';

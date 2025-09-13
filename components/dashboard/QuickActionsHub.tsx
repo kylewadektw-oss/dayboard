@@ -17,6 +17,7 @@
 
 import { Plus, Calendar, ShoppingCart, Wrench, ChefHat, Zap } from 'lucide-react';
 import Link from 'next/link';
+import { memo, useMemo } from 'react';
 
 interface QuickAction {
   id: string;
@@ -27,12 +28,21 @@ interface QuickAction {
   color: string;
 }
 
-const quickActions: QuickAction[] = [
+// 🚀 PERFORMANCE: Move icons outside component to prevent recreation
+const ICONS = {
+  calendar: <Calendar className="h-5 w-5" />,
+  shoppingCart: <ShoppingCart className="h-5 w-5" />,
+  wrench: <Wrench className="h-5 w-5" />,
+  chefHat: <ChefHat className="h-5 w-5" />
+} as const;
+
+// 🚀 PERFORMANCE: Static data outside component
+const STATIC_QUICK_ACTIONS: QuickAction[] = [
   {
     id: '1',
     title: 'Add Event',
     description: 'Calendar appointment',
-    icon: <Calendar className="h-5 w-5" />,
+    icon: ICONS.calendar,
     href: '/calendar',
     color: 'bg-blue-500 hover:bg-blue-600 text-white'
   },
@@ -40,7 +50,7 @@ const quickActions: QuickAction[] = [
     id: '2',
     title: 'Add Grocery',
     description: 'Shopping list item',
-    icon: <ShoppingCart className="h-5 w-5" />,
+    icon: ICONS.shoppingCart,
     href: '/lists',
     color: 'bg-green-500 hover:bg-green-600 text-white'
   },
@@ -48,7 +58,7 @@ const quickActions: QuickAction[] = [
     id: '3',
     title: 'Log Project',
     description: 'Home improvement',
-    icon: <Wrench className="h-5 w-5" />,
+    icon: ICONS.wrench,
     href: '/projects',
     color: 'bg-orange-500 hover:bg-orange-600 text-white'
   },
@@ -56,13 +66,55 @@ const quickActions: QuickAction[] = [
     id: '4',
     title: 'Add Recipe',
     description: 'Meal planning',
-    icon: <ChefHat className="h-5 w-5" />,
+    icon: ICONS.chefHat,
     href: '/meals',
     color: 'bg-pink-500 hover:bg-pink-600 text-white'
   }
 ];
 
-export function QuickActionsHub() {
+// 🚀 PERFORMANCE: Memoized individual action component
+const QuickActionButton = memo(({ action }: { action: QuickAction }) => (
+  <Link
+    href={action.href}
+    className={`${action.color} rounded-xl p-4 transition-all duration-200 active:scale-95 touch-manipulation`}
+  >
+    <div className="flex flex-col items-center text-center">
+      <div className="mb-2">
+        {action.icon}
+      </div>
+      <div className="text-sm font-semibold">
+        {action.title}
+      </div>
+      <div className="text-xs opacity-90 mt-1">
+        {action.description}
+      </div>
+    </div>
+  </Link>
+));
+QuickActionButton.displayName = 'QuickActionButton';
+
+function QuickActionsHubComponent() {
+  // 🚀 PERFORMANCE: Memoize static arrays to prevent recreating on each render
+  const quickActions = useMemo(() => STATIC_QUICK_ACTIONS, []);
+
+  // 🚀 PERFORMANCE: Memoize static suggestions array
+  const suggestions = useMemo(() => [
+    {
+      id: 'dinner',
+      text: 'Planning dinner? Check new recipes →',
+      bgColor: 'bg-yellow-50',
+      borderColor: 'border-yellow-200',
+      textColor: 'text-yellow-800'
+    },
+    {
+      id: 'weekend',
+      text: 'Both parents free Saturday 2-6PM for projects',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200',
+      textColor: 'text-blue-800'
+    }
+  ], []);
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 h-fit">
       <div className="flex items-center justify-between mb-3">
@@ -73,23 +125,7 @@ export function QuickActionsHub() {
       {/* Quick Action Buttons - Optimized for iPad/Touch */}
       <div className="grid grid-cols-2 gap-3">
         {quickActions.map((action) => (
-          <Link
-            key={action.id}
-            href={action.href}
-            className={`${action.color} rounded-xl p-4 transition-all duration-200 active:scale-95 touch-manipulation`}
-          >
-            <div className="flex flex-col items-center text-center">
-              <div className="mb-2">
-                {action.icon}
-              </div>
-              <div className="text-sm font-semibold">
-                {action.title}
-              </div>
-              <div className="text-xs opacity-90 mt-1">
-                {action.description}
-              </div>
-            </div>
-          </Link>
+          <QuickActionButton key={action.id} action={action} />
         ))}
       </div>
 
@@ -97,16 +133,16 @@ export function QuickActionsHub() {
       <div className="mt-4 pt-3 border-t border-gray-100">
         <h4 className="text-xs font-medium text-gray-500 mb-2">💡 Suggestions</h4>
         <div className="space-y-2">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
-            <div className="text-xs text-yellow-800 font-medium">
-              Planning dinner? Check new recipes →
+          {suggestions.map((suggestion) => (
+            <div
+              key={suggestion.id}
+              className={`${suggestion.bgColor} border ${suggestion.borderColor} rounded-lg p-2`}
+            >
+              <div className={`text-xs ${suggestion.textColor} font-medium`}>
+                {suggestion.text}
+              </div>
             </div>
-          </div>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
-            <div className="text-xs text-blue-800 font-medium">
-              Both parents free Saturday 2-6PM for projects
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
@@ -120,3 +156,6 @@ export function QuickActionsHub() {
     </div>
   );
 }
+
+// 🚀 PERFORMANCE: Export memoized component
+export const QuickActionsHub = memo(QuickActionsHubComponent);

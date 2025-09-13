@@ -18,7 +18,7 @@
 'use client';
 
 import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { updateName } from '@/utils/auth-helpers/server';
 import { handleRequest } from '@/utils/auth-helpers/client';
 import { useRouter } from 'next/navigation';
@@ -41,10 +41,25 @@ export default function NameForm({ userName }: { userName: string }) {
   };
 
   return (
-    <Card
-      title="Your Name"
-      description="Please enter your full name, or a display name you are comfortable with."
-      footer={
+    <Card>
+      <CardHeader>
+        <CardTitle>Your Name</CardTitle>
+        <p className="text-sm text-gray-600">Please enter your full name, or a display name you are comfortable with.</p>
+      </CardHeader>
+      <CardContent>
+        <div className="mt-8 mb-4 text-xl font-semibold">
+          <form id="nameForm" onSubmit={(e) => handleSubmit(e)}>
+            <input
+              type="text"
+              name="fullName"
+              className="w-1/2 p-3 rounded-md bg-zinc-800"
+              defaultValue={userName}
+              placeholder="Your name"
+              maxLength={64}
+            />
+          </form>
+        </div>
+        
         <div className="flex flex-col items-start justify-between sm:flex-row sm:items-center">
           <p className="pb-4 sm:pb-0">64 characters maximum</p>
           <Button
@@ -56,20 +71,7 @@ export default function NameForm({ userName }: { userName: string }) {
             Update Name
           </Button>
         </div>
-      }
-    >
-      <div className="mt-8 mb-4 text-xl font-semibold">
-        <form id="nameForm" onSubmit={(e) => handleSubmit(e)}>
-          <input
-            type="text"
-            name="fullName"
-            className="w-1/2 p-3 rounded-md bg-zinc-800"
-            defaultValue={userName}
-            placeholder="Your name"
-            maxLength={64}
-          />
-        </form>
-      </div>
+      </CardContent>
     </Card>
   );
 }

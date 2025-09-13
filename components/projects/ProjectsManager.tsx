@@ -174,7 +174,7 @@ const mockProjects: Project[] = [
   }
 ];
 
-export function ProjectsManager() {
+export default function ProjectsManager() {
   const [projects, setProjects] = useState<Project[]>(mockProjects);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [viewMode, setViewMode] = useState<'tiles' | 'list'>('tiles');

@@ -15,16 +15,111 @@
  */
 
 
-import { ReactNode } from 'react';
+import { ReactNode, forwardRef } from 'react';
+import { cn } from '@/utils/cn';
 
-interface Props {
+interface CardProps {
+  className?: string;
+  children: ReactNode;
+}
+
+interface CardHeaderProps {
+  className?: string;
+  children: ReactNode;
+}
+
+interface CardTitleProps {
+  className?: string;
+  children: ReactNode;
+}
+
+interface CardContentProps {
+  className?: string;
+  children: ReactNode;
+}
+
+interface CardFooterProps {
+  className?: string;
+  children: ReactNode;
+}
+
+// Legacy interface for backward compatibility
+interface LegacyCardProps {
   title: string;
   description?: string;
   footer?: ReactNode;
   children: ReactNode;
 }
 
-export default function Card({ title, description, footer, children }: Props) {
+const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ className, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        "rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-50 shadow-sm",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+);
+Card.displayName = "Card";
+
+const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
+  ({ className, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("flex flex-col space-y-1.5 p-6", className)}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+);
+CardHeader.displayName = "CardHeader";
+
+const CardTitle = forwardRef<HTMLParagraphElement, CardTitleProps>(
+  ({ className, children, ...props }, ref) => (
+    <h3
+      ref={ref}
+      className={cn(
+        "text-2xl font-semibold leading-none tracking-tight",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </h3>
+  )
+);
+CardTitle.displayName = "CardTitle";
+
+const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
+  ({ className, children, ...props }, ref) => (
+    <div ref={ref} className={cn("p-6 pt-0", className)} {...props}>
+      {children}
+    </div>
+  )
+);
+CardContent.displayName = "CardContent";
+
+const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
+  ({ className, children, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("flex items-center p-6 pt-0", className)}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+);
+CardFooter.displayName = "CardFooter";
+
+// Legacy Card component for backward compatibility
+function LegacyCard({ title, description, footer, children }: LegacyCardProps) {
   return (
     <div className="w-full max-w-3xl m-auto my-8 border rounded-md p border-zinc-700">
       <div className="px-5 py-4">
@@ -40,3 +135,6 @@ export default function Card({ title, description, footer, children }: Props) {
     </div>
   );
 }
+
+export default Card;
+export { Card, CardHeader, CardTitle, CardContent, CardFooter, LegacyCard };

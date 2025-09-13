@@ -15,7 +15,7 @@
  */
 
 
-import { ProjectsManager } from '@/components/projects/ProjectsManager';
+import ProjectsManager from '@/components/projects/ProjectsManager';
 
 export default function ProjectsPage() {
   return (

@@ -170,7 +170,7 @@ const mockMealPlans: MealPlan[] = [
   }
 ];
 
-export function EnhancedMealPlanWrapper() {
+export default function EnhancedMealPlanWrapper() {
   const [recipes, setRecipes] = useState<Recipe[]>(mockRecipes);
   const [mealPlans, setMealPlans] = useState<MealPlan[]>(mockMealPlans);
   const [loading, setLoading] = useState(false);

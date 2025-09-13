@@ -26,11 +26,12 @@ import LoadingDots from '@/components/ui/LoadingDots';
 import styles from './Button.module.css';
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'slim' | 'flat';
+  variant?: 'slim' | 'flat' | 'outline' | 'ghost' | 'primary' | 'secondary' | 'destructive';
   active?: boolean;
   width?: number;
   loading?: boolean;
   Component?: React.ComponentType;
+  size?: 'sm' | 'md' | 'lg';
 }
 
 const Button = forwardRef<HTMLButtonElement, Props>((props, buttonRef) => {
@@ -44,9 +45,43 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, buttonRef) => {
     disabled = false,
     style = {},
     Component = 'button',
+    size = 'md',
     ...rest
   } = props;
   const ref = useRef(null);
+  
+  // Handle new variants with Tailwind classes
+  const getVariantClasses = () => {
+    switch (variant) {
+      case 'outline':
+        return 'border border-zinc-600 bg-transparent hover:bg-zinc-800 text-zinc-300';
+      case 'ghost':
+        return 'bg-transparent hover:bg-zinc-800 text-zinc-300';
+      case 'primary':
+        return 'bg-blue-600 hover:bg-blue-700 text-white';
+      case 'secondary':
+        return 'bg-zinc-700 hover:bg-zinc-600 text-white';
+      case 'destructive':
+        return 'bg-red-600 hover:bg-red-700 text-white';
+      case 'slim':
+      case 'flat':
+      default:
+        return '';
+    }
+  };
+
+  const getSizeClasses = () => {
+    switch (size) {
+      case 'sm':
+        return 'px-3 py-1 text-sm';
+      case 'lg':
+        return 'px-6 py-3 text-lg';
+      case 'md':
+      default:
+        return 'px-4 py-2';
+    }
+  };
+
   const rootClassName = cn(
     styles.root,
     {
@@ -54,6 +89,10 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, buttonRef) => {
       [styles.loading]: loading,
       [styles.disabled]: disabled
     },
+    // Add new variant styles
+    variant === 'outline' || variant === 'ghost' || variant === 'primary' || variant === 'secondary' || variant === 'destructive' 
+      ? `rounded-md transition-colors ${getVariantClasses()} ${getSizeClasses()}` 
+      : '',
     className
   );
   return (
@@ -81,3 +120,4 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, buttonRef) => {
 Button.displayName = 'Button';
 
 export default Button;
+export { Button };

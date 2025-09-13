@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_MONITORING_ENDPOINT": "https://monitor.bentlolabs.com"
+    }
+  },
+  "env": {
+    "NEXT_PUBLIC_MONITORING_ENDPOINT": "https://monitor.bentlolabs.com"
+  },
+  "git": {
+    "deploymentEnabled": {
+      "*": true
+    }
+  },
+  "github": {
+    "autoAlias": true,
+    "silent": true
+  },
+  "alias": [
+    "dayboard.bentlolabs.com"
+  ]
+}
