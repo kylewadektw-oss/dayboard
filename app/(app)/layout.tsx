@@ -18,7 +18,6 @@
 
 import { PropsWithChildren, Suspense } from 'react';
 import { AppNavigation } from '@/components/layout/AppNavigation';
-import { AuthProvider } from '@/contexts/AuthContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
 import FeedbackWidget from '@/components/feedback/FeedbackWidget';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -41,44 +40,42 @@ const LayoutSkeleton = () => (
 
 export default function AppLayout({ children }: PropsWithChildren) {
   return (
-    <AuthProvider>
-      <SettingsProvider>
-        <ErrorBoundary 
-          level="page"
-          onError={(error, errorInfo) => {
-            logger.error('🚨 React Error Boundary triggered in app layout', 'AppLayout', {
-              error: error.message,
-              stack: error.stack,
-              componentStack: errorInfo.componentStack,
-              location: 'AppLayout'
-            });
-          }}
-        >
-          <Suspense fallback={<LayoutSkeleton />}>
-            <AppNavigation />
-            <div className="min-h-screen bg-gray-50">
-              {/* Main content with responsive margin - CSS classes handle sidebar states */}
-              <main className="pt-16 pb-20 md:pt-0 md:pb-0 md:ml-64 transition-all duration-300">
-                <ErrorBoundary 
-                  level="component"
-                  onError={(error, errorInfo) => {
-                    logger.error('🚨 React Error Boundary triggered in main content', 'MainContent', {
-                      error: error.message,
-                      stack: error.stack,
-                      componentStack: errorInfo.componentStack,
-                      location: 'MainContent'
-                    });
-                  }}
-                >
-                  {children}
-                </ErrorBoundary>
-              </main>
-              {/* Feedback Widget - appears on all app pages */}
-              <FeedbackWidget />
-            </div>
-          </Suspense>
-        </ErrorBoundary>
-      </SettingsProvider>
-    </AuthProvider>
+    <SettingsProvider>
+      <ErrorBoundary 
+        level="page"
+        onError={(error, errorInfo) => {
+          logger.error('🚨 React Error Boundary triggered in app layout', 'AppLayout', {
+            error: error.message,
+            stack: error.stack,
+            componentStack: errorInfo.componentStack,
+            location: 'AppLayout'
+          });
+        }}
+      >
+        <Suspense fallback={<LayoutSkeleton />}>
+          <AppNavigation />
+          <div className="min-h-screen bg-gray-50">
+            {/* Main content with responsive margin - CSS classes handle sidebar states */}
+            <main className="pt-16 pb-20 md:pt-0 md:pb-0 md:ml-64 transition-all duration-300">
+              <ErrorBoundary 
+                level="component"
+                onError={(error, errorInfo) => {
+                  logger.error('🚨 React Error Boundary triggered in main content', 'MainContent', {
+                    error: error.message,
+                    stack: error.stack,
+                    componentStack: errorInfo.componentStack,
+                    location: 'MainContent'
+                  });
+                }}
+              >
+                {children}
+              </ErrorBoundary>
+            </main>
+            {/* Feedback Widget - appears on all app pages */}
+            <FeedbackWidget />
+          </div>
+        </Suspense>
+      </ErrorBoundary>
+    </SettingsProvider>
   );
 }

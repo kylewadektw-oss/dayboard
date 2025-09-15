@@ -15,6 +15,8 @@
  */
 
 
+'use client';
+
 import Link from 'next/link';
 import { 
   ChefHat, 
@@ -48,6 +50,9 @@ import {
 import LandingPageLogger from '@/components/marketing/LandingPageLogger';
 
 export default function LandingPage() {
+  // Remove auth redirect for now to avoid provider issues
+  // The signin page will handle auth flow properly
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <LandingPageLogger />
@@ -78,7 +83,7 @@ export default function LandingPage() {
           {/* CTA Buttons */}
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/profile"
+              href="/signin"
               className="inline-flex items-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 text-lg font-bold text-white shadow-xl hover:shadow-blue-500/25 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50 transition-all duration-300 transform hover:-translate-y-1"
             >
               <PlayCircle className="w-5 h-5" />
@@ -375,7 +380,7 @@ export default function LandingPage() {
               </ul>
               
               <Link
-                href="/profile"
+                href="/signin"
                 className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-semibold transition-colors text-center block"
               >
                 Get Started Free
@@ -428,7 +433,7 @@ export default function LandingPage() {
               </ul>
               
               <Link
-                href="/profile"
+                href="/signin"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors text-center block"
               >
                 Upgrade to Pro
@@ -541,7 +546,7 @@ export default function LandingPage() {
           
           <div className="mb-10">
             <Link
-              href="/profile"
+              href="/signin"
               className="inline-flex items-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-10 py-5 text-xl font-bold text-white shadow-xl hover:shadow-blue-500/25 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-blue-500/50 transition-all duration-300 transform hover:-translate-y-1"
             >
               <PlayCircle className="w-6 h-6" />

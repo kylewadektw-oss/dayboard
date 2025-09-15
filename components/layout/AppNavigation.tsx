@@ -64,6 +64,7 @@ function AppNavigationComponent() {
   const devNavigation = useMemo(() => [
     { name: 'Logs Dashboard', href: '/logs-dashboard', icon: FileText, current: pathname === '/logs-dashboard' },
     { name: 'Customer Review', href: '/customer-review', icon: UserCheck, current: pathname === '/customer-review' },
+    { name: 'Logout', href: '/api/logout', icon: LogOut, current: false },
   ], [pathname]);
 
   // Memoize user display name

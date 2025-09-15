@@ -19,7 +19,6 @@
 
 import { createClient } from '@/utils/supabase/client';
 import { useState } from 'react';
-import { oauthLogger } from '@/utils/logger';
 
 export default function OauthSignIn() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,13 +28,7 @@ export default function OauthSignIn() {
     try {
       setIsSubmitting(true);
       
-      await oauthLogger.info('🚀 [OAUTH] Google OAuth sign-in initiated', {
-        clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        currentOrigin: window.location.origin,
-        redirectUrl: `${window.location.origin}/auth/callback`,
-        timestamp: new Date().toISOString()
-      });
+      console.log('🚀 Google OAuth sign-in initiated');
       
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -48,36 +41,16 @@ export default function OauthSignIn() {
         },
       });
 
-      await oauthLogger.info('🔍 [OAUTH] Supabase OAuth response received', { 
-        data, 
-        error,
-        hasData: !!data,
-        hasError: !!error
-      });
+      console.log('🔍 Supabase OAuth response received', { hasData: !!data, hasError: !!error });
 
       if (error) {
-        await oauthLogger.error('❌ [OAUTH] Google OAuth error', {
-          message: error.message,
-          status: error.status,
-          code: error.code,
-          details: error,
-          userEmail: 'N/A - during sign-in',
-          provider: 'google'
-        });
+        console.error('❌ Google OAuth error', error);
         alert('Error signing in with Google. Please try again.');
       } else if (data?.url) {
-        await oauthLogger.info('✅ [OAUTH] OAuth redirect initiated', {
-          redirectUrl: data.url,
-          provider: 'google'
-        });
+        console.log('✅ OAuth redirect initiated');
       }
     } catch (error) {
-      await oauthLogger.error('❌ [OAUTH] Critical OAuth error', {
-        error: error,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        provider: 'google'
-      });
+      console.error('❌ Critical OAuth error', error);
       alert('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);

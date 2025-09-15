@@ -20,6 +20,7 @@
 import { Suspense, useEffect, lazy } from 'react';
 import { authLogger } from '@/utils/logger';
 import { useAuth } from '@/contexts/AuthContext';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 // Lazy load all dashboard widgets for better performance
 const WeatherWidget = lazy(() => import('@/components/dashboard/WeatherWidget'));
@@ -72,52 +73,6 @@ export default function DashboardPage() {
     }
   }, [user, profile, loading]);
 
-  // Enhanced loading state with timeout protection
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Fallback for edge case where middleware allowed but client auth failed
-  if (!user) {
-    authLogger.error('🚨 Dashboard reached without user - staying on dashboard and retrying auth');
-    
-    // Don't redirect - let middleware handle routing. Just show a message and retry.
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Loading</h2>
-          <p className="text-gray-600 mb-4">Verifying your session...</p>
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto"></div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show profile setup prompt if needed (no redirect to avoid loops)
-  if (user && !loading && (!profile || !profile.household_id || !profile.onboarding_completed || !profile.name)) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Profile Setup Required</h2>
-          <p className="text-gray-600 mb-4">Please complete your profile and household setup.</p>
-          <a 
-            href="/profile/setup" 
-            className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            Complete Setup
-          </a>
-        </div>
-      </div>
-    );
-  }
-
   const canViewDashboard = permissions?.dashboard ?? true;
 
   if (!canViewDashboard) {
@@ -134,93 +89,95 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header with greeting */}
-        <div className="mb-6">
-          <ProfileStatus />
-        </div>
+    <ProtectedRoute requireAuth={true}>
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 p-4 md:p-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header with greeting */}
+          <div className="mb-6">
+            <ProfileStatus />
+          </div>
 
-        {/* Quick Actions Ribbon */}
-        <Suspense fallback={<div className="h-48 bg-white rounded-2xl shadow-lg animate-pulse mb-6"></div>}>
-          <QuickActionsRibbon />
-        </Suspense>
+          {/* Quick Actions Ribbon */}
+          <Suspense fallback={<div className="h-48 bg-white rounded-2xl shadow-lg animate-pulse mb-6"></div>}>
+            <QuickActionsRibbon />
+          </Suspense>
 
-        {/* Main Dashboard Grid - Equal Height Cards per Row */}
-        <div className="space-y-6">
-          {/* Row 1 - Primary Widgets */}
-          <div className="dashboard-row grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            <div className="dashboard-card">
-              <Suspense fallback={<WidgetSkeleton />}>
-                <WeatherWidget />
-              </Suspense>
+          {/* Main Dashboard Grid - Equal Height Cards per Row */}
+          <div className="space-y-6">
+            {/* Row 1 - Primary Widgets */}
+            <div className="dashboard-row grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <div className="dashboard-card">
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <WeatherWidget />
+                </Suspense>
+              </div>
+
+              <div className="dashboard-card">
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <HouseholdMapWidget />
+                </Suspense>
+              </div>
+              
+              <div className="dashboard-card">
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <CalendarWidget />
+                </Suspense>
+              </div>
             </div>
 
-            <div className="dashboard-card">
-              <Suspense fallback={<WidgetSkeleton />}>
-                <HouseholdMapWidget />
-              </Suspense>
+            {/* Row 2 - Core Household Features */}
+            <div className="dashboard-row grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+              <div className="dashboard-card">
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <MealsWidget />
+                </Suspense>
+              </div>
+
+              <div className="dashboard-card">
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <GroceryWidget />
+                </Suspense>
+              </div>
+
+              <div className="dashboard-card">
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <ProjectsWidget />
+                </Suspense>
+              </div>
+
+              <div className="dashboard-card">
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <FinancialWidget />
+                </Suspense>
+              </div>
             </div>
-            
-            <div className="dashboard-card">
-              <Suspense fallback={<WidgetSkeleton />}>
-                <CalendarWidget />
-              </Suspense>
+
+            {/* Row 3 - Additional Widgets */}
+            <div className="dashboard-row grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
+              <div className="dashboard-card">
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <EntertainmentWidget />
+                </Suspense>
+              </div>
+
+              {/* Daycare Widget - Wider span */}
+              <div className="dashboard-card lg:col-span-3">
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <DaycareWidget />
+                </Suspense>
+              </div>
             </div>
           </div>
 
-          {/* Row 2 - Core Household Features */}
-          <div className="dashboard-row grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <div className="dashboard-card">
-              <Suspense fallback={<WidgetSkeleton />}>
-                <MealsWidget />
-              </Suspense>
-            </div>
-
-            <div className="dashboard-card">
-              <Suspense fallback={<WidgetSkeleton />}>
-                <GroceryWidget />
-              </Suspense>
-            </div>
-
-            <div className="dashboard-card">
-              <Suspense fallback={<WidgetSkeleton />}>
-                <ProjectsWidget />
-              </Suspense>
-            </div>
-
-            <div className="dashboard-card">
-              <Suspense fallback={<WidgetSkeleton />}>
-                <FinancialWidget />
-              </Suspense>
-            </div>
+          {/* Premium Widgets Row (Coming Soon) */}
+          <div className="mt-6 p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl border-2 border-dashed border-purple-300">
+            <h3 className="text-lg font-semibold text-purple-800 mb-2">✨ Premium Features Coming Soon</h3>
+            <p className="text-purple-600 text-sm">
+              Sports ticker, financial snapshot, package tracker, and AI-powered household coordination will be available with Premium subscription.
+            </p>
           </div>
-
-          {/* Row 3 - Additional Widgets */}
-          <div className="dashboard-row grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
-            <div className="dashboard-card">
-              <Suspense fallback={<WidgetSkeleton />}>
-                <EntertainmentWidget />
-              </Suspense>
-            </div>
-
-            {/* Daycare Widget - Wider span */}
-            <div className="dashboard-card lg:col-span-3">
-              <Suspense fallback={<WidgetSkeleton />}>
-                <DaycareWidget />
-              </Suspense>
-            </div>
-          </div>
-        </div>
-
-        {/* Premium Widgets Row (Coming Soon) */}
-        <div className="mt-6 p-4 bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl border-2 border-dashed border-purple-300">
-          <h3 className="text-lg font-semibold text-purple-800 mb-2">✨ Premium Features Coming Soon</h3>
-          <p className="text-purple-600 text-sm">
-            Sports ticker, financial snapshot, package tracker, and AI-powered household coordination will be available with Premium subscription.
-          </p>
         </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }

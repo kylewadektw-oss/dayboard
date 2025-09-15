@@ -19,6 +19,7 @@ import { Metadata } from 'next';
 import { Toaster } from '@/components/ui/Toasts/toaster';
 import LoggerProvider from '@/components/providers/LoggerProvider';
 import CodeProtectionProvider from '@/components/providers/CodeProtectionProvider';
+import ClientAuthWrapper from '../components/providers/ClientAuthWrapper';
 import { PropsWithChildren, Suspense } from 'react';
 import { getURL } from '@/utils/helpers';
 import 'styles/main.css';
@@ -53,9 +54,11 @@ export default async function RootLayout({ children }: PropsWithChildren) {
       </head>
       <body className="bg-black">
         <CodeProtectionProvider />
-        <LoggerProvider>
-          {children}
-        </LoggerProvider>
+        <ClientAuthWrapper>
+          <LoggerProvider>
+            {children}
+          </LoggerProvider>
+        </ClientAuthWrapper>
         <Suspense>
           <Toaster />
         </Suspense>

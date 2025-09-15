@@ -185,9 +185,25 @@ export async function GET(request: NextRequest) {
           userId: user.id, 
           error: profileSelectError.message 
         }, profileSelectError);
+        
+        // Handle profile error - redirect to signin with error
+        return NextResponse.redirect(
+          getErrorRedirect(
+            `${requestUrl.origin}/signin`,
+            'ProfileError',
+            'There was an issue accessing your profile. Please try signing in again.'
+          )
+        );
       }
     } else {
       serverAuthLogger.warn(`⚠️ No user found after successful code exchange`);
+      return NextResponse.redirect(
+        getErrorRedirect(
+          `${requestUrl.origin}/signin`,
+          'UserNotFound',
+          'Unable to authenticate user. Please try signing in again.'
+        )
+      );
     }
   } else {
     serverAuthLogger.warn(`⚠️ No authorization code provided in callback`);
