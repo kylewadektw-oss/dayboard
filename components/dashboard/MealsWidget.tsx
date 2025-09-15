@@ -85,7 +85,7 @@ function MealsWidgetComponent() {
   }), []); // Empty dependency since mockMeals is static
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 h-fit">
+    <div className="bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-gray-600">Meals at a Glance</h3>
         <ChefHat className="h-4 w-4 text-gray-400" />
@@ -95,7 +95,7 @@ function MealsWidgetComponent() {
       {todaysDinner && (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-medium text-gray-500">Tonight's Dinner</h4>
+            <h4 className="text-xs font-medium text-gray-500">Tonight&apos;s Dinner</h4>
             <div className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(todaysDinner.difficulty)}`}>
               {todaysDinner.difficulty}
             </div>
@@ -118,7 +118,7 @@ function MealsWidgetComponent() {
       {/* Tomorrow's Breakfast */}
       {tomorrowsBreakfast && (
         <div className="mb-4">
-          <h4 className="text-xs font-medium text-gray-500 mb-2">Tomorrow's Breakfast</h4>
+          <h4 className="text-xs font-medium text-gray-500 mb-2">Tomorrow&apos;s Breakfast</h4>
           <div className="bg-green-50 border border-green-200 rounded-lg p-3">
             <div className="font-medium text-gray-900 mb-1">{tomorrowsBreakfast.title}</div>
             <div className="flex items-center justify-between text-xs text-gray-600">

@@ -11,12 +11,12 @@ import { SettingsService } from '@/utils/settings';
 
 interface SettingsContextType {
   settingsService: SettingsService | null;
-  userSettings: Record<string, any>;
-  householdSettings: Record<string, any>;
+  userSettings: Record<string, unknown>;
+  householdSettings: Record<string, unknown>;
   loading: boolean;
   refreshSettings: () => Promise<void>;
-  getSetting: (key: string, defaultValue?: any) => any;
-  setSetting: (key: string, value: any, isHousehold?: boolean) => Promise<void>;
+  getSetting: (key: string, defaultValue?: unknown) => unknown;
+  setSetting: (key: string, value: unknown, isHousehold?: boolean) => Promise<void>;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -87,7 +87,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const getSetting = (key: string, defaultValue: any = null) => {
+  const getSetting = (key: string, defaultValue: unknown = null) => {
     // Check user settings first, then household settings
     if (userSettings[key] !== undefined) {
       return userSettings[key];
@@ -98,7 +98,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     return defaultValue;
   };
 
-  const setSetting = async (key: string, value: any, isHousehold: boolean = false) => {
+  const setSetting = async (key: string, value: unknown, isHousehold: boolean = false) => {
     if (!settingsService) return;
 
     try {

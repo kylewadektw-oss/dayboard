@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Shield, AlertTriangle, Activity, Database, Clock, Users, TrendingUp, Eye } from 'lucide-react';
 
@@ -13,11 +13,11 @@ interface SupabaseLog {
   category: string[];
   severity: 'low' | 'medium' | 'high' | 'critical';
   source: string;
-  data?: any;
+  data?: unknown;
 }
 
 // Helper functions for categorizing and analyzing logs
-function categorizeSupabaseError(message: string, level: string) {
+function categorizeSupabaseError(message: string) {
   const categories = [];
   const lowerMessage = message.toLowerCase();
 
@@ -75,7 +75,7 @@ function getSeverityLevel(level: string, message: string): 'low' | 'medium' | 'h
 interface SecurityEvent {
   type: 'auth_failure' | 'unauthorized_access' | 'suspicious_activity' | 'rate_limit';
   severity: 'low' | 'medium' | 'high' | 'critical';
-  details: any;
+  details: unknown;
   timestamp: string;
 }
 
@@ -98,7 +98,7 @@ export default function SupabaseMonitorPage() {
 
   const supabase = createClient();
 
-  const fetchSupabaseLogs = async () => {
+  const fetchSupabaseLogs = useCallback(async () => {
     try {
       // Get application logs that relate to Supabase operations
       const { data: appLogs, error } = await supabase
@@ -117,7 +117,7 @@ export default function SupabaseMonitorPage() {
         level: log.level,
         message: log.message,
         user_id: log.user_id || undefined,
-        category: categorizeSupabaseError(log.message || '', log.level),
+        category: categorizeSupabaseError(log.message || ''),
         severity: getSeverityLevel(log.level, log.message || ''),
         source: 'application',
         data: log.data
@@ -138,8 +138,10 @@ export default function SupabaseMonitorPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [supabase]);
 
+  // Helper function to extract error codes (currently unused)
+  /*
   const extractErrorCode = (message: string): string | undefined => {
     // Extract common Supabase error codes
     const patterns = [
@@ -155,6 +157,7 @@ export default function SupabaseMonitorPage() {
     }
     return undefined;
   };
+  */
 
   const extractSecurityEvents = (logs: SupabaseLog[]): SecurityEvent[] => {
     const events: SecurityEvent[] = [];
@@ -253,7 +256,7 @@ export default function SupabaseMonitorPage() {
 
   useEffect(() => {
     fetchSupabaseLogs();
-  }, [timeRange]);
+  }, [timeRange, fetchSupabaseLogs]);
 
   useEffect(() => {
     if (!autoRefresh) return;
@@ -263,7 +266,7 @@ export default function SupabaseMonitorPage() {
     }, 10000); // Refresh every 10 seconds
 
     return () => clearInterval(interval);
-  }, [autoRefresh, timeRange]);
+  }, [autoRefresh, fetchSupabaseLogs]);
 
   if (isLoading) {
     return (
@@ -310,7 +313,7 @@ export default function SupabaseMonitorPage() {
               
               <select
                 value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value as any)}
+                onChange={(e) => setTimeRange(e.target.value as '1h' | '6h' | '24h' | '7d')}
                 className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="1h">Last Hour</option>
@@ -386,7 +389,7 @@ export default function SupabaseMonitorPage() {
                         {event.type.replace('_', ' ')}
                       </p>
                       <p className="text-sm text-gray-600">
-                        {event.details.message.slice(0, 100)}...
+                        {(event.details as { message?: string })?.message?.slice(0, 100) || 'No details'}...
                       </p>
                     </div>
                   </div>
@@ -411,7 +414,7 @@ export default function SupabaseMonitorPage() {
             {['all', 'errors', 'security', 'performance'].map((filterOption) => (
               <button
                 key={filterOption}
-                onClick={() => setFilter(filterOption as any)}
+                onClick={() => setFilter(filterOption as 'all' | 'errors' | 'security' | 'performance')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === filterOption
                     ? 'bg-purple-100 text-purple-800'
@@ -446,7 +449,7 @@ export default function SupabaseMonitorPage() {
                       </span>
                     </div>
                     <p className="text-gray-900 font-medium mb-1">{log.message}</p>
-                    {log.data && (
+                    {!!log.data && (
                       <details className="mt-2">
                         <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-800">
                           View data

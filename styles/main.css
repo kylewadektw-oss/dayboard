@@ -91,3 +91,32 @@ p a:hover { text-decoration:underline; }
 
 /* Focus ring tweak for better visibility on light + dark */
 :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+/* Scrollbar hiding utilities for horizontal scrolling containers */
+.scrollbar-hide {
+  /* Firefox */
+  scrollbar-width: none;
+  /* Internet Explorer 10+ */
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  /* WebKit */
+  display: none;
+}
+
+/* Smooth scrolling for better UX */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Quick Actions Ribbon specific styles */
+.ribbon-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-behavior: smooth;
+}
+
+.ribbon-scroll::-webkit-scrollbar {
+  display: none;
+}

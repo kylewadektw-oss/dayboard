@@ -438,7 +438,7 @@ const FamilyAllowanceSystem = () => {
                 <h4 className="font-semibold text-blue-900">Saving</h4>
               </div>
               <p className="text-sm text-blue-700">
-                "Save some money from every allowance to reach your bigger goals faster!"
+                &quot;Save some money from every allowance to reach your bigger goals faster!&quot;
               </p>
             </div>
             <div className="p-4 bg-green-50 rounded-lg">
@@ -447,7 +447,7 @@ const FamilyAllowanceSystem = () => {
                 <h4 className="font-semibold text-green-900">Earning</h4>
               </div>
               <p className="text-sm text-green-700">
-                "Complete chores consistently to build good habits and earn more!"
+                &quot;Complete chores consistently to build good habits and earn more!&quot;
               </p>
             </div>
             <div className="p-4 bg-purple-50 rounded-lg">
@@ -456,7 +456,7 @@ const FamilyAllowanceSystem = () => {
                 <h4 className="font-semibold text-purple-900">Spending</h4>
               </div>
               <p className="text-sm text-purple-700">
-                "Think before you spend - is this something you really want or need?"
+                &quot;Think before you spend - is this something you really want or need?&quot;
               </p>
             </div>
           </div>

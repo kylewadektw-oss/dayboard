@@ -15,12 +15,11 @@
  */
 
 
-import { Search, Filter, Clock, Users, Star, Download, Loader2, RefreshCw, X } from 'lucide-react';
-import { useEffect, useState, useMemo, useCallback, memo } from 'react';
+import { Search, Filter, Clock, Users, Star, Download, Loader2, X, Grid, List, TrendingUp, Heart, Zap } from 'lucide-react';
+import { useEffect, useState, useMemo, memo } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { 
   RecipeWithDetails, 
-  RecipeFilters, 
   RECIPE_DIFFICULTIES,
   RecipeIngredient,
   RecipeDifficulty,
@@ -29,12 +28,18 @@ import {
 } from '@/types/recipes';
 import { fetchRecipesFromAPI, RECIPE_SEARCH_QUERIES, type FetchRecipesResponse } from '@/utils/supabase/recipe-fetcher';
 import Button from '@/components/ui/Button';
-import { Tables } from '@/types_db';
+import { RecipeFiltersSheet, type RecipeFilters } from './RecipeFiltersSheet';
+import { 
+  filtersToURLParams, 
+  urlParamsToFilters, 
+  hasActiveFilters, 
+  getFiltersSummary 
+} from '@/utils/recipe-filters';
 
 const supabase = createClient();
 
-// Type alias for better readability
-type DatabaseRecipe = Tables<'recipes'>;
+// Database integration coming soon
+// type DatabaseRecipe = Tables<'recipes'>;
 
 const getDifficultyColor = (difficulty: RecipeWithDetails['difficulty']) => {
   const difficultyConfig = RECIPE_DIFFICULTIES.find(d => d.value === difficulty);
@@ -46,23 +51,190 @@ function RecipeLibraryComponent() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
-  const [userFavorites, setUserFavorites] = useState<Set<string>>(new Set());
+  const [userFavorites] = useState<Set<string>>(new Set()); // Feature coming soon
   const [isFetching, setIsFetching] = useState(false);
   const [fetchResults, setFetchResults] = useState<FetchRecipesResponse | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  
+  // New filter state for advanced filters sheet
+  const [showFiltersSheet, setShowFiltersSheet] = useState(false);
+  const [recipeFilters, setRecipeFilters] = useState<RecipeFilters>({
+    diets: [],
+    allergensExclude: [],
+    cuisines: [],
+    includeIngredients: [],
+    excludeIngredients: [],
+    maxCookTime: undefined,
+    minRating: undefined,
+    quickOnly: false,
+    imagesOnly: false,
+  });
+  
+  const [advancedFilters, setAdvancedFilters] = useState({
+    difficulty: [] as string[],
+    cuisine: [] as string[],
+    dietary: [] as string[],
+    cookTime: '',
+    rating: 0,
+    favorites: false,
+    quickMeals: false
+  });
 
-  // Memoize the loadUserFavorites function
-  const loadUserFavorites = useCallback(async () => {
-    try {
-      // Note: This would require a user_recipe_favorites table
-      // For now, we'll use localStorage as a fallback
-      const savedFavorites = localStorage.getItem('recipe_favorites');
-      if (savedFavorites) {
-        setUserFavorites(new Set(JSON.parse(savedFavorites)));
+  // Database integration functions (placeholder for future implementation)
+  // const loadUserFavorites = useCallback(async () => {
+  //   try {
+  //     const savedFavorites = localStorage.getItem('recipe_favorites');
+  //     if (savedFavorites) {
+  //       setUserFavorites(new Set(JSON.parse(savedFavorites)));
+  //     }
+  //   } catch (error) {
+  //     console.error('Error loading user favorites:', error);
+  //   }
+  // }, []);
+
+  // Apply recipe filters to recipes list
+  const filteredRecipes = useMemo(() => {
+    let filtered = recipes;
+
+    // Text search
+    if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter(recipe =>
+        recipe.title.toLowerCase().includes(search) ||
+        (recipe.description || '').toLowerCase().includes(search) ||
+        (recipe.cuisine || '').toLowerCase().includes(search) ||
+        recipe.tags.some(tag => tag.toLowerCase().includes(search))
+      );
+    }
+
+    // Legacy active filter
+    switch (activeFilter) {
+      case 'Quick (<20min)':
+        filtered = filtered.filter(recipe => recipe.total_time_minutes <= 20);
+        break;
+      case 'Vegetarian':
+        filtered = filtered.filter(recipe => recipe.diet_types.includes('vegetarian'));
+        break;
+      case 'Chicken':
+        filtered = filtered.filter(recipe => recipe.tags.includes('chicken'));
+        break;
+      case 'Beef':
+        filtered = filtered.filter(recipe => recipe.tags.includes('beef'));
+        break;
+      case 'Italian':
+        filtered = filtered.filter(recipe => recipe.cuisine === 'Italian');
+        break;
+      case 'Mexican':
+        filtered = filtered.filter(recipe => recipe.cuisine === 'Mexican');
+        break;
+      case 'Asian':
+        filtered = filtered.filter(recipe => recipe.cuisine === 'Asian');
+        break;
+    }
+
+    // Advanced recipe filters
+    if (recipeFilters.diets.length) {
+      filtered = filtered.filter(recipe => 
+        recipeFilters.diets.some(diet => recipe.diet_types.includes(diet as RecipeDietType))
+      );
+    }
+
+    if (recipeFilters.allergensExclude.length) {
+      filtered = filtered.filter(recipe => 
+        !recipeFilters.allergensExclude.some(allergen => 
+          recipe.ingredients.some(ing => 
+            ing.name.toLowerCase().includes(allergen.toLowerCase())
+          )
+        )
+      );
+    }
+
+    if (recipeFilters.cuisines.length) {
+      filtered = filtered.filter(recipe => 
+        recipeFilters.cuisines.includes(recipe.cuisine || '')
+      );
+    }
+
+    if (recipeFilters.includeIngredients.length) {
+      filtered = filtered.filter(recipe => 
+        recipeFilters.includeIngredients.every(ingredient => 
+          recipe.ingredients.some(ing => 
+            ing.name.toLowerCase().includes(ingredient.toLowerCase())
+          )
+        )
+      );
+    }
+
+    if (recipeFilters.excludeIngredients.length) {
+      filtered = filtered.filter(recipe => 
+        !recipeFilters.excludeIngredients.some(ingredient => 
+          recipe.ingredients.some(ing => 
+            ing.name.toLowerCase().includes(ingredient.toLowerCase())
+          )
+        )
+      );
+    }
+
+    if (recipeFilters.maxCookTime) {
+      filtered = filtered.filter(recipe => recipe.total_time_minutes <= recipeFilters.maxCookTime!);
+    }
+
+    if (recipeFilters.minRating) {
+      filtered = filtered.filter(recipe => (recipe.rating || 0) >= recipeFilters.minRating!);
+    }
+
+    if (recipeFilters.quickOnly) {
+      filtered = filtered.filter(recipe => recipe.total_time_minutes <= 20);
+    }
+
+    if (recipeFilters.imagesOnly) {
+      filtered = filtered.filter(recipe => recipe.image_url || recipe.image_emoji);
+    }
+
+    return filtered;
+  }, [recipes, searchTerm, activeFilter, recipeFilters]);
+
+  const handleFiltersApply = (filters: RecipeFilters) => {
+    setRecipeFilters(filters);
+  };
+
+  const clearAllFilters = () => {
+    setRecipeFilters({
+      diets: [],
+      allergensExclude: [],
+      cuisines: [],
+      includeIngredients: [],
+      excludeIngredients: [],
+      maxCookTime: undefined,
+      minRating: undefined,
+      quickOnly: false,
+      imagesOnly: false,
+    });
+    setActiveFilter('All');
+    setSearchTerm('');
+  };
+
+  // Initialize from URL params on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const filtersFromURL = urlParamsToFilters(params);
+      if (hasActiveFilters(filtersFromURL)) {
+        setRecipeFilters(filtersFromURL);
       }
-    } catch (error) {
-      console.error('Error loading user favorites:', error);
     }
   }, []);
+
+  // Update URL when filters change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = filtersToURLParams(recipeFilters);
+      const url = new URL(window.location.href);
+      url.search = params.toString();
+      window.history.replaceState(null, '', url.toString());
+    }
+  }, [recipeFilters]);
 
   const loadRecipesFromDatabase = async () => {
     setLoading(true);
@@ -143,8 +315,6 @@ function RecipeLibraryComponent() {
       // If no recipes found, show helpful message
       if (transformedRecipes.length === 0) {
         console.log('No recipes found in database. Consider fetching some recipes from the API!');
-      } else {
-        console.log(`✅ Loaded ${transformedRecipes.length} recipes from database`);
       }
       
     } catch (error) {
@@ -406,16 +576,15 @@ function RecipeLibraryComponent() {
     setLoading(false);
   };
 
-  const fetchUserFavorites = async () => {
-    // Mock user favorites - will be replaced with real Supabase call once tables exist
-    console.log('Using mock favorites data until recipe tables are deployed');
-  };
+  // Database integration functions (placeholder for future implementation)  
+  // const fetchUserFavorites = async () => {
+  //   console.log('Using mock favorites data until recipe tables are deployed');
+  // };
 
-  const fetchRecipes = async () => {
-    // This will be enabled once recipe tables are deployed
-    console.log('Recipe tables not yet deployed - using mock data');
-    loadMockRecipes();
-  };
+  // const fetchRecipes = async () => {
+  //   console.log('Recipe tables not yet deployed - using mock data');
+  //   loadMockRecipes();
+  // };
 
   const toggleFavorite = async (recipeId: string, isFavorite: boolean) => {
     // For now, just update local state until recipe tables are deployed
@@ -452,24 +621,26 @@ function RecipeLibraryComponent() {
       // Show success message
       const message = `Successfully fetched ${result.totalFetched} recipes! ${result.inserted} new recipes added to your library.`;
       alert(message);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching recipes:', error);
       
       // Provide helpful error messages
       let errorMessage = 'Failed to fetch recipes';
       
-      if (error.message.includes('401')) {
+      const errorMsg = error instanceof Error ? error.message : '';
+      
+      if (errorMsg.includes('401')) {
         errorMessage = 'API Authentication Error: Please check your Spoonacular API key in .env.local file. Make sure you have replaced the placeholder with your actual API key.';
-      } else if (error.message.includes('402')) {
+      } else if (errorMsg.includes('402')) {
         errorMessage = 'API Quota Exceeded: You have reached your daily limit for the Spoonacular API. Please wait until tomorrow or upgrade your plan.';
-      } else if (error.message.includes('key not configured')) {
+      } else if (errorMsg.includes('key not configured')) {
         errorMessage = 'API Key Missing: Please add your Spoonacular API key to the .env.local file.';
-      } else if (error.message.includes('placeholder')) {
+      } else if (errorMsg.includes('placeholder')) {
         errorMessage = 'API Key Setup Required: Please replace the placeholder API key with your actual Spoonacular API key.';
-      } else if (error.message.includes('Network')) {
+      } else if (errorMsg.includes('Network')) {
         errorMessage = 'Network Error: Please check your internet connection and try again.';
       } else {
-        errorMessage = `Error: ${error.message}`;
+        errorMessage = errorMsg ? `Error: ${errorMsg}` : 'Failed to fetch recipes. Please try again.';
       }
       
       alert(errorMessage);
@@ -525,27 +696,281 @@ function RecipeLibraryComponent() {
         </Button>
 
         {/* Filters */}
-        <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+        <button 
+          onClick={() => setShowFiltersSheet(true)}
+          className={`flex items-center px-4 py-2 border rounded-lg transition-colors ${
+            hasActiveFilters(recipeFilters) 
+              ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
+              : 'border-gray-300 hover:bg-gray-50'
+          }`}
+        >
           <Filter className="h-4 w-4 mr-2" />
           Filters
+          {hasActiveFilters(recipeFilters) && (
+            <span className="ml-2 bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full">
+              {Object.values(recipeFilters).filter(v => Array.isArray(v) ? v.length > 0 : v).length}
+            </span>
+          )}
         </button>
       </div>
 
-      {/* Filter Tags */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {['All', 'Quick (<20min)', 'Vegetarian', 'Chicken', 'Beef', 'Italian', 'Mexican', 'Asian'].map((filter) => (
-          <button
-            key={filter}
-            onClick={() => setActiveFilter(filter)}
-            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-              filter === activeFilter
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            {filter}
-          </button>
-        ))}
+      {/* Filter Tags and Enhanced Controls */}
+      <div className="space-y-4 mb-6">
+        {/* Primary Filter Tags */}
+        <div className="flex flex-wrap gap-2">
+          {['All', 'Quick (<20min)', 'Vegetarian', 'Chicken', 'Beef', 'Italian', 'Mexican', 'Asian'].map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                filter === activeFilter
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+
+        {/* Enhanced Filter Controls */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className={`flex items-center gap-2 px-3 py-2 text-sm border rounded-lg transition-colors ${
+                showAdvancedFilters || advancedFilters.difficulty.length > 0 || advancedFilters.cuisine.length > 0
+                  ? 'bg-indigo-50 border-indigo-200 text-indigo-700' 
+                  : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Filter className="h-4 w-4" />
+              Advanced Filters
+              {(advancedFilters.difficulty.length + advancedFilters.cuisine.length + advancedFilters.dietary.length) > 0 && (
+                <span className="bg-indigo-600 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  {advancedFilters.difficulty.length + advancedFilters.cuisine.length + advancedFilters.dietary.length}
+                </span>
+              )}
+            </button>
+
+            <span className="text-sm text-gray-600">
+              {filteredRecipes.length} recipe{filteredRecipes.length !== 1 ? 's' : ''}
+              {hasActiveFilters(recipeFilters) && (
+                <span className="ml-2 text-indigo-600">
+                  • {getFiltersSummary(recipeFilters)}
+                </span>
+              )}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === 'grid' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              <Grid className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-md transition-colors ${
+                viewMode === 'list' ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600'
+              }`}
+            >
+              <List className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Category Tiles */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { id: 'popular', label: 'Popular', icon: TrendingUp, filter: () => filteredRecipes.filter(r => r.rating && r.rating >= 4.0) },
+            { id: 'quick', label: 'Quick & Easy', icon: Zap, filter: () => filteredRecipes.filter(r => r.total_time_minutes <= 20) },
+            { id: 'healthy', label: 'Healthy', icon: '🥗', filter: () => filteredRecipes.filter(r => r.diet_types.includes('vegetarian')) },
+            { id: 'comfort', label: 'Comfort Food', icon: '🍲', filter: () => filteredRecipes.filter(r => r.cuisine === 'American') }
+          ].map((category) => {
+            const Icon = category.icon;
+            const count = category.filter().length;
+            return (
+              <button
+                key={category.id}
+                className="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-all text-left group"
+              >
+                <div className="flex items-center gap-3">
+                  {typeof Icon === 'string' ? (
+                    <span className="text-2xl">{Icon}</span>
+                  ) : (
+                    <Icon className="h-6 w-6 text-indigo-600" />
+                  )}
+                  <div>
+                    <div className="font-medium text-gray-900 group-hover:text-indigo-600">
+                      {category.label}
+                    </div>
+                    <div className="text-xs text-gray-500">{count} recipes</div>
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Advanced Filters Panel */}
+        {showAdvancedFilters && (
+          <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Difficulty */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
+                <div className="space-y-2">
+                  {['easy', 'medium', 'hard'].map((level) => (
+                    <label key={level} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={advancedFilters.difficulty.includes(level)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setAdvancedFilters(prev => ({
+                              ...prev,
+                              difficulty: [...prev.difficulty, level]
+                            }));
+                          } else {
+                            setAdvancedFilters(prev => ({
+                              ...prev,
+                              difficulty: prev.difficulty.filter(d => d !== level)
+                            }));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-700 capitalize">{level}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cuisine Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Cuisine</label>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {['Asian', 'Italian', 'Mexican', 'American', 'Mediterranean', 'Indian'].map((cuisine) => (
+                    <label key={cuisine} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={advancedFilters.cuisine.includes(cuisine)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setAdvancedFilters(prev => ({
+                              ...prev,
+                              cuisine: [...prev.cuisine, cuisine]
+                            }));
+                          } else {
+                            setAdvancedFilters(prev => ({
+                              ...prev,
+                              cuisine: prev.cuisine.filter(c => c !== cuisine)
+                            }));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-700">{cuisine}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dietary Tags */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Dietary</label>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {['vegetarian', 'vegan', 'gluten_free', 'dairy_free', 'keto', 'paleo'].map((tag) => (
+                    <label key={tag} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={advancedFilters.dietary.includes(tag)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setAdvancedFilters(prev => ({
+                              ...prev,
+                              dietary: [...prev.dietary, tag]
+                            }));
+                          } else {
+                            setAdvancedFilters(prev => ({
+                              ...prev,
+                              dietary: prev.dietary.filter(d => d !== tag)
+                            }));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="ml-2 text-sm text-gray-700 capitalize">{tag.replace('_', ' ')}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cook Time & Rating */}
+              <div className="space-y-4">
+                {/* Cook Time */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cook Time</label>
+                  <select
+                    value={advancedFilters.cookTime}
+                    onChange={(e) => setAdvancedFilters(prev => ({ ...prev, cookTime: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="">Any time</option>
+                    <option value="under15">Under 15 min</option>
+                    <option value="under30">Under 30 min</option>
+                    <option value="under60">Under 1 hour</option>
+                    <option value="over60">Over 1 hour</option>
+                  </select>
+                </div>
+
+                {/* Minimum Rating */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Min Rating</label>
+                  <select
+                    value={advancedFilters.rating}
+                    onChange={(e) => setAdvancedFilters(prev => ({ ...prev, rating: Number(e.target.value) }))}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  >
+                    <option value="0">Any rating</option>
+                    <option value="3">3+ stars</option>
+                    <option value="4">4+ stars</option>
+                    <option value="4.5">4.5+ stars</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Filters */}
+            <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
+              <span className="text-sm font-medium text-gray-700">Quick filters:</span>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={advancedFilters.favorites}
+                  onChange={(e) => setAdvancedFilters(prev => ({ ...prev, favorites: e.target.checked }))}
+                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <Heart className="ml-2 h-4 w-4 text-red-500" />
+                <span className="ml-1 text-sm text-gray-700">Favorites only</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={advancedFilters.quickMeals}
+                  onChange={(e) => setAdvancedFilters(prev => ({ ...prev, quickMeals: e.target.checked }))}
+                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <Clock className="ml-2 h-4 w-4 text-indigo-600" />
+                <span className="ml-1 text-sm text-gray-700">Quick meals only</span>
+              </label>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Quick Fetch Options */}
@@ -591,13 +1016,13 @@ function RecipeLibraryComponent() {
           }`}>
             {fetchResults.totalFetched > 0 ? (
               <>
-                {fetchResults.message} Found {fetchResults.totalFetched} recipes for "{fetchResults.searchQuery}".
+                {fetchResults.message} Found {fetchResults.totalFetched} recipes for &quot;{fetchResults.searchQuery}&quot;.
                 {fetchResults.inserted > 0 && ` Added ${fetchResults.inserted} new recipes to your library.`}
                 {fetchResults.skipped > 0 && ` Skipped ${fetchResults.skipped} duplicates.`}
               </>
             ) : (
               <>
-                Failed to fetch recipes for "{fetchResults.searchQuery}". Please check the console for more details.
+                Failed to fetch recipes for &quot;{fetchResults.searchQuery}&quot;. Please check the console for more details.
               </>
             )}
           </p>
@@ -623,16 +1048,13 @@ function RecipeLibraryComponent() {
             </div>
           ))}
         </div>
-      ) : recipes.length === 0 ? (
+      ) : filteredRecipes.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🔍</div>
           <h4 className="text-lg font-medium text-gray-900 mb-2">No Recipes Found</h4>
           <p className="text-gray-600 mb-4">Try adjusting your search or filters</p>
           <button 
-            onClick={() => {
-              setSearchTerm('');
-              setActiveFilter('All');
-            }}
+            onClick={clearAllFilters}
             className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium"
           >
             Clear Filters
@@ -642,7 +1064,7 @@ function RecipeLibraryComponent() {
         <>
           {/* Recipe Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recipes.map((recipe) => (
+            {filteredRecipes.map((recipe) => (
               <div key={recipe.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-4xl">{recipe.image_emoji || '🍽️'}</div>
@@ -717,6 +1139,14 @@ function RecipeLibraryComponent() {
           Recipe data is currently using sample data. Once you deploy the recipe database migration, this will automatically connect to your Supabase database with full household sharing, favorites, and meal planning features.
         </p>
       </div>
+
+      {/* Recipe Filters Sheet */}
+      <RecipeFiltersSheet
+        open={showFiltersSheet}
+        onClose={() => setShowFiltersSheet(false)}
+        value={recipeFilters}
+        onApply={handleFiltersApply}
+      />
     </div>
   );
 }

@@ -7,7 +7,6 @@ import {
   CheckSquare, 
   Square, 
   Plus, 
-  Calendar, 
   User, 
   Clock,
   Star,
@@ -69,10 +68,9 @@ const FREQUENCY_ICONS = {
 export default function ChoreListTemplate({ 
   items, 
   onToggleItem, 
-  onAddItem, 
-  onUpdateItem, 
-  onDeleteItem,
-  householdMembers = []
+  onAddItem
+  // onUpdateItem, onDeleteItem - coming soon
+  // householdMembers - coming soon  
 }: ChoreListTemplateProps) {
   const [newChoreName, setNewChoreName] = React.useState('');
   const [newChoreRoom, setNewChoreRoom] = React.useState('');
@@ -237,7 +235,7 @@ export default function ChoreListTemplate({
                   <label className="block text-sm font-medium mb-1">Frequency</label>
                   <select
                     value={newChoreFrequency}
-                    onChange={(e) => setNewChoreFrequency(e.target.value as any)}
+                    onChange={(e) => setNewChoreFrequency(e.target.value as 'daily' | 'weekly' | 'monthly' | 'custom')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   >
                     <option value="daily">📅 Daily</option>
@@ -251,7 +249,7 @@ export default function ChoreListTemplate({
                   <label className="block text-sm font-medium mb-1">Difficulty</label>
                   <select
                     value={newChoreDifficulty}
-                    onChange={(e) => setNewChoreDifficulty(e.target.value as any)}
+                    onChange={(e) => setNewChoreDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                   >
                     <option value="easy">⭐ Easy</option>

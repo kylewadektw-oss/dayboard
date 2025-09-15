@@ -92,8 +92,8 @@ export async function GET(req: Request) {
         latitude < -90 || latitude > 90 || 
         longitude < -180 || longitude > 180) {
       await enhancedLogger.logWithFullContext(LogLevel.WARN, "Invalid coordinates provided to weather API", "WeatherAPI", {
-        lat: latitude,
-        lon: longitude
+        lat: parseFloat(latitude.toString()),
+        lon: parseFloat(longitude.toString())
       });
       
       return NextResponse.json(
@@ -103,8 +103,8 @@ export async function GET(req: Request) {
     }
 
     await enhancedLogger.logWithFullContext(LogLevel.INFO, "Fetching weather data", "WeatherAPI", {
-      lat: latitude,
-      lon: longitude,
+      lat: parseFloat(latitude.toString()),
+      lon: parseFloat(longitude.toString()),
       apiKeyPresent: !!apiKey
     });
 
@@ -128,9 +128,10 @@ export async function GET(req: Request) {
       await enhancedLogger.logWithFullContext(LogLevel.WARN, "OpenWeatherMap API error - falling back to mock data", "WeatherAPI", {
         status: res.status,
         statusText: res.statusText,
-        errorMessage: errorText.substring(0, 200), // Truncate error to avoid serialization issues
-        lat: latitude,
-        lon: longitude
+        errorMessage: errorText.substring(0, 200),
+        lat: parseFloat(latitude.toString()),
+        lon: parseFloat(longitude.toString()),
+        url: weatherUrl.replace(apiKey, '[REDACTED]') // Don't log the API key
       });
 
       // Return enhanced mock weather data when external API fails
@@ -204,14 +205,15 @@ export async function GET(req: Request) {
     
     return response;
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     const responseTime = Date.now() - startTime;
+    const err = error instanceof Error ? error : new Error('Unknown error');
     
     // Create serialization-safe error data
     const errorData = {
-      errorMessage: error?.message || 'Unknown error',
-      errorName: error?.name || 'Unknown',
-      errorStack: error?.stack ? error.stack.substring(0, 200) : undefined,
+      errorMessage: err.message || 'Unknown error',
+      errorName: err.name || 'Unknown',
+      errorStack: err.stack ? err.stack.substring(0, 200) : undefined,
       responseTime: `${responseTime}ms`,
       timestamp: new Date().toISOString()
     };
@@ -252,7 +254,7 @@ export async function GET(req: Request) {
     
     const response = NextResponse.json(mockWeatherData);
     response.headers.set('X-Mock-Data', 'true');
-    response.headers.set('X-Fallback-Reason', error.name === 'AbortError' ? 'Timeout' : 'Network Error');
+    response.headers.set('X-Fallback-Reason', err.name === 'AbortError' ? 'Timeout' : 'Network Error');
     response.headers.set('Cache-Control', 'public, max-age=60'); // Cache mock data for 1 minute
     return response;
   }

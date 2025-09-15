@@ -1,4 +1,18 @@
 /*
+ * 🛡️ DAYBOARD PROPRIETAinterface TabData {
+  id: sinterface TabData {
+  id: string;
+  label: string;
+  icon: string;
+  count?: number;
+}
+
+export default function DevToolsPage() {: string;
+  icon: string;
+  count?: number;
+}
+
+/*
  * 🛡️ DAYBOARD PROPRIETARY CODE
  * 
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
@@ -22,9 +36,72 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { logger } from '@/utils/logger';
+import { 
+  DevToolsMonitor as DevToolsMonitorClass,
+  NetworkRequest,
+  ConsoleMessage,
+  SecurityEvent,
+  MemoryUsage,
+  UserInteraction,
+  ErrorReport
+} from '@/utils/devtools-monitor';
 import LoggingNav from '@/components/logging/LoggingNav';
+
+interface MemoryData {
+  current: {
+    usedJSHeapSize: number;
+    totalJSHeapSize: number;
+    jsHeapSizeLimit: number;
+    pressure: 'critical' | 'high' | 'medium' | 'low';
+    leakSuspicion: boolean;
+  };
+  history: MemoryUsage[]; // MemoryUsage array
+}
+
+interface InteractionData {
+  total: number;
+  byType: Record<string, number>;
+  recent: UserInteraction[]; // UserInteraction array
+}
+
+interface MonitorData {
+  timestamp: string;
+  performance: {
+    coreWebVitals: Record<string, number>;
+    navigation: Record<string, number>;
+    customTimings: Record<string, number>;
+    marks: Record<string, number>;
+  };
+  network: {
+    requests: NetworkRequest[]; // NetworkRequest array
+    totalRequests: number;
+    failedRequests: number;
+    averageResponseTime: number;
+  };
+  resources: {
+    total: number;
+    totalSize: number;
+    largest: Record<string, unknown>; // ResourceMetrics - TODO: import if needed
+  };
+  interactions: InteractionData;
+  memory: MemoryData;
+  security: {
+    events: SecurityEvent[]; // SecurityEvent array
+    critical: number;
+    total: number;
+  };
+  console: {
+    messages: ConsoleMessage[]; // ConsoleMessage array
+    errorCount: number;
+    warningCount: number;
+  };
+  errors: {
+    total: number;
+    recent: ErrorReport[]; // ErrorReport array
+  };
+}
 
 interface TabData {
   id: string;
@@ -36,16 +113,15 @@ interface TabData {
 export default function DevToolsDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
   const [isMonitoring, setIsMonitoring] = useState(true);
-  const [monitorData, setMonitorData] = useState<any>(null);
+  const [monitorData, setMonitorData] = useState<MonitorData | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [selectedTimeRange, setSelectedTimeRange] = useState('5m');
-  const [devToolsMonitor, setDevToolsMonitor] = useState<any>(null);
+  const [devToolsMonitor, setDevToolsMonitor] = useState<DevToolsMonitorClass | null>(null);
   const refreshInterval = useRef<NodeJS.Timeout>();
 
   // Initialize DevTools monitor only on client side
   useEffect(() => {
-    let monitor: any = null;
+    let monitor: DevToolsMonitorClass | null = null;
     
     const initializeMonitor = async () => {
       try {
@@ -72,12 +148,12 @@ export default function DevToolsDashboard() {
   }, []);
 
   // Refresh data from DevTools monitor
-  const refreshData = () => {
+  const refreshData = useCallback(() => {
     if (isMonitoring && devToolsMonitor) {
       const data = devToolsMonitor.getFullReport();
       setMonitorData(data);
     }
-  };
+  }, [isMonitoring, devToolsMonitor]);
 
   useEffect(() => {
     // Initial data load
@@ -95,7 +171,7 @@ export default function DevToolsDashboard() {
         clearInterval(refreshInterval.current);
       }
     };
-  }, [autoRefresh, isMonitoring, devToolsMonitor]);
+  }, [autoRefresh, isMonitoring, devToolsMonitor, refreshData]);
 
   const toggleMonitoring = () => {
     if (!devToolsMonitor) return;
@@ -108,13 +184,15 @@ export default function DevToolsDashboard() {
     setIsMonitoring(!isMonitoring);
   };
 
-  const clearAllData = () => {
-    devToolsMonitor.clearMetrics();
-    refreshData();
-    logger.info('DevTools data cleared', 'DevToolsDashboard');
+  const clearData = () => {
+    if (devToolsMonitor) {
+      devToolsMonitor.clearMetrics();
+    }
+    setMonitorData(null);
   };
 
   const exportData = () => {
+    if (!devToolsMonitor) return;
     const data = devToolsMonitor.getFullReport();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -182,8 +260,6 @@ export default function DevToolsDashboard() {
         variant="sidebar"
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        selectedTimeRange={selectedTimeRange}
-        onTimeRangeChange={setSelectedTimeRange}
       />
       
       <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
@@ -241,7 +317,7 @@ export default function DevToolsDashboard() {
                 </button>
                 
                 <button
-                  onClick={clearAllData}
+                  onClick={clearData}
                   className="px-3 py-2 text-sm bg-gray-100 text-gray-800 hover:bg-gray-200 rounded-lg transition-colors"
                 >
                   🗑️ Clear
@@ -414,7 +490,7 @@ export default function DevToolsDashboard() {
                     <div>
                       <h4 className="font-medium text-gray-700 mb-3">Latest Network Requests</h4>
                       <div className="space-y-2">
-                        {monitorData.network.requests.slice(-5).map((request: any, index: number) => (
+                        {monitorData.network.requests.slice(-5).map((request: NetworkRequest, index: number) => (
                           <div key={index} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded">
                             <div className="flex items-center gap-2">
                               <span className={`w-2 h-2 rounded-full ${request.failed ? 'bg-red-500' : 'bg-green-500'}`}></span>
@@ -434,7 +510,7 @@ export default function DevToolsDashboard() {
                     <div>
                       <h4 className="font-medium text-gray-700 mb-3">Latest Console Messages</h4>
                       <div className="space-y-2">
-                        {monitorData.console.messages.slice(-5).map((message: any, index: number) => (
+                        {monitorData.console.messages.slice(-5).map((message: ConsoleMessage, index: number) => (
                           <div key={index} className="text-sm p-2 bg-gray-50 rounded">
                             <div className="flex items-center gap-2 mb-1">
                               <span className={`text-xs px-2 py-0.5 rounded ${
@@ -545,7 +621,7 @@ export default function DevToolsDashboard() {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {monitorData.network.requests.slice(-20).map((request: any, index: number) => (
+                        {monitorData.network.requests.slice(-20).map((request: NetworkRequest, index: number) => (
                           <tr key={index} className={request.failed ? 'bg-red-50' : ''}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">
                               <span className={`px-2 py-1 rounded text-xs ${
@@ -603,7 +679,7 @@ export default function DevToolsDashboard() {
                   </div>
                   
                   <div className="p-6 space-y-2">
-                    {monitorData.console.messages.slice(-50).map((message: any, index: number) => (
+                    {monitorData.console.messages.slice(-50).map((message: ConsoleMessage, index: number) => (
                       <div key={index} className={`p-3 rounded border-l-4 ${
                         message.level === 'error' ? 'bg-red-50 border-red-400' :
                         message.level === 'warn' ? 'bg-yellow-50 border-yellow-400' :
@@ -648,7 +724,7 @@ export default function DevToolsDashboard() {
                     </div>
                     
                     <div className="p-6 space-y-4">
-                      {monitorData.security.events.map((event: any, index: number) => (
+                      {monitorData.security.events.map((event: SecurityEvent, index: number) => (
                         <div key={index} className={`p-4 rounded-lg border ${
                           event.severity === 'critical' ? 'bg-red-50 border-red-200' :
                           event.severity === 'high' ? 'bg-orange-50 border-orange-200' :
@@ -731,17 +807,17 @@ export default function DevToolsDashboard() {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div className={`h-2 rounded-full ${
-                            monitorData.memory.current.pressure === 'critical' ? 'bg-red-500' :
-                            monitorData.memory.current.pressure === 'high' ? 'bg-orange-500' :
-                            monitorData.memory.current.pressure === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                            monitorData.memory?.current.pressure === 'critical' ? 'bg-red-500' :
+                            monitorData.memory?.current.pressure === 'high' ? 'bg-orange-500' :
+                            monitorData.memory?.current.pressure === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
                           }`} style={{
-                            width: `${(monitorData.memory.current.usedJSHeapSize / monitorData.memory.current.jsHeapSizeLimit) * 100}%`
+                            width: `${monitorData.memory?.current ? (monitorData.memory.current.usedJSHeapSize / monitorData.memory.current.jsHeapSizeLimit) * 100 : 0}%`
                           }}></div>
                         </div>
                       </div>
                       
                       {/* Memory Leak Warning */}
-                      {monitorData.memory.current.leakSuspicion && (
+                      {monitorData.memory?.current.leakSuspicion && (
                         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                           <div className="flex items-center gap-2">
                             <span className="text-red-600">⚠️</span>
@@ -759,7 +835,7 @@ export default function DevToolsDashboard() {
                       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <h3 className="font-semibold text-gray-900 mb-4">📈 Memory History</h3>
                         <div className="space-y-2">
-                          {monitorData.memory.history.map((snapshot: any, index: number) => (
+                          {monitorData.memory.history.map((snapshot: MemoryUsage, index: number) => (
                             <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                               <span className="text-sm text-gray-600">
                                 Sample {index + 1}
@@ -798,45 +874,52 @@ export default function DevToolsDashboard() {
                   
                   {/* Interaction Summary */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    {Object.entries(monitorData.interactions.byType).map(([type, count]) => (
+                    {monitorData.interactions && typeof monitorData.interactions === 'object' && 'byType' in monitorData.interactions && 
+                     typeof monitorData.interactions.byType === 'object' && monitorData.interactions.byType !== null ? 
+                     Object.entries(monitorData.interactions.byType).map(([type, count]) => (
                       <div key={type} className="text-center p-4 bg-gray-50 rounded-lg">
                         <div className="text-2xl font-bold text-blue-600">{count as number}</div>
                         <div className="text-sm text-gray-700 capitalize">{type}</div>
                       </div>
-                    ))}
+                    )) : null}
                   </div>
                   
                   {/* Recent Interactions */}
                   <div>
                     <h4 className="font-medium text-gray-700 mb-3">Recent Interactions</h4>
                     <div className="space-y-2">
-                      {monitorData.interactions.recent.map((interaction: any, index: number) => (
+                      {monitorData.interactions && typeof monitorData.interactions === 'object' && 'recent' in monitorData.interactions &&
+                       Array.isArray(monitorData.interactions.recent) ? 
+                       monitorData.interactions.recent.map((interaction: unknown, index: number) => {
+                         const inter = interaction as { type: string; element?: string; timestamp: number };
+                         return (
                         <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                           <div className="flex items-center gap-3">
                             <span className="text-2xl">
-                              {interaction.type === 'click' ? '👆' :
-                               interaction.type === 'scroll' ? '📜' :
-                               interaction.type === 'keyboard' ? '⌨️' :
-                               interaction.type === 'form' ? '📝' :
-                               interaction.type === 'focus' ? '🎯' : '🔄'}
+                              {inter.type === 'click' ? '👆' :
+                               inter.type === 'scroll' ? '📜' :
+                               inter.type === 'keyboard' ? '⌨️' :
+                               inter.type === 'form' ? '📝' :
+                               inter.type === 'focus' ? '🎯' : '🔄'}
                             </span>
                             <div>
-                              <div className="font-medium text-gray-800 capitalize">{interaction.type}</div>
-                              <div className="text-sm text-gray-600">{interaction.target}</div>
+                              <div className="font-medium text-gray-800 capitalize">{inter.type}</div>
+                              <div className="text-sm text-gray-600">{inter.element || 'Unknown'}</div>
                             </div>
                           </div>
                           <div className="text-right">
                             <div className="text-sm text-gray-500">
-                              {new Date(interaction.timestamp + Date.now() - performance.now()).toLocaleTimeString()}
+                              {new Date(inter.timestamp + Date.now() - performance.now()).toLocaleTimeString()}
                             </div>
-                            {interaction.coordinates && (
+                            {typeof inter === 'object' && inter !== null && 'coordinates' in inter && (
                               <div className="text-xs text-gray-400">
-                                {interaction.coordinates.x}, {interaction.coordinates.y}
+                                {String((inter as UserInteraction).coordinates?.x || 0)}, {String((inter as UserInteraction).coordinates?.y || 0)}
                               </div>
                             )}
                           </div>
                         </div>
-                      ))}
+                         );
+                       }) : null}
                     </div>
                   </div>
                 </div>

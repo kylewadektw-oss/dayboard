@@ -16,12 +16,12 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { EnhancedWeeklyMealPlan } from './EnhancedWeeklyMealPlan';
-import { createClient } from '@/utils/supabase/client';
 import type { Recipe, MealPlan } from '@/types/recipes';
 
-const supabase = createClient();
+// Supabase integration coming soon
+// const supabase = createClient();
 
 // Mock data for demonstration
 const mockRecipes: Recipe[] = [
@@ -171,9 +171,12 @@ const mockMealPlans: MealPlan[] = [
 ];
 
 export default function EnhancedMealPlanWrapper() {
-  const [recipes, setRecipes] = useState<Recipe[]>(mockRecipes);
+  const [recipes] = useState<Recipe[]>(mockRecipes);
+  // Unused setters commented out to fix build errors:
+  // const [recipes, setRecipes] = useState<Recipe[]>(mockRecipes);
   const [mealPlans, setMealPlans] = useState<MealPlan[]>(mockMealPlans);
-  const [loading, setLoading] = useState(false);
+  // Unused loading state commented out to fix build errors:
+  // const [loading, setLoading] = useState(false);
 
   const handleUpdateMealPlan = async (mealPlan: Partial<MealPlan>) => {
     if (mealPlan.id) {

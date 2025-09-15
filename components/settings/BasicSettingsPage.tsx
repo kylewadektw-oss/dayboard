@@ -7,32 +7,43 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Settings, 
   User, 
   Shield, 
   Crown, 
-  Save,
   Info,
-  CheckCircle,
   XCircle,
-  Home,
-  Users,
-  Zap
+  // Unused imports commented out to fix build errors:
+  // Settings, 
+  // CheckCircle,
+  // Home,
+  // Users,
+  Zap,
+  type LucideIcon
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
 import { toastHelpers } from '@/utils/toast';
 
 // Basic types for existing system
-interface UserRole {
-  role: 'member' | 'admin' | 'super_admin';
+// Unused interface commented out to fix build errors:
+// interface UserRole {
+//   role: 'member' | 'admin' | 'super_admin';
+// }
+
+interface Setting {
+  key: string;
+  display_name: string;
+  type: 'boolean' | 'select' | 'text' | 'number';
+  options?: Array<{ value: string; label: string }>;
+  description?: string;
+  default_value?: string | number | boolean;
 }
 
 interface TabConfig {
   key: string;
   display_name: string;
   description: string;
-  icon: React.ComponentType<any>;
+  icon: LucideIcon;
   available_for: string[];
 }
 
@@ -61,26 +72,26 @@ const TABS: TabConfig[] = [
 ];
 
 // Basic member settings
-const MEMBER_SETTINGS = [
+const MEMBER_SETTINGS: Setting[] = [
   {
     key: 'email_notifications',
     display_name: 'Email Notifications',
     description: 'Receive notifications via email',
-    type: 'boolean',
+    type: 'boolean' as const,
     default_value: true
   },
   {
     key: 'dark_mode',
     display_name: 'Dark Mode',
     description: 'Use dark theme interface',
-    type: 'boolean',
+    type: 'boolean' as const,
     default_value: false
   },
   {
     key: 'timezone',
     display_name: 'Timezone',
     description: 'Your preferred timezone',
-    type: 'select',
+    type: 'select' as const,
     options: [
       { value: 'UTC', label: 'UTC' },
       { value: 'America/New_York', label: 'Eastern Time' },
@@ -93,26 +104,26 @@ const MEMBER_SETTINGS = [
 ];
 
 // Basic household settings
-const HOUSEHOLD_SETTINGS = [
+const HOUSEHOLD_SETTINGS: Setting[] = [
   {
     key: 'household_name',
     display_name: 'Household Name',
     description: 'Display name for your household',
-    type: 'string',
+    type: 'text' as const,
     default_value: ''
   },
   {
     key: 'invite_notifications',
     display_name: 'Invitation Notifications',
     description: 'Notify when new members join',
-    type: 'boolean',
+    type: 'boolean' as const,
     default_value: true
   },
   {
     key: 'auto_assign_chores',
     display_name: 'Auto-assign Chores',
     description: 'Automatically distribute chores to members',
-    type: 'boolean',
+    type: 'boolean' as const,
     default_value: false
   }
 ];
@@ -157,14 +168,16 @@ const FEATURE_CONTROLS = [
 ];
 
 export default function BasicSettingsPage() {
-  const { user, profile, permissions, refreshUser } = useAuth();
+  const { profile, refreshUser } = useAuth();
+  // Unused variables commented out to fix build errors:
+  // const { user, permissions } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('member');
-  const [memberSettings, setMemberSettings] = useState<Record<string, any>>({});
-  const [householdSettings, setHouseholdSettings] = useState<Record<string, any>>({});
+  const [memberSettings, setMemberSettings] = useState<Record<string, unknown>>({});
+  const [householdSettings, setHouseholdSettings] = useState<Record<string, unknown>>({});
   const [featureToggles, setFeatureToggles] = useState<Record<string, boolean>>({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null); // Error handling coming soon
 
   const supabase = createClient();
 
@@ -181,7 +194,7 @@ export default function BasicSettingsPage() {
     if (profile) {
       // Load member settings from profile
       const notificationPrefs = typeof profile.notification_preferences === 'object' && profile.notification_preferences !== null 
-        ? profile.notification_preferences as any : {};
+        ? profile.notification_preferences as Record<string, unknown> : {};
       
       setMemberSettings({
         email_notifications: notificationPrefs.email ?? true,
@@ -210,17 +223,17 @@ export default function BasicSettingsPage() {
     }
   }, [profile, userRole]);
 
-  const updateMemberSetting = async (settingKey: string, value: any) => {
+  const updateMemberSetting = async (settingKey: string, value: string | number | boolean) => {
     if (!profile?.id) return;
 
     setSaving(true);
     try {
-      let updateData: any = {};
+      let updateData: Record<string, unknown> = {};
 
       switch (settingKey) {
         case 'email_notifications':
           const currentNotificationPrefs = typeof profile.notification_preferences === 'object' && profile.notification_preferences !== null 
-            ? profile.notification_preferences as any : {};
+            ? profile.notification_preferences as Record<string, unknown> : {};
           updateData = {
             notification_preferences: {
               ...currentNotificationPrefs,
@@ -231,13 +244,13 @@ export default function BasicSettingsPage() {
         case 'dark_mode':
           // Store in bio field as JSON for now (temporary solution)
           const currentBio = profile.bio || '{}';
-          let bioData: any = {};
+          let bioData: Record<string, unknown> = {};
           try {
             bioData = JSON.parse(currentBio);
           } catch {
             bioData = {};
           }
-          bioData.ui_preferences = { ...bioData.ui_preferences, dark_mode: value };
+          bioData.ui_preferences = { ...(bioData.ui_preferences as Record<string, unknown> || {}), dark_mode: value };
           updateData = { bio: JSON.stringify(bioData) };
           break;
         case 'timezone':
@@ -259,15 +272,15 @@ export default function BasicSettingsPage() {
       
       // Refresh user data to get updated profile
       await refreshUser();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating member setting:', err);
-      toastHelpers.error(`Failed to update setting: ${err.message}`);
+      toastHelpers.error(`Failed to update setting: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
   };
 
-  const updateHouseholdSetting = async (settingKey: string, value: any) => {
+  const updateHouseholdSetting = async (settingKey: string, value: string | number | boolean) => {
     if (!profile?.household_id) return;
 
     setSaving(true);
@@ -283,13 +296,13 @@ export default function BasicSettingsPage() {
         default:
           // Store other settings in bio field as JSON (temporary solution)
           const currentBio = profile.bio || '{}';
-          let bioData: any = {};
+          let bioData: Record<string, unknown> = {};
           try {
             bioData = JSON.parse(currentBio);
           } catch {
             bioData = {};
           }
-          bioData.household_preferences = { ...bioData.household_preferences, [settingKey]: value };
+          bioData.household_preferences = { ...(bioData.household_preferences as Record<string, unknown> || {}), [settingKey]: value };
           updateData = { bio: JSON.stringify(bioData) };
       }
 
@@ -304,9 +317,9 @@ export default function BasicSettingsPage() {
       toastHelpers.success('Household setting updated successfully');
       
       await refreshUser();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating household setting:', err);
-      toastHelpers.error(`Failed to update setting: ${err.message}`);
+      toastHelpers.error(`Failed to update setting: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
@@ -319,14 +332,14 @@ export default function BasicSettingsPage() {
     try {
       // Store feature toggles in bio field as JSON (temporary solution)
       const currentBio = profile.bio || '{}';
-      let bioData: any = {};
+      let bioData: Record<string, unknown> = {};
       try {
         bioData = JSON.parse(currentBio);
       } catch {
         bioData = {};
       }
 
-      const currentToggles = bioData.feature_toggles || {};
+      const currentToggles = (bioData.feature_toggles as Record<string, boolean>) || {};
       const updatedToggles = { ...currentToggles, [featureKey]: enabled };
       bioData.feature_toggles = updatedToggles;
 
@@ -341,15 +354,19 @@ export default function BasicSettingsPage() {
       toastHelpers.success('Feature toggle updated successfully');
       
       await refreshUser();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating feature toggle:', err);
-      toastHelpers.error(`Failed to update feature: ${err.message}`);
+      toastHelpers.error(`Failed to update feature: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
   };
 
-  const renderSettingInput = (setting: any, value: any, updateFn: (key: string, val: any) => void) => {
+  const renderSettingInput = (
+    setting: Setting, 
+    value: string | number | boolean, 
+    updateFn: (key: string, val: string | number | boolean) => void
+  ) => {
     switch (setting.type) {
       case 'boolean':
         return (
@@ -368,11 +385,11 @@ export default function BasicSettingsPage() {
           </button>
         );
 
-      case 'string':
+      case 'text':
         return (
           <input
             type="text"
-            value={value || ''}
+            value={typeof value === 'string' ? value : ''}
             onChange={(e) => updateFn(setting.key, e.target.value)}
             disabled={saving}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
@@ -382,12 +399,12 @@ export default function BasicSettingsPage() {
       case 'select':
         return (
           <select
-            value={value || setting.default_value}
+            value={typeof value === 'string' ? value : ''}
             onChange={(e) => updateFn(setting.key, e.target.value)}
             disabled={saving}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
           >
-            {setting.options?.map((option: any) => (
+            {setting.options?.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -502,7 +519,7 @@ export default function BasicSettingsPage() {
                       <div className="min-w-0">
                         {renderSettingInput(
                           setting, 
-                          memberSettings[setting.key] ?? setting.default_value,
+                          (memberSettings[setting.key] ?? setting.default_value) as string | number | boolean,
                           updateMemberSetting
                         )}
                       </div>
@@ -529,7 +546,7 @@ export default function BasicSettingsPage() {
                       <div className="min-w-0">
                         {renderSettingInput(
                           setting, 
-                          householdSettings[setting.key] ?? setting.default_value,
+                          (householdSettings[setting.key] ?? setting.default_value) as string | number | boolean,
                           updateHouseholdSetting
                         )}
                       </div>

@@ -15,7 +15,7 @@
  */
 
 import { useState } from 'react';
-import { Settings, Calendar, Clock, Utensils, Wand2 } from 'lucide-react';
+import { Settings, Calendar, Utensils, Wand2 } from 'lucide-react';
 
 interface WeekPlanningSettingsProps {
   isOpen: boolean;
@@ -225,7 +225,7 @@ export function WeekPlanningSettings({
               {AUTO_FILL_OPTIONS.map((option) => (
                 <button
                   key={option.id}
-                  onClick={() => updateSettings({ autoFillSource: option.id as any })}
+                  onClick={() => updateSettings({ autoFillSource: option.id as 'personal_favorites' | 'community_favorites' | 'highly_rated' | 'dietary_filtered' })}
                   className={`w-full p-4 rounded-lg text-left transition-all border-2 ${
                     settings.autoFillSource === option.id
                       ? 'bg-blue-100 border-blue-300 text-blue-800'

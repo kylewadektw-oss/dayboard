@@ -1,0 +1,23 @@
+
+> dayboard-household-command-center@1.0.0 dev
+> next dev -p 3000
+
+   ▲ Next.js 15.5.2
+   - Local:        http://localhost:3000
+   - Network:      http://10.0.0.6:3000
+   - Environments: .env.local, .env
+   - Experiments (use with caution):
+     ✓ optimizeCss
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Ready in 5.8s
+ ✓ Compiled /middleware in 284ms (115 modules)
+ ○ Compiling /api/magic8ball ...
+ ✓ Compiled /api/magic8ball in 837ms (386 modules)
+ GET /api/magic8ball?household_id=c37514ce-1967-4b36-b1e2-c1429b7775ab&limit=10 401 in 968ms
+ ✓ Compiled /api/weather in 176ms (390 modules)
+ GET /api/weather?lat=40.7128&lon=-74.006 200 in 377ms
+✅ Batch of 2 logs persisted to database
+ GET /api/magic8ball?household_id=c37514ce-1967-4b36-b1e2-c1429b7775ab&stats=true 401 in 64ms
+[?25h

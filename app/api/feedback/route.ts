@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Feedback API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -173,7 +173,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Feedback API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
@@ -225,10 +225,10 @@ export async function PATCH(request: NextRequest) {
     }
 
     const updatedData = {
-      ...(existingLog.data as Record<string, any>),
+      ...(existingLog.data as Record<string, unknown>),
       status,
       admin_response,
-      responded_at: status === 'responded' ? new Date().toISOString() : (existingLog.data as any)?.responded_at
+      responded_at: status === 'responded' ? new Date().toISOString() : (existingLog.data as Record<string, string>)?.responded_at
     };
 
     // Update feedback
@@ -252,7 +252,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json(data);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Feedback API error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

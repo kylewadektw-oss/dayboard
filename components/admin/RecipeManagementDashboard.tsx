@@ -7,6 +7,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Search, Database, Clock, CheckCircle, XCircle, Plus, RefreshCw } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
@@ -31,7 +32,7 @@ interface Recipe {
 interface SearchState {
   query: string
   loading: boolean
-  results: any[]
+  results: unknown[]
   selectedRecipes: Set<string>
 }
 
@@ -221,7 +222,7 @@ export default function RecipeManagementDashboard() {
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id as any)}
+              onClick={() => setActiveTab(id as 'search' | 'queue' | 'approved')}
               className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors ${
                 activeTab === id 
                   ? 'bg-purple-600 text-white' 
@@ -283,17 +284,19 @@ export default function RecipeManagementDashboard() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {searchState.results.map((recipe) => (
+              {searchState.results.map((recipe) => {
+                const r = recipe as Recipe & { image?: string; readyInMinutes?: number };
+                return (
                 <div
-                  key={recipe.id}
+                  key={r.id}
                   className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    searchState.selectedRecipes.has(recipe.id.toString())
+                    searchState.selectedRecipes.has(r.id.toString())
                       ? 'border-purple-500 bg-purple-50'
                       : 'border-gray-200 hover:border-purple-300'
                   }`}
                   onClick={() => {
                     const newSelected = new Set(searchState.selectedRecipes)
-                    const id = recipe.id.toString()
+                    const id = r.id.toString()
                     if (newSelected.has(id)) {
                       newSelected.delete(id)
                     } else {
@@ -302,24 +305,27 @@ export default function RecipeManagementDashboard() {
                     setSearchState(prev => ({ ...prev, selectedRecipes: newSelected }))
                   }}
                 >
-                  {recipe.image && (
-                    <img
-                      src={recipe.image}
-                      alt={recipe.title}
-                      className="w-full h-32 object-cover rounded-lg mb-3"
+                  {r.image && (
+                    <Image
+                      src={r.image}
+                      alt={r.title}
+                      width={300}
+                      height={200}
+                      className="w-full h-32 object-cover rounded mb-3"
                     />
                   )}
-                  <h4 className="font-semibold text-gray-900 mb-2">{recipe.title}</h4>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    {recipe.readyInMinutes && (
-                      <span>{recipe.readyInMinutes} min</span>
+                  <h4 className="font-semibold text-gray-900 mb-2">{r.title}</h4>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    {r.readyInMinutes && (
+                      <span>{r.readyInMinutes} min</span>
                     )}
-                    {recipe.servings && (
-                      <span>{recipe.servings} servings</span>
+                    {r.servings && (
+                      <span>{r.servings} servings</span>
                     )}
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
@@ -369,9 +375,11 @@ export default function RecipeManagementDashboard() {
               {queueRecipes.filter(r => r.status === 'approved').map((recipe) => (
                 <div key={recipe.id} className="p-4 border border-gray-200 rounded-xl">
                   {recipe.image_url && (
-                    <img
+                    <Image
                       src={recipe.image_url}
                       alt={recipe.title}
+                      width={300}
+                      height={128}
                       className="w-full h-32 object-cover rounded-lg mb-3"
                     />
                   )}

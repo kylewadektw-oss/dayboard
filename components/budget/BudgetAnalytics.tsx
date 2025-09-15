@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
 import {
   Select,
@@ -11,23 +10,19 @@ import {
 } from "@/components/ui/select";
 import { 
   TrendingUp, 
-  TrendingDown, 
-  DollarSign,
   PieChart,
   BarChart3,
-  Calendar,
   Target,
   AlertTriangle,
   CheckCircle
 } from 'lucide-react';
 import { 
-  mockTransactions, 
   mockBudgetCategories, 
   mockSavingsGoals,
   getTotalMonthlyIncome,
   getTotalMonthlyExpenses 
 } from '@/fixtures/budget-data';
-import type { Transaction, BudgetCategory, SavingsGoal } from '@/types/budget';
+import type { BudgetCategory } from '@/types/budget';
 
 const BudgetAnalytics = () => {
   const [timeRange, setTimeRange] = useState<'month' | 'quarter' | 'year'>('month');
@@ -123,7 +118,7 @@ const BudgetAnalytics = () => {
           <p className="text-gray-600">Insights and trends for your household finances</p>
         </div>
         <div className="flex space-x-2">
-          <Select value={timeRange} onValueChange={(value) => setTimeRange(value as any)}>
+          <Select value={timeRange} onValueChange={(value) => setTimeRange(value as 'month' | 'quarter' | 'year')}>
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
@@ -133,7 +128,7 @@ const BudgetAnalytics = () => {
               <SelectItem value="year">Year</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={viewType} onValueChange={(value) => setViewType(value as any)}>
+          <Select value={viewType} onValueChange={(value) => setViewType(value as 'overview' | 'trends' | 'categories' | 'goals')}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>
@@ -284,7 +279,7 @@ const BudgetAnalytics = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {monthlyTrends.map((month, index) => (
+                {monthlyTrends.map((month) => (
                   <div key={month.month} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center space-x-3">
                       <div className={`w-3 h-3 rounded-full ${

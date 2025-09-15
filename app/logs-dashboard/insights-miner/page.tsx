@@ -62,7 +62,7 @@ interface PerformanceMetrics {
 interface UserInteraction {
   type: 'click' | 'scroll' | 'focus' | 'form_submit' | 'navigation';
   element?: string;
-  value?: any;
+  value?: unknown;
   timestamp: number;
   path: string;
   duration?: number;
@@ -94,7 +94,7 @@ interface DevelopmentInsight {
   title: string;
   description: string;
   recommendation: string;
-  data: any;
+  data: unknown;
   timestamp: number;
 }
 
@@ -114,10 +114,7 @@ export default function DevelopmentInsightsMiner() {
   const [securityIssues, setSecurityIssues] = useState<SecurityIssue[]>([]);
   const [insights, setInsights] = useState<DevelopmentInsight[]>([]);
 
-  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('1h');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const performanceObserver = useRef<PerformanceObserver | null>(null);
-  const mutationObserver = useRef<MutationObserver | null>(null);
 
   // Initialize performance monitoring
   useEffect(() => {
@@ -128,27 +125,27 @@ export default function DevelopmentInsightsMiner() {
       // LCP (Largest Contentful Paint)
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1] as any;
+        const lastEntry = entries[entries.length - 1] as PerformanceEntry;
         updatePerformanceMetric('lcp', lastEntry.startTime);
       });
       
       try {
         lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
-      } catch (e) {
+      } catch {
         console.warn('LCP observation not supported');
       }
 
       // FID (First Input Delay)
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry: any) => {
-          updatePerformanceMetric('fid', entry.processingStart - entry.startTime);
+        entries.forEach((entry: PerformanceEntry) => {
+          updatePerformanceMetric('fid', (entry as PerformanceEventTiming).processingStart - entry.startTime);
         });
       });
 
       try {
         fidObserver.observe({ entryTypes: ['first-input'] });
-      } catch (e) {
+      } catch {
         console.warn('FID observation not supported');
       }
 
@@ -156,9 +153,10 @@ export default function DevelopmentInsightsMiner() {
       let clsValue = 0;
       const clsObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry: any) => {
-          if (!entry.hadRecentInput) {
-            clsValue += entry.value;
+        entries.forEach((entry: PerformanceEntry) => {
+          const layoutShiftEntry = entry as PerformanceEntry & { hadRecentInput?: boolean; value?: number };
+          if (!layoutShiftEntry.hadRecentInput) {
+            clsValue += layoutShiftEntry.value || 0;
             updatePerformanceMetric('cls', clsValue);
           }
         });
@@ -166,23 +164,24 @@ export default function DevelopmentInsightsMiner() {
 
       try {
         clsObserver.observe({ entryTypes: ['layout-shift'] });
-      } catch (e) {
+      } catch {
         console.warn('CLS observation not supported');
       }
 
       // Navigation Timing
       const navObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach((entry: any) => {
-          updatePerformanceMetric('ttfb', entry.responseStart - entry.requestStart);
-          updatePerformanceMetric('domContentLoaded', entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart);
-          updatePerformanceMetric('loadComplete', entry.loadEventEnd - entry.loadEventStart);
+        entries.forEach((entry: PerformanceEntry) => {
+          const navEntry = entry as PerformanceNavigationTiming;
+          updatePerformanceMetric('ttfb', navEntry.responseStart - navEntry.requestStart);
+          updatePerformanceMetric('domContentLoaded', navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart);
+          updatePerformanceMetric('loadComplete', navEntry.loadEventEnd - navEntry.loadEventStart);
         });
       });
 
       try {
         navObserver.observe({ entryTypes: ['navigation'] });
-      } catch (e) {
+      } catch {
         console.warn('Navigation timing not supported');
       }
 
@@ -192,8 +191,8 @@ export default function DevelopmentInsightsMiner() {
     // Memory usage monitoring
     const memoryInterval = setInterval(() => {
       if ('memory' in performance) {
-        const memory = (performance as any).memory;
-        updatePerformanceMetric('memoryUsage', memory.usedJSHeapSize);
+        const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory;
+        updatePerformanceMetric('memoryUsage', memory?.usedJSHeapSize || 0);
       }
     }, 5000);
 
@@ -346,10 +345,11 @@ export default function DevelopmentInsightsMiner() {
       if (location.protocol === 'https:') {
         const httpResources = document.querySelectorAll('img[src^="http:"], script[src^="http:"], link[href^="http:"]');
         httpResources.forEach(resource => {
+          const element = resource as HTMLImageElement | HTMLScriptElement | HTMLLinkElement;
           addSecurityIssue({
             type: 'mixed_content',
             description: `Mixed content detected: ${resource.tagName} with HTTP source on HTTPS page`,
-            blockedUri: (resource as any).src || (resource as any).href,
+            blockedUri: (element as HTMLImageElement).src || (element as HTMLLinkElement).href,
             timestamp: Date.now(),
             severity: 'medium'
           });
@@ -462,13 +462,13 @@ export default function DevelopmentInsightsMiner() {
 
     // User experience insights
     const recentClicks = userInteractions.filter(i => i.type === 'click' && Date.now() - i.timestamp < 300000);
-    const clickPatterns = recentClicks.reduce((acc: any, click) => {
+    const clickPatterns = recentClicks.reduce((acc: Record<string, number>, click) => {
       acc[click.element || 'unknown'] = (acc[click.element || 'unknown'] || 0) + 1;
       return acc;
     }, {});
 
     const hotElements = Object.entries(clickPatterns)
-      .filter(([_, count]) => (count as number) > 5)
+      .filter(([, count]) => (count as number) > 5)
       .map(([element, count]) => ({ element, count }));
 
     if (hotElements.length > 0) {

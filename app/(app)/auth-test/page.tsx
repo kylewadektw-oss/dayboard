@@ -47,7 +47,7 @@ export default function AuthTestPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       results.sessionExists = !!session;
-    } catch (error) {
+    } catch {
       results.sessionExists = false;
     }
 
@@ -55,7 +55,7 @@ export default function AuthTestPage() {
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       results.userDataAccessible = !!authUser;
-    } catch (error) {
+    } catch {
       results.userDataAccessible = false;
     }
 
@@ -69,7 +69,7 @@ export default function AuthTestPage() {
           .maybeSingle();
         
         results.profileExists = !!data && !error;
-      } catch (error) {
+      } catch {
         results.profileExists = false;
       }
     } else {
@@ -80,7 +80,7 @@ export default function AuthTestPage() {
     try {
       const response = await fetch('/api/test-auth', { method: 'GET' });
       results.protectedRouteAccess = response.ok;
-    } catch (error) {
+    } catch {
       results.protectedRouteAccess = false;
     }
 
@@ -336,7 +336,7 @@ export default function AuthTestPage() {
             <div>2. <strong>Test Protection:</strong> Try accessing /dashboard - should redirect to /signin</div>
             <div>3. <strong>Test Authentication:</strong> Sign in with Google OAuth</div>
             <div>4. <strong>Test Access:</strong> After signing in, try accessing protected routes</div>
-            <div>5. <strong>Run Tests:</strong> Use the "Run Tests" button to verify all functionality</div>
+            <div>5. <strong>Run Tests:</strong> Use the &ldquo;Run Tests&rdquo; button to verify all functionality</div>
           </div>
         </div>
       </div>

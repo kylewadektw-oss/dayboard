@@ -15,15 +15,15 @@
  */
 
 
-import { Home, Users, Settings, Sparkles, MapPin, Clock, Activity } from 'lucide-react';
+import { Home, Users, Settings, Sparkles, Activity } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Database } from '@/types_db';
 
 type Household = Database['public']['Tables']['households']['Row'];
-type Profile = Database['public']['Tables']['profiles']['Row'];
 
 interface HouseholdStats {
   projectsInProgress: number;
@@ -65,19 +65,7 @@ const formatTimeAgo = (dateString: string) => {
   return `${diffDays} days ago`;
 };
 
-const getFamilyRoleEmoji = (role: string | null) => {
-  switch (role) {
-    case 'mom': return '👩';
-    case 'dad': return '👨';
-    case 'parent_guardian': return '👨‍👩‍👧';
-    case 'child': return '👧';
-    case 'spouse_partner': return '💑';
-    case 'roommate': return '🏠';
-    case 'caregiver': return '👩‍⚕️';
-    case 'pet': return '🐕';
-    default: return '👤';
-  }
-};
+// Component starts here
 
 export function ProfileStatus() {
   const { user, profile } = useAuth();
@@ -163,12 +151,6 @@ export function ProfileStatus() {
       setLoading(false);
     }
   }, [profile?.household_id, supabase]);
-
-  // Memoize filtered members to avoid filtering on every render
-  const otherMembers = useMemo(() => 
-    householdMembers.filter(member => member.id !== profile?.id),
-    [householdMembers, profile?.id]
-  );
 
   // Memoize members with computed properties to avoid recalculation
   const membersWithStatus = useMemo(() => 
@@ -315,9 +297,11 @@ export function ProfileStatus() {
                     >
                       {/* Profile photo placeholder - will show initials if no photo */}
                       {member.profile_photo_url ? (
-                        <img 
+                        <Image 
                           src={member.profile_photo_url} 
                           alt={member.displayName}
+                          width={96}
+                          height={96}
                           className="w-24 h-24 rounded-lg object-cover"
                         />
                       ) : (

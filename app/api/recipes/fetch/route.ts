@@ -176,97 +176,34 @@ export async function POST(request: Request) {
       searchQuery
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch recipes';
     console.error('Error in fetch recipes API:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch recipes' },
+      { error: message },
       { status: 500 }
     );
   }
 }
 
 // Helper functions
-function getRecipeEmoji(recipe: any): string {
-  const title = recipe.title.toLowerCase();
-  const dishTypes = recipe.dishTypes || [];
-  
-  // Check dish types first
-  for (const dishType of dishTypes) {
-    switch (dishType.toLowerCase()) {
-      case 'breakfast':
-      case 'morning meal':
-        return '🍳';
-      case 'lunch':
-        return '🥪';
-      case 'dinner':
-      case 'main course':
-        return '🍽️';
-      case 'dessert':
-        return '🍰';
-      case 'salad':
-        return '🥗';
-      case 'soup':
-        return '🍲';
-      case 'pasta':
-        return '🍝';
-      case 'pizza':
-        return '🍕';
-    }
-  }
-  
-  // Check title keywords
-  if (title.includes('chicken')) return '🍗';
-  if (title.includes('beef')) return '🥩';
-  if (title.includes('fish') || title.includes('salmon')) return '🐟';
-  if (title.includes('pasta')) return '🍝';
-  if (title.includes('pizza')) return '🍕';
-  if (title.includes('salad')) return '🥗';
-  if (title.includes('soup')) return '🍲';
-  if (title.includes('cake') || title.includes('dessert')) return '🍰';
-  if (title.includes('taco')) return '🌮';
-  if (title.includes('burger')) return '🍔';
-  
-  return '🍽️'; // Default
-}
-
-function getDifficulty(recipe: any): 'easy' | 'medium' | 'hard' {
-  const readyTime = recipe.readyInMinutes || 30;
-  const ingredientCount = recipe.extendedIngredients?.length || 0;
+function getDifficulty(recipe: Record<string, unknown>): 'easy' | 'medium' | 'hard' {
+  const readyTime = Number(recipe.readyInMinutes) || 30;
+  const extendedIngredients = Array.isArray(recipe.extendedIngredients) ? recipe.extendedIngredients : [];
+  const ingredientCount = extendedIngredients.length;
   
   if (readyTime <= 20 && ingredientCount <= 5) return 'easy';
   if (readyTime <= 45 && ingredientCount <= 10) return 'medium';
   return 'hard';
 }
 
-function getMealTypes(recipe: any): string[] {
-  const dishTypes = recipe.dishTypes || [];
-  const mealTypes: string[] = [];
-  
-  for (const dishType of dishTypes) {
-    switch (dishType.toLowerCase()) {
-      case 'breakfast':
-      case 'morning meal':
-        mealTypes.push('breakfast');
-        break;
-      case 'lunch':
-        mealTypes.push('lunch');
-        break;
-      case 'dinner':
-      case 'main course':
-        mealTypes.push('dinner');
-        break;
-    }
-  }
-  
-  return mealTypes.length > 0 ? mealTypes : ['dinner'];
-}
-
-function getDietTypes(recipe: any): string[] {
-  const diets = recipe.diets || [];
+function getDietTypes(recipe: Record<string, unknown>): string[] {
+  const diets = Array.isArray(recipe.diets) ? recipe.diets : [];
   const dietTypes: string[] = [];
   
   for (const diet of diets) {
-    switch (diet.toLowerCase()) {
+    const dietStr = String(diet).toLowerCase();
+    switch (dietStr) {
       case 'vegetarian':
         dietTypes.push('vegetarian');
         break;
@@ -291,16 +228,19 @@ function getDietTypes(recipe: any): string[] {
   return dietTypes;
 }
 
-function transformIngredients(spoonacularIngredients: any[]): any[] {
-  return spoonacularIngredients.map(ingredient => ({
-    name: ingredient.name || ingredient.originalName || 'Unknown ingredient',
-    amount: ingredient.amount?.toString() || '1',
-    unit: ingredient.unit || 'piece',
-    notes: ingredient.original || undefined
-  }));
+function transformIngredients(spoonacularIngredients: unknown[]): Array<{name: string; amount: string; unit: string; notes?: string}> {
+  return spoonacularIngredients.map(ingredient => {
+    const ing = ingredient as Record<string, unknown>;
+    return {
+      name: String(ing.name || ing.originalName || 'Unknown ingredient'),
+      amount: String(ing.amount || '1'),
+      unit: String(ing.unit || 'piece'),
+      notes: ing.original ? String(ing.original) : undefined
+    };
+  });
 }
 
-function transformInstructions(analyzedInstructions: any[]): string[] {
+function transformInstructions(analyzedInstructions: unknown[]): string[] {
   if (!analyzedInstructions || analyzedInstructions.length === 0) {
     return ['Instructions not available'];
   }
@@ -308,10 +248,12 @@ function transformInstructions(analyzedInstructions: any[]): string[] {
   const instructions: string[] = [];
   
   for (const instructionGroup of analyzedInstructions) {
-    if (instructionGroup.steps) {
-      for (const step of instructionGroup.steps) {
-        if (step.step) {
-          instructions.push(step.step);
+    const group = instructionGroup as Record<string, unknown>;
+    if (Array.isArray(group.steps)) {
+      for (const step of group.steps) {
+        const stepObj = step as Record<string, unknown>;
+        if (stepObj.step && typeof stepObj.step === 'string') {
+          instructions.push(stepObj.step);
         }
       }
     }
@@ -320,31 +262,4 @@ function transformInstructions(analyzedInstructions: any[]): string[] {
   return instructions.length > 0 ? instructions : ['Instructions not available'];
 }
 
-function getTags(recipe: any): string[] {
-  const tags: string[] = [];
-  
-  // Add dish types as tags
-  if (recipe.dishTypes) {
-    tags.push(...recipe.dishTypes);
-  }
-  
-  // Add cuisines as tags
-  if (recipe.cuisines) {
-    tags.push(...recipe.cuisines);
-  }
-  
-  // Add diet types as tags
-  if (recipe.diets) {
-    tags.push(...recipe.diets);
-  }
-  
-  // Add difficulty tag
-  tags.push(getDifficulty(recipe));
-  
-  // Add time-based tags
-  const readyTime = recipe.readyInMinutes || 30;
-  if (readyTime <= 20) tags.push('quick');
-  if (readyTime <= 30) tags.push('easy');
-  
-  return Array.from(new Set(tags)); // Remove duplicates
-}
+

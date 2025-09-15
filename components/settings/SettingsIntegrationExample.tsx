@@ -9,7 +9,7 @@ import React from 'react';
 import { useSettings, useDarkMode, useNotificationSettings } from '@/contexts/SettingsContext';
 
 export function SettingsIntegrationExample() {
-  const { loading, getSetting, setSetting } = useSettings();
+  const { loading } = useSettings();
   const { isDarkMode, setDarkMode } = useDarkMode();
   const { emailNotifications, setEmailNotifications } = useNotificationSettings();
 

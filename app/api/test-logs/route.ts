@@ -24,7 +24,7 @@ export async function GET() {
     console.log('🔍 Testing database connection...');
     
     // Test basic query
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('application_logs')
       .select('*')
       .limit(5);
@@ -46,11 +46,12 @@ export async function GET() {
       logs: data 
     });
     
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('❌ API error:', error);
     return Response.json({ 
       success: false, 
-      error: error.message 
+      error: message 
     }, { status: 500 });
   }
 }

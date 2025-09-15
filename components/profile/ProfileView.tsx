@@ -46,7 +46,11 @@ const LANGUAGE_OPTIONS = [
 const DIETARY_OPTIONS = ['vegetarian','vegan','pescatarian','gluten_free','dairy_free','keto','paleo'];
 const ALLERGY_OPTIONS = ['peanuts','tree_nuts','shellfish','fish','milk','eggs','wheat','soy','sesame'];
 
-const appLogger = (typeof window !== 'undefined') ? (window as any).appLogger || console : console;
+interface WindowWithLogger extends Window {
+  appLogger?: Console;
+}
+
+const appLogger = (typeof window !== 'undefined') ? (window as WindowWithLogger).appLogger || console : console;
 
 export default function ProfileView() {
   const { user, profile, permissions, loading: authLoading, refreshUser } = useAuth();
@@ -54,7 +58,7 @@ export default function ProfileView() {
   const supabase = createClient();
 
   // Household
-  const [household, setHousehold] = useState<any>(null);
+  const [household, setHousehold] = useState<Database['public']['Tables']['households']['Row'] | null>(null);
   const [householdLoading, setHouseholdLoading] = useState(false);
 
   // UI
@@ -115,15 +119,15 @@ export default function ProfileView() {
         bio: profile.bio || '',
         dietary_preferences: Array.isArray(profile.dietary_preferences) ? profile.dietary_preferences as string[] : [],
         allergies: Array.isArray(profile.allergies) ? profile.allergies as string[] : [],
-        notification_email: (profile.notification_preferences as any)?.email ?? true,
-        notification_push: (profile.notification_preferences as any)?.push ?? true,
-        notification_sms: (profile.notification_preferences as any)?.sms ?? false,
-        notification_daycare_pickup_backup: (profile.notification_preferences as any)?.daycare_pickup_backup ?? false,
+        notification_email: (profile.notification_preferences as Record<string, boolean>)?.email ?? true,
+        notification_push: (profile.notification_preferences as Record<string, boolean>)?.push ?? true,
+        notification_sms: (profile.notification_preferences as Record<string, boolean>)?.sms ?? false,
+        notification_daycare_pickup_backup: (profile.notification_preferences as Record<string, boolean>)?.daycare_pickup_backup ?? false,
       };
       setProfileForm(next);
       originalProfileRef.current = next; // baseline
     }
-  }, [profile?.id]);
+  }, [profile?.id, profile]);
 
   // Seed permissions form
   useEffect(() => { if (permissions) setPermissionsForm(permissions); }, [permissions]);
@@ -140,7 +144,7 @@ export default function ProfileView() {
         zip: household.zip || ''
       });
     }
-  }, [household?.id]);
+  }, [household?.id, household]);
 
   // Auto clear success messages
   useEffect(() => { if (profileFeedback?.type==='success') { const t=setTimeout(()=>setProfileFeedback(null),4000); return ()=>clearTimeout(t);} }, [profileFeedback]);
@@ -158,7 +162,8 @@ export default function ProfileView() {
     if (el) { el.setAttribute('tabindex','-1'); el.focus(); }
   }, [activeTab]);
 
-  const handleProfileChange = (field: keyof ProfileFormState, value: any) => setProfileForm(p => ({ ...p, [field]: value }));
+  const handleProfileChange = (field: keyof ProfileFormState, value: string | number | boolean | string[] | null) => 
+    setProfileForm(p => ({ ...p, [field]: value }));
   const toggleMultiSelect = (field: 'dietary_preferences' | 'allergies', value: string) => {
     setProfileForm(p => {
       const exists = p[field].includes(value);
@@ -170,7 +175,7 @@ export default function ProfileView() {
   const profileDirty = (() => {
     const base = originalProfileRef.current; if (!base) return false;
     return Object.keys(base).some(k => {
-      const a = (base as any)[k]; const b = (profileForm as any)[k];
+      const a = (base as Record<string, unknown>)[k]; const b = (profileForm as Record<string, unknown>)[k];
       if (Array.isArray(a) && Array.isArray(b)) return a.slice().sort().join(',') !== b.slice().sort().join(',');
       return a !== b;
     });
@@ -202,9 +207,10 @@ export default function ProfileView() {
       originalProfileRef.current = { ...profileForm };
       toastHelpers.success('Profile updated');
       setProfileFeedback({type:'success', message:'Profile updated'});
-    } catch (e:any) {
-      toastHelpers.error(e.message || 'Failed to update profile');
-      setProfileFeedback({type:'error', message:e.message || 'Failed to update profile'});
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to update profile';
+      toastHelpers.error(errorMessage);
+      setProfileFeedback({type:'error', message: errorMessage});
     } finally { setSavingProfile(false); }
   }, [profile, profileForm, supabase, refreshUser]);
 
@@ -212,14 +218,16 @@ export default function ProfileView() {
     if (!permissions || !profile) return;
     setSavingPermissions(true); setPermissionsFeedback(null);
     try {
-      const { id, user_id, created_at, updated_at, ...rest } = permissionsForm as any;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id: _id, user_id: _user_id, created_at: _created_at, updated_at: _updated_at, ...rest } = permissionsForm as Record<string, unknown>;
       const { error } = await supabase.from('user_permissions').update(rest).eq('id', permissions.id);
       if (error) throw error;
       toastHelpers.success('Permissions updated');
       setPermissionsFeedback({type:'success', message:'Permissions updated'});
-    } catch (e:any) {
-      toastHelpers.error(e.message || 'Failed to update permissions');
-      setPermissionsFeedback({type:'error', message:e.message || 'Failed to update permissions'});
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to update permissions';
+      toastHelpers.error(errorMessage);
+      setPermissionsFeedback({type:'error', message: errorMessage});
     } finally { setSavingPermissions(false); }
   }, [permissions, profile, permissionsForm, supabase]);
 
@@ -236,12 +244,13 @@ export default function ProfileView() {
         zip: householdForm.zip
       }).eq('id', household.id).select('*').single();
       if (error) throw error;
-      setHousehold((prev:any) => ({ ...prev, ...(data || {}) }));
+      setHousehold((prev: Record<string, unknown> | null) => ({ ...prev, ...(data || {}) }));
       toastHelpers.success('Household updated');
       setHouseholdFeedback({type:'success', message:'Household updated'});
-    } catch (e:any) {
-      toastHelpers.error(e.message || 'Failed to update household');
-      setHouseholdFeedback({type:'error', message:e.message || 'Failed to update household'});
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to update household';
+      toastHelpers.error(errorMessage);
+      setHouseholdFeedback({type:'error', message: errorMessage});
     } finally { setSavingHousehold(false); }
   }, [household?.id, householdForm, supabase]);
 
@@ -390,7 +399,7 @@ export default function ProfileView() {
                         { key: 'notification_daycare_pickup_backup', label: 'Daycare Pickup Backup' }
                       ].map(item => (
                         <label key={item.key} className="flex items-center gap-2 text-sm font-medium text-gray-800">
-                          <input type="checkbox" className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" checked={(profileForm as any)[item.key]} onChange={()=>handleProfileChange(item.key as any, !(profileForm as any)[item.key])} />
+                          <input type="checkbox" className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" checked={Boolean((profileForm as Record<string, unknown>)[item.key])} onChange={()=>handleProfileChange(item.key as keyof ProfileFormState, !Boolean((profileForm as Record<string, unknown>)[item.key]))} />
                           {item.label}
                         </label>
                       ))}

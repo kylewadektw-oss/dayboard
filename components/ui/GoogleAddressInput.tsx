@@ -47,11 +47,6 @@ interface GoogleAddressInputProps {
   disabled?: boolean;
 }
 
-declare global {
-  interface Window {
-    google?: any;
-  }
-}
 
 export function GoogleAddressInput({
   onAddressSelect,
@@ -61,7 +56,7 @@ export function GoogleAddressInput({
   disabled = false
 }: GoogleAddressInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<any>(null);
+  const autocompleteRef = useRef<unknown>(null);
   const [inputValue, setInputValue] = useState(initialValue);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -135,21 +130,38 @@ export function GoogleAddressInput({
       console.log('Error initializing Google Places Autocomplete:', err);
       setError('Address autocomplete not available');
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, disabled, onAddressSelect]);
 
-  // Parse Google Places API response into structured address data
-  const parseAddressComponents = (place: any): AddressData => {
-    const components = place.address_components || [];
+type GooglePlaceGeometry = {
+  location: {
+    lat(): number;
+    lng(): number;
+  }
+};
+
+// Parse Google Places API response into structured address data
+  const parseAddressComponents = (place: unknown): AddressData => {
+    const placeObj = place as { 
+      address_components?: Array<{ 
+        long_name: string; 
+        short_name: string; 
+        types: string[] 
+      }>; 
+      formatted_address?: string;
+      geometry?: GooglePlaceGeometry;
+    };
+    const components = placeObj.address_components || [];
     const addressData: AddressData = {
       address: '',
       city: '',
       state: '',
       zip: '',
       country: '',
-      formattedAddress: place.formatted_address || '',
-      coordinates: place.geometry?.location ? {
-        lat: place.geometry.location.lat(),
-        lng: place.geometry.location.lng()
+      formattedAddress: placeObj.formatted_address || '',
+      coordinates: placeObj.geometry?.location ? {
+        lat: placeObj.geometry.location.lat(),
+        lng: placeObj.geometry.location.lng()
       } : undefined
     };
 

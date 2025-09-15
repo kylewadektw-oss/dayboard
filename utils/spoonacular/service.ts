@@ -147,7 +147,7 @@ class SpoonacularService {
     }
   }
 
-  private async fetchFromAPI<T>(endpoint: string, params: Record<string, any> = {}): Promise<T> {
+  private async fetchFromAPI<T>(endpoint: string, params: Record<string, string | number | boolean | undefined> = {}): Promise<T> {
     // Initialize API key on first use
     this.initializeApiKey()
     
@@ -179,7 +179,6 @@ class SpoonacularService {
     }
 
     const data = await response.json()
-    console.log(`✅ Spoonacular API Response received`)
     return data
   }
 
@@ -282,10 +281,8 @@ class SpoonacularService {
         created_at: new Date().toISOString()
       }
 
-      console.log('� Complete queue entry:', JSON.stringify(queueEntry, null, 2))
       
       const queueId = `logged_${recipeId}_${Date.now()}`
-      console.log(`✅ Recipe ${recipeId} logged with queue ID: ${queueId}`)
       
       return { 
         success: true, 

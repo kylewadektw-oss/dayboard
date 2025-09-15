@@ -17,21 +17,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, Shuffle, Heart, Wine, Coffee, Martini, Star, Package } from 'lucide-react';
-import CocktailAPI from '@/utils/cocktailApi';
+import { Search, Heart, Wine, Coffee, Martini, Package, CheckCircle, Clock, ShoppingCart } from 'lucide-react';
+// Unused imports commented out to fix build errors:
+// import { Shuffle, Star } from 'lucide-react';
+// import CocktailAPI from '@/utils/cocktailApi';
 import { ParsedCocktail } from '@/types/cocktails';
 import { CocktailInventory } from './CocktailInventory';
 
 const COCKTAIL_TABS = [
-  { id: 'discover', name: 'Discover', icon: Martini },
-  { id: 'inventory', name: 'Bar Inventory', icon: Package }
-];
+  { id: 'discover', name: 'Discover', icon: Search },
+  { id: 'inventory', name: 'Bar Inventory', icon: Package },
+  { id: 'make', name: 'What Can I Make?', icon: Coffee },
+  { id: 'favorites', name: 'Favorites', icon: Heart }
+] as const;
 
 export function Cocktails() {
   const [activeTab, setActiveTab] = useState('discover');
   const [cocktails, setCocktails] = useState<ParsedCocktail[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedCocktail, setSelectedCocktail] = useState<ParsedCocktail | null>(null);
+  // Unused state variables commented out to fix build errors:
+  // const [selectedCocktail, setSelectedCocktail] = useState<ParsedCocktail | null>(null);
 
   useEffect(() => {
     if (activeTab === 'discover') {
@@ -135,6 +140,212 @@ export function Cocktails() {
       {/* Tab Content */}
       {activeTab === 'inventory' && <CocktailInventory />}
       
+      {activeTab === 'make' && (
+        <div className="space-y-6">
+          {/* What Can I Make Header */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold text-green-900 mb-2 flex items-center">
+                  <Coffee className="h-5 w-5 mr-2" />
+                  What Can I Make?
+                </h3>
+                <p className="text-green-700">
+                  Based on your current bar inventory, here are cocktails you can make right now
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-green-600">12</div>
+                <div className="text-sm text-green-600">Available cocktails</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Available Cocktails Grid */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-lg font-semibold text-gray-900">Ready to Make</h4>
+              <div className="flex gap-2">
+                <button className="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-sm font-medium">
+                  All ingredients ✓
+                </button>
+                <button className="bg-orange-100 text-orange-700 px-3 py-1 rounded-lg text-sm font-medium">
+                  Missing 1-2 items
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Cocktails we can make with current inventory */}
+              {[
+                {
+                  name: 'Classic Martini',
+                  ingredients: ['Grey Goose Vodka', 'Dry Vermouth'],
+                  missing: [],
+                  difficulty: 'Easy',
+                  time: '2 mins',
+                  glass: 'Martini Glass'
+                },
+                {
+                  name: 'Gin & Tonic',
+                  ingredients: ['Tanqueray Gin', 'Fever-Tree Tonic'],
+                  missing: [],
+                  difficulty: 'Easy', 
+                  time: '1 min',
+                  glass: 'Highball'
+                },
+                {
+                  name: 'Moscow Mule',
+                  ingredients: ['Grey Goose Vodka', 'Fresh Lime Juice'],
+                  missing: ['Ginger Beer'],
+                  difficulty: 'Easy',
+                  time: '3 mins',
+                  glass: 'Copper Mug'
+                },
+                {
+                  name: 'Old Fashioned',
+                  ingredients: ['Bulleit Bourbon', 'Simple Syrup', 'Angostura Bitters'],
+                  missing: [],
+                  difficulty: 'Medium',
+                  time: '4 mins',
+                  glass: 'Rocks Glass'
+                },
+                {
+                  name: 'Margarita',
+                  ingredients: ['Jose Cuervo Tequila', 'Cointreau', 'Fresh Lime Juice'],
+                  missing: [],
+                  difficulty: 'Medium',
+                  time: '3 mins',
+                  glass: 'Margarita Glass'
+                },
+                {
+                  name: 'White Russian',
+                  ingredients: ['Grey Goose Vodka', 'Kahlua', 'Baileys Irish Cream'],
+                  missing: [],
+                  difficulty: 'Easy',
+                  time: '2 mins',
+                  glass: 'Rocks Glass'
+                }
+              ].map((cocktail, index) => (
+                <div
+                  key={index}
+                  className={`bg-white rounded-lg border p-4 hover:shadow-md transition-shadow ${
+                    cocktail.missing.length === 0 ? 'border-green-200' : 'border-orange-200'
+                  }`}
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <h5 className="font-semibold text-gray-900 flex items-center">
+                        {cocktail.name}
+                        {cocktail.missing.length === 0 && (
+                          <CheckCircle className="h-4 w-4 text-green-500 ml-2" />
+                        )}
+                      </h5>
+                      <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+                        <span className="flex items-center">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {cocktail.time}
+                        </span>
+                        <span>{cocktail.difficulty}</span>
+                      </div>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      cocktail.missing.length === 0 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-orange-100 text-orange-800'
+                    }`}>
+                      {cocktail.missing.length === 0 ? 'Ready' : `Missing ${cocktail.missing.length}`}
+                    </span>
+                  </div>
+
+                  {/* Glass type */}
+                  <div className="flex items-center text-sm text-gray-600 mb-3">
+                    <Martini className="h-4 w-4 mr-2" />
+                    <span>{cocktail.glass}</span>
+                  </div>
+
+                  {/* Ingredients */}
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-600 mb-2">Ingredients:</p>
+                    <div className="space-y-1">
+                      {cocktail.ingredients.map((ingredient, idx) => (
+                        <div key={idx} className="flex items-center text-xs">
+                          <CheckCircle className="h-3 w-3 text-green-500 mr-2" />
+                          <span className="text-gray-700">{ingredient}</span>
+                        </div>
+                      ))}
+                      {cocktail.missing.map((ingredient, idx) => (
+                        <div key={idx} className="flex items-center text-xs">
+                          <div className="h-3 w-3 border border-orange-400 rounded-full mr-2"></div>
+                          <span className="text-orange-600">{ingredient} (missing)</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-3 border-t border-gray-100">
+                    <button className={`flex-1 py-2 rounded text-sm font-medium transition-colors ${
+                      cocktail.missing.length === 0
+                        ? 'bg-green-600 text-white hover:bg-green-700'
+                        : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                    }`}>
+                      {cocktail.missing.length === 0 ? '🍹 Make Now' : '🛒 Need Items'}
+                    </button>
+                    <button className="px-3 bg-purple-100 text-purple-700 py-2 rounded text-sm hover:bg-purple-200 transition-colors">
+                      ❤️
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Shopping List for Missing Items */}
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-6">
+            <h4 className="text-lg font-semibold text-orange-900 mb-4 flex items-center">
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Missing Ingredients for More Cocktails
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h5 className="font-medium text-orange-800 mb-2">High Priority (unlocks 5+ cocktails)</h5>
+                <ul className="space-y-1 text-sm text-orange-700">
+                  <li>• Ginger Beer (Moscow Mule, Dark & Stormy)</li>
+                  <li>• Orange Juice (Screwdriver, Mimosa)</li>
+                  <li>• Cranberry Juice (Cosmopolitan, Cape Cod)</li>
+                </ul>
+              </div>
+              <div>
+                <h5 className="font-medium text-orange-800 mb-2">Nice to Have (specialty cocktails)</h5>
+                <ul className="space-y-1 text-sm text-orange-700">
+                  <li>• Champagne (Mimosa, French 75)</li>
+                  <li>• Elderflower Liqueur (Aviation, Hugo)</li>
+                  <li>• Fresh Mint (Mojito, Mint Julep)</li>
+                </ul>
+              </div>
+            </div>
+            <button className="mt-4 bg-orange-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-700 transition-colors">
+              Add to Shopping List
+            </button>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'favorites' && (
+        <div className="space-y-6">
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">❤️</div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Your Cocktail Favorites</h3>
+            <p className="text-gray-600 mb-4">Save and rate your favorite cocktails</p>
+            <div className="text-sm text-gray-500">
+              Feature coming soon - track your household&apos;s favorite cocktails and ratings
+            </div>
+          </div>
+        </div>
+      )}
+      
       {activeTab === 'discover' && (
         <div className="space-y-6">
           {/* Coming Soon Notice */}
@@ -143,7 +354,7 @@ export function Cocktails() {
               <div className="text-4xl mb-4">🍹</div>
               <h3 className="text-xl font-semibold text-purple-900 mb-2">Cocktail Discovery Coming Soon!</h3>
               <p className="text-purple-700 mb-4">
-                We're integrating with TheCocktailDB API to bring you thousands of cocktail recipes, 
+                We&apos;re integrating with TheCocktailDB API to bring you thousands of cocktail recipes, 
                 ingredient search, and smart recommendations based on your bar inventory.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-purple-600">

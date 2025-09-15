@@ -15,7 +15,7 @@
  */
 
 
-import { Plus, Calendar, ShoppingCart, Wrench, ChefHat, Zap } from 'lucide-react';
+import { Calendar, ShoppingCart, Wrench, ChefHat, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { memo, useMemo } from 'react';
 
@@ -150,7 +150,7 @@ function QuickActionsHubComponent() {
       <div className="mt-3 pt-3 border-t border-gray-100">
         <div className="flex items-center justify-center text-xs text-gray-500">
           <span className="mr-1">🎙️</span>
-          <span>"Hey assistant, add milk to grocery list"</span>
+          <span>&quot;Hey assistant, add milk to grocery list&quot;</span>
         </div>
       </div>
     </div>

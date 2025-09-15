@@ -15,7 +15,7 @@
  */
 
 
-import { Wrench, Calendar, Users, Eye, Clock } from 'lucide-react';
+import { Wrench, Calendar, Users, Eye } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -108,7 +108,7 @@ export function ProjectsWidget() {
     .slice(0, 3);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 h-fit">
+    <div className="bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-gray-600">Projects</h3>
         <Wrench className="h-4 w-4 text-gray-400" />

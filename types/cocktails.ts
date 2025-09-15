@@ -130,9 +130,15 @@ export interface CocktailInventoryItem {
   quantity?: number;
   unit?: string;
   expiry_date?: string;
-  location?: string; // 'bar', 'pantry', 'fridge'
+  location?: string; // 'bar', 'pantry', 'fridge', 'wine_fridge'
   cost?: number;
   brand?: string;
+  barcode?: string;
+  alcohol_content?: number;
+  bottle_size?: number;
+  fill_percentage?: number;
+  purchase_date?: string;
+  location_details?: string;
   created_at: string;
   updated_at: string;
 }

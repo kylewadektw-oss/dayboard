@@ -16,7 +16,7 @@ interface Profile {
   household_id?: string;
   created_at?: string;
   updated_at?: string;
-  [key: string]: any; // Allow additional fields
+  [key: string]: unknown; // Allow additional fields
 }
 
 type Supabase = SupabaseClient;
@@ -289,7 +289,15 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   }, 60000); // Every minute
   
   // Expose cache to window for debugging
-  (window as any).profileCache = {
+  (window as Window & { 
+    profileCache?: {
+      stats: typeof getCacheStats;
+      clear: typeof clearProfileCache;
+      size: () => number;
+      get: typeof getCachedProfile;
+      invalidate: typeof invalidateProfile;
+    };
+  }).profileCache = {
     stats: getCacheStats,
     clear: clearProfileCache,
     size: () => profileCache.size,

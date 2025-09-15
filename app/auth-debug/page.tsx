@@ -21,9 +21,9 @@ import { createClient } from '@/utils/supabase/client';
 import { useEffect, useState } from 'react';
 
 export default function AuthStateDebug() {
-  const [authState, setAuthState] = useState<any>(null);
-  const [userInfo, setUserInfo] = useState<any>(null);
-  const [profileInfo, setProfileInfo] = useState<any>(null);
+  const [authState, setAuthState] = useState<unknown>(null);
+  const [userInfo, setUserInfo] = useState<unknown>(null);
+  const [profileInfo, setProfileInfo] = useState<unknown>(null);
 
   useEffect(() => {
     checkAuthState();
@@ -61,9 +61,9 @@ export default function AuthStateDebug() {
         console.log('Profile check:', { profile, profileError });
         setProfileInfo({ profile, profileError });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Auth state check error:', error);
-      setAuthState({ error: error.message });
+      setAuthState({ error: error instanceof Error ? error.message : 'Unknown error' });
     }
   };
 
@@ -179,10 +179,10 @@ export default function AuthStateDebug() {
         <h2 className="font-semibold mb-2">Debug Steps:</h2>
         <ol className="list-decimal list-inside space-y-1 text-sm">
           <li>Check current auth state above</li>
-          <li>If you see a user/session, click "Sign Out"</li>
-          <li>Click "Clear Local Storage" to remove any cached auth</li>
+          <li>If you see a user/session, click &quot;Sign Out&quot;</li>
+          <li>Click &quot;Clear Local Storage&quot; to remove any cached auth</li>
           <li>Refresh this page</li>
-          <li>Click "Go to Sign In Page" to test fresh sign-in</li>
+          <li>Click &quot;Go to Sign In Page&quot; to test fresh sign-in</li>
         </ol>
       </div>
     </div>

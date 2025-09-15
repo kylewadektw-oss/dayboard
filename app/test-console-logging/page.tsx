@@ -17,7 +17,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { logger } from '@/utils/logger';
 import Link from 'next/link';
 import LoggingNav from '@/components/logging/LoggingNav';
 

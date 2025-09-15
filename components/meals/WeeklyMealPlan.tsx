@@ -18,7 +18,7 @@
 import { Calendar, Plus, Clock, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { MealPlan, MealPlanWithRecipe, MEAL_TYPES, RecipeMealType, RecipeDietType } from '@/types/recipes';
+import { MealPlanWithRecipe, RecipeMealType, RecipeDietType } from '@/types/recipes';
 
 const supabase = createClient();
 
@@ -258,7 +258,7 @@ export function WeeklyMealPlan() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Calendar className="h-5 w-5 text-blue-600 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-900">This Week's Meal Plan</h3>
+          <h3 className="text-lg font-semibold text-gray-900">This Week&apos;s Meal Plan</h3>
         </div>
         <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center">
           <Plus className="h-4 w-4 mr-1" />

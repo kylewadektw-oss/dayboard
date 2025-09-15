@@ -6,10 +6,9 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   MessageSquare, 
-  Filter, 
   Search, 
   Eye, 
   MessageCircle, 
@@ -21,8 +20,6 @@ import {
   Zap,
   Frown,
   ThumbsUp,
-  ChevronDown,
-  ChevronUp,
   Calendar,
   User,
   Monitor,
@@ -33,7 +30,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  UserFeedback, 
   FeedbackStatus, 
   FeedbackType, 
   FeedbackPriority,
@@ -55,7 +51,14 @@ interface FeedbackLogEntry {
     steps_to_reproduce?: string;
     expected_behavior?: string;
     actual_behavior?: string;
-    browser_info?: any;
+    browser_info?: {
+      userAgent?: string;
+      platform?: string;
+      language?: string;
+      cookieEnabled?: boolean;
+      onLine?: boolean;
+      device?: string;
+    };
     screen_resolution?: string;
     user_agent?: string;
     page_url?: string;
@@ -117,9 +120,7 @@ export default function FeedbackDashboard() {
     fetchFeedback();
   }, []);
 
-  useEffect(() => {
-    applyFilters();
-  }, [feedback, statusFilter, typeFilter, priorityFilter, searchTerm]);
+  // useEffect will be moved after applyFilters definition
 
   const fetchFeedback = async () => {
     try {
@@ -139,7 +140,7 @@ export default function FeedbackDashboard() {
     }
   };
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = feedback;
 
     // Status filter
@@ -170,7 +171,12 @@ export default function FeedbackDashboard() {
     }
 
     setFilteredFeedback(filtered);
-  };
+  }, [feedback, statusFilter, typeFilter, priorityFilter, searchTerm]);
+
+  // Apply filters when dependencies change
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
 
   const handleStatusUpdate = async (feedbackId: string, newStatus: FeedbackStatus, response?: string) => {
     try {
@@ -213,7 +219,7 @@ export default function FeedbackDashboard() {
     });
   };
 
-  const getDeviceIcon = (browserInfo: any) => {
+  const getDeviceIcon = (browserInfo: { device?: string } | undefined) => {
     if (!browserInfo?.device) return Monitor;
     if (browserInfo.device === 'Mobile') return Smartphone;
     if (browserInfo.device === 'Tablet') return Smartphone;
@@ -397,7 +403,7 @@ export default function FeedbackDashboard() {
                           {item.data.browser_info && (
                             <div className="flex items-center">
                               <DeviceIcon className="h-4 w-4 mr-1" />
-                              {item.data.browser_info.browser} on {item.data.browser_info.os}
+                              {(item.data.browser_info as Record<string, string>)?.browser || 'Unknown'} on {(item.data.browser_info as Record<string, string>)?.os || 'Unknown'}
                             </div>
                           )}
                         </div>
@@ -515,13 +521,13 @@ export default function FeedbackDashboard() {
                     <h4 className="font-medium text-gray-900 mb-2">Technical Details:</h4>
                     <div className="bg-gray-50 p-4 rounded-lg text-sm space-y-2">
                       <div>
-                        <span className="font-medium">Browser:</span> {selectedFeedback.data.browser_info.browser}
+                        <span className="font-medium">Browser:</span> {(selectedFeedback.data.browser_info as Record<string, string>)?.browser || 'Unknown'}
                       </div>
                       <div>
-                        <span className="font-medium">OS:</span> {selectedFeedback.data.browser_info.os}
+                        <span className="font-medium">OS:</span> {(selectedFeedback.data.browser_info as Record<string, string>)?.os || 'Unknown'}
                       </div>
                       <div>
-                        <span className="font-medium">Device:</span> {selectedFeedback.data.browser_info.device}
+                        <span className="font-medium">Device:</span> {(selectedFeedback.data.browser_info as Record<string, string>)?.device || 'Unknown'}
                       </div>
                       <div>
                         <span className="font-medium">Screen:</span> {selectedFeedback.data.screen_resolution}

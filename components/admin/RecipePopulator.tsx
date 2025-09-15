@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -33,7 +34,12 @@ export default function RecipePopulator() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [bulkQueries, setBulkQueries] = useState('')
   const [isBulkProcessing, setIsBulkProcessing] = useState(false)
-  const [results, setResults] = useState<any>(null)
+  const [results, setResults] = useState<{
+    success?: boolean;
+    message?: string;
+    error?: string;
+    [key: string]: unknown;
+  } | null>(null)
   const [activeTab, setActiveTab] = useState('search')
 
   const popularCategories = [
@@ -264,9 +270,11 @@ export default function RecipePopulator() {
                     onClick={() => toggleRecipeSelection(recipe.id)}
                   >
                     {recipe.image && (
-                      <img 
+                      <Image 
                         src={recipe.image} 
                         alt={recipe.title}
+                        width={300}
+                        height={128}
                         className="w-full h-32 object-cover rounded-md mb-3"
                       />
                     )}

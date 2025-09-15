@@ -27,20 +27,23 @@ const CalendarWidget = lazy(() => import('@/components/dashboard/CalendarWidget'
 const MealsWidget = lazy(() => import('@/components/dashboard/MealsWidget').then(m => ({ default: m.MealsWidget })));
 const GroceryWidget = lazy(() => import('@/components/dashboard/GroceryWidget').then(m => ({ default: m.GroceryWidget })));
 const ProjectsWidget = lazy(() => import('@/components/dashboard/ProjectsWidget').then(m => ({ default: m.ProjectsWidget })));
-const QuickActionsHub = lazy(() => import('@/components/dashboard/QuickActionsHub').then(m => ({ default: m.QuickActionsHub })));
+const QuickActionsRibbon = lazy(() => import('@/components/dashboard/QuickActionsRibbon').then(m => ({ default: m.QuickActionsRibbon })));
 const ProfileStatus = lazy(() => import('@/components/dashboard/ProfileStatus').then(m => ({ default: m.ProfileStatus })));
 const DaycareWidget = lazy(() => import('@/components/dashboard/DaycareWidget').then(m => ({ default: m.DaycareWidget })));
 const HouseholdMapWidget = lazy(() => import('@/components/dashboard/HouseholdMapWidget').then(m => ({ default: m.HouseholdMapWidget })));
+const FinancialWidget = lazy(() => import('@/components/financial/FinancialWidget').then(m => ({ default: m.FinancialWidget })));
 const Magic8BallWidget = lazy(() => import('@/components/dashboard/Magic8BallWidget'));
+const EntertainmentWidget = lazy(() => import('@/components/dashboard/EntertainmentWidget'));
 
 // Optimized loading component
 const WidgetSkeleton = () => (
-  <div className="h-48 bg-white rounded-2xl shadow-lg animate-pulse">
-    <div className="p-4 space-y-3">
+  <div className="h-full bg-white rounded-2xl shadow-lg animate-pulse">
+    <div className="p-4 space-y-3 h-full flex flex-col">
       <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-      <div className="space-y-2">
+      <div className="space-y-2 flex-1">
         <div className="h-3 bg-gray-200 rounded"></div>
         <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+        <div className="h-3 bg-gray-200 rounded w-4/5"></div>
       </div>
     </div>
   </div>
@@ -70,8 +73,9 @@ export default function DashboardPage() {
     }
   }, [user, profile, loading]);
 
-  // Show loading state while authentication is being checked
-  if (loading) {
+  // Note: Authentication is handled by middleware, so we trust that users reaching this page are authenticated
+  // Show loading state if user data is still being fetched
+  if (!user && loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
         <div className="text-center">
@@ -82,11 +86,8 @@ export default function DashboardPage() {
     );
   }
 
-  // Redirect to sign-in if not authenticated (this should be handled by middleware, but good fallback)
-  if (!user) {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/signin';
-    }
+  // Fallback for edge case where middleware allowed but client auth failed
+  if (!user && !loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
         <div className="text-center">
@@ -103,11 +104,8 @@ export default function DashboardPage() {
     );
   }
 
-  // Check if profile is incomplete and redirect to setup
-  if (!profile || !profile.household_id || !profile.onboarding_completed || !profile.name) {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/profile/setup';
-    }
+  // Show profile setup prompt if needed (no redirect to avoid loops)
+  if (user && !loading && (!profile || !profile.household_id || !profile.onboarding_completed || !profile.name)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
         <div className="text-center">
@@ -132,7 +130,7 @@ export default function DashboardPage() {
         <div className="max-w-4xl mx-auto">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <h1 className="text-xl font-bold text-red-800 mb-2">Access Denied</h1>
-            <p className="text-red-600">You don't have permission to access the dashboard.</p>
+            <p className="text-red-600">You don&apos;t have permission to access the dashboard.</p>
           </div>
         </div>
       </div>
@@ -147,63 +145,72 @@ export default function DashboardPage() {
           <ProfileStatus />
         </div>
 
-        {/* Main Dashboard Grid */}
+        {/* Quick Actions Ribbon */}
+        <Suspense fallback={<div className="h-48 bg-white rounded-2xl shadow-lg animate-pulse mb-6"></div>}>
+          <QuickActionsRibbon />
+        </Suspense>
+
+        {/* Main Dashboard Grid - Uniform Card Heights */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-          {/* Top Row - Primary Widgets (Always Visible) */}
-          <div className="lg:col-span-1">
+          {/* Row 1 - Primary Widgets */}
+          <div className="lg:col-span-1 h-80">
             <Suspense fallback={<WidgetSkeleton />}>
               <WeatherWidget />
             </Suspense>
           </div>
 
-          {/* Household Location Map - Right below weather */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 h-80">
             <Suspense fallback={<WidgetSkeleton />}>
               <HouseholdMapWidget />
             </Suspense>
           </div>
           
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 h-80">
             <Suspense fallback={<WidgetSkeleton />}>
               <CalendarWidget />
             </Suspense>
           </div>
 
-          <div className="lg:col-span-1">
-            <QuickActionsHub />
+          <div className="lg:col-span-1 h-80">
+            <Suspense fallback={<WidgetSkeleton />}>
+              <Magic8BallWidget />
+            </Suspense>
           </div>
 
-          {/* Middle Row - Core Household Features */}
-          <div className="lg:col-span-1">
+          {/* Row 2 - Core Household Features */}
+          <div className="lg:col-span-1 h-80">
             <Suspense fallback={<WidgetSkeleton />}>
               <MealsWidget />
             </Suspense>
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 h-80">
             <Suspense fallback={<WidgetSkeleton />}>
               <GroceryWidget />
             </Suspense>
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 h-80">
             <Suspense fallback={<WidgetSkeleton />}>
               <ProjectsWidget />
             </Suspense>
           </div>
 
-          {/* Magic 8-Ball Widget - Fun Family Feature */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 h-80">
             <Suspense fallback={<WidgetSkeleton />}>
-              <Magic8BallWidget 
-                householdId={profile?.household_id}
-                userId={user?.id}
-              />
+              <FinancialWidget />
             </Suspense>
           </div>
 
-          {/* Household Updates Row */}
-          <div className="lg:col-span-2">
+          {/* Row 3 - Additional Widgets */}
+          <div className="lg:col-span-1 h-80">
+            <Suspense fallback={<WidgetSkeleton />}>
+              <EntertainmentWidget />
+            </Suspense>
+          </div>
+
+          {/* Daycare Widget - Wider span */}
+          <div className="lg:col-span-3 h-80">
             <Suspense fallback={<WidgetSkeleton />}>
               <DaycareWidget />
             </Suspense>

@@ -19,6 +19,12 @@ import { Wand2, Sparkles, Shuffle, Heart, Users, Star, Leaf } from 'lucide-react
 import { PlanningSettings } from './WeekPlanningSettings';
 import { Recipe } from '@/types/recipes';
 
+interface ExtendedRecipe extends Recipe {
+  userRating?: number;
+  communityRating?: number;
+  averageRating?: number;
+}
+
 interface AutoFillWeekGeneratorProps {
   isOpen: boolean;
   onClose: () => void;
@@ -85,28 +91,28 @@ export function AutoFillWeekGenerator({
       switch (settings.autoFillSource) {
         case 'personal_favorites':
           // Mock: Filter by user rating > 4 stars
-          filteredRecipes = availableRecipes.filter(recipe => 
-            (recipe as any).userRating >= 4
+          filteredRecipes = availableRecipes.filter((recipe: ExtendedRecipe) => 
+            recipe.userRating && recipe.userRating >= 4
           );
           break;
         case 'community_favorites':
           // Mock: Filter by community popularity
-          filteredRecipes = availableRecipes.filter(recipe => 
-            (recipe as any).communityRating >= 4.2
+          filteredRecipes = availableRecipes.filter((recipe: ExtendedRecipe) => 
+            recipe.communityRating && recipe.communityRating >= 4.2
           );
           break;
         case 'highly_rated':
           // Mock: Filter by overall rating > 4 stars
-          filteredRecipes = availableRecipes.filter(recipe => 
-            (recipe as any).averageRating >= 4.0
+          filteredRecipes = availableRecipes.filter((recipe: ExtendedRecipe) => 
+            recipe.averageRating && recipe.averageRating >= 4.0
           );
           break;
         case 'dietary_filtered':
           // Filter by dietary restrictions
-          filteredRecipes = availableRecipes.filter(recipe => {
-            return settings.dietaryFilters.some(filter => 
-              recipe.diet_types?.some(dietType => dietType.toLowerCase().includes(filter.toLowerCase())) ||
-              recipe.meal_type?.some(mealType => mealType.toLowerCase().includes(filter.toLowerCase()))
+          filteredRecipes = availableRecipes.filter((recipe: Recipe) => {
+            return settings.dietaryFilters.some((filter: string) =>
+              recipe.diet_types?.some((dietType: string) => dietType.toLowerCase().includes(filter.toLowerCase())) ||
+              recipe.meal_type?.some((mealType: string) => mealType.toLowerCase().includes(filter.toLowerCase()))
             );
           });
           break;

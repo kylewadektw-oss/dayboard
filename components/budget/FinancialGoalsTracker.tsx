@@ -15,7 +15,6 @@ import {
   Plane,
   GraduationCap,
   Heart,
-  Star,
   CheckCircle,
   Trophy,
   Coins,
@@ -68,7 +67,6 @@ const mockHouseholdMembers = [
 const FinancialGoalsTracker = () => {
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(mockSavingsGoals);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedGoal, setSelectedGoal] = useState<SavingsGoal | null>(null);
   const [viewMode, setViewMode] = useState<'all' | 'personal' | 'family'>('all');
 
   const formatCurrency = (amount: number) => {
@@ -160,7 +158,7 @@ const FinancialGoalsTracker = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Financial Goals Tracker</h1>
-          <p className="text-gray-600">Set, track, and achieve your family's financial dreams</p>
+          <p className="text-gray-600">Set, track, and achieve your family&apos;s financial dreams</p>
         </div>
         <div className="flex space-x-2">
           <Button 

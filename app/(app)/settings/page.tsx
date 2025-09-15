@@ -1,7 +1,11 @@
 'use client';
 
-import ComprehensiveSettingsDashboard from '@/components/settings/ComprehensiveSettingsDashboard';
+import EnhancedSettingsDashboard from '@/components/settings/EnhancedSettingsDashboard';
 
 export default function SettingsPage() {
-  return <ComprehensiveSettingsDashboard />;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
+      <EnhancedSettingsDashboard />
+    </div>
+  );
 }

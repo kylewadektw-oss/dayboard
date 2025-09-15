@@ -15,7 +15,7 @@ interface SecurityViolation {
   fingerprint?: string;
   url?: string;
   referrer?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export async function POST(request: NextRequest) {

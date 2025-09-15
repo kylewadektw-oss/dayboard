@@ -17,7 +17,7 @@
 
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { logger } from '@/utils/logger'
 
 export default function TestLoggingPage() {

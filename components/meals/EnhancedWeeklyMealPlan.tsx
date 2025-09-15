@@ -28,7 +28,8 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
-import { Calendar, Settings, Sparkles, BarChart3, ChevronLeft, ChevronRight, Clock, Star, Check, X } from 'lucide-react';
+import { Calendar, Settings, BarChart3, ChevronLeft, ChevronRight, Clock, Star, Check, X } from 'lucide-react';
+// Sparkles import removed as unused
 import { Recipe, MealPlan, RecipeMealType } from '@/types/recipes';
 
 interface EnhancedWeeklyMealPlanProps {
@@ -57,11 +58,12 @@ const MEAL_TYPE_ORDER: RecipeMealType[] = ['breakfast', 'lunch', 'dinner', 'dess
 export function EnhancedWeeklyMealPlan({
   recipes,
   mealPlans,
-  onUpdateMealPlan,
-  onCreateMealPlan,
-  onDeleteMealPlan,
-  householdId,
-  userId,
+  // Unused props commented out to fix build errors
+  // onUpdateMealPlan,
+  // onCreateMealPlan,
+  // onDeleteMealPlan,
+  // householdId,
+  // userId,
   className = ''
 }: EnhancedWeeklyMealPlanProps) {
   const [currentWeekStart, setCurrentWeekStart] = useState(() => 
@@ -72,27 +74,28 @@ export function EnhancedWeeklyMealPlan({
   const [settings, setSettings] = useState<BasicSettings>(DEFAULT_SETTINGS);
   const [tempSettings, setTempSettings] = useState<BasicSettings>(DEFAULT_SETTINGS);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedMealType, setSelectedMealType] = useState<RecipeMealType>('dinner');
+  // Unused state variables commented out to fix build errors
+  // const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  // const [selectedMealType, setSelectedMealType] = useState<RecipeMealType>('dinner');
 
-  // Settings management functions
-  const handleOpenSettings = () => {
-    setTempSettings(settings);
-    setHasUnsavedChanges(false);
-    setShowSettings(true);
-  };
+  // Settings management functions - removed unused function
+  // const handleOpenSettings = () => {
+  //   setTempSettings(settings);
+  //   setHasUnsavedChanges(false);
+  //   setShowSettings(true);
+  // };
 
-  const handleSaveSettings = () => {
+  const handleSaveSettings = useCallback(() => {
     setSettings(tempSettings);
     setHasUnsavedChanges(false);
     setShowSettings(false);
-  };
+  }, [tempSettings]);
 
-  const handleCancelSettings = () => {
+  const handleCancelSettings = useCallback(() => {
     setTempSettings(settings);
     setHasUnsavedChanges(false);
     setShowSettings(false);
-  };
+  }, [settings]);
 
   const handleTempSettingsChange = (newTempSettings: BasicSettings) => {
     setTempSettings(newTempSettings);
@@ -118,7 +121,7 @@ export function EnhancedWeeklyMealPlan({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showSettings, hasUnsavedChanges]);
+  }, [showSettings, hasUnsavedChanges, handleCancelSettings, handleSaveSettings]);
 
   // Generate week days based on current week
   const weekDays = useMemo(() => {
@@ -421,7 +424,7 @@ export function EnhancedWeeklyMealPlan({
 
             {/* Meal Grid */}
             <div className="grid gap-0 min-h-[120px]" style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}>
-              {weekDays.map((day, dayIndex) => {
+              {weekDays.map((day) => {
                 const dayKey = format(day, 'yyyy-MM-dd');
                 const mealsForDay = organizedMealPlans[dayKey]?.[mealType] || [];
 

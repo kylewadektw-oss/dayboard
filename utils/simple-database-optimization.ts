@@ -10,7 +10,7 @@ import { createClient } from '@/utils/supabase/client';
 
 // Simple cache interface
 interface CacheEntry {
-  data: any;
+  data: unknown;
   timestamp: number;
   ttl: number;
 }
@@ -35,7 +35,7 @@ class SimpleCache {
     });
   }
   
-  get(key: string): any | null {
+  get(key: string): unknown | null {
     const entry = this.cache.get(key);
     if (!entry) return null;
     

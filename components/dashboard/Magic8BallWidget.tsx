@@ -17,7 +17,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, memo, useRef } from 'react';
-import { Volume2, VolumeX, History, BarChart3, RotateCcw, Sparkles, RefreshCw } from 'lucide-react';
+import { Volume2, VolumeX, History, BarChart3, RotateCcw, Sparkles } from 'lucide-react';
 import { useMagic8Ball } from '@/hooks/useMagic8Ball';
 import { enhancedLogger, LogLevel } from '@/utils/logger';
 
@@ -47,7 +47,7 @@ interface Stats {
   weeklyQuestions: number;
   mostPopularTheme: string;
   mostActiveUser?: string;
-  userCounts: Record<string, any>;
+  userCounts: Record<string, { questions: number; lastQuestion: string }>;
 }
 
 // Theme-specific answer sets
@@ -158,13 +158,14 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
 
     window.addEventListener('devicemotion', handleDeviceMotion);
     return () => window.removeEventListener('devicemotion', handleDeviceMotion);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isShakeEnabled, state, question]);
 
   // Sound generation
   const playSound = useCallback((type: 'shake' | 'reveal') => {
     if (!soundEnabled) return;
 
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const audioContext = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
@@ -263,6 +264,7 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
         }
       }, 1500);
     }, 1000);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, question, theme, playSound, getRandomAnswer, triggerConfetti, householdId, userId, saveQuestion]);
 
   // Reset for new question
@@ -330,7 +332,7 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
   }, [householdId, fetchRecentQuestions, fetchStats]);
 
   return (
-    <div className={`bg-white rounded-2xl shadow-lg p-4 relative overflow-hidden ${className}`}>
+    <div className={`bg-white rounded-2xl shadow-lg p-4 relative overflow-hidden h-full flex flex-col ${className}`}>
       {/* Header - matches other dashboard widgets */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -552,7 +554,7 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
                 className="bg-white rounded-lg p-3 hover:bg-gray-50 transition-colors border border-gray-100"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="text-gray-700 font-medium text-sm">"{q.question}"</div>
+                <div className="text-gray-700 font-medium text-sm">&quot;{q.question}&quot;</div>
                 <div className="text-blue-600 italic text-sm mt-1">→ {q.answer}</div>
                 <div className="flex justify-between items-center mt-2">
                   <div className="text-gray-400 text-xs">

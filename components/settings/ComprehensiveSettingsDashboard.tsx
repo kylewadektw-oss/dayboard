@@ -11,9 +11,6 @@ import {
   User, 
   Shield, 
   Crown, 
-  Save, 
-  Eye,
-  EyeOff,
   Info,
   CheckCircle,
   XCircle,
@@ -21,11 +18,7 @@ import {
   Users,
   Zap,
   Globe,
-  ChevronDown,
-  ChevronUp,
-  AlertTriangle,
-  Loader2,
-  RefreshCw
+  Loader2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
@@ -41,6 +34,9 @@ interface SettingsCategory {
   created_at?: string;
 }
 
+// Setting value types
+type SettingValue = string | number | boolean | string[] | null;
+
 interface SettingsItem {
   id: string;
   category_key: string;
@@ -48,29 +44,30 @@ interface SettingsItem {
   display_name: string;
   description: string | null;
   setting_type: string;
-  default_value: any;
-  options?: any;
+  default_value: SettingValue;
+  options?: Array<{ value: string | number; label: string }>;
   required_role?: string; // Make optional since it might not exist in DB
   sort_order: number;
 }
 
-interface UserSetting {
-  id: string;
-  user_id: string;
-  setting_key: string;
-  setting_value: any;
-  created_at: string;
-  updated_at: string;
-}
+// Types for future database integration
+// interface UserSetting {
+//   id: string;
+//   user_id: string;
+//   setting_key: string;
+//   setting_value: SettingValue;
+//   created_at: string;
+//   updated_at: string;
+// }
 
-interface HouseholdSetting {
-  id: string;
-  household_id: string;
-  setting_key: string;
-  setting_value: any;
-  created_at: string;
-  updated_at: string;
-}
+// interface HouseholdSetting {
+//   id: string;
+//   household_id: string;
+//   setting_key: string;
+//   setting_value: SettingValue;
+//   created_at: string;
+//   updated_at: string;
+// }
 
 const IconMap = {
   User,
@@ -84,12 +81,12 @@ const IconMap = {
 };
 
 export default function ComprehensiveSettingsDashboard() {
-  const { user, profile, refreshUser } = useAuth();
+  const { profile } = useAuth();
   const [categories, setCategories] = useState<SettingsCategory[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>('member');
   const [settingsItems, setSettingsItems] = useState<SettingsItem[]>([]);
-  const [userSettings, setUserSettings] = useState<Record<string, any>>({});
-  const [householdSettings, setHouseholdSettings] = useState<Record<string, any>>({});
+  const [userSettings, setUserSettings] = useState<Record<string, unknown>>({});
+  const [householdSettings, setHouseholdSettings] = useState<Record<string, unknown>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,9 +112,10 @@ export default function ComprehensiveSettingsDashboard() {
         if (data && data.length > 0) {
           setActiveCategory(data[0].category_key);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading settings categories:', err);
-        setError(err.message);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(errorMessage);
       }
     };
 
@@ -137,10 +135,14 @@ export default function ComprehensiveSettingsDashboard() {
           .order('sort_order');
 
         if (error) throw error;
-        setSettingsItems(data || []);
-      } catch (err: any) {
+        setSettingsItems((data || []).map(item => ({
+          ...item,
+          default_value: item.default_value as SettingValue,
+          options: item.options as Array<{ value: string | number; label: string }> | undefined
+        })));
+      } catch (err: unknown) {
         console.error('Error loading settings items:', err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Failed to load settings');
       }
     };
 
@@ -161,12 +163,12 @@ export default function ComprehensiveSettingsDashboard() {
         if (error) throw error;
         
         const settingsMap = (data || []).reduce((acc, setting) => {
-          acc[setting.setting_key] = setting.setting_value;
+          acc[setting.setting_key] = setting.setting_value as SettingValue;
           return acc;
-        }, {} as Record<string, any>);
+        }, {} as Record<string, SettingValue>);
         
         setUserSettings(settingsMap);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading user settings:', err);
       }
     };
@@ -188,12 +190,12 @@ export default function ComprehensiveSettingsDashboard() {
         if (error) throw error;
         
         const settingsMap = (data || []).reduce((acc, setting) => {
-          acc[setting.setting_key] = setting.setting_value;
+          acc[setting.setting_key] = setting.setting_value as SettingValue;
           return acc;
-        }, {} as Record<string, any>);
+        }, {} as Record<string, SettingValue>);
         
         setHouseholdSettings(settingsMap);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading household settings:', err);
       }
     };
@@ -216,7 +218,7 @@ export default function ComprehensiveSettingsDashboard() {
       : item.default_value;
   };
 
-  const updateSetting = async (settingKey: string, value: any) => {
+  const updateSetting = async (settingKey: string, value: SettingValue) => {
     if (!profile?.id) return;
 
     setSaving(prev => ({ ...prev, [settingKey]: true }));
@@ -260,9 +262,9 @@ export default function ComprehensiveSettingsDashboard() {
       setSuccessMessage('Setting updated successfully');
       setTimeout(() => setSuccessMessage(null), 3000);
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating setting:', err);
-      setError(`Failed to update setting: ${err.message}`);
+      setError(`Failed to update setting: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(prev => ({ ...prev, [settingKey]: false }));
     }
@@ -298,7 +300,7 @@ export default function ComprehensiveSettingsDashboard() {
           <div className="flex items-center space-x-2">
             <input
               type="text"
-              value={value || ''}
+              value={String(value || '')}
               onChange={(e) => updateSetting(item.setting_key, e.target.value)}
               disabled={isLoading}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:bg-gray-50"
@@ -312,7 +314,7 @@ export default function ComprehensiveSettingsDashboard() {
         return (
           <div className="space-y-2">
             <textarea
-              value={value || ''}
+              value={String(value || '')}
               onChange={(e) => updateSetting(item.setting_key, e.target.value)}
               disabled={isLoading}
               rows={3}
@@ -328,7 +330,7 @@ export default function ComprehensiveSettingsDashboard() {
           <div className="flex items-center space-x-2">
             <input
               type="number"
-              value={value || ''}
+              value={Number(value) || ''}
               onChange={(e) => updateSetting(item.setting_key, parseInt(e.target.value) || 0)}
               disabled={isLoading}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:bg-gray-50"
@@ -342,12 +344,12 @@ export default function ComprehensiveSettingsDashboard() {
         return (
           <div className="flex items-center space-x-2">
             <select
-              value={value || ''}
+              value={String(value || '')}
               onChange={(e) => updateSetting(item.setting_key, e.target.value)}
               disabled={isLoading}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:bg-gray-50"
             >
-              {item.options?.map((option: any) => (
+              {item.options?.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -361,7 +363,7 @@ export default function ComprehensiveSettingsDashboard() {
         const selectedValues = Array.isArray(value) ? value : [];
         return (
           <div className="space-y-2">
-            {item.options?.map((option: any) => (
+            {item.options?.map((option) => (
               <label key={option.value} className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -379,6 +381,43 @@ export default function ComprehensiveSettingsDashboard() {
               </label>
             ))}
             {isLoading && <Loader2 className="h-4 w-4 animate-spin text-gray-400 ml-2" />}
+          </div>
+        );
+
+      case 'feature_matrix':
+        // Super Admin feature access matrix
+        const FeatureAccessMatrix = React.lazy(() => import('./FeatureAccessMatrix'));
+        return (
+          <div className="col-span-full">
+            <React.Suspense fallback={<div className="animate-pulse h-96 bg-gray-100 rounded-lg"></div>}>
+              <FeatureAccessMatrix mode="super_admin" />
+            </React.Suspense>
+          </div>
+        );
+
+      case 'member_access_matrix':
+        // Admin member access matrix
+        const MemberAccessMatrix = React.lazy(() => import('./FeatureAccessMatrix'));
+        return (
+          <div className="col-span-full">
+            <React.Suspense fallback={<div className="animate-pulse h-96 bg-gray-100 rounded-lg"></div>}>
+              <MemberAccessMatrix mode="admin" />
+            </React.Suspense>
+          </div>
+        );
+
+      case 'role_management':
+        // User role management component
+        return (
+          <div className="col-span-full">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center">
+                <Info className="h-5 w-5 text-yellow-400" />
+                <p className="ml-3 text-sm text-yellow-700">
+                  Role management functionality will be available in the next update.
+                </p>
+              </div>
+            </div>
           </div>
         );
 
@@ -488,26 +527,46 @@ export default function ComprehensiveSettingsDashboard() {
                   </p>
                 </div>
               ) : (
-                settingsItems.map((item) => (
-                  <div key={item.id} className="border-b border-gray-100 last:border-b-0 pb-6 last:pb-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 mr-6">
-                        <h3 className="text-base font-medium text-gray-900">{item.display_name}</h3>
-                        {item.description && (
-                          <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-                        )}
-                        <div className="flex items-center mt-2 text-xs text-gray-400">
-                          <span>Key: {item.setting_key}</span>
-                          <span className="mx-2">•</span>
-                          <span>Type: {item.setting_type}</span>
+                settingsItems.map((item) => {
+                  const isFullWidthComponent = ['feature_matrix', 'member_access_matrix', 'role_management'].includes(item.setting_type);
+                  
+                  if (isFullWidthComponent) {
+                    return (
+                      <div key={item.id} className="border-b border-gray-100 last:border-b-0 pb-6 last:pb-0">
+                        <div className="mb-4">
+                          <h3 className="text-base font-medium text-gray-900">{item.display_name}</h3>
+                          {item.description && (
+                            <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                          )}
+                        </div>
+                        <div className="w-full">
+                          {renderSettingInput(item)}
                         </div>
                       </div>
-                      <div className="min-w-0 w-72">
-                        {renderSettingInput(item)}
+                    );
+                  }
+                  
+                  return (
+                    <div key={item.id} className="border-b border-gray-100 last:border-b-0 pb-6 last:pb-0">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 mr-6">
+                          <h3 className="text-base font-medium text-gray-900">{item.display_name}</h3>
+                          {item.description && (
+                            <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                          )}
+                          <div className="flex items-center mt-2 text-xs text-gray-400">
+                            <span>Key: {item.setting_key}</span>
+                            <span className="mx-2">•</span>
+                            <span>Type: {item.setting_type}</span>
+                          </div>
+                        </div>
+                        <div className="min-w-0 w-72">
+                          {renderSettingInput(item)}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

@@ -32,9 +32,6 @@ export default function SignInLogger() {
       url: window.location.href
     });
     
-    // Test regular logger too
-    console.log('✅ Sign-in page logger component loaded');
-    
     // Also test a delayed log to see if timing matters
     setTimeout(() => {
       console.log('⏰ DELAYED: Sign-in page timer test');

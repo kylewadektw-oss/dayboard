@@ -24,6 +24,7 @@ import { WeeklyMealPlan } from './WeeklyMealPlan';
 import EnhancedMealPlanWrapper from './EnhancedMealPlanWrapper';
 import { RecipeLibrary } from './RecipeLibrary';
 import { Cocktails } from './Cocktails';
+import { GroceryBuilder } from './GroceryBuilder';
 
 const tabs = [
   { id: 'favorites', name: 'Favorites', icon: Heart, color: 'text-pink-600' },
@@ -92,7 +93,7 @@ export function MealTabs() {
         {activeTab === 'cocktails' && <Cocktails />}
         {activeTab === 'quick' && <div>Quick Meals - Coming Soon</div>}
         {activeTab === 'try' && <div>To-Try List - Coming Soon</div>}
-        {activeTab === 'grocery' && <div>Grocery Builder - Coming Soon</div>}
+        {activeTab === 'grocery' && <GroceryBuilder />}
       </div>
     </div>
   );

@@ -1127,6 +1127,47 @@ export interface Database {
           }
         ]
       }
+      feature_access: {
+        Row: {
+          id: number
+          household_id: string
+          feature_name: string
+          feature_category: string
+          role: 'member' | 'admin' | 'super_admin'
+          available: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: never
+          household_id: string
+          feature_name: string
+          feature_category?: string
+          role: 'member' | 'admin' | 'super_admin'
+          available?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: never
+          household_id?: string
+          feature_name?: string
+          feature_category?: string
+          role?: 'member' | 'admin' | 'super_admin'
+          available?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_access_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1143,6 +1184,19 @@ export interface Database {
           icon: string
           sort_order: number
         }[]
+      }
+      check_feature_access: {
+        Args: {
+          user_id_param: string
+          feature_name_param: string
+        }
+        Returns: boolean
+      }
+      setup_default_feature_access: {
+        Args: {
+          household_id_param: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

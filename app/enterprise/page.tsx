@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 interface EnvironmentStatus {
   name: string
@@ -15,16 +15,7 @@ export default function EnterpriseDashboard() {
     { name: 'Production', url: 'https://dayboard.bentlolabs.com', status: 'checking', lastCheck: '' },
     { name: 'Stashhouse', url: 'https://stashhouse.dayboard.bentlolabs.com', status: 'checking', lastCheck: '' },
   ])
-
-  const [monitoringData, setMonitoringData] = useState<any[]>([])
-
-  useEffect(() => {
-    checkEnvironments()
-    const interval = setInterval(checkEnvironments, 60000) // Check every minute
-    return () => clearInterval(interval)
-  }, [])
-
-  const checkEnvironments = async () => {
+  const checkEnvironments = useCallback(async () => {
     const updatedEnvironments = await Promise.all(
       environments.map(async (env) => {
         try {
@@ -41,7 +32,7 @@ export default function EnterpriseDashboard() {
             lastCheck: new Date().toLocaleTimeString(),
             responseTime: response.ok ? responseTime : undefined
           }
-        } catch (error) {
+        } catch {
           return {
             ...env,
             status: 'offline' as const,
@@ -51,7 +42,13 @@ export default function EnterpriseDashboard() {
       })
     )
     setEnvironments(updatedEnvironments)
-  }
+  }, [environments])
+
+  useEffect(() => {
+    checkEnvironments()
+    const interval = setInterval(checkEnvironments, 60000) // Check every minute
+    return () => clearInterval(interval)
+  }, [checkEnvironments])
 
   return (
     <div className="enterprise-dashboard">

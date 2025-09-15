@@ -36,7 +36,7 @@ async function createTestCustomerReview() {
 
 // For testing in browser console
 if (typeof window !== 'undefined') {
-  (window as any).createTestCustomerReview = createTestCustomerReview;
+  (window as Window & { createTestCustomerReview?: typeof createTestCustomerReview }).createTestCustomerReview = createTestCustomerReview;
 }
 
 export { createTestCustomerReview };

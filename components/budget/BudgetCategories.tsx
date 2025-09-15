@@ -12,13 +12,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { 
   Plus, 
   Edit, 
@@ -28,7 +21,7 @@ import {
   TrendingUp,
   TrendingDown
 } from 'lucide-react';
-import { mockBudgetCategories, getMonthlySpendingByCategory } from '@/fixtures/budget-data';
+import { mockBudgetCategories } from '@/fixtures/budget-data';
 import type { BudgetCategory } from '@/types/budget';
 
 const BudgetCategories = () => {
@@ -36,7 +29,6 @@ const BudgetCategories = () => {
   const [editingCategory, setEditingCategory] = useState<BudgetCategory | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const monthlySpending = getMonthlySpendingByCategory();
 
   // Predefined category options
   const categoryIcons = [

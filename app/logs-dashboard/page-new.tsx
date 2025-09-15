@@ -17,11 +17,11 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LogLevel, type LogEntry } from '@/utils/logger';
 import LoggingNav from '@/components/logging/LoggingNav';
 import { logger } from '@/utils/logger';
-import { ChevronLeft, ChevronRight, Filter, Search, Clock, Layers, Component, RotateCcw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Filter, Search, Layers, RotateCcw } from 'lucide-react';
 
 export default function LogsDashboard() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -29,11 +29,11 @@ export default function LogsDashboard() {
   const [selectedComponent, setSelectedComponent] = useState<string>('all');
   const [selectedTimeRange, setSelectedTimeRange] = useState<'1h' | '6h' | '24h' | 'all'>('24h');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [maxLogs, setMaxLogs] = useState<number>(500);
-  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
-  const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
-  const [autoScroll, setAutoScroll] = useState<boolean>(false);
-  const [showStackTrace, setShowStackTrace] = useState<boolean>(false);
+  const [maxLogs] = useState<number>(500);
+  const [sortOrder] = useState<'desc' | 'asc'>('desc');
+  const [autoRefresh] = useState<boolean>(true);
+  const [autoScroll] = useState<boolean>(false);
+  const [showStackTrace] = useState<boolean>(false);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [filterSidebarCollapsed, setFilterSidebarCollapsed] = useState<boolean>(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
@@ -48,14 +48,14 @@ export default function LogsDashboard() {
     }
   };
 
-  const refreshLogs = async () => {
+  const refreshLogs = useCallback(async () => {
     if (isPaused) return;
     
     // Try to get logs from database + memory, fallback to memory only
     let allLogs: LogEntry[] = [];
     try {
       allLogs = await logger.getAllLogsIncludingDatabase();
-    } catch (error) {
+    } catch {
       // Fallback to memory logs only
       allLogs = logger.getAllLogs();
     }
@@ -118,7 +118,7 @@ export default function LogsDashboard() {
         logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     }
-  };
+  }, [isPaused, selectedTimeRange, selectedLevel, selectedComponent, searchQuery, maxLogs, sortOrder, autoScroll, lastLogCount]);
 
   // Auto-refresh effect
   useEffect(() => {
@@ -132,31 +132,7 @@ export default function LogsDashboard() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [selectedLevel, selectedComponent, selectedTimeRange, searchQuery, maxLogs, sortOrder, autoRefresh, isPaused]);
-
-  const clearLogs = () => {
-    logger.clearLogs();
-    setLogs([]);
-    setLastLogCount(0);
-  };
-
-  const exportLogs = () => {
-    const dataStr = JSON.stringify(logs, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `logs-${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const testConsoleLogging = () => {
-    logger.debug('🧪 Test debug message', 'Test', { timestamp: new Date().toISOString() });
-    logger.info('🧪 Test info message', 'Test', { action: 'test', status: 'success' });
-    logger.warn('🧪 Test warning message', 'Test', { warning: 'This is just a test' });
-    logger.error('🧪 Test error message', 'Test', { error: 'Simulated error for testing' });
-  };
+  }, [selectedLevel, selectedComponent, selectedTimeRange, searchQuery, maxLogs, sortOrder, autoRefresh, isPaused, refreshLogs]);
 
   // Get unique components for filtering
   const components = ['all', ...Array.from(new Set(logs.map(log => log.component).filter(Boolean)))];
@@ -591,7 +567,7 @@ export default function LogsDashboard() {
                 )}
                 {searchQuery && (
                   <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
-                    Search: "{searchQuery}"
+                    Search: &quot;{searchQuery}&quot;
                     <button 
                       onClick={() => setSearchQuery('')}
                       className="ml-1 text-gray-600 hover:text-gray-800"
@@ -696,7 +672,7 @@ export default function LogsDashboard() {
                         {log.message}
                       </div>
                       
-                      {log.data && (
+                      {!!log.data && (
                         <details className="mb-2">
                           <summary className="cursor-pointer text-xs text-gray-600 hover:text-gray-800 font-medium">
                             📊 Show Data

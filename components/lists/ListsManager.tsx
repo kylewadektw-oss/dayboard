@@ -17,7 +17,7 @@
 
 'use client';
 
-import { useState, useMemo, useCallback, memo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Plus, ClipboardList, Check, X, ShoppingCart } from 'lucide-react';
 
 interface ListItem {

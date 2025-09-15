@@ -15,7 +15,7 @@
  */
 
 import { useMemo } from 'react';
-import { Calendar, Clock, DollarSign, Users, ChefHat, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, DollarSign, ChefHat, CheckCircle } from 'lucide-react';
 import { MealPlan, Recipe } from '@/types/recipes';
 
 interface WeekSummaryProps {

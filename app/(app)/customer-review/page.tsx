@@ -17,10 +17,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
-import type { Database } from '@/types_db';
-import { Check, X, MessageSquare, Calendar, User, Mail, AlertCircle } from 'lucide-react';
+import { Check, X, MessageSquare, Calendar, User, AlertCircle } from 'lucide-react';
 
 interface CustomerReview {
   id: string;
@@ -44,8 +44,8 @@ export default function CustomerReviewPage() {
   const [selectedReview, setSelectedReview] = useState<CustomerReview | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [processingId, setProcessingId] = useState<string | null>(null);
-  const [userProfiles, setUserProfiles] = useState<{[key: string]: any}>({});
-  const [households, setHouseholds] = useState<{[key: string]: any}>({});
+  const [userProfiles, setUserProfiles] = useState<{[key: string]: {id: string, name: string | null, preferred_name?: string | null, avatar_url?: string | null}}>({});
+  const [households, setHouseholds] = useState<{[key: string]: {id: string, name: string | null, address?: string | null, city?: string | null, state?: string | null, zip?: string | null}}>({});
 
   // Check if user has admin privileges
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
@@ -58,7 +58,7 @@ export default function CustomerReviewPage() {
     }
     
     fetchReviews();
-  }, [isAdmin, filter]);
+  }, [isAdmin, filter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchReviews = async () => {
     try {
@@ -90,7 +90,7 @@ export default function CustomerReviewPage() {
           .select('id, name, preferred_name, avatar_url')
           .in('id', userIds);
 
-        const profileMap: {[key: string]: any} = {};
+        const profileMap: {[key: string]: {id: string, name: string | null, preferred_name?: string | null, avatar_url?: string | null}} = {};
         profileData?.forEach(profile => {
           profileMap[profile.id] = profile;
         });
@@ -106,7 +106,7 @@ export default function CustomerReviewPage() {
             .select('id, name, address, city, state, zip')
             .in('id', householdIds);
 
-          const householdMap: {[key: string]: any} = {};
+          const householdMap: {[key: string]: {id: string, name: string | null, address?: string | null, city?: string | null, state?: string | null, zip?: string | null}} = {};
           householdData?.forEach(household => {
             householdMap[household.id] = household;
           });
@@ -219,7 +219,7 @@ export default function CustomerReviewPage() {
                 ].map((tab) => (
                   <button
                     key={tab.key}
-                    onClick={() => setFilter(tab.key as any)}
+                    onClick={() => setFilter(tab.key as 'all' | 'pending' | 'approved' | 'rejected')}
                     className={`${
                       filter === tab.key
                         ? 'border-purple-500 text-purple-600'
@@ -276,10 +276,12 @@ export default function CustomerReviewPage() {
                           {/* User Avatar */}
                           <div className="flex-shrink-0">
                             {userProfiles[review.user_id]?.avatar_url ? (
-                              <img
+                              <Image
                                 className="h-10 w-10 rounded-full"
-                                src={userProfiles[review.user_id].avatar_url}
-                                alt=""
+                                src={userProfiles[review.user_id].avatar_url || ''}
+                                alt="User avatar"
+                                width={40}
+                                height={40}
                               />
                             ) : (
                               <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
@@ -375,7 +377,7 @@ export default function CustomerReviewPage() {
               {selectedReview.status === 'pending' ? (
                 <>
                   <p className="text-sm text-gray-500 mb-4">
-                    Rejecting {userProfiles[selectedReview.user_id]?.preferred_name || userProfiles[selectedReview.user_id]?.name || 'this user'}'s application.
+                    Rejecting {userProfiles[selectedReview.user_id]?.preferred_name || userProfiles[selectedReview.user_id]?.name || 'this user'}&apos;s application.
                     Please provide a reason for rejection:
                   </p>
                   <textarea

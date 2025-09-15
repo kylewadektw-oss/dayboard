@@ -14,11 +14,7 @@ import {
   Check,
   X,
   Info,
-  Plus,
-  Trash2,
-  Edit,
-  Mail,
-  Calendar
+  Plus
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
@@ -64,7 +60,7 @@ const PermissionLabels = {
 };
 
 export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const [users, setUsers] = useState<HouseholdUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -127,9 +123,9 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
         }));
 
         setUsers(householdUsers);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading household users:', err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Failed to load users');
       } finally {
         setLoading(false);
       }
@@ -185,9 +181,9 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
       ));
 
       console.log(`✅ Updated ${permission} for user ${userId}: ${enabled}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating permission:', err);
-      setError(`Failed to update permission: ${err.message}`);
+      setError(`Failed to update permission: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
@@ -223,9 +219,9 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
       ));
 
       console.log(`✅ Updated role for user ${userId}: ${newRole}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating role:', err);
-      setError(`Failed to update role: ${err.message}`);
+      setError(`Failed to update role: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
@@ -243,9 +239,9 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
       setShowInviteForm(false);
       setInviteEmail('');
       setInviteRole('member');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error inviting user:', err);
-      setError(`Failed to invite user: ${err.message}`);
+      setError(`Failed to invite user: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }

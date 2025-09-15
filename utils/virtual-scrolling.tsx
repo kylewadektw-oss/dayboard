@@ -21,7 +21,7 @@ import { createOptimizedDebounce } from '@/utils/performance';
 export interface VirtualListItem {
   id: string | number;
   height?: number;
-  data: any;
+  data: unknown;
 }
 
 // 🚀 PERFORMANCE: Virtual scrolling configuration

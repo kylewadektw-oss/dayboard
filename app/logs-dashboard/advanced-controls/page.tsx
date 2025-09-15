@@ -40,7 +40,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { LogLevel, LogEntry, logger } from '@/utils/logger';
 import LoggingNav from '@/components/logging/LoggingNav';
 
@@ -62,7 +62,35 @@ interface BrowserIssue {
   message: string;
   source: string;
   timestamp: number;
-  details?: any;
+  details?: unknown;
+}
+
+interface PreviewData {
+  totalLogs: number;
+  filteredLogs: {
+    errors: number;
+    warnings: number;
+    info: number;
+    debug: number;
+  };
+  browserIssues: {
+    total: number;
+    byType: {
+      csp_violation: number;
+      form_validation: number;
+      accessibility: number;
+      performance: number;
+      network: number;
+      security: number;
+    };
+    bySeverity: {
+      critical: number;
+      high: number;
+      medium: number;
+      low: number;
+    };
+  };
+  combinedTotal: number;
 }
 
 export default function AdvancedLogsControls() {
@@ -80,7 +108,16 @@ export default function AdvancedLogsControls() {
 
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [browserIssues, setBrowserIssues] = useState<BrowserIssue[]>([]);
-  const [previewData, setPreviewData] = useState<any>(null);
+    const [previewData, setPreviewData] = useState<PreviewData>({
+    totalLogs: 0,
+    filteredLogs: { errors: 0, warnings: 0, info: 0, debug: 0 },
+    browserIssues: {
+      total: 0,
+      byType: { csp_violation: 0, form_validation: 0, accessibility: 0, performance: 0, network: 0, security: 0 },
+      bySeverity: { critical: 0, high: 0, medium: 0, low: 0 }
+    },
+    combinedTotal: 0
+  });
   const [savedPresets, setSavedPresets] = useState<{ [name: string]: SliderConfig }>({});
 
   // Load logs and browser issues
@@ -213,7 +250,7 @@ export default function AdvancedLogsControls() {
     generatePreview();
   }, [generatePreview]);
 
-  const updateConfig = (key: keyof SliderConfig, value: any) => {
+  const updateConfig = (key: keyof SliderConfig, value: unknown) => {
     setConfig(prev => ({ ...prev, [key]: value }));
   };
 

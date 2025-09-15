@@ -1,12 +1,20 @@
 /*
- * 🛡️ DAYBOARD PROPRIETARY CODE
+ * 🛡️ DAYBOARD PROPimport { 
+  FeedbackType, 
+  FeedbackPriority, 
+  CreateFeedbackData, 
+  FEEDBACK_TYPES,
+  FEEDBACK_PRIORITIES,
+  BrowserInfo
+} from '@/types';
+import { Json } from '@/types_db';CODE
  * 
  * Feedback Widget - Floating sidebar feedback form
  */
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   MessageSquare, 
   X, 
@@ -17,7 +25,6 @@ import {
   Frown,
   ThumbsUp,
   MessageCircle,
-  ChevronDown,
   Loader2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,6 +37,7 @@ import {
   FEEDBACK_PRIORITIES,
   BrowserInfo
 } from '@/types/feedback';
+import { Json } from '@/types_db';
 
 interface FeedbackWidgetProps {
   className?: string;
@@ -182,7 +190,7 @@ export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) 
             page_title: feedbackData.page_title || null,
             household_id: profile.household_id,
             status: 'submitted'
-          } as any,
+          } as Json,
           user_agent: feedbackData.user_agent || null,
           url: feedbackData.page_url || null,
           timestamp: new Date().toISOString()
@@ -199,15 +207,13 @@ export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) 
         setIsOpen(false);
       }, 3000);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error submitting feedback:', error);
       alert('Failed to submit feedback. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const SelectedIcon = FEEDBACK_ICONS[feedbackType];
 
   return (
     <div className={`fixed bottom-6 right-6 z-50 ${className}`} style={{ zIndex: 9999 }}>

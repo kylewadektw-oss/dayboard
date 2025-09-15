@@ -95,7 +95,7 @@ export function SmartMealSuggestions({
 
   const suggestions = useMemo(() => {
     // Filter recipes based on meal type and dietary restrictions
-    let filteredRecipes = recipes.filter(recipe => {
+    const filteredRecipes = recipes.filter(recipe => {
       // Check meal type
       const matchesMealType = recipe.meal_type?.some(type => type === mealType);
       if (!matchesMealType) return false;
@@ -204,7 +204,7 @@ export function SmartMealSuggestions({
     return scoredSuggestions
       .sort((a, b) => b.score - a.score)
       .slice(0, 6);
-  }, [recipes, mealPlans, selectedDate, mealType, dietaryRestrictions, maxCookTime, refreshKey]);
+  }, [recipes, mealPlans, selectedDate, mealType, dietaryRestrictions, maxCookTime]);
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1);
@@ -252,7 +252,7 @@ export function SmartMealSuggestions({
       {/* Suggestions Grid */}
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {suggestions.map(({ recipe, reasons }, index) => (
+          {suggestions.map(({ recipe, reasons }) => (
             <div
               key={`${recipe.id}-${refreshKey}`}
               className="group border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-md transition-all duration-200 cursor-pointer"
@@ -317,7 +317,7 @@ export function SmartMealSuggestions({
         {/* Add Recipe Prompt */}
         <div className="mt-6 pt-4 border-t border-gray-200 text-center">
           <p className="text-sm text-gray-600">
-            Don't see what you're looking for?{' '}
+            Don&apos;t see what you&apos;re looking for?{' '}
             <button className="text-blue-600 hover:text-blue-700 font-medium">
               Add a new recipe
             </button>

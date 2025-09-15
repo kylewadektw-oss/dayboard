@@ -12,16 +12,23 @@ const PUBLIC_ROUTES = new Set([
   '/auth/reset_password',
   '/signin',
   '/signup',
-  '/lists',  // Temporarily allow lists access for testing
-  '/dev-test'  // Development testing page
+  '/lists'  // Temporarily allow lists access for testing
 ]);
 
 // API routes that should be accessible (will handle their own auth if needed)
 const API_ROUTES = ['/api/'];
 
+// Development routes that should be accessible without auth
+const DEV_ROUTES = ['/logs-dashboard', '/dev-test', '/test-auth-debug'];
+
 // Helper: check if path is an API route
 function isApiRoute(pathname: string) {
   return API_ROUTES.some(route => pathname.startsWith(route));
+}
+
+// Helper: check if path is a development route
+function isDevRoute(pathname: string) {
+  return DEV_ROUTES.some(route => pathname.startsWith(route));
 }
 
 // Legacy auth routes list (kept in case of future branching)
@@ -47,53 +54,69 @@ export function updateSession(request: NextRequest) {
     // Normalize: strip trailing slash except root
     const cleanPath = pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
 
+    // Add debug headers for troubleshooting
+    const userAgent = request.headers.get('user-agent') || '';
+    const requestId = Math.random().toString(36).substr(2, 9);
+    
     // Loop guard: if a prior redirect count header exceeds threshold, allow pass-through
     const loopCount = Number(request.headers.get('x-auth-loop-count') || '0');
     if (loopCount > 5) {
+      console.log(`🛑 [MIDDLEWARE] Loop guard triggered for ${cleanPath}, reqId: ${requestId}`);
       return NextResponse.next({
-        headers: { 'x-auth-loop-bypass': '1' }
+        headers: { 'x-auth-loop-bypass': '1', 'x-request-id': requestId }
       });
     }
 
     const authed = hasSupabaseAuthCookie(request);
+    
+    console.log(`🔍 [MIDDLEWARE] ${cleanPath} | Auth: ${authed} | Loops: ${loopCount} | ReqId: ${requestId}`);
 
     // If authenticated user hits the landing page '/', send them to dashboard
     if (authed && cleanPath === '/') {
+      console.log(`🏠 [MIDDLEWARE] Redirecting authed user from root to dashboard, reqId: ${requestId}`);
       const url = new URL('/dashboard', request.url);
       const res = NextResponse.redirect(url, 307);
       res.headers.set('x-auth-redirect', 'root-to-dashboard');
+      res.headers.set('x-request-id', requestId);
       return res;
     }
 
-    // Always allow explicit public routes and API routes
-    if (PUBLIC_ROUTES.has(cleanPath) || isApiRoute(cleanPath)) {
-      return NextResponse.next({ headers: { 'x-auth-route': 'public', 'x-auth-user-cookie': authed ? '1':'0' } });
+    // Always allow explicit public routes, API routes, and development routes
+    if (PUBLIC_ROUTES.has(cleanPath) || isApiRoute(cleanPath) || isDevRoute(cleanPath)) {
+      console.log(`✅ [MIDDLEWARE] Allowing public/API route: ${cleanPath}, reqId: ${requestId}`);
+      return NextResponse.next({ headers: { 'x-auth-route': 'public', 'x-auth-user-cookie': authed ? '1':'0', 'x-request-id': requestId } });
     }
 
     const isAuthRoute = AUTH_ROUTES.some(r => cleanPath.startsWith(r));
 
     // Not authenticated & not an auth/public route => redirect to /signin
     if (!authed && !isAuthRoute) {
+      console.log(`🔐 [MIDDLEWARE] Redirecting unauthed user to signin: ${cleanPath}, reqId: ${requestId}`);
       const url = new URL('/signin', request.url);
       const res = NextResponse.redirect(url, 307);
       res.headers.set('x-auth-redirect', 'signin');
       res.headers.set('x-auth-loop-count', String(loopCount + 1));
+      res.headers.set('x-request-id', requestId);
       return res;
     }
 
     // Authenticated user hitting an auth route => send to dashboard
     if (authed && isAuthRoute) {
+      console.log(`📱 [MIDDLEWARE] Redirecting authed user from auth route to dashboard: ${cleanPath}, reqId: ${requestId}`);
       const url = new URL('/dashboard', request.url);
       const res = NextResponse.redirect(url, 307);
       res.headers.set('x-auth-redirect', 'dashboard');
       res.headers.set('x-auth-loop-count', String(loopCount + 1));
+      res.headers.set('x-request-id', requestId);
       return res;
     }
 
+    console.log(`🎯 [MIDDLEWARE] Allowing protected route: ${cleanPath}, reqId: ${requestId}`);
     return NextResponse.next({
       headers: {
         'x-auth-route': 'protected',
-        'x-auth-user-cookie': authed ? '1' : '0'
+        'x-auth-user-cookie': authed ? '1' : '0',
+        'x-request-id': requestId
       }
     });
   } catch (e) {

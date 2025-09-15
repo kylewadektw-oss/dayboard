@@ -13,10 +13,7 @@ import {
   User, 
   Check,
   X,
-  Info,
-  Eye,
-  Edit,
-  Lock
+  Info
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
@@ -40,14 +37,15 @@ interface SettingsPermissionsMatrixProps {
   mode?: 'admin' | 'super_admin';
 }
 
-const PermissionIcons = {
-  view: Eye,
-  edit: Edit,
-  none: Lock
-};
+// PermissionIcons defined but not used in current implementation
+// const PermissionIcons = {
+//   view: Eye,
+//   edit: Edit,
+//   none: Lock
+// };
 
-export default function SettingsPermissionsMatrix({ className = '', mode = 'admin' }: SettingsPermissionsMatrixProps) {
-  const { user, profile } = useAuth();
+export default function SettingsPermissionsMatrix({ className = '' }: SettingsPermissionsMatrixProps) {
+  const { profile } = useAuth();
   const [settings, setSettings] = useState<SettingPermission[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -80,20 +78,10 @@ export default function SettingsPermissionsMatrix({ className = '', mode = 'admi
         if (permissionsError) console.warn('Permissions error:', permissionsError);
 
         // Build settings permission matrix
-        const permissionsMap = (permissionsData || []).reduce((acc, setting) => {
-          // Parse setting_value correctly - it's stored as JSON
-          let parsedValue = setting.setting_value;
-          if (typeof parsedValue === 'string') {
-            try {
-              parsedValue = JSON.parse(parsedValue);
-            } catch {
-              // If it's not JSON, treat as boolean string
-              parsedValue = parsedValue === 'true';
-            }
-          }
-          acc[setting.setting_key] = parsedValue;
+        const permissionsMap = (permissionsData || []).reduce((acc, permission) => {
+          acc[permission.setting_key] = permission.setting_value as boolean;
           return acc;
-        }, {} as Record<string, any>);
+        }, {} as Record<string, boolean>);
 
         const settingPermissions: SettingPermission[] = (settingsData || []).map(setting => {
           const memberViewKey = `${setting.setting_key}_member_view_permission`;
@@ -117,9 +105,9 @@ export default function SettingsPermissionsMatrix({ className = '', mode = 'admi
         });
 
         setSettings(settingPermissions);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading settings permissions:', err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
       }
@@ -175,9 +163,9 @@ export default function SettingsPermissionsMatrix({ className = '', mode = 'admi
       ));
 
       console.log(`✅ Updated ${role} ${action} permission for ${settingKey}: ${enabled}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating permission:', err);
-      setError(`Failed to update permission: ${err.message}`);
+      setError(`Failed to update permission: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }

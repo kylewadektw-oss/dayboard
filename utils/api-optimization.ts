@@ -27,7 +27,7 @@ interface CacheConfig {
 }
 
 interface CacheEntry {
-  data: any;
+  data: unknown;
   headers: Record<string, string>;
   timestamp: number;
   ttl: number;
@@ -109,7 +109,7 @@ class ApiOptimizer {
   }
 
   // 🚀 PERFORMANCE: Compress response data
-  private async compressResponse(data: any): Promise<{ data: any; compressed: boolean }> {
+  private async compressResponse(data: unknown): Promise<{ data: unknown; compressed: boolean }> {
     try {
       const serialized = JSON.stringify(data);
       

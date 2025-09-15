@@ -16,14 +16,23 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { enhancedLogger, LogLevel } from '@/utils/logger';
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action');
+    let action = searchParams.get('action');
     const householdId = searchParams.get('household_id');
+    
+    // Handle legacy parameter format - if stats=true is passed, treat it as action=stats
+    if (!action && searchParams.get('stats') === 'true') {
+      action = 'stats';
+    }
+    
+    // Handle limit parameter for history (default behavior)
+    if (!action && searchParams.get('limit')) {
+      action = 'history';
+    }
     
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -37,25 +46,18 @@ export async function GET(request: NextRequest) {
 
     switch (action) {
       case 'history':
+        const limit = parseInt(searchParams.get('limit') || '50', 10);
+        const safeLimit = Math.min(Math.max(limit, 1), 100); // Clamp between 1 and 100
+        
         const { data: questions, error: historyError } = await supabase
           .from('magic8_questions')
-          .select(`
-            *,
-            profiles (
-              display_name,
-              first_name
-            )
-          `)
+          .select('*')
           .eq('household_id', householdId)
           .order('created_at', { ascending: false })
-          .limit(50);
+          .limit(safeLimit);
 
         if (historyError) {
-          await enhancedLogger.logWithFullContext(LogLevel.ERROR, "Failed to fetch Magic 8-Ball history", "Magic8BallAPI", {
-            error: historyError.message,
-            householdId,
-            userId: user.id
-          });
+          console.error('Failed to fetch Magic 8-Ball history:', historyError.message);
           return NextResponse.json({ error: 'Failed to fetch history' }, { status: 500 });
         }
 
@@ -68,7 +70,10 @@ export async function GET(request: NextRequest) {
           .select('*', { count: 'exact', head: true })
           .eq('household_id', householdId);
 
-        if (totalError) throw totalError;
+        if (totalError) {
+          console.error('Failed to get total questions count:', totalError.message);
+          return NextResponse.json({ error: 'Failed to get stats' }, { status: 500 });
+        }
 
         // Get today's questions
         const today = new Date();
@@ -79,7 +84,10 @@ export async function GET(request: NextRequest) {
           .eq('household_id', householdId)
           .gte('created_at', today.toISOString());
 
-        if (todayError) throw todayError;
+        if (todayError) {
+          console.error('Failed to get today\'s questions count:', todayError.message);
+          return NextResponse.json({ error: 'Failed to get stats' }, { status: 500 });
+        }
 
         // Get this week's questions
         const weekAgo = new Date();
@@ -90,36 +98,36 @@ export async function GET(request: NextRequest) {
           .eq('household_id', householdId)
           .gte('created_at', weekAgo.toISOString());
 
-        if (weekError) throw weekError;
+        if (weekError) {
+          console.error('Failed to get weekly questions count:', weekError.message);
+          return NextResponse.json({ error: 'Failed to get stats' }, { status: 500 });
+        }
 
         // Get most active user
         const { data: userStats, error: userStatsError } = await supabase
           .from('magic8_questions')
-          .select(`
-            asked_by,
-            profiles (
-              display_name,
-              first_name
-            )
-          `)
+          .select('asked_by')
           .eq('household_id', householdId);
 
-        if (userStatsError) throw userStatsError;
+        if (userStatsError) {
+          console.error('Failed to get user stats:', userStatsError.message);
+          return NextResponse.json({ error: 'Failed to get stats' }, { status: 500 });
+        }
 
         // Count questions by user
-        const userCounts = userStats?.reduce((acc: Record<string, any>, q: any) => {
-          const userId = q.asked_by;
-          const name = q.profiles?.display_name || q.profiles?.first_name || 'Unknown';
+        const userCounts = userStats?.reduce((acc: Record<string, { name: string; count: number }>, q: unknown) => {
+          const question = q as Record<string, unknown>;
+          const userId = question.asked_by as string;
           
           if (!acc[userId]) {
-            acc[userId] = { name, count: 0 };
+            acc[userId] = { name: 'User', count: 0 };
           }
           acc[userId].count++;
           return acc;
         }, {});
 
         // Find most active user
-        const mostActiveUser = userCounts ? Object.values(userCounts).reduce((max: any, current: any) => 
+        const mostActiveUser = userCounts ? Object.values(userCounts).reduce((max: { name: string; count: number }, current: { name: string; count: number }) => 
           current.count > max.count ? current : max, { name: 'No one yet', count: 0 }
         ) : { name: 'No one yet', count: 0 };
 
@@ -129,7 +137,10 @@ export async function GET(request: NextRequest) {
           .select('theme')
           .eq('household_id', householdId);
 
-        if (themeError) throw themeError;
+        if (themeError) {
+          console.error('Failed to get theme stats:', themeError.message);
+          return NextResponse.json({ error: 'Failed to get stats' }, { status: 500 });
+        }
 
         const themeCounts = themeStats?.reduce((acc: Record<string, number>, q: { theme: string }) => {
           acc[q.theme] = (acc[q.theme] || 0) + 1;
@@ -144,7 +155,7 @@ export async function GET(request: NextRequest) {
           totalQuestions: totalQuestions || 0,
           todaysQuestions: todaysQuestions || 0,
           weeklyQuestions: weeklyQuestions || 0,
-          mostActiveUser: (mostActiveUser as any).name,
+          mostActiveUser: mostActiveUser.name,
           mostPopularTheme,
           userCounts: userCounts || {}
         });
@@ -154,11 +165,7 @@ export async function GET(request: NextRequest) {
     }
 
   } catch (error) {
-    await enhancedLogger.logWithFullContext(LogLevel.ERROR, "Magic 8-Ball API error", "Magic8BallAPI", {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      method: 'GET'
-    });
-
+    console.error('Magic 8-Ball API error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -202,29 +209,15 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      await enhancedLogger.logWithFullContext(LogLevel.ERROR, "Failed to save Magic 8-Ball question", "Magic8BallAPI", {
-        error: error.message,
-        householdId: household_id,
-        userId: user.id
-      });
+      console.error('Failed to save Magic 8-Ball question:', error.message);
       return NextResponse.json({ error: 'Failed to save question' }, { status: 500 });
     }
 
-    await enhancedLogger.logWithFullContext(LogLevel.INFO, "Magic 8-Ball question saved successfully", "Magic8BallAPI", {
-      questionId: data.id,
-      householdId: household_id,
-      userId: user.id,
-      theme: theme || 'classic'
-    });
-
+    console.log('Magic 8-Ball question saved successfully:', data.id);
     return NextResponse.json({ success: true, data });
 
   } catch (error) {
-    await enhancedLogger.logWithFullContext(LogLevel.ERROR, "Magic 8-Ball API error", "Magic8BallAPI", {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      method: 'POST'
-    });
-
+    console.error('Magic 8-Ball API error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -253,27 +246,15 @@ export async function DELETE(request: NextRequest) {
       .eq('asked_by', user.id); // Double-check ownership
 
     if (error) {
-      await enhancedLogger.logWithFullContext(LogLevel.ERROR, "Failed to delete Magic 8-Ball question", "Magic8BallAPI", {
-        error: error.message,
-        questionId,
-        userId: user.id
-      });
+      console.error('Failed to delete Magic 8-Ball question:', error.message);
       return NextResponse.json({ error: 'Failed to delete question' }, { status: 500 });
     }
 
-    await enhancedLogger.logWithFullContext(LogLevel.INFO, "Magic 8-Ball question deleted successfully", "Magic8BallAPI", {
-      questionId,
-      userId: user.id
-    });
-
+    console.log('Magic 8-Ball question deleted successfully:', questionId);
     return NextResponse.json({ success: true });
 
   } catch (error) {
-    await enhancedLogger.logWithFullContext(LogLevel.ERROR, "Magic 8-Ball API error", "Magic8BallAPI", {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      method: 'DELETE'
-    });
-
+    console.error('Magic 8-Ball API error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

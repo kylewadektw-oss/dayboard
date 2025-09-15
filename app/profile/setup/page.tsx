@@ -16,13 +16,29 @@
 
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Home, Users, Plus, ArrowRight, CheckCircle, UserCheck, ArrowLeft } from 'lucide-react';
+import { Home, Users, ArrowRight, CheckCircle, UserCheck, ArrowLeft } from 'lucide-react';
+import { Json } from '@/types_db';
 
 type SetupStep = 'choose' | 'join' | 'create' | 'profile';
+
+interface UserProfile {
+  id: string;
+  user_id: string;
+  name: string | null;
+  preferred_name: string | null;
+  age?: number | null;
+  profession?: string | null;
+  household_id: string | null;
+  avatar_url?: string | null;
+  onboarding_completed?: boolean;
+  notification_preferences?: Json;
+  role?: string;
+  [key: string]: unknown; // For additional Supabase fields
+}
 
 // Household living situation categories
 type HouseholdType = 
@@ -80,7 +96,7 @@ function ProfileSetupContent() {
   const editMode = searchParams.get('edit') === 'true';
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState<SetupStep>('choose');
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -118,14 +134,7 @@ function ProfileSetupContent() {
     }
   }, [user, authLoading, router]);
 
-  // Check existing profile
-  useEffect(() => {
-    if (!authLoading && user) {
-      checkExistingProfile();
-    }
-  }, [user, authLoading]);
-
-  const checkExistingProfile = async () => {
+  const checkExistingProfile = useCallback(async () => {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -160,7 +169,7 @@ function ProfileSetupContent() {
         
         if (editMode) {
           setCurrentStep('profile');
-          const notificationPrefs = profile.notification_preferences as any;
+          const notificationPrefs = profile.notification_preferences as Record<string, boolean>;
           setProfileInfo(prev => ({
             ...prev,
             full_name: profile.name || '',
@@ -202,7 +211,14 @@ function ProfileSetupContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase, user, editMode, router, setUserProfile, setCurrentStep, setProfileInfo, setHouseholdInfo, setLoading]);
+
+  // Check existing profile
+  useEffect(() => {
+    if (!authLoading && user) {
+      checkExistingProfile();
+    }
+  }, [user, authLoading, checkExistingProfile]);
 
   const handleJoinHousehold = async () => {
     if (!joinCode.trim()) {
@@ -228,7 +244,7 @@ function ProfileSetupContent() {
       }
 
       // Create profile and link to household
-      const { data: profile, error: profileError } = await supabase
+      const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           user_id: user!.id,
@@ -293,7 +309,7 @@ function ProfileSetupContent() {
       }
 
       // Create profile
-      const { data: profile, error: profileError } = await supabase
+      const { error: profileError } = await supabase
         .from('profiles')
         .insert({
           user_id: user!.id,
@@ -400,7 +416,7 @@ function ProfileSetupContent() {
           Welcome to Dayboard! 🏠
         </h1>
         <p className="text-lg text-gray-600">
-          Let's get your household set up. Choose how you'd like to get started:
+          Let&apos;s get your household set up. Choose how you&apos;d like to get started:
         </p>
       </div>
 

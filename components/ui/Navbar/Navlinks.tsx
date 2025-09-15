@@ -23,14 +23,17 @@ import { handleRequest } from '@/utils/auth-helpers/client';
 import Logo from '@/components/icons/Logo';
 import { usePathname, useRouter } from 'next/navigation';
 import { getRedirectMethod } from '@/utils/auth-helpers/settings';
+import { User } from '@supabase/supabase-js';
 import s from './Navbar.module.css';
 
 interface NavlinksProps {
-  user?: any;
+  user?: User | null;
 }
 
 export default function Navlinks({ user }: NavlinksProps) {
-  const router = getRedirectMethod() === 'client' ? useRouter() : null;
+  const router = useRouter();
+  const pathname = usePathname();
+  const redirectMethod = getRedirectMethod();
 
   return (
     <div className="relative flex flex-row justify-between py-4 align-center md:py-6">
@@ -64,8 +67,8 @@ export default function Navlinks({ user }: NavlinksProps) {
             <Link href="/account" className={s.link}>
               Account
             </Link>
-            <form onSubmit={(e) => handleRequest(e, SignOut, router)}>
-              <input type="hidden" name="pathName" value={usePathname()} />
+            <form onSubmit={(e) => handleRequest(e, SignOut, redirectMethod === 'client' ? router : null)}>
+              <input type="hidden" name="pathName" value={pathname} />
               <button type="submit" className={s.link}>
                 Sign out
               </button>

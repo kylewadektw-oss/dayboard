@@ -141,8 +141,8 @@ function WeatherWidgetComponent({
         condition: data.current?.weather?.[0]?.description
       });
 
-    } catch (err: any) {
-      const errorMessage = err.message || "Failed to load weather data";
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load weather data";
       setError(errorMessage);
       
       await enhancedLogger.logWithFullContext(LogLevel.ERROR, "Failed to fetch weather data", "WeatherWidget", {
@@ -172,7 +172,7 @@ function WeatherWidgetComponent({
 
   if (loading && !weather) {
     return (
-      <div className={`bg-white rounded-2xl shadow-lg p-4 h-fit ${className}`}>
+      <div className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col ${className}`}>
         <div className="animate-pulse">
           <div className="flex items-center justify-between mb-3">
             <div className="h-4 bg-gray-200 rounded w-24"></div>
@@ -201,7 +201,7 @@ function WeatherWidgetComponent({
 
   if (error) {
     return (
-      <div className={`bg-white rounded-2xl shadow-lg p-4 h-fit ${className}`}>
+      <div className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col justify-center ${className}`}>
         <div className="text-center">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
           <h3 className="text-sm font-semibold text-gray-900 mb-1">Weather Unavailable</h3>
@@ -228,9 +228,9 @@ function WeatherWidgetComponent({
   const upcomingDays = weather.daily.slice(1, 7); // Show 6 days
 
   return (
-    <div className={`bg-white rounded-2xl shadow-lg p-4 h-fit ${className}`}>
+    <div className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col ${className}`}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-gray-600">Today's Weather</h3>
+        <h3 className="text-sm font-medium text-gray-600">Today&apos;s Weather</h3>
         <button
           onClick={fetchWeather}
           disabled={loading}

@@ -139,7 +139,7 @@ export function DaycareWidget() {
 
       {/* Timeline Summary */}
       <div className="space-y-2 mb-4">
-        <h4 className="text-xs font-medium text-gray-500">Today's Timeline</h4>
+        <h4 className="text-xs font-medium text-gray-500">Today&apos;s Timeline</h4>
         <div className="space-y-1">
           {mockDaycareUpdates.slice(1, 3).map((update) => (
             <div key={update.id} className="flex items-center justify-between text-xs">

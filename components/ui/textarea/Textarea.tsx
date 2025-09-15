@@ -17,7 +17,7 @@
 import React from 'react';
 import { cn } from '@/utils/cn';
 
-interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 export default function Textarea({ className, ...props }: TextareaProps) {
   return (

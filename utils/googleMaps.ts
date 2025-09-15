@@ -3,9 +3,91 @@
  * Google Maps API Utilities
  */
 
+interface GeocodingResult {
+  geometry: {
+    location: {
+      lat(): number;
+      lng(): number;
+    };
+  };
+  formatted_address: string;
+  address_components: Array<{
+    long_name: string;
+    short_name: string;
+    types: string[];
+  }>;
+}
+
+interface GoogleMapsGeocoder {
+  new(): GoogleMapsGeocoder;
+  geocode(request: {address: string}, callback: (results: GeocodingResult[] | null, status: string) => void): void;
+}
+
+interface GoogleMapsMap {
+  new(element: HTMLElement, options: unknown): GoogleMapsMap;
+}
+
+interface GoogleMapsMarker {
+  new(options: {position: unknown; map: GoogleMapsMap; title?: string; icon?: unknown}): GoogleMapsMarker;
+}
+
+interface GoogleMapsCircle {
+  new(options: {center: unknown; radius: number; map: GoogleMapsMap; fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeOpacity?: number; strokeWeight?: number}): GoogleMapsCircle;
+}
+
+interface GoogleMapsSymbolPath {
+  CIRCLE: number;
+}
+
+interface GoogleMapsPinElement {
+  new(options: {background?: string; borderColor?: string; glyphColor?: string; glyph?: string}): GoogleMapsPinElement;
+  element: HTMLElement;
+}
+
+interface GoogleMapsAdvancedMarkerElement {
+  new(options: {position: unknown; map: GoogleMapsMap; content?: HTMLElement; title?: string}): GoogleMapsAdvancedMarkerElement;
+}
+
+interface GoogleMapsPlace {
+  geometry?: {
+    location?: {
+      lat(): number;
+      lng(): number;
+    };
+  };
+  formatted_address?: string;
+  address_components?: Array<{
+    long_name: string;
+    short_name: string;
+    types: string[];
+  }>;
+}
+
+interface GoogleMapsAutocomplete {
+  new(input: HTMLInputElement, options?: {types?: string[]; componentRestrictions?: {country?: string}; fields?: string[]}): GoogleMapsAutocomplete;
+  addListener(event: string, callback: () => void): void;
+  getPlace(): GoogleMapsPlace;
+  setOptions(options: {bounds?: unknown; strictBounds?: boolean}): void;
+}
+
 declare global {
   interface Window {
-    google?: any;
+    google?: {
+      maps?: {
+        Geocoder: GoogleMapsGeocoder;
+        Map: GoogleMapsMap;
+        Marker: GoogleMapsMarker;
+        Circle: GoogleMapsCircle;
+        SymbolPath: GoogleMapsSymbolPath;
+        marker?: {
+          PinElement: GoogleMapsPinElement;
+          AdvancedMarkerElement: GoogleMapsAdvancedMarkerElement;
+        };
+        places?: {
+          Autocomplete: GoogleMapsAutocomplete;
+        };
+      };
+    };
     googleMapsCallback?: () => void;
   }
 }
@@ -42,8 +124,7 @@ class GoogleMapsLoader {
    */
   isGoogleMapsLoaded(): boolean {
     return typeof window !== 'undefined' && 
-           window.google && 
-           window.google.maps && 
+           !!window.google?.maps && 
            this.isLoaded;
   }
 

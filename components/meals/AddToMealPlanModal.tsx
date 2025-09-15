@@ -14,7 +14,7 @@
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import { X, Calendar, Clock } from 'lucide-react';
 import { RecipeWithDetails, MEAL_TYPES } from '@/types/recipes';
 

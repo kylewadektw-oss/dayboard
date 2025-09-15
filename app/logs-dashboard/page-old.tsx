@@ -17,10 +17,9 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { logger, LogLevel, LogEntry } from '@/utils/logger';
 import LoggingNav from '@/components/logging/LoggingNav';
-import { ChevronLeft, ChevronRight, Filter, Search, Clock, Layers, Component, RotateCcw } from 'lucide-react';
 
 export default function LogsDashboard() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -34,7 +33,8 @@ export default function LogsDashboard() {
   const [showStackTrace, setShowStackTrace] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
-  const [filterSidebarCollapsed, setFilterSidebarCollapsed] = useState(false);
+  // Filter sidebar state (unused for now)
+  // const [_filterSidebarCollapsed, _setFilterSidebarCollapsed] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(false); // Default to false for less glitchy behavior
   const [lastLogCount, setLastLogCount] = useState(0);
@@ -48,14 +48,14 @@ export default function LogsDashboard() {
     }
   };
 
-  const refreshLogs = async () => {
+  const refreshLogs = useCallback(async () => {
     if (isPaused) return;
     
     // Try to get logs from database + memory, fallback to memory only
     let allLogs: LogEntry[] = [];
     try {
       allLogs = await logger.getAllLogsIncludingDatabase();
-    } catch (error) {
+    } catch {
       // Fallback to memory logs only
       allLogs = logger.getAllLogs();
     }
@@ -99,7 +99,7 @@ export default function LogsDashboard() {
     });
     
     setLogs(filteredLogs.slice(0, maxLogs));
-  };
+  }, [isPaused, selectedTimeRange, selectedLevel, selectedComponent, searchQuery, sortOrder, maxLogs]);
 
   useEffect(() => {
     // Setup console interception when component mounts
@@ -114,7 +114,7 @@ export default function LogsDashboard() {
       }, 2000); // Refresh every 2 seconds instead of 1 for smoother experience
       return () => clearInterval(interval);
     }
-  }, [selectedLevel, selectedComponent, autoRefresh, searchQuery, maxLogs, isPaused, selectedTimeRange, sortOrder]);
+  }, [selectedLevel, selectedComponent, autoRefresh, searchQuery, maxLogs, isPaused, selectedTimeRange, sortOrder, refreshLogs]);
 
   // Auto-scroll to bottom when new logs arrive (only if count actually increased)
   useEffect(() => {
@@ -125,7 +125,7 @@ export default function LogsDashboard() {
       }, 100);
     }
     setLastLogCount(logs.length);
-  }, [logs.length]); // Only depend on log count, not the entire logs array
+  }, [logs.length, autoScroll, autoRefresh, isPaused, lastLogCount]); // Only depend on log count, not the entire logs array
 
   // Computed statistics
   const logStats = useMemo(() => {
@@ -400,7 +400,7 @@ export default function LogsDashboard() {
                   )}
                   {searchQuery.trim() && (
                     <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">
-                      Search: "{searchQuery.slice(0, 15)}{searchQuery.length > 15 ? '...' : ''}"
+                      Search: &quot;{searchQuery.slice(0, 15)}{searchQuery.length > 15 ? '...' : ''}&quot;
                     </span>
                   )}
                 </div>
@@ -680,7 +680,7 @@ export default function LogsDashboard() {
                     {log.message}
                   </div>
                   
-                  {log.data && (
+                  {!!log.data && (
                     <details className="mb-2">
                       <summary className="cursor-pointer text-xs text-gray-600 hover:text-gray-800 font-medium">
                         📊 Show Data

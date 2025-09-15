@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
     url: request.url,
-    tests: {} as any,
+    tests: {} as Record<string, Record<string, unknown>>,
     summary: {
       overall: 'unknown',
       issues: [] as string[],
@@ -128,7 +128,9 @@ export async function GET(request: NextRequest) {
     };
 
     // Summary
-    const failedTests = Object.values(diagnostics.tests).filter((test: any) => test.status === 'fail').length;
+    const failedTests = Object.values(diagnostics.tests).filter((test: Record<string, unknown>) => 
+      typeof test === 'object' && test !== null && test.status === 'fail'
+    ).length;
     
     if (failedTests === 0) {
       diagnostics.summary.overall = 'healthy';

@@ -161,7 +161,7 @@ export function sanitizeForSerialization(obj: any, maxDepth: number = 10): any {
       return value.map(item => clean(item, depth + 1));
     }
     
-    const cleaned: any = {};
+    const cleaned: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(value)) {
       // Skip very large string values that might cause issues
       if (typeof val === 'string' && val.length > 10000) {

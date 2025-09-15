@@ -16,8 +16,6 @@
 
 
 import { Metadata } from 'next';
-import Footer from '@/components/ui/Footer';
-import Navbar from '@/components/ui/Navbar';
 import { Toaster } from '@/components/ui/Toasts/toaster';
 import LoggerProvider from '@/components/providers/LoggerProvider';
 import CodeProtectionProvider from '@/components/providers/CodeProtectionProvider';

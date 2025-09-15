@@ -76,7 +76,7 @@ export async function signInWithOAuth(e: React.FormEvent<HTMLFormElement>) {
       oauthLogger.info(`🌐 OAuth redirect URL generated`, { provider, url: data.url });
     }
     
-    oauthLogger.info(`✅ OAuth request completed successfully`, { provider });
+    // OAuth request completed - no need to log routine success
     
   } catch (error) {
     oauthLogger.error(`💥 OAuth sign-in failed`, { 

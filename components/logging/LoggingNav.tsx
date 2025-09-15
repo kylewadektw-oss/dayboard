@@ -72,9 +72,8 @@ const sourceSides = [
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, memo } from 'react';
-import { ChevronLeft, ChevronRight, BarChart3, Search, TestTube, Filter, Clock, Layers, Component, X, Zap, Settings } from 'lucide-react';
-import { LogLevel } from '@/utils/logger';
+import { memo } from 'react';
+import { ChevronLeft, ChevronRight, BarChart3, Search, TestTube, Filter, Component, Zap, Settings } from 'lucide-react';
 
 const loggingRoutes = [
   {
@@ -180,96 +179,27 @@ const analyticsRoutes = [
   }
 ];
 
-const timeRangeOptions = [
-  { value: '1m', label: '1 minute' },
-  { value: '5m', label: '5 minutes' },
-  { value: '10m', label: '10 minutes' },
-  { value: '30m', label: '30 minutes' },
-  { value: '1h', label: '1 hour' },
-  { value: '1d', label: '1 day' },
-  { value: 'all', label: 'All time' }
-];
-
-// Log level options - removed debug
-const LOG_LEVELS = [
-  { value: 'all', label: 'All Levels', emoji: '�' },
-  { value: 'error', label: 'Errors', emoji: '❌' },
-  { value: 'warn', label: 'Warnings', emoji: '⚠️' },
-  { value: 'info', label: 'Info', emoji: 'ℹ️' }
-];
-
-const sourceSides = [
-  { value: 'all', label: 'All Sources', emoji: '🌍' },
-  { value: 'client', label: 'Client', emoji: '🌐' },
-  { value: 'server', label: 'Server', emoji: '⚙️' }
-];
+// Unused constants removed to fix build errors
+// const timeRangeOptions = [...];
+// const LOG_LEVELS = [...];
+// const sourceSides = [...];
 
 interface LoggingNavProps {
   variant?: 'horizontal' | 'sidebar';
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
-  // Filter props for logs dashboard
-  selectedTimeRange?: string;
-  onTimeRangeChange?: (range: string) => void;
-  selectedLevel?: string;
-  onLevelChange?: (level: string) => void;
-  selectedSide?: string;
-  onSideChange?: (side: string) => void;
-  selectedComponent?: string;
-  onComponentChange?: (component: string) => void;
-  availableComponents?: string[];
-  searchQuery?: string;
-  onSearchChange?: (query: string) => void;
-  onClearFilters?: () => void;
-  // Log statistics for sidebar display - removed debug
-  logStats?: {
-    total: number;
-    errors: number;
-    warnings: number;
-    info: number;
-  };
-  // Slider controls for log limits - removed debug
-  maxLogs?: number;
-  onMaxLogsChange?: (max: number) => void;
-  maxErrors?: number;
-  onMaxErrorsChange?: (max: number) => void;
-  maxWarnings?: number;
-  onMaxWarningsChange?: (max: number) => void;
-  maxInfo?: number;
-  onMaxInfoChange?: (max: number) => void;
+  // All unused filter props removed to fix build errors
 }
 
 const LoggingNav = memo(function LoggingNav({ 
   variant = 'horizontal', 
   isCollapsed = false, 
-  onToggleCollapse,
-  selectedTimeRange = 'all',
-  onTimeRangeChange,
-  selectedLevel = 'all',
-  onLevelChange,
-  selectedSide = 'all',
-  onSideChange,
-  selectedComponent = 'all',
-  onComponentChange,
-  availableComponents = [],
-  searchQuery = '',
-  onSearchChange,
-  onClearFilters,
-  logStats,
-  maxLogs = 250,
-  onMaxLogsChange,
-  maxErrors = 200, // Increased default to match max
-  onMaxErrorsChange,
-  maxWarnings = 200, // Increased default to match max  
-  onMaxWarningsChange,
-  maxInfo = 200, // Increased default to match max
-  onMaxInfoChange
+  onToggleCollapse
 }: LoggingNavProps) {
   const pathname = usePathname();
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
+  // Unused state variables removed
   
   const isLogsPage = pathname === '/logs-dashboard';
-  const hasActiveFilters = selectedTimeRange !== 'all' || selectedLevel !== 'all' || selectedSide !== 'all' || selectedComponent !== 'all' || searchQuery.trim() !== '';
 
   if (variant === 'sidebar') {
     return (

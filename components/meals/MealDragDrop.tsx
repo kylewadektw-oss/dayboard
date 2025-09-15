@@ -14,7 +14,7 @@
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { GripVertical, Calendar, Clock, Star, Move } from 'lucide-react';
 import { MealPlan, Recipe, RecipeMealType } from '@/types/recipes';
 
@@ -101,7 +101,7 @@ export function MealDragDrop({
     onDragStart(dragData);
   };
 
-  const handleDragEnd = (e: React.DragEvent) => {
+  const handleDragEnd = () => {
     onDragEnd();
   };
 

@@ -82,10 +82,7 @@ class ServerLogger {
         throw error;
       }
       
-      // Reduce console output in production for performance
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`✅ Server log saved: [${entry.level.toUpperCase()}] ${entry.message}`);
-      }
+      // Success - no need to log routine database saves
     } catch (error) {
       // Always output to console as fallback, but don't block the process
       console.error('❌ Server database logging failed:', error);

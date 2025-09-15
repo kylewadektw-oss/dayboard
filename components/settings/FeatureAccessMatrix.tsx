@@ -1,6 +1,6 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * Feature Access Control Matrix
+ * Feature Access Control Matrix Component
  */
 
 'use client';
@@ -8,366 +8,359 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Shield, 
+  Users, 
   Crown, 
-  User, 
-  Home,
-  Zap,
-  Globe,
-  Settings as SettingsIcon,
-  Check,
-  X,
-  Info
+  User,
+  Save,
+  CheckCircle,
+  XCircle,
+  Loader2,
+  Info,
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { createClient } from '@/utils/supabase/client';
-
-interface FeaturePermission {
-  feature_key: string;
-  display_name: string;
-  description: string;
-  category: string;
-  access_level: string;
-  requires_subscription: boolean;
-  member_access: boolean;
-  admin_access: boolean;
-  super_admin_access: boolean;
-}
+import { 
+  featureAccessManager,
+  FEATURE_DEFINITIONS, 
+  type UserRole,
+  type FeatureAccess,
+  type FeatureName
+} from '@/utils/feature-access';
 
 interface FeatureAccessMatrixProps {
+  mode?: 'super_admin' | 'admin';
   className?: string;
-  mode?: 'admin' | 'super_admin';
 }
 
-const CategoryIcons = {
-  'core': Home,
-  'premium': Zap,
-  'admin': Shield,
-  'super_admin': Crown,
-  'navigation': SettingsIcon,
-  'development': Globe
-};
+interface AccessState {
+  [featureName: string]: {
+    member: boolean;
+    admin: boolean;
+    super_admin: boolean;
+  };
+}
 
-const CategoryColors = {
-  'core': 'text-green-600 bg-green-50 border-green-200',
-  'premium': 'text-purple-600 bg-purple-50 border-purple-200',
-  'admin': 'text-blue-600 bg-blue-50 border-blue-200',
-  'super_admin': 'text-red-600 bg-red-50 border-red-200',
-  'navigation': 'text-gray-600 bg-gray-50 border-gray-200',
-  'development': 'text-orange-600 bg-orange-50 border-orange-200'
-};
-
-export default function FeatureAccessMatrix({ className = '', mode = 'admin' }: FeatureAccessMatrixProps) {
-  const { user, profile } = useAuth();
-  const [features, setFeatures] = useState<FeaturePermission[]>([]);
+const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({ 
+  className = ''
+}) => {
+  const { profile } = useAuth();
+  const [accessState, setAccessState] = useState<AccessState>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
 
-  const supabase = createClient();
-
+  // Initialize access state from feature definitions
   useEffect(() => {
-    const loadFeatures = async () => {
-      if (!profile?.id) return;
+    const initialState: AccessState = {};
+    
+    Object.entries(FEATURE_DEFINITIONS).forEach(([featureName]) => {
+      initialState[featureName] = {
+        member: false,
+        admin: false,
+        super_admin: false
+      };
+    });
+
+    setAccessState(initialState);
+  }, []);
+
+  // Load current access rules from database
+  useEffect(() => {
+    async function loadAccessRules() {
+      if (!profile?.household_id) return;
 
       try {
         setLoading(true);
+        setError(null);
+
+        const accessRules = await featureAccessManager.getHouseholdFeatureAccess(profile.household_id);
         
-        // Get features based on mode
-        const { data: featureData, error: featureError } = await supabase
-          .from('global_feature_control')
-          .select('*')
-          .in('category', mode === 'super_admin' 
-            ? ['core', 'premium', 'admin', 'super_admin'] 
-            : ['core', 'premium', 'admin']
-          )
-          .order('category, display_name');
-
-        if (featureError) throw featureError;
-
-        // Get current permission settings
-        const { data: settingsData, error: settingsError } = await supabase
-          .from('user_settings')
-          .select('setting_key, setting_value')
-          .eq('user_id', mode === 'super_admin' ? profile.id : profile.id) // TODO: Get super admin ID for admin mode
-          .like('setting_key', '%_access');
-
-        if (settingsError) console.warn('Settings error:', settingsError);
-
-        // Build feature permission matrix
-        const settingsMap = (settingsData || []).reduce((acc, setting) => {
-          acc[setting.setting_key] = setting.setting_value === 'true' || setting.setting_value === true;
-          return acc;
-        }, {} as Record<string, boolean>);
-
-        const featurePermissions: FeaturePermission[] = (featureData || []).map(feature => {
-          const memberKey = `${feature.feature_key.replace('_access', '')}_member_access`;
-          const adminKey = `${feature.feature_key.replace('_access', '')}_admin_access`;
-          
-          return {
-            feature_key: feature.feature_key,
-            display_name: feature.display_name,
-            description: feature.description || '',
-            category: feature.category,
-            access_level: feature.access_level,
-            requires_subscription: feature.requires_subscription,
-            member_access: settingsMap[memberKey] ?? getDefaultAccess('member', feature.access_level),
-            admin_access: settingsMap[adminKey] ?? getDefaultAccess('admin', feature.access_level),
-            super_admin_access: true // Super admin always has access
-          };
+        // Update state with database values
+        const newState: AccessState = { ...accessState };
+        accessRules.forEach((rule: FeatureAccess) => {
+          if (newState[rule.feature_name]) {
+            newState[rule.feature_name][rule.role] = rule.available;
+          }
         });
 
-        setFeatures(featurePermissions);
-      } catch (err: any) {
-        console.error('Error loading features:', err);
-        setError(err.message);
+        setAccessState(newState);
+      } catch (err) {
+        setError('Failed to load feature access rules');
+        console.error('Error loading access rules:', err);
       } finally {
         setLoading(false);
       }
-    };
-
-    loadFeatures();
-  }, [profile?.id, mode, supabase]);
-
-  const getDefaultAccess = (role: string, accessLevel: string): boolean => {
-    switch (role) {
-      case 'member':
-        return ['all', 'member_plus'].includes(accessLevel);
-      case 'admin':
-        return ['all', 'member_plus', 'admin_only'].includes(accessLevel);
-      case 'super_admin':
-        return true;
-      default:
-        return false;
     }
+
+    if (Object.keys(accessState).length > 0) {
+      loadAccessRules();
+    }
+  }, [profile?.household_id, accessState]);
+
+  // Handle permission toggle
+  const handleToggle = (featureName: string, role: UserRole) => {
+    setAccessState(prev => ({
+      ...prev,
+      [featureName]: {
+        ...prev[featureName],
+        [role]: !prev[featureName][role]
+      }
+    }));
+    setHasChanges(true);
+    setSuccessMessage(null);
+    setError(null);
   };
 
-  const handlePermissionChange = async (featureKey: string, role: 'member' | 'admin', enabled: boolean) => {
-    if (!profile?.id) return;
+  // Save changes to database
+  const handleSave = async () => {
+    if (!profile?.household_id) {
+      setError('No household found');
+      return;
+    }
 
-    setSaving(true);
     try {
-      const settingKey = `${featureKey.replace('_access', '')}_${role}_access`;
-      
-      const { error } = await supabase
-        .from('user_settings')
-        .upsert({
-          user_id: profile.id,
-          setting_key: settingKey,
-          setting_value: enabled.toString(),
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,setting_key'
+      setSaving(true);
+      setError(null);
+
+      const updates: Array<{
+        featureName: FeatureName;
+        role: UserRole;
+        available: boolean;
+      }> = [];
+
+      // Prepare all updates
+      Object.entries(accessState).forEach(([featureName, roleAccess]) => {
+        const roles: UserRole[] = ['member', 'admin', 'super_admin'];
+        roles.forEach(role => {
+          updates.push({
+            featureName: featureName as FeatureName,
+            role,
+            available: roleAccess[role]
+          });
         });
+      });
 
-      if (error) throw error;
+      // Batch update all permissions
+      const success = await featureAccessManager.batchUpdateFeatureAccess(
+        profile.household_id,
+        updates
+      );
 
-      // Update local state
-      setFeatures(prev => prev.map(feature => 
-        feature.feature_key === featureKey 
-          ? { ...feature, [`${role}_access`]: enabled }
-          : feature
-      ));
-
-      console.log(`✅ Updated ${role} access for ${featureKey}: ${enabled}`);
-    } catch (err: any) {
-      console.error('Error updating permission:', err);
-      setError(`Failed to update permission: ${err.message}`);
+      if (success) {
+        setSuccessMessage('Feature access permissions updated successfully');
+        setHasChanges(false);
+      } else {
+        setError('Failed to update some permissions');
+      }
+    } catch (err) {
+      setError('Failed to save permissions');
+      console.error('Error saving permissions:', err);
     } finally {
       setSaving(false);
     }
   };
 
-  const groupedFeatures = features.reduce((acc, feature) => {
-    if (!acc[feature.category]) {
-      acc[feature.category] = [];
+  // Reset to defaults
+  const handleReset = async () => {
+    if (!profile?.household_id) return;
+
+    try {
+      setSaving(true);
+      const success = await featureAccessManager.setupDefaultFeatureAccess(profile.household_id);
+      
+      if (success) {
+        // Reload the data
+        window.location.reload();
+      } else {
+        setError('Failed to reset to defaults');
+      }
+    } catch (err) {
+      setError('Failed to reset permissions');
+      console.error('Error resetting permissions:', err);
+    } finally {
+      setSaving(false);
     }
-    acc[feature.category].push(feature);
+  };
+
+  // Group features by category
+  const featuresByCategory = Object.entries(FEATURE_DEFINITIONS).reduce((acc, [featureName, definition]) => {
+    const category = definition.category;
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push({ name: featureName as FeatureName, definition });
     return acc;
-  }, {} as Record<string, FeaturePermission[]>);
+  }, {} as Record<string, Array<{ name: FeatureName; definition: typeof FEATURE_DEFINITIONS[FeatureName] }>>);
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-xl shadow-sm border border-gray-200 p-6 ${className}`}>
-        <div className="animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-64 mb-4"></div>
-          <div className="space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={`bg-red-50 border border-red-200 rounded-xl p-6 ${className}`}>
-        <div className="flex items-center">
-          <X className="h-5 w-5 text-red-400 mr-3" />
-          <div>
-            <h3 className="text-sm font-medium text-red-800">Error Loading Feature Access</h3>
-            <p className="mt-1 text-sm text-red-700">{error}</p>
-          </div>
-        </div>
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <span className="ml-2 text-gray-600">Loading feature access matrix...</span>
       </div>
     );
   }
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-gray-200 p-6 ${className}`}>
+    <div className={`space-y-6 ${className}`}>
       {/* Header */}
-      <div className="flex items-center mb-6">
-        <Shield className="h-6 w-6 text-blue-600 mr-3" />
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">
-            {mode === 'super_admin' ? 'Global Feature Access Matrix' : 'Household Feature Access Matrix'}
-          </h2>
-          <p className="text-sm text-gray-600 mt-1">
-            Control which features are accessible to different user roles. Check/uncheck boxes to grant or deny access.
-          </p>
-        </div>
-      </div>
-
-      {/* Permission Matrix */}
-      <div className="space-y-8">
-        {Object.entries(groupedFeatures).map(([category, categoryFeatures]) => {
-          const CategoryIcon = CategoryIcons[category as keyof typeof CategoryIcons] || Shield;
-          const categoryClass = CategoryColors[category as keyof typeof CategoryColors] || CategoryColors.admin;
-          
-          return (
-            <div key={category}>
-              {/* Category Header */}
-              <div className={`flex items-center mb-4 p-3 rounded-lg border ${categoryClass}`}>
-                <CategoryIcon className="h-5 w-5 mr-2" />
-                <h3 className="text-lg font-medium capitalize">
-                  {category.replace('_', ' ')} Features
-                </h3>
-              </div>
-
-              {/* Feature Matrix Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full border border-gray-200 rounded-lg">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 border-b border-gray-200">
-                        Feature
-                      </th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-900 border-b border-gray-200">
-                        Description
-                      </th>
-                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 border-b border-gray-200">
-                        <div className="flex items-center justify-center">
-                          <User className="h-4 w-4 mr-1 text-green-600" />
-                          Member
-                        </div>
-                      </th>
-                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 border-b border-gray-200">
-                        <div className="flex items-center justify-center">
-                          <Shield className="h-4 w-4 mr-1 text-blue-600" />
-                          Admin
-                        </div>
-                      </th>
-                      <th className="px-4 py-3 text-center text-sm font-medium text-gray-900 border-b border-gray-200">
-                        <div className="flex items-center justify-center">
-                          <Crown className="h-4 w-4 mr-1 text-purple-600" />
-                          Super Admin
-                        </div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categoryFeatures.map((feature, index) => (
-                      <tr key={feature.feature_key} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        {/* Feature Name */}
-                        <td className="px-4 py-3 border-b border-gray-200">
-                          <div className="flex items-center">
-                            <div className="font-medium text-gray-900">
-                              {feature.display_name}
-                            </div>
-                            {feature.requires_subscription && (
-                              <span className="ml-2 px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
-                                Premium
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Description */}
-                        <td className="px-4 py-3 border-b border-gray-200">
-                          <span className="text-sm text-gray-600">{feature.description}</span>
-                        </td>
-
-                        {/* Member Access Checkbox */}
-                        <td className="px-4 py-3 text-center border-b border-gray-200">
-                          <label className="inline-flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={feature.member_access}
-                              onChange={(e) => handlePermissionChange(feature.feature_key, 'member', e.target.checked)}
-                              disabled={saving || feature.access_level === 'admin_only' || feature.access_level === 'super_admin_only'}
-                              className="h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                            />
-                            <span className="sr-only">Member access for {feature.display_name}</span>
-                          </label>
-                          {(feature.access_level === 'admin_only' || feature.access_level === 'super_admin_only') && (
-                            <div className="flex justify-center mt-1" title="Not available for members">
-                              <Info className="h-3 w-3 text-gray-400" />
-                            </div>
-                          )}
-                        </td>
-
-                        {/* Admin Access Checkbox */}
-                        <td className="px-4 py-3 text-center border-b border-gray-200">
-                          <label className="inline-flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={feature.admin_access}
-                              onChange={(e) => handlePermissionChange(feature.feature_key, 'admin', e.target.checked)}
-                              disabled={saving || feature.access_level === 'super_admin_only'}
-                              className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                            />
-                            <span className="sr-only">Admin access for {feature.display_name}</span>
-                          </label>
-                          {feature.access_level === 'super_admin_only' && (
-                            <div className="flex justify-center mt-1" title="Super admin only">
-                              <Info className="h-3 w-3 text-gray-400" />
-                            </div>
-                          )}
-                        </td>
-
-                        {/* Super Admin Access (Always Enabled) */}
-                        <td className="px-4 py-3 text-center border-b border-gray-200">
-                          <div className="flex items-center justify-center">
-                            <Check className="h-5 w-5 text-green-600" />
-                            <span className="sr-only">Super admin always has access</span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Shield className="h-6 w-6 text-blue-600" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Feature Access Control</h2>
+              <p className="text-sm text-gray-600">
+                Control which features are available to different user roles in your household
+              </p>
             </div>
-          );
-        })}
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            {hasChanges && (
+              <div className="flex items-center text-orange-600 text-sm">
+                <AlertTriangle className="h-4 w-4 mr-1" />
+                Unsaved changes
+              </div>
+            )}
+            
+            <button
+              onClick={handleReset}
+              disabled={saving}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 flex items-center space-x-1"
+            >
+              <RefreshCw className="h-4 w-4" />
+              <span>Reset to Defaults</span>
+            </button>
+            
+            <button
+              onClick={handleSave}
+              disabled={!hasChanges || saving}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
+            >
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+              <span>{saving ? 'Saving...' : 'Save Changes'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Status Messages */}
+        {error && (
+          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center text-red-700">
+            <XCircle className="h-5 w-5 mr-2" />
+            {error}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md flex items-center text-green-700">
+            <CheckCircle className="h-5 w-5 mr-2" />
+            {successMessage}
+          </div>
+        )}
       </div>
 
-      {/* Footer Info */}
-      <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex items-start">
-          <Info className="h-5 w-5 text-blue-600 mr-3 mt-0.5" />
-          <div className="text-sm text-blue-800">
-            <p className="font-medium mb-1">Permission Rules:</p>
-            <ul className="space-y-1 text-blue-700">
-              <li>• Super Admin always has access to all features (cannot be unchecked)</li>
-              <li>• Admin-only features cannot be enabled for Members</li>
-              <li>• Super Admin-only features are exclusive to Super Admins</li>
-              <li>• Changes take effect immediately for new feature requests</li>
-            </ul>
+      {/* Role Legend */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-2">
+            <User className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Member</span>
+            <span className="text-xs text-gray-500">Basic access</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Users className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-700">Admin</span>
+            <span className="text-xs text-gray-500">Household management</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Crown className="h-4 w-4 text-purple-600" />
+            <span className="text-sm font-medium text-purple-700">Super Admin</span>
+            <span className="text-xs text-gray-500">Full control</span>
           </div>
         </div>
       </div>
+
+      {/* Feature Matrix */}
+      <div className="space-y-4">
+        {Object.entries(featuresByCategory).map(([category, features]) => (
+          <div key={category} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+              <h3 className="font-medium text-gray-900 capitalize">
+                {category === 'core' ? 'Core Features' : 
+                 category === 'admin' ? 'Administrative Features' :
+                 `${category.charAt(0).toUpperCase() + category.slice(1)} Features`}
+              </h3>
+            </div>
+            
+            <div className="divide-y divide-gray-200">
+              {features.map(({ name: featureName, definition }) => (
+                <div key={featureName} className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3">
+                        <h4 className="font-medium text-gray-900">{definition.label}</h4>
+                        {definition.description && (
+                          <div className="group relative">
+                            <Info className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                              {definition.description}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-4">
+                      {/* Member Toggle */}
+                      <label className="flex items-center space-x-2">
+                        <User className="h-4 w-4 text-gray-500" />
+                        <input
+                          type="checkbox"
+                          checked={accessState[featureName]?.member || false}
+                          onChange={() => handleToggle(featureName, 'member')}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                      </label>
+                      
+                      {/* Admin Toggle */}
+                      <label className="flex items-center space-x-2">
+                        <Users className="h-4 w-4 text-blue-600" />
+                        <input
+                          type="checkbox"
+                          checked={accessState[featureName]?.admin || false}
+                          onChange={() => handleToggle(featureName, 'admin')}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                      </label>
+                      
+                      {/* Super Admin Toggle */}
+                      <label className="flex items-center space-x-2">
+                        <Crown className="h-4 w-4 text-purple-600" />
+                        <input
+                          type="checkbox"
+                          checked={accessState[featureName]?.super_admin || false}
+                          onChange={() => handleToggle(featureName, 'super_admin')}
+                          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
-}
+};
+
+export default FeatureAccessMatrix;

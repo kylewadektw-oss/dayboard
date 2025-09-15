@@ -184,16 +184,17 @@ export default function NavigationAccessMatrix({ className = '' }: NavigationAcc
 
         setAccessSettings(accessMatrix);
         setDevelopmentEnabled(devSettings);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading access settings:', err);
-        setError(err.message);
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
     };
 
     loadAccessSettings();
-  }, [profile?.id, supabase]);
+  }, [profile?.id, supabase, developmentEnabled]);
 
   // Get default access based on feature and role
   const getDefaultAccess = (featureKey: string, role: 'member' | 'admin'): boolean => {
@@ -242,10 +243,11 @@ export default function NavigationAccessMatrix({ className = '' }: NavigationAcc
 
       // toastHelpers.success(`${role.charAt(0).toUpperCase() + role.slice(1)} access updated`);
       console.log(`${role.charAt(0).toUpperCase() + role.slice(1)} access updated`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating access setting:', err);
-      // toastHelpers.error(`Failed to update access: ${err.message}`);
-      console.error('Failed to update access:', err.message);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      // toastHelpers.error(`Failed to update access: ${errorMessage}`);
+      console.error('Failed to update access:', errorMessage);
     } finally {
       setSaving(false);
     }
@@ -281,10 +283,11 @@ export default function NavigationAccessMatrix({ className = '' }: NavigationAcc
 
       // toastHelpers.success(`Development feature ${enabled ? 'enabled' : 'disabled'}`);
       console.log(`Development feature ${enabled ? 'enabled' : 'disabled'}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating development setting:', err);
-      // toastHelpers.error(`Failed to update setting: ${err.message}`);
-      console.error('Failed to update setting:', err.message);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      // toastHelpers.error(`Failed to update setting: ${errorMessage}`);
+      console.error('Failed to update setting:', errorMessage);
     } finally {
       setSaving(false);
     }

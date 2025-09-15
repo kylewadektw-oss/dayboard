@@ -44,12 +44,11 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import LoggingNav from '@/components/logging/LoggingNav';
 
 export default function SecurityMonitoring() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [selectedTimeRange, setSelectedTimeRange] = useState('24h');
   const [activeTab, setActiveTab] = useState('overview');
 
   // Mock security data
@@ -139,8 +138,6 @@ export default function SecurityMonitoring() {
         variant="sidebar"
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-        selectedTimeRange={selectedTimeRange}
-        onTimeRangeChange={setSelectedTimeRange}
       />
       
       <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>

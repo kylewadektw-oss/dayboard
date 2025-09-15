@@ -45,6 +45,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { logAnalyzer, LogAnalysis } from '@/utils/log-analyzer';
+import { type LogEntry } from '@/utils/logger';
 import LoggingNav from '@/components/logging/LoggingNav';
 
 export default function AutoLogReview() {
@@ -55,7 +56,7 @@ export default function AutoLogReview() {
   const [lastReviewTime, setLastReviewTime] = useState<string>('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedLogLevel, setSelectedLogLevel] = useState<string | null>(null);
-  const [filteredLogs, setFilteredLogs] = useState<any[]>([]);
+  const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>([]);
 
   const runAnalysis = useCallback(async (timeRangeMinutes: number = 30) => {
     setIsAnalyzing(true);
@@ -99,13 +100,7 @@ export default function AutoLogReview() {
       }, 30000);
       return () => clearInterval(interval);
     }
-  }, [autoReviewEnabled]);
-
-  const getHealthScoreColor = useMemo(() => (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-100';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
-  }, []);
+  }, [autoReviewEnabled, runAnalysis]);
 
   const getHealthScoreEmoji = useMemo(() => (score: number) => {
     if (score >= 80) return '✅';
@@ -451,7 +446,7 @@ export default function AutoLogReview() {
                   <li>Component lifecycle or hydration warnings</li>
                 </ul>
                 <p className="text-sm text-yellow-800 mt-2 font-medium">
-                  💡 Click the "Warnings" button above to see specific warning details.
+                  💡 Click the &quot;Warnings&quot; button above to see specific warning details.
                 </p>
               </div>
             )}
@@ -491,7 +486,7 @@ export default function AutoLogReview() {
           <div className="text-6xl mb-4">🔍</div>
           <h2 className="text-xl font-semibold mb-2 text-gray-900">No Analysis Yet</h2>
           <p className="text-gray-900 mb-4 font-semibold">
-            Run your first log analysis to see comprehensive insights about your app's behavior.
+            Run your first log analysis to see comprehensive insights about your app&apos;s behavior.
           </p>
           <button
             onClick={() => runAnalysis(30)}

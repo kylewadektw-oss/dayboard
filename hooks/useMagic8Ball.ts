@@ -37,7 +37,7 @@ interface Magic8BallStats {
   weeklyQuestions: number;
   mostActiveUser: string;
   mostPopularTheme: string;
-  userCounts: Record<string, any>;
+  userCounts: Record<string, { questions: number; lastQuestion: string }>;
 }
 
 interface UseMagic8BallReturn {

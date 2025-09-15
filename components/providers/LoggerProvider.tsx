@@ -29,6 +29,20 @@ export default function LoggerProvider({ children }: { children: React.ReactNode
     console.log('🚀 Dayboard application started - Logger initialized');
     console.log('📊 Visit /logs-dashboard to monitor real-time activity');
     
+    // Test if basic logging works
+    setTimeout(() => {
+      console.log('🧪 Test log entry for verification');
+    }, 1000);
+    
+    // Test that logging is working
+    (async () => {
+      await logger.info('✅ Logger initialization complete', 'LoggerProvider', { 
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        location: window.location.href 
+      });
+    })();
+    
     // Cleanup function to restore console on unmount (though this rarely happens in practice)
     return () => {
       logger.restoreConsole();

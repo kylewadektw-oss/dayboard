@@ -42,7 +42,7 @@
 'use client';
 
 import { useState } from 'react';
-import { logger, LogLevel } from '@/utils/logger';
+import { logger } from '@/utils/logger';
 import LoggingNav from '@/components/logging/LoggingNav';
 
 export default function TestLogGeneration() {
@@ -84,11 +84,11 @@ export default function TestLogGeneration() {
       () => {
         try {
           throw new Error('Unexpected null reference in user profile');
-        } catch (err) {
-          const error = err as Error;
+        } catch (error) {
+          const errorObj = error as Error;
           logger.error('Critical application error', 'ProfileComponent', {
-            errorMessage: error.message,
-            stackTrace: error.stack,
+            errorMessage: errorObj.message,
+            stackTrace: errorObj.stack,
             context: 'User profile rendering'
           });
         }

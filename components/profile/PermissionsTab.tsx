@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Shield, Save, Check } from 'lucide-react';
 import { Database } from '@/types_db';
 
@@ -11,7 +11,7 @@ type PermissionBooleanKeys = Exclude<keyof UserPermissionsRow, 'id' | 'user_id' 
 interface Feedback { type: 'success'|'error'|'info'; message: string }
 interface Props {
   permissionsForm: Partial<UserPermissionsRow>;
-  setPermissionsForm: (updater: any) => void; // using any to keep parity with parent usage
+  setPermissionsForm: (updater: (prev: Partial<UserPermissionsRow>) => Partial<UserPermissionsRow>) => void;
   savePermissions: () => void;
   savingPermissions: boolean;
   permissionsFeedback: Feedback | null;
@@ -68,7 +68,7 @@ export default function PermissionsTab({ permissionsForm, setPermissionsForm, sa
     return map;
   }, []);
 
-  const permissionMeta = (key: string) => {
+  const permissionMeta = useCallback((key: string) => {
     return PERMISSION_MAP[key] ? { 
       label: PERMISSION_MAP[key].title, 
       description: PERMISSION_MAP[key].description, 
@@ -78,7 +78,7 @@ export default function PermissionsTab({ permissionsForm, setPermissionsForm, sa
       description: '', 
       category: 'Other' 
     };
-  };
+  }, [PERMISSION_MAP]);
 
   const filteredPermissionKeys = useMemo(() => {
     // Show all available permissions, using the form data or defaults
@@ -87,7 +87,7 @@ export default function PermissionsTab({ permissionsForm, setPermissionsForm, sa
         k.toLowerCase().includes(debouncedPermissionSearch.toLowerCase()) || 
         permissionMeta(k).description.toLowerCase().includes(debouncedPermissionSearch.toLowerCase())
       );
-  }, [debouncedPermissionSearch]);
+  }, [debouncedPermissionSearch, permissionMeta]);
 
   const groupedPermissionKeys = useMemo(() => {
     const groups: Record<string, string[]> = {};
@@ -98,16 +98,18 @@ export default function PermissionsTab({ permissionsForm, setPermissionsForm, sa
       groups[cat].push(k);
     });
     return Object.entries(groups).map(([category, keys]) => ({ category, keys }));
-  }, [filteredPermissionKeys]);
+  }, [filteredPermissionKeys, permissionMeta]);
 
   const togglePermission = (key: PermissionBooleanKeys) => {
-    setPermissionsForm((prev: any) => ({ ...prev, [key]: !prev?.[key] }));
+    setPermissionsForm((prev) => ({ ...prev, [key]: !prev?.[key] }));
   };
 
   const toggleAllPermissions = (value: boolean) => {
-    setPermissionsForm((pf: any) => {
+    setPermissionsForm((pf) => {
       const clone = { ...pf };
-      filteredPermissionKeys.forEach(k => { clone[k] = value; });
+      filteredPermissionKeys.forEach(k => { 
+        (clone as Record<string, unknown>)[k] = value; 
+      });
       return clone;
     });
   };
@@ -150,7 +152,7 @@ export default function PermissionsTab({ permissionsForm, setPermissionsForm, sa
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {group.keys.map(key => {
                   const { description } = permissionMeta(key);
-                  const active = Boolean((permissionsForm as any)[key]);
+                  const active = Boolean((permissionsForm as Record<string, unknown>)[key]);
                   return (
                     <div key={key} className={`flex items-start justify-between gap-3 p-4 rounded-lg border transition-colors ${active ? 'bg-purple-50 border-purple-200' : 'bg-gray-50 border-gray-200'}`}>
                       <div className="flex-1 min-w-0">
@@ -180,10 +182,21 @@ export default function PermissionsTab({ permissionsForm, setPermissionsForm, sa
   );
 }
 
-function BulkPermissionToggle({ filteredKeys, permissionsForm, toggleAll }: { filteredKeys: string[]; permissionsForm: Record<string, any>; toggleAll: (v:boolean)=>void }) {
+function BulkPermissionToggle({ filteredKeys, permissionsForm, toggleAll }: { 
+  filteredKeys: string[]; 
+  permissionsForm: Record<string, unknown>; 
+  toggleAll: (v:boolean)=>void 
+}) {
   const { allOn, allOff } = useMemo(() => {
     let on = 0; let off = 0;
-    filteredKeys.forEach(k => { (permissionsForm as any)[k] ? on++ : off++; });
+    filteredKeys.forEach(k => { 
+      const permission = (permissionsForm as Record<string, unknown>)[k];
+      if (permission) {
+        on++;
+      } else {
+        off++;
+      }
+    });
     return { allOn: on>0 && off===0, allOff: off>0 && on===0 };
   }, [filteredKeys, permissionsForm]);
   const nextEnable = !allOn;

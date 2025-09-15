@@ -83,9 +83,9 @@ function CalendarWidgetComponent() {
   );
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 h-fit">
+    <div className="bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-gray-600">Today's Schedule</h3>
+        <h3 className="text-sm font-medium text-gray-600">Today&apos;s Schedule</h3>
         <Calendar className="h-4 w-4 text-gray-400" />
       </div>
 

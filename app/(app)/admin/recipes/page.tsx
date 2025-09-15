@@ -21,7 +21,7 @@ export default async function AdminRecipePage() {
   }
 
   // Get user profile to check if they're an admin
-  const { data: profile, error } = await supabase
+  const { data: profile } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)

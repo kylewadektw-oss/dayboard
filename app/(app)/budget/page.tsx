@@ -8,8 +8,7 @@ import {
   Users, 
   PieChart,
   BarChart3,
-  Coins,
-  Gift
+  Coins
 } from 'lucide-react';
 import BudgetTest from '@/components/budget/BudgetTest';
 import Button from '@/components/ui/Button';

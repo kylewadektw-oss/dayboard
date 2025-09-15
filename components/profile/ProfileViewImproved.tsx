@@ -8,7 +8,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { Edit, Save, Home, Shield, Bell, Settings, Users, Copy, UserPlus, Star, Gift, Clock, Zap, X } from 'lucide-react';
+import { Edit, Save, Home, Bell, Users, Copy, UserPlus, Star, Gift, Clock, Zap, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
 import { Database } from '@/types_db';
@@ -127,14 +127,25 @@ const formatTimezone = (timezone: string): string => {
   return timezone;
 };
 
+// Type for household member with limited fields from query
+type HouseholdMember = {
+  id: string;
+  name: string | null;
+  preferred_name: string | null;
+  role: 'super_admin' | 'admin' | 'member';
+  family_role: Database['public']['Enums']['family_role'] | null;
+  avatar_url: string | null;
+  last_seen_at: string | null;
+};
+
 export default function ProfileViewImproved() {
   const { user, profile, permissions, loading: authLoading, refreshUser } = useAuth();
   const router = useRouter();
   const supabase = createClient();
 
   // Household
-  const [household, setHousehold] = useState<any>(null);
-  const [householdMembers, setHouseholdMembers] = useState<any[]>([]);
+  const [household, setHousehold] = useState<Database['public']['Tables']['households']['Row'] | null>(null);
+  const [householdMembers, setHouseholdMembers] = useState<HouseholdMember[]>([]);
   const [householdLoading, setHouseholdLoading] = useState(false);
   const [referralCode, setReferralCode] = useState<string>('');
 
@@ -229,10 +240,10 @@ export default function ProfileViewImproved() {
         bio: profile.bio || '',
         dietary_preferences: Array.isArray(profile.dietary_preferences) ? profile.dietary_preferences as string[] : [],
         allergies: Array.isArray(profile.allergies) ? profile.allergies as string[] : [],
-        notification_email: (profile.notification_preferences as any)?.email ?? true,
-        notification_push: (profile.notification_preferences as any)?.push ?? true,
-        notification_sms: (profile.notification_preferences as any)?.sms ?? false,
-        notification_daycare_pickup_backup: (profile.notification_preferences as any)?.daycare_pickup_backup ?? false,
+        notification_email: (profile.notification_preferences as Record<string, boolean>)?.email ?? true,
+        notification_push: (profile.notification_preferences as Record<string, boolean>)?.push ?? true,
+        notification_sms: (profile.notification_preferences as Record<string, boolean>)?.sms ?? false,
+        notification_daycare_pickup_backup: (profile.notification_preferences as Record<string, boolean>)?.daycare_pickup_backup ?? false,
       };
       setProfileForm(next);
       originalProfileRef.current = next; // baseline
@@ -278,7 +289,7 @@ export default function ProfileViewImproved() {
         zip: household.zip || ''
       });
     }
-  }, [household?.id]);
+  }, [household?.id, household]);
 
   // Auto clear success messages
   useEffect(() => { if (profileFeedback?.type==='success') { const t=setTimeout(()=>setProfileFeedback(null),4000); return ()=>clearTimeout(t);} }, [profileFeedback]);
@@ -295,7 +306,8 @@ export default function ProfileViewImproved() {
     if (el) { el.setAttribute('tabindex','-1'); el.focus(); }
   }, [activeTab]);
 
-  const handleProfileChange = (field: keyof ProfileFormState, value: any) => setProfileForm(p => ({ ...p, [field]: value }));
+  const handleProfileChange = (field: keyof ProfileFormState, value: string | number | boolean | string[] | null) => 
+    setProfileForm(p => ({ ...p, [field]: value }));
   
   const handlePhoneChange = (value: string) => {
     const formatted = formatPhoneNumber(value);
@@ -327,7 +339,7 @@ export default function ProfileViewImproved() {
   const profileDirty = (() => {
     const base = originalProfileRef.current; if (!base) return false;
     return Object.keys(base).some(k => {
-      const a = (base as any)[k]; const b = (profileForm as any)[k];
+      const a = (base as Record<string, unknown>)[k]; const b = (profileForm as Record<string, unknown>)[k];
       if (Array.isArray(a) && Array.isArray(b)) return a.slice().sort().join(',') !== b.slice().sort().join(',');
       return a !== b;
     });
@@ -368,8 +380,8 @@ export default function ProfileViewImproved() {
       toastHelpers.success('Profile updated');
       setProfileFeedback({type:'success', message:'Profile updated'});
       
-    } catch (e: any) {
-      const errorMessage = e.message || 'Failed to update profile';
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to update profile';
       toastHelpers.error(errorMessage);
       setProfileFeedback({type:'error', message: errorMessage});
     } finally { 
@@ -381,14 +393,16 @@ export default function ProfileViewImproved() {
     if (!permissions || !profile) return;
     setSavingPermissions(true); setPermissionsFeedback(null);
     try {
-      const { id, user_id, created_at, updated_at, ...rest } = permissionsForm as any;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, user_id, created_at, updated_at, ...rest } = permissionsForm as Record<string, unknown>;
       const { error } = await supabase.from('user_permissions').update(rest).eq('id', permissions.id);
       if (error) throw error;
       toastHelpers.success('Permissions updated');
       setPermissionsFeedback({type:'success', message:'Permissions updated'});
-    } catch (e:any) {
-      toastHelpers.error(e.message || 'Failed to update permissions');
-      setPermissionsFeedback({type:'error', message:e.message || 'Failed to update permissions'});
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to update permissions';
+      toastHelpers.error(errorMessage);
+      setPermissionsFeedback({type:'error', message: errorMessage});
     } finally { setSavingPermissions(false); }
   }, [permissions, profile, permissionsForm, supabase]);
 
@@ -396,10 +410,18 @@ export default function ProfileViewImproved() {
     if (!household?.id) return;
     setSavingHousehold(true); setHouseholdFeedback(null);
     try {
-      // Prepare the update data
-      const updateData: any = {
+      // Prepare the update data with proper types
+      const updateData: {
+        name: string;
+        household_type: Database['public']['Enums']['household_type'];
+        address: string;
+        city: string;
+        state: string;
+        zip: string;
+        coordinates?: string;
+      } = {
         name: householdForm.name,
-        household_type: householdForm.household_type,
+        household_type: householdForm.household_type as Database['public']['Enums']['household_type'],
         address: householdForm.address,
         city: householdForm.city,
         state: householdForm.state,
@@ -413,7 +435,7 @@ export default function ProfileViewImproved() {
 
       const { data, error } = await supabase.from('households').update(updateData).eq('id', household.id).select('*').single();
       if (error) throw error;
-      setHousehold((prev:any) => ({ ...prev, ...(data || {}) }));
+      setHousehold((prev: Record<string, unknown> | null) => ({ ...prev, ...(data || {}) }));
       toastHelpers.success('Household updated');
       setHouseholdFeedback({type:'success', message:'Household updated'});
       
@@ -422,9 +444,10 @@ export default function ProfileViewImproved() {
         setActiveTab('overview');
       }, 500); // Small delay to show success message
       
-    } catch (e:any) {
-      toastHelpers.error(e.message || 'Failed to update household');
-      setHouseholdFeedback({type:'error', message:e.message || 'Failed to update household'});
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to update household';
+      toastHelpers.error(errorMessage);
+      setHouseholdFeedback({type:'error', message: errorMessage});
     } finally { setSavingHousehold(false); }
   }, [household?.id, householdForm, supabase, setActiveTab]);
 
@@ -449,14 +472,11 @@ export default function ProfileViewImproved() {
       canHouseholdSettings,
       hasHousehold: !!household
     });
-  }, [permissionsForm.household_management, profile?.role, household, canHouseholdSettings]);
+  }, [permissionsForm.household_management, profile?.role, household, canHouseholdSettings, profile?.id, profile?.user_id]);
 
   // Memoize expensive computations for better performance
-  const currentUserMember = useMemo(() => 
-    householdMembers.find(member => member.id === profile?.id), 
-    [householdMembers, profile?.id]
-  );
-
+  // Note: currentUserMember computed but not used in current implementation
+  
   const sortedMembers = useMemo(() => 
     [...householdMembers].sort((a, b) => {
       // Sort by role (super_admin, admin, member), then by name
@@ -473,7 +493,7 @@ export default function ProfileViewImproved() {
     try {
       await navigator.clipboard.writeText(text);
       toastHelpers.success(successMessage);
-    } catch (error) {
+    } catch {
       toastHelpers.error('Failed to copy to clipboard');
     }
   }, []);
@@ -803,7 +823,7 @@ export default function ProfileViewImproved() {
                         { key: 'notification_daycare_pickup_backup', label: 'Daycare Pickup Backup' }
                       ].map(item => (
                         <label key={item.key} className="flex items-center gap-2 text-sm font-medium text-gray-800">
-                          <input type="checkbox" className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" checked={(profileForm as any)[item.key]} onChange={()=>handleProfileChange(item.key as any, !(profileForm as any)[item.key])} />
+                          <input type="checkbox" className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" checked={Boolean((profileForm as Record<string, unknown>)[item.key])} onChange={()=>handleProfileChange(item.key as keyof ProfileFormState, !Boolean((profileForm as Record<string, unknown>)[item.key]))} />
                           {item.label}
                         </label>
                       ))}
@@ -1041,7 +1061,7 @@ export default function ProfileViewImproved() {
     <div className="bg-white rounded-xl border border-gray-200 p-8 text-center" id="panel-household-settings" role="tabpanel" aria-labelledby="tab-household-settings">
       <Home className="w-12 h-12 text-gray-400 mx-auto mb-4" />
       <h3 className="text-lg font-semibold text-gray-900 mb-2">No Household Found</h3>
-      <p className="text-gray-600 mb-4">You don't seem to be part of a household yet.</p>
+      <p className="text-gray-600 mb-4">You don&apos;t seem to be part of a household yet.</p>
       <button 
         onClick={() => router.push('/profile/setup')}
         className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -1102,7 +1122,7 @@ export default function ProfileViewImproved() {
       <form onSubmit={(e)=>{e.preventDefault(); saveHousehold();}} className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 space-y-8">
         <div className="border-b border-gray-200 pb-6">
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Basic Information</h3>
-          <p className="text-gray-600">Update your household's basic details</p>
+          <p className="text-gray-600">Update your household&apos;s basic details</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

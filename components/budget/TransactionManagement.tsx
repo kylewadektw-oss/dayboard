@@ -35,8 +35,6 @@ import {
   Edit,
   Trash2,
   DollarSign,
-  Calendar,
-  CreditCard,
   TrendingUp,
   TrendingDown,
   Receipt
@@ -116,7 +114,7 @@ const TransactionManagement = () => {
       categoryId: formData.get('categoryId') as string,
       type: formData.get('type') as 'income' | 'expense',
       date: formData.get('date') as string,
-      paymentMethod: formData.get('paymentMethod') as any,
+      paymentMethod: formData.get('paymentMethod') as 'credit' | 'debit' | 'cash' | 'check' | 'transfer',
       isRecurring: formData.get('isRecurring') === 'on',
       tags: (formData.get('tags') as string || '').split(',').map(tag => tag.trim()).filter(Boolean),
       notes: formData.get('notes') as string || undefined,
@@ -136,7 +134,7 @@ const TransactionManagement = () => {
       categoryId: formData.get('categoryId') as string,
       type: formData.get('type') as 'income' | 'expense',
       date: formData.get('date') as string,
-      paymentMethod: formData.get('paymentMethod') as any,
+      paymentMethod: formData.get('paymentMethod') as 'credit' | 'debit' | 'cash' | 'check' | 'transfer',
       isRecurring: formData.get('isRecurring') === 'on',
       tags: (formData.get('tags') as string || '').split(',').map(tag => tag.trim()).filter(Boolean),
       notes: formData.get('notes') as string || undefined,
@@ -394,7 +392,7 @@ const TransactionManagement = () => {
 
             <div>
               <Label htmlFor="filterType">Type</Label>
-              <Select value={filterType} onValueChange={(value) => setFilterType(value as any)}>
+              <Select value={filterType} onValueChange={(value) => setFilterType(value as 'all' | 'income' | 'expense')}>
                 <SelectTrigger className="w-[140px]">
                   <SelectValue />
                 </SelectTrigger>

@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { action, query, maxResults = 20 } = body
+    const { action, maxResults = 20 } = body
 
     switch (action) {
       case 'populate_category': {

@@ -19,9 +19,16 @@
 
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { type LogEntry } from '@/utils/logger';
+
+interface DatabaseResult {
+  [key: string]: unknown;
+}
+
+type Result = DatabaseResult | LogEntry;
 
 export default function TestDatabaseConnection() {
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<Result[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +40,7 @@ export default function TestDatabaseConnection() {
       const supabase = createClient();
       
       // Test basic connection
-      const { data: tables, error: tableError } = await (supabase as any)
+      const { data: tables, error: tableError } = await supabase
         .from('application_logs')
         .select('*')
         .limit(10);
@@ -44,8 +51,8 @@ export default function TestDatabaseConnection() {
       
       setResults(tables || []);
       
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -72,7 +79,7 @@ export default function TestDatabaseConnection() {
         side: 'client'
       };
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('application_logs')
         .insert([testLog])
         .select();
@@ -83,8 +90,8 @@ export default function TestDatabaseConnection() {
       
       setResults([...results, ...(data || [])]);
       
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
     }
@@ -135,19 +142,22 @@ export default function TestDatabaseConnection() {
                         log.level === 'warn' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-blue-100 text-blue-800'
                       }`}>
-                        {log.level?.toUpperCase() || 'UNKNOWN'}
+                        {typeof log === 'object' && log !== null && 'level' in log && typeof log.level === 'string' ? 
+                         log.level.toUpperCase() : 'UNKNOWN'}
                       </span>
                       <span className="text-gray-700 font-medium">
-                        {new Date(log.timestamp).toLocaleString()}
+                        {typeof log === 'object' && log !== null && 'timestamp' in log ? 
+                         new Date(log.timestamp as string | number | Date).toLocaleString() : 'N/A'}
                       </span>
                     </div>
-                    <div className="font-medium">{log.message}</div>
-                    {log.component && (
-                      <div className="text-gray-600 mt-1">Component: {log.component}</div>
-                    )}
-                    {log.side && (
-                      <div className="text-gray-600">Side: {log.side}</div>
-                    )}
+                    <div className="font-medium">{typeof log === 'object' && log !== null && 'message' in log ? 
+                                                    String(log.message) : 'No message'}</div>
+                    {typeof log === 'object' && log !== null && 'component' in log && (log as Record<string, unknown>).component ? (
+                      <div className="text-gray-600 mt-1">Component: {String((log as Record<string, unknown>).component)}</div>
+                    ) : null}
+                    {typeof log === 'object' && log !== null && 'side' in log && log.side ? (
+                      <div className="text-gray-600">Side: {String(log.side)}</div>
+                    ) : null}
                   </div>
                 ))}
               </div>

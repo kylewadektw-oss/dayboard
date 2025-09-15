@@ -11,13 +11,6 @@ import {
   User, 
   Shield, 
   Crown, 
-  Save, 
-  ToggleLeft, 
-  ToggleRight,
-  Eye,
-  EyeOff,
-  Info,
-  CheckCircle,
   XCircle,
   Home,
   Users,
@@ -28,7 +21,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
+import { Database } from '@/types_db';
 import NavigationAccessMatrix from './NavigationAccessMatrix';
+
+type Json = Database['public']['Tables']['user_settings']['Row']['setting_value'];
 import FeatureAccessMatrix from './FeatureAccessMatrix';
 import SettingsPermissionsMatrix from './SettingsPermissionsMatrix';
 import UserRoleMatrix from './UserRoleMatrix';
@@ -48,8 +44,8 @@ interface SettingsItem {
   display_name: string;
   description: string | null;
   setting_type: string;
-  default_value: any;
-  options?: any;
+  default_value: unknown;
+  options?: unknown;
   required_role: string;
   sort_order: number;
 }
@@ -84,12 +80,12 @@ const IconMap = {
 };
 
 export default function EnhancedSettingsPage() {
-  const { user, profile, permissions, refreshUser } = useAuth();
+  const { profile } = useAuth();
   const [availableTabs, setAvailableTabs] = useState<SettingsTab[]>([]);
   const [activeTab, setActiveTab] = useState<string>('member');
   const [settingsItems, setSettingsItems] = useState<SettingsItem[]>([]);
-  const [userSettings, setUserSettings] = useState<Record<string, any>>({});
-  const [householdSettings, setHouseholdSettings] = useState<Record<string, any>>({});
+  const [userSettings, setUserSettings] = useState<Record<string, unknown>>({});
+  const [householdSettings, setHouseholdSettings] = useState<Record<string, unknown>>({});
   const [featureControls, setFeatureControls] = useState<FeatureControl[]>([]);
   const [householdFeatures, setHouseholdFeatures] = useState<HouseholdFeatureSetting[]>([]);
   const [saving, setSaving] = useState(false);
@@ -129,16 +125,16 @@ export default function EnhancedSettingsPage() {
         } else {
           console.log('⚠️ No tabs available');
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading settings tabs:', err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
       }
     };
 
     loadTabs();
-  }, [profile?.id, supabase]);
+  }, [profile?.id, supabase, profile]);
 
   // Load settings items for current tab
   useEffect(() => {
@@ -154,9 +150,9 @@ export default function EnhancedSettingsPage() {
 
         if (error) throw error;
         setSettingsItems(data || []);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading settings items:', err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'An error occurred');
       }
     };
 
@@ -179,10 +175,10 @@ export default function EnhancedSettingsPage() {
         const settingsMap = (data || []).reduce((acc, setting) => {
           acc[setting.setting_key] = setting.setting_value;
           return acc;
-        }, {} as Record<string, any>);
+        }, {} as Record<string, unknown>);
         
         setUserSettings(settingsMap);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading user settings:', err);
       }
     };
@@ -206,10 +202,10 @@ export default function EnhancedSettingsPage() {
         const settingsMap = (data || []).reduce((acc, setting) => {
           acc[setting.setting_key] = setting.setting_value;
           return acc;
-        }, {} as Record<string, any>);
+        }, {} as Record<string, unknown>);
         
         setHouseholdSettings(settingsMap);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading household settings:', err);
       }
     };
@@ -249,7 +245,7 @@ export default function EnhancedSettingsPage() {
             setHouseholdFeatures(householdData || []);
           }
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error loading feature controls:', err);
       }
     };
@@ -272,7 +268,7 @@ export default function EnhancedSettingsPage() {
       : item.default_value;
   };
 
-  const updateSetting = async (settingKey: string, value: any) => {
+  const updateSetting = async (settingKey: string, value: string | number | boolean | null | unknown[]) => {
     if (!profile?.id) return;
 
     setSaving(true);
@@ -286,7 +282,7 @@ export default function EnhancedSettingsPage() {
           .upsert({
             household_id: profile.household_id,
             setting_key: settingKey,
-            setting_value: value,
+            setting_value: value as Json,
             updated_at: new Date().toISOString()
           }, {
             onConflict: 'household_id,setting_key'
@@ -301,7 +297,7 @@ export default function EnhancedSettingsPage() {
           .upsert({
             user_id: profile.id,
             setting_key: settingKey,
-            setting_value: value,
+            setting_value: value as Json,
             updated_at: new Date().toISOString()
           }, {
             onConflict: 'user_id,setting_key'
@@ -312,24 +308,16 @@ export default function EnhancedSettingsPage() {
       }
 
       console.log('✅ Setting updated successfully');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating setting:', err);
-      console.error(`Failed to update setting: ${err.message}`);
+      console.error(`Failed to update setting: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
   };
 
   // Helper functions for navigation settings
-  const getUserSetting = (settingKey: string, defaultValue: any) => {
-    return userSettings[settingKey] !== undefined 
-      ? userSettings[settingKey] 
-      : defaultValue;
-  };
-
-  const handleSettingChange = async (settingKey: string, value: any) => {
-    await updateSetting(settingKey, value);
-  };
+  // Note: getUserSetting and handleSettingChange removed as they were unused
 
   const updateFeatureControl = async (featureKey: string, updates: Partial<FeatureControl | HouseholdFeatureSetting>) => {
     if (!profile?.id) return;
@@ -386,9 +374,9 @@ export default function EnhancedSettingsPage() {
       }
 
       console.log('✅ Feature setting updated successfully');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating feature control:', err);
-      console.error(`Failed to update feature: ${err.message}`);
+      console.error(`Failed to update feature: ${err instanceof Error ? err.message : 'Unknown error'}`);
     } finally {
       setSaving(false);
     }
@@ -419,7 +407,7 @@ export default function EnhancedSettingsPage() {
         return (
           <input
             type="text"
-            value={value || ''}
+            value={String(value || '')}
             onChange={(e) => updateSetting(item.setting_key, e.target.value)}
             disabled={saving}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
@@ -430,7 +418,7 @@ export default function EnhancedSettingsPage() {
         return (
           <input
             type="number"
-            value={value || ''}
+            value={Number(value) || ''}
             onChange={(e) => updateSetting(item.setting_key, parseInt(e.target.value) || 0)}
             disabled={saving}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
@@ -440,12 +428,12 @@ export default function EnhancedSettingsPage() {
       case 'select':
         return (
           <select
-            value={value || ''}
+            value={String(value || '')}
             onChange={(e) => updateSetting(item.setting_key, e.target.value)}
             disabled={saving}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50"
           >
-            {item.options?.map((option: any) => (
+            {(item.options as {value: string; label: string}[])?.map((option: {value: string; label: string}) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -457,7 +445,7 @@ export default function EnhancedSettingsPage() {
         const selectedValues = Array.isArray(value) ? value : [];
         return (
           <div className="space-y-2">
-            {item.options?.map((option: any) => (
+            {(item.options as {value: string; label: string}[])?.map((option: {value: string; label: string}) => (
               <label key={option.value} className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -482,6 +470,7 @@ export default function EnhancedSettingsPage() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderFeatureControl = (feature: FeatureControl) => {
     if (activeTab === 'super_admin') {
       return (
@@ -658,6 +647,7 @@ export default function EnhancedSettingsPage() {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const groupedFeatures = featureControls.reduce((acc, feature) => {
     if (!acc[feature.category]) {
       acc[feature.category] = [];

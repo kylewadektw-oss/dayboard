@@ -17,11 +17,9 @@
 
 'use client';
 
-import Button from '@/components/ui/Button';
 import { createClient } from '@/utils/supabase/client';
 import { useState } from 'react';
-import { Chrome } from 'lucide-react';
-import { oauthLogger, LogLevel } from '@/utils/logger';
+import { oauthLogger } from '@/utils/logger';
 
 export default function OauthSignIn() {
   const [isSubmitting, setIsSubmitting] = useState(false);

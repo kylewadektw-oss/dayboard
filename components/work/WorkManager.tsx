@@ -19,9 +19,9 @@
 
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, Play, Pause, Square, Coffee, 
-         Monitor, Users, MapPin, Video, Phone, CheckCircle, 
-         Timer, BarChart3, TrendingUp, Target, User, Plus,
-         ChevronLeft, ChevronRight, Bell } from 'lucide-react';
+         Monitor, Users, MapPin, Phone, CheckCircle, 
+         Timer, BarChart3, TrendingUp, Target, Plus,
+         Bell } from 'lucide-react';
 
 interface WorkEvent {
   id: string;
@@ -144,7 +144,7 @@ const mockTimeEntries: TimeEntry[] = [
 ];
 
 export function WorkManager() {
-  const [events, setEvents] = useState<WorkEvent[]>(mockEvents);
+  const events = mockEvents;
   const [timeEntries, setTimeEntries] = useState<TimeEntry[]>(mockTimeEntries);
   const [currentTimer, setCurrentTimer] = useState<{
     isRunning: boolean;
@@ -353,7 +353,7 @@ export function WorkManager() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Today's Schedule */}
           <div className="lg:col-span-2 space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Today's Schedule</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Today&apos;s Schedule</h2>
             
             {todayEvents.length === 0 ? (
               <div className="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-200">
@@ -462,7 +462,7 @@ export function WorkManager() {
 
             {/* Today's Progress */}
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Today's Progress</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Today&apos;s Progress</h3>
               
               <div className="space-y-4">
                 <div>

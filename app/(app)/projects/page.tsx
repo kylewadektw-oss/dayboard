@@ -1,27 +1,34 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
  * 
- * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
- * This file is part of Dayboard, a proprietary household command center application.
- * 
- * IMPORTANT NOTICE:
- * This code is proprietary and confidential. Unauthorized copying, distribution,
- * or use by large corporations or competing services is strictly prohibited.
- * 
- * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
- * Violation of this notice may result in legal action and damages up to $100,000.
+ * DEPRECATED: Project management has been consolidated into the Lists system
+ * This page now redirects to /lists for better organization and functionality
  */
 
+'use client';
 
-import ProjectsManager from '@/components/projects/ProjectsManager';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function ProjectsPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirect to lists page where projects are now managed
+    router.replace('/lists');
+  }, [router]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
-        <ProjectsManager />
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 p-4 md:p-6 flex items-center justify-center">
+      <div className="max-w-md mx-auto text-center">
+        <div className="text-6xl mb-4">🚀</div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Projects Moved!</h1>
+        <p className="text-gray-600 mb-4">
+          Project management has been consolidated into our enhanced Lists system for better organization.
+        </p>
+        <p className="text-sm text-gray-500">
+          Redirecting you to the Lists page...
+        </p>
       </div>
     </div>
   );

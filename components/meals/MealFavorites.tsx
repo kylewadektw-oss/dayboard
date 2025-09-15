@@ -17,12 +17,11 @@
 
 import { Heart, Clock, Users, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { RecipeWithDetails, RECIPE_DIFFICULTIES } from '@/types/recipes';
-import { Database } from '@/types_db';
 import { AddToMealPlanModal } from './AddToMealPlanModal';
 
-const supabase = createClient();
+// Supabase integration coming soon
+// const supabase = createClient();
 
 const getDifficultyColor = (difficulty: RecipeWithDetails['difficulty']) => {
   const difficultyConfig = RECIPE_DIFFICULTIES.find(d => d.value === difficulty);
@@ -125,11 +124,11 @@ export function MealFavorites() {
     setLoading(false);
   };
 
-  const fetchFavoriteRecipes = async () => {
-    // This will be enabled once recipe tables are deployed
-    console.log('Recipe tables not yet deployed - using mock data');
-    loadMockData();
-  };
+  // Database integration functions (placeholder for future implementation)
+  // const fetchFavoriteRecipes = async () => {
+  //   console.log('Recipe tables not yet deployed - using mock data');
+  //   loadMockData();
+  // };
 
   const toggleFavorite = async (recipeId: string, isFavorite: boolean) => {
     // For now, just update local state until recipe tables are deployed

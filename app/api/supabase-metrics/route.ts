@@ -20,7 +20,7 @@ interface SupabaseMetrics {
     error_count: number;
     uptime_percentage: number;
   };
-  recent_logs: any[];
+  recent_logs: Array<Record<string, unknown>>;
 }
 
 export async function GET(request: NextRequest) {
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     
     // Calculate time filter based on range
     const now = new Date();
-    let timeFilter = new Date();
+    const timeFilter = new Date();
     
     switch (timeRange) {
       case '1h':
@@ -94,14 +94,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function analyzeSecurityEvents(logs: any[]) {
+function analyzeSecurityEvents(logs: Array<Record<string, unknown>>) {
   let failed_auth_attempts = 0;
   let unauthorized_access = 0;
   let rls_violations = 0;
   let suspicious_activities = 0;
 
   logs.forEach(log => {
-    const message = log.message?.toLowerCase() || '';
+    const message = String(log.message || '').toLowerCase();
     
     // Authentication failures
     if (message.includes('auth') && (message.includes('failed') || message.includes('error') || message.includes('invalid'))) {
@@ -132,7 +132,7 @@ function analyzeSecurityEvents(logs: any[]) {
   };
 }
 
-function analyzePerformanceStats(logs: any[]) {
+function analyzePerformanceStats(logs: Array<Record<string, unknown>>) {
   const errorLogs = logs.filter(log => log.level === 'error');
   const warnLogs = logs.filter(log => log.level === 'warn');
   const totalLogs = logs.length;
@@ -140,7 +140,7 @@ function analyzePerformanceStats(logs: any[]) {
   // Extract query times from logs (look for patterns like "query took 150ms")
   const queryTimes: number[] = [];
   logs.forEach(log => {
-    const message = log.message || '';
+    const message = String(log.message || '');
     const timeMatch = message.match(/(\d+)ms/);
     if (timeMatch) {
       queryTimes.push(parseInt(timeMatch[1]));
@@ -160,11 +160,11 @@ function analyzePerformanceStats(logs: any[]) {
   };
 }
 
-function analyzeDatabaseHealth(logs: any[]) {
+function analyzeDatabaseHealth(logs: Array<Record<string, unknown>>) {
   let slow_queries = 0;
   
   logs.forEach(log => {
-    const message = log.message?.toLowerCase() || '';
+    const message = String(log.message || '').toLowerCase();
     
     // Look for slow query indicators
     if (message.includes('slow') || message.includes('timeout') || message.includes('performance')) {
@@ -186,35 +186,5 @@ async function getDatabaseConnectionMetrics() {
   };
 }
 
-// Enhanced error categorization
-function categorizeSupabaseError(message: string, level: string) {
-  const categories = [];
-  const lowerMessage = message.toLowerCase();
+// Enhanced error categorization (unused function)
 
-  // Security categories
-  if (lowerMessage.includes('auth') || lowerMessage.includes('unauthorized') || lowerMessage.includes('permission')) {
-    categories.push('security');
-  }
-
-  // Performance categories
-  if (lowerMessage.includes('slow') || lowerMessage.includes('timeout') || lowerMessage.includes('performance')) {
-    categories.push('performance');
-  }
-
-  // Database categories
-  if (lowerMessage.includes('postgres') || lowerMessage.includes('sql') || lowerMessage.includes('database')) {
-    categories.push('database');
-  }
-
-  // RLS categories
-  if (lowerMessage.includes('rls') || lowerMessage.includes('row level security')) {
-    categories.push('rls');
-  }
-
-  // Connection categories
-  if (lowerMessage.includes('connection') || lowerMessage.includes('pool')) {
-    categories.push('connection');
-  }
-
-  return categories.length > 0 ? categories : ['general'];
-}

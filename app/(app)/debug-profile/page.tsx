@@ -51,7 +51,7 @@ export default async function DebugProfilePage() {
           {profile?.role !== 'super_admin' && (
             <div className="mt-4 p-4 bg-yellow-100 rounded">
               <p className="text-yellow-800">
-                Your role is not 'super_admin'. You need to update your profile in the Supabase dashboard.
+                Your role is not &apos;super_admin&apos;. You need to update your profile in the Supabase dashboard.
               </p>
             </div>
           )}

@@ -17,12 +17,10 @@
 
 import Link from 'next/link';
 import { 
-  Calendar, 
   ChefHat, 
   ListTodo, 
   Users, 
   Timer, 
-  Smartphone,
   Star,
   ArrowRight,
   PlayCircle,
@@ -35,8 +33,6 @@ import {
   Wrench,
   Baby,
   Cloud,
-  ShoppingCart,
-  Heart,
   Zap,
   Eye,
   Settings,
@@ -129,7 +125,7 @@ export default function LandingPage() {
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Unlike concept apps, Dayboard is production-ready with real features you can use today. 
-              Here's what's already built and working.
+              Here&apos;s what&apos;s already built and working.
             </p>
           </div>
           
@@ -519,8 +515,8 @@ export default function LandingPage() {
               ))}
             </div>
             <blockquote className="text-2xl font-light text-white max-w-4xl mx-auto leading-relaxed mb-8">
-              "This isn't just another household app concept. Dayboard actually works - 
-              comprehensive features, beautiful design, and real functionality that eliminated our family chaos."
+              &ldquo;This isn&apos;t just another household app concept. Dayboard actually works - 
+              comprehensive features, beautiful design, and real functionality that eliminated our family chaos.&rdquo;
             </blockquote>
             <div className="text-gray-300 text-lg">
               — Sarah Chen, Working Parent of 3
@@ -539,7 +535,7 @@ export default function LandingPage() {
             Ready to Unify Your Household?
           </h2>
           <p className="text-xl text-gray-700 mb-10">
-            Join the families who've transformed their home management with a single, 
+            Join the families who&apos;ve transformed their home management with a single, 
             powerful platform that actually works.
           </p>
           

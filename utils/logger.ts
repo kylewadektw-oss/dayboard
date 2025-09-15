@@ -91,7 +91,7 @@ export interface LogEntry {
   level: LogLevel;
   message: string;
   component?: string;
-  data?: any;
+  data?: unknown;
   stack?: string;
   userAgent?: string;
   url?: string;
@@ -224,6 +224,21 @@ class Logger {
   private cacheTimeout: number = 30000; // 30 seconds cache
   private isDbLoading: boolean = false;
   private dbLoadPromise: Promise<LogEntry[]> | null = null;
+  
+  // Database logging throttling to prevent spam (32 logs/min)
+  private databaseLogThrottle: Map<string, number> = new Map();
+  private databaseLogThrottleWindow: number = 10000; // 10 seconds
+  private maxDatabaseLogsPerWindow: number = 3; // Max 3 logs per 10 seconds per unique message
+  
+  // API-Client logging throttling to prevent spam during login (7 logs/min)
+  private apiClientLogThrottle: Map<string, number> = new Map();
+  private apiClientLogThrottleWindow: number = 15000; // 15 seconds
+  private maxApiClientLogsPerWindow: number = 2; // Max 2 logs per 15 seconds per unique message
+  
+  // Localhost testing isolation
+  private isLocalhost: boolean = typeof window !== 'undefined' && 
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  private enableLocalhostIsolation: boolean = true; // Can be configured
   
   constructor() {
     this.sessionId = this.generateSessionId();
@@ -702,7 +717,22 @@ class Logger {
   // Public method to configure dashboard filtering (legacy compatibility - prevention always active)
   public setDashboardFilteringEnabled(enabled: boolean): void {
     this.filterDashboardRefreshAlerts = enabled;
-    console.log(`📊 Dashboard refresh alert prevention ${enabled ? 'enabled' : 'disabled'} (complete prevention always active)`);
+    if (this.isDev && this.originalConsole.log) {
+      this.originalConsole.log(`📊 Dashboard refresh alert prevention ${enabled ? 'enabled' : 'disabled'} (complete prevention always active)`);
+    }
+  }
+
+  // Public method to configure localhost testing isolation
+  public setLocalhostIsolationEnabled(enabled: boolean): void {
+    this.enableLocalhostIsolation = enabled;
+    if (this.isDev && this.originalConsole.log) {
+      this.originalConsole.log(`🔧 Localhost testing isolation ${enabled ? 'enabled' : 'disabled'}`);
+    }
+  }
+
+  // Public method to check if localhost isolation is enabled
+  public isLocalhostIsolationEnabled(): boolean {
+    return this.enableLocalhostIsolation;
   }
 
   // Public method to check if dashboard filtering is enabled (legacy compatibility)
@@ -780,6 +810,88 @@ class Logger {
       // Use the helper method to check for dashboard refresh alerts - PREVENT CAPTURE ENTIRELY
       if (this.isDashboardRefreshAlert(messageStr)) {
         return; // COMPLETE PREVENTION: Do not capture, process, store, or make available
+      }
+      
+      // Database logging throttling to prevent spam (32 logs/min)
+      const isDatabaseLog = /database|supabase|sql|query|db|persist|fetch.*logs|api.*logs/i.test(messageStr);
+      if (isDatabaseLog) {
+        const messageKey = messageStr.substring(0, 50); // Use first 50 chars as key
+        const now = Date.now();
+        const lastLogTime = this.databaseLogThrottle.get(messageKey) || 0;
+        
+        if (now - lastLogTime < this.databaseLogThrottleWindow) {
+          // Count how many times this message appeared in the window
+          const windowStart = now - this.databaseLogThrottleWindow;
+          const recentSimilarLogs = this.logs.filter(log => 
+            log.timestamp && new Date(log.timestamp).getTime() > windowStart &&
+            log.message.substring(0, 50) === messageKey
+          ).length;
+          
+          if (recentSimilarLogs >= this.maxDatabaseLogsPerWindow) {
+            // Skip this log to prevent spam
+            return;
+          }
+        }
+        
+        this.databaseLogThrottle.set(messageKey, now);
+        
+        // Clean up old throttle entries periodically
+        if (this.databaseLogThrottle.size > 100) {
+          const keysToDelete: string[] = [];
+          this.databaseLogThrottle.forEach((time, key) => {
+            if (now - time > this.databaseLogThrottleWindow * 2) {
+              keysToDelete.push(key);
+            }
+          });
+          keysToDelete.forEach(key => this.databaseLogThrottle.delete(key));
+        }
+      }
+      
+      // API-Client logging throttling to prevent spam during login (7 logs/min)
+      const isApiClientLog = /fetch|API|request|auth|login|oauth|token|signin/i.test(messageStr);
+      if (isApiClientLog) {
+        const messageKey = messageStr.substring(0, 50); // Use first 50 chars as key
+        const now = Date.now();
+        const lastLogTime = this.apiClientLogThrottle.get(messageKey) || 0;
+        
+        if (now - lastLogTime < this.apiClientLogThrottleWindow) {
+          // Count how many times this message appeared in the window
+          const windowStart = now - this.apiClientLogThrottleWindow;
+          const recentSimilarLogs = this.logs.filter(log => 
+            log.timestamp && new Date(log.timestamp).getTime() > windowStart &&
+            log.message.substring(0, 50) === messageKey
+          ).length;
+          
+          if (recentSimilarLogs >= this.maxApiClientLogsPerWindow) {
+            // Skip this log to prevent spam
+            return;
+          }
+        }
+        
+        this.apiClientLogThrottle.set(messageKey, now);
+        
+        // Clean up old throttle entries periodically
+        if (this.apiClientLogThrottle.size > 50) {
+          const keysToDelete: string[] = [];
+          this.apiClientLogThrottle.forEach((time, key) => {
+            if (now - time > this.apiClientLogThrottleWindow * 2) {
+              keysToDelete.push(key);
+            }
+          });
+          keysToDelete.forEach(key => this.apiClientLogThrottle.delete(key));
+        }
+      }
+      
+      // Localhost testing isolation - filter out test-specific logs in development
+      if (this.enableLocalhostIsolation && this.isLocalhost) {
+        const testPatterns = /test|spec|mock|stub|fixture|demo|example|localhost.*testing|development.*testing/i;
+        if (testPatterns.test(messageStr)) {
+          // Only log to console for development, don't persist to database
+          if (this.isDev && this.originalConsole.log) {
+            this.originalConsole.log('[TEST]', messageStr);
+          }
+          return;
+        }
       }
       
       // Enhanced component detection and tagging (only if we're going to process)
@@ -1059,7 +1171,7 @@ class Logger {
       if (level === LogLevel.ERROR) {
         return "A part of the app interface had trouble loading. Try refreshing the page if something doesn't look right.";
       }
-      return "The app is setting up the page you're viewing. This is normal and usually happens quickly.";
+      return "The app is setting up the page you&apos;re viewing. This is normal and usually happens quickly.";
     }
 
     // Performance issues
@@ -1336,7 +1448,7 @@ class Logger {
         console.error('❌ Batch database write failed:', safeError);
         throw error;
       } else {
-        console.log(`✅ Batch of ${entries.length} logs persisted to database`);
+        // Database persistence successful - no need to log success
       }
     } catch (error) {
       // Enhanced error logging for debugging with safe serialization
@@ -1378,7 +1490,7 @@ class Logger {
         });
         throw error;
       } else {
-        console.log('✅ Log persisted to database:', entry.message.substring(0, 50) + '...');
+        // Log persistence successful - no need to log success
       }
     } catch (error) {
       // Log database write errors to console for debugging
@@ -1411,8 +1523,30 @@ class Logger {
 
   // Remove circular references from objects
   private removeCircularReferences(obj: any, seen = new WeakSet()): any {
-    if (obj === null || typeof obj !== 'object') return obj;
+    if (obj === null || obj === undefined) return obj;
     
+    // Handle primitive types
+    if (typeof obj !== 'object') {
+      // Convert functions to string representation
+      if (typeof obj === 'function') return '[Function]';
+      // Handle symbols
+      if (typeof obj === 'symbol') return obj.toString();
+      return obj;
+    }
+    
+    // Handle special objects that can't be serialized
+    if (obj instanceof Error) {
+      return {
+        name: obj.name,
+        message: obj.message,
+        stack: obj.stack?.substring(0, 200)
+      };
+    }
+    
+    if (obj instanceof Date) return obj.toISOString();
+    if (obj instanceof RegExp) return obj.toString();
+    
+    // Check for circular references
     if (seen.has(obj)) return '[Circular Reference]';
     seen.add(obj);
     
@@ -1509,6 +1643,9 @@ class Logger {
 
   private async fetchLogsFromDatabase(limit: number, timeRangeMs?: number): Promise<LogEntry[]> {
     try {
+      // Removed verbose debug logging for routine database operations
+      
+      // Try direct database access first
       let query = (this.supabase as any)
         .from('application_logs')
         .select('id, user_id, session_id, level, message, component, data, stack_trace, user_agent, url, timestamp, created_at, side')
@@ -1522,6 +1659,8 @@ class Logger {
 
       query = query.limit(limit);
 
+      // Removed verbose query execution logging
+      
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Database query timeout after 8 seconds')), 8000)
@@ -1530,9 +1669,14 @@ class Logger {
       const queryPromise = query;
       const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
 
+      // Removed verbose result logging
+
       if (error) {
-        console.error('❌ Database query error:', error);
-        throw error;
+        if (this.isDev && this.originalConsole.warn) {
+          this.originalConsole.warn('⚠️ Direct database access failed, trying API fallback:', error);
+        }
+        // Fallback to API endpoint
+        return await this.fetchLogsFromAPI(limit, timeRangeMs);
       }
 
       return data?.map((row: any) => ({
@@ -1550,12 +1694,61 @@ class Logger {
         side: row.side || 'client' // Use the side column from database
       })) || [];
     } catch (error) {
-      console.error('❌ Database fetch failed:', {
+      if (this.isDev && this.originalConsole.warn) {
+        this.originalConsole.warn('⚠️ Direct database access failed, trying API fallback:', error);
+      }
+      // Fallback to API endpoint
+      return await this.fetchLogsFromAPI(limit, timeRangeMs);
+    }
+  }
+
+  // New method to fetch logs via API endpoint
+  private async fetchLogsFromAPI(limit: number, timeRangeMs?: number): Promise<LogEntry[]> {
+    try {
+      // Removed debug logging - no need to log routine operations
+      
+      const params = new URLSearchParams({
+        limit: limit.toString()
+      });
+      
+      if (timeRangeMs) {
+        params.append('timeRangeMs', timeRangeMs.toString());
+      }
+      
+      const response = await fetch(`/api/logs?${params}`);
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(`API error: ${result.error?.message || 'Unknown error'}`);
+      }
+      
+      // API fetch successful - no need to log success
+      return result.logs || [];
+      
+    } catch (error) {
+      // More detailed error logging
+      const errorInfo = {
         errorMessage: (error as any)?.message || 'Unknown error',
         errorCode: (error as any)?.code || 'NO_CODE',
         errorDetails: (error as any)?.details || 'No details',
-        isTimeout: (error as any)?.message?.includes('timeout')
-      });
+        errorHint: (error as any)?.hint || 'No hint',
+        isTimeout: (error as any)?.message?.includes('timeout'),
+        fullError: error,
+        hasSupabaseClient: !!this.supabase,
+        errorType: typeof error,
+        errorConstructor: error?.constructor?.name
+      };
+      
+      console.error('❌ API logs fetch failed:', errorInfo);
+      
+      // Also log to console for debugging
+      console.error('Full error object:', error);
+      
       return [];
     }
   }
@@ -1625,8 +1818,10 @@ class Logger {
 
     // If we have 3+ errors in 2 minutes, suggest review
     if (recentErrors.length >= 3) {
-      console.log('🚨 HIGH ERROR ACTIVITY DETECTED');
-      console.log('💡 Consider running automated log analysis to identify issues');
+      if (this.isDev && this.originalConsole.log) {
+        this.originalConsole.log('🚨 HIGH ERROR ACTIVITY DETECTED');
+        this.originalConsole.log('💡 Consider running automated log analysis to identify issues');
+      }
       console.log('🔗 Visit /auto-log-review to see detailed analysis');
     }
   }
