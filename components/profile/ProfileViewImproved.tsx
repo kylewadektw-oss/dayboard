@@ -280,13 +280,23 @@ export default function ProfileViewImproved() {
   // Seed household form
   useEffect(() => {
     if (household) {
+      let coordinates = undefined;
+      if (household.coordinates) {
+        try {
+          coordinates = JSON.parse(household.coordinates as string);
+        } catch (e) {
+          console.error('Error parsing household coordinates:', e);
+        }
+      }
+      
       setHouseholdForm({
         name: household.name || '',
         household_type: household.household_type || 'family_household',
         address: household.address || '',
         city: household.city || '',
         state: household.state || '',
-        zip: household.zip || ''
+        zip: household.zip || '',
+        coordinates
       });
     }
   }, [household?.id, household]);

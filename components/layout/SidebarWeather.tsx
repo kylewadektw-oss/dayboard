@@ -122,7 +122,10 @@ export default function SidebarWeather() {
   return (
     <div className="px-4 py-3 border-b border-gray-700 bg-gray-800/30">
       <div className="text-xs text-gray-400 mb-1">
-        {household?.name || 'Current Location'}
+        {household?.city && household?.state 
+          ? `${household.city}, ${household.state}`
+          : household?.name || 'Current Location'
+        }
       </div>
       <div className="flex items-center space-x-2">
         {getWeatherIcon(weather.current.weather[0].id, "h-4 w-4 text-gray-300")}
