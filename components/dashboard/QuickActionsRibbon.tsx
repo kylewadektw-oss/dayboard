@@ -116,27 +116,6 @@ const STATIC_QUICK_ACTIONS: QuickAction[] = [
   }
 ];
 
-// 🚀 PERFORMANCE: Memoized individual action component
-const QuickActionButton = memo(({ action }: { action: QuickAction }) => (
-  <Link
-    href={action.href}
-    className={`${action.color} rounded-xl px-4 py-3 transition-all duration-200 hover:scale-105 active:scale-95 touch-manipulation flex items-center space-x-3 min-w-0 flex-shrink-0`}
-  >
-    <div className="flex-shrink-0">
-      {action.icon}
-    </div>
-    <div className="min-w-0 flex-1">
-      <div className="text-sm font-semibold truncate">
-        {action.title}
-      </div>
-      <div className="text-xs opacity-90 truncate">
-        {action.description}
-      </div>
-    </div>
-  </Link>
-));
-QuickActionButton.displayName = 'QuickActionButton';
-
 // Contextual suggestion component
 const ContextualSuggestion = memo(({ suggestion }: { 
   suggestion: { 
@@ -158,14 +137,8 @@ const ContextualSuggestion = memo(({ suggestion }: {
 ContextualSuggestion.displayName = 'ContextualSuggestion';
 
 function QuickActionsRibbonComponent() {
-  // 🚀 PERFORMANCE: Memoize static arrays to prevent recreating on each render
-  const primaryActions = useMemo(() => 
-    STATIC_QUICK_ACTIONS.filter(action => action.category === 'primary'), []
-  );
-  
-  const secondaryActions = useMemo(() => 
-    STATIC_QUICK_ACTIONS.filter(action => action.category === 'secondary'), []
-  );
+  // 🚀 PERFORMANCE: Combine all actions into single array for single ribbon
+  const allActions = useMemo(() => [...STATIC_QUICK_ACTIONS], []);
 
   // 🚀 PERFORMANCE: Memoize static suggestions array
   const suggestions = useMemo(() => [
@@ -205,20 +178,22 @@ function QuickActionsRibbonComponent() {
         </div>
       </div>
 
-      {/* Primary Actions Row */}
+      {/* Single Actions Ribbon - Compact tabs in single row */}
       <div className="px-6 py-4">
-        <div className="flex items-center space-x-3 overflow-x-auto pb-2 ribbon-scroll">
-          {primaryActions.map((action) => (
-            <QuickActionButton key={action.id} action={action} />
-          ))}
-        </div>
-      </div>
-
-      {/* Secondary Actions Row */}
-      <div className="px-6 py-3 bg-gray-50">
-        <div className="flex items-center space-x-3 overflow-x-auto pb-2 ribbon-scroll">
-          {secondaryActions.map((action) => (
-            <QuickActionButton key={action.id} action={action} />
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 ribbon-scroll">
+          {allActions.map((action) => (
+            <Link
+              key={action.id}
+              href={action.href}
+              className={`${action.color} rounded-lg px-2.5 py-1.5 transition-all duration-200 hover:scale-105 active:scale-95 touch-manipulation flex items-center gap-1.5 min-w-0 flex-shrink-0 text-xs font-medium whitespace-nowrap`}
+            >
+              <div className="flex-shrink-0">
+                {action.icon}
+              </div>
+              <span className="truncate">
+                {action.title}
+              </span>
+            </Link>
           ))}
         </div>
       </div>

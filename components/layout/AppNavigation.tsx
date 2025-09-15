@@ -34,6 +34,7 @@ import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { Home, UtensilsCrossed, ClipboardList, Briefcase, User, Settings, ChevronLeft, ChevronRight, LogOut, FileText, UserCheck, DollarSign, Lock, Gamepad2, Calendar } from 'lucide-react';
 import Logo from '@/components/icons/Logo';
 import { useAuth } from '@/contexts/AuthContext';
+import SidebarWeather from '@/components/layout/SidebarWeather';
 
 function AppNavigationComponent() {
   const pathname = usePathname();
@@ -167,6 +168,11 @@ function AppNavigationComponent() {
           </Link>
         )}
 
+        {/* Simple Weather Display */}
+        {!isCollapsed && hasHydrated && (
+          <SidebarWeather />
+        )}
+
         {/* Navigation Links */}
         <nav className="flex-1 p-2">
           <div className="space-y-1">
@@ -276,6 +282,30 @@ function AppNavigationComponent() {
 
         {/* Settings and Sign Out at Bottom */}
         <div className="p-2 border-t border-gray-700 flex-shrink-0 space-y-1">
+          {/* Profile Link */}
+          <Link
+            href="/profile"
+            className={`group flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors relative ${
+              pathname?.startsWith('/profile')
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                : 'text-gray-300 hover:text-white hover:bg-gray-800'
+            } ${isCollapsed ? 'justify-center' : ''}`}
+          >
+            <User className={`h-5 w-5 flex-shrink-0 ${
+              pathname?.startsWith('/profile') ? 'text-white' : 'text-gray-400 group-hover:text-white'
+            }`} />
+            {!isCollapsed && (
+              <span className="ml-3 truncate">Profile</span>
+            )}
+            
+            {/* Tooltip for collapsed state */}
+            {isCollapsed && (
+              <div className="absolute left-full ml-2 bg-white text-black text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
+                Profile
+              </div>
+            )}
+          </Link>
+
           {user && (
             <button
               onClick={(e) => {
@@ -312,16 +342,26 @@ function AppNavigationComponent() {
           </Link>
           
           {user && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                console.log('📱 Mobile sign out button clicked');
-                handleSignOut();
-              }}
-              className="p-2 text-gray-300 hover:text-white transition-colors"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
+            <div className="flex items-center space-x-2">
+              <Link
+                href="/profile"
+                className="p-2 text-gray-300 hover:text-white transition-colors"
+                title="Profile"
+              >
+                <User className="h-5 w-5" />
+              </Link>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log('📱 Mobile sign out button clicked');
+                  handleSignOut();
+                }}
+                className="p-2 text-gray-300 hover:text-white transition-colors"
+                title="Sign Out"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+            </div>
           )}
         </div>
 

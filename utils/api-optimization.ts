@@ -15,9 +15,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { serializeToBuffer } from '@/utils/buffer-optimization';
 import { enhancedLogger, LogLevel } from '@/utils/logger';
-import { createOptimizedDebounce } from '@/utils/performance';
 
 // 🚀 PERFORMANCE: Response caching interface
 interface CacheConfig {
@@ -62,7 +60,7 @@ class ApiOptimizer {
   }
 
   // 🚀 PERFORMANCE: Get from cache
-  private getFromCache(key: string, varyHeaders?: string[]): CacheEntry | null {
+  private getFromCache(key: string, _varyHeaders?: string[]): CacheEntry | null {
     const entry = this.responseCache.get(key);
     if (!entry) return null;
 
@@ -76,7 +74,7 @@ class ApiOptimizer {
   }
 
   // 🚀 PERFORMANCE: Set cache
-  private setCache(key: string, data: any, headers: Record<string, string>, config: CacheConfig) {
+  private setCache(key: string, data: unknown, headers: Record<string, string>, config: CacheConfig) {
     // Limit cache size
     if (this.responseCache.size >= 500) {
       const entries = Array.from(this.responseCache.keys());
@@ -131,7 +129,7 @@ class ApiOptimizer {
           }, 
           compressed: true 
         };
-      } catch (bufferError) {
+      } catch {
         return { data, compressed: false };
       }
 
@@ -151,10 +149,10 @@ class ApiOptimizer {
   // 🚀 PERFORMANCE: Create optimized response
   async createOptimizedResponse(
     req: NextRequest,
-    data: any,
+    data: unknown,
     options: ResponseOptions = {}
   ): Promise<NextResponse> {
-    const { cache, compress = true, streaming = false, priority = 'medium' } = options;
+    const { cache, compress = true, priority = 'medium' } = options;
     const cacheKey = this.generateCacheKey(req);
 
     try {
@@ -266,7 +264,7 @@ const apiOptimizer = new ApiOptimizer();
 
 // 🚀 PERFORMANCE: Middleware wrapper for API optimization
 export function withApiOptimization(
-  handler: (req: NextRequest) => Promise<any>,
+  handler: (req: NextRequest) => Promise<NextResponse>,
   options: ResponseOptions = {}
 ) {
   return async (req: NextRequest) => {
@@ -399,7 +397,7 @@ export function withRateLimit(config: RateLimitConfig) {
 
 // 🚀 PERFORMANCE: Combined optimization middleware
 export function withFullOptimization(
-  handler: (req: NextRequest) => Promise<any>,
+  handler: (req: NextRequest) => Promise<NextResponse>,
   options: {
     response?: ResponseOptions;
     rateLimit?: RateLimitConfig;

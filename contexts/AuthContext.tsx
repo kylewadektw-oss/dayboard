@@ -47,9 +47,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const FAST_AUTH_LOG = process.env.NEXT_PUBLIC_FAST_AUTH_LOG === '1' || process.env.NEXT_PUBLIC_FAST_AUTH_LOG === 'true';
 
   // Lightweight no-wait wrappers
-  const fireInfo = (msg: string, data?: any) => { try { if (!FAST_AUTH_LOG) authLogger.info(msg, data); } catch {} };
-  const fireWarn = (msg: string, data?: any) => { try { if (!FAST_AUTH_LOG) authLogger.warn(msg, data); } catch {} };
-  const fireError = (msg: string, data?: any) => { try { if (!FAST_AUTH_LOG) authLogger.error(msg, data); } catch {} };
+  const fireInfo = (msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.info(msg, data); } catch {} };
+  const fireWarn = (msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.warn(msg, data); } catch {} };
+  const fireError = (msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.error(msg, data); } catch {} };
 
   // Validate env early
   useEffect(() => {

@@ -68,29 +68,19 @@ const EntertainmentWidget: React.FC = memo(() => {
   const { featuredEvent, nowPlaying, familyActivity, weekendSuggestion } = entertainmentData;
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-500 to-blue-600 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <Gamepad2 className="h-6 w-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Entertainment</h2>
-              <p className="text-purple-100 text-sm">Movies, events & activities</p>
-            </div>
-          </div>
-          <Link 
-            href="/entertainment"
-            className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
-          >
-            <ArrowRight className="h-4 w-4 text-white" />
-          </Link>
-        </div>
+    <div className="bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-purple-500 to-blue-600 px-3 py-1 rounded-lg tracking-wide">ENTERTAINMENT</h3>
+        <Link 
+          href="/entertainment"
+          className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          title="View all entertainment"
+        >
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="space-y-4 flex-1 overflow-y-auto">
         {/* Featured Event */}
         <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-3">
           <div className="flex items-center justify-between mb-2">

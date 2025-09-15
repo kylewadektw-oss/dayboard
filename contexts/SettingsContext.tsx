@@ -22,10 +22,10 @@ interface SettingsContextType {
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const { user, profile } = useAuth();
+  const { profile } = useAuth();
   const [settingsService, setSettingsService] = useState<SettingsService | null>(null);
-  const [userSettings, setUserSettings] = useState<Record<string, any>>({});
-  const [householdSettings, setHouseholdSettings] = useState<Record<string, any>>({});
+  const [userSettings, setUserSettings] = useState<Record<string, unknown>>({});
+  const [householdSettings, setHouseholdSettings] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
 
   // Initialize settings service when auth context changes

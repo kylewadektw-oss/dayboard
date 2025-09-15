@@ -32,6 +32,11 @@ import {
 } from 'lucide-react';
 import { useEffect, useState, useCallback, memo } from 'react';
 import { enhancedLogger, LogLevel } from '@/utils/logger';
+import { useAuth } from '@/contexts/AuthContext';
+import { createClient } from '@/utils/supabase/client';
+import { Database } from '@/types_db';
+
+type Household = Database['public']['Tables']['households']['Row'];
 
 interface WeatherData {
   current: {
@@ -65,9 +70,6 @@ interface WeatherData {
 }
 
 interface WeatherWidgetProps {
-  lat?: number;
-  lon?: number;
-  location?: string;
   className?: string;
 }
 
@@ -95,18 +97,92 @@ const getWeatherIcon = (weatherId: number, size: string = "h-6 w-6") => {
 };
 
 function WeatherWidgetComponent({ 
-  lat = 40.7128, 
-  lon = -74.0060, 
-  location = "New York, NY",
   className = ""
 }: WeatherWidgetProps) {
   const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [household, setHousehold] = useState<Household | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [lastRequestTime, setLastRequestTime] = useState<number>(0);
+  const { profile } = useAuth();
+  const supabase = createClient();
+
+  // Load household data and fetch weather
+  useEffect(() => {
+    const loadHouseholdAndWeather = async () => {
+      if (!profile?.household_id) {
+        setError('No household set in profile');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Fetch household information
+        const { data: householdData, error: householdError } = await supabase
+          .from('households')
+          .select('*')
+          .eq('id', profile.household_id)
+          .single();
+
+        if (householdError) {
+          console.error('Error fetching household:', householdError);
+          setError('Failed to load household information');
+          setLoading(false);
+          return;
+        }
+
+        setHousehold(householdData);
+
+        // Fetch weather if coordinates are available
+        if (householdData?.coordinates) {
+          const coords = JSON.parse(householdData.coordinates as string) as { lat: number; lng: number };
+          
+          await enhancedLogger.logWithFullContext(LogLevel.INFO, "Fetching weather data for household location", "WeatherWidget", {
+            householdName: householdData.name,
+            lat: coords.lat,
+            lng: coords.lng
+          });
+
+          const res = await fetch(`/api/weather?lat=${coords.lat}&lon=${coords.lng}`);
+          
+          if (!res.ok) {
+            const errorData = await res.json();
+            throw new Error(errorData.error || `HTTP ${res.status}: ${res.statusText}`);
+          }
+
+          const data = await res.json();
+          setWeather(data);
+          setLastUpdated(new Date());
+          
+          await enhancedLogger.logWithFullContext(LogLevel.INFO, "Weather data loaded successfully for household", "WeatherWidget", {
+            householdName: householdData.name,
+            currentTemp: data.current?.temp,
+            condition: data.current?.weather?.[0]?.description
+          });
+        } else {
+          setError('No location set in household profile');
+          console.log('No coordinates set for household:', householdData.name || 'Unknown');
+        }
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Failed to load weather data";
+        setError(errorMessage);
+        
+        await enhancedLogger.logWithFullContext(LogLevel.ERROR, "Failed to fetch household weather data", "WeatherWidget", {
+          error: errorMessage,
+          householdId: profile?.household_id
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHouseholdAndWeather();
+  }, [profile?.household_id, supabase]);
 
   const fetchWeather = useCallback(async () => {
+    if (!household?.coordinates) return;
+    
     // Prevent requests more frequent than every 30 seconds
     const now = Date.now();
     if (now - lastRequestTime < 30000) {
@@ -118,13 +194,15 @@ function WeatherWidgetComponent({
       setLoading(true);
       setError(null);
       
-      await enhancedLogger.logWithFullContext(LogLevel.INFO, "Fetching weather data for dashboard widget", "WeatherWidget", {
-        lat,
-        lon,
-        location
+      const coords = JSON.parse(household.coordinates as string) as { lat: number; lng: number };
+      
+      await enhancedLogger.logWithFullContext(LogLevel.INFO, "Refreshing weather data for household", "WeatherWidget", {
+        householdName: household.name,
+        lat: coords.lat,
+        lng: coords.lng
       });
 
-      const res = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
+      const res = await fetch(`/api/weather?lat=${coords.lat}&lon=${coords.lng}`);
       
       if (!res.ok) {
         const errorData = await res.json();
@@ -135,26 +213,24 @@ function WeatherWidgetComponent({
       setWeather(data);
       setLastUpdated(new Date());
       
-      await enhancedLogger.logWithFullContext(LogLevel.INFO, "Weather data loaded successfully", "WeatherWidget", {
-        location,
+      await enhancedLogger.logWithFullContext(LogLevel.INFO, "Weather data refreshed successfully", "WeatherWidget", {
+        householdName: household.name,
         currentTemp: data.current?.temp,
         condition: data.current?.weather?.[0]?.description
       });
 
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to load weather data";
+      const errorMessage = err instanceof Error ? err.message : "Failed to refresh weather data";
       setError(errorMessage);
       
-      await enhancedLogger.logWithFullContext(LogLevel.ERROR, "Failed to fetch weather data", "WeatherWidget", {
+      await enhancedLogger.logWithFullContext(LogLevel.ERROR, "Failed to refresh weather data", "WeatherWidget", {
         error: errorMessage,
-        lat,
-        lon,
-        location
+        householdName: household?.name
       });
     } finally {
       setLoading(false);
     }
-  }, [lat, lon, location, lastRequestTime]);
+  }, [household?.coordinates, household?.name, lastRequestTime]);
 
   useEffect(() => {
     fetchWeather();
@@ -200,20 +276,31 @@ function WeatherWidgetComponent({
   }
 
   if (error) {
+    const isNoLocation = error.includes('No location') || error.includes('No household');
+    
     return (
       <div className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col justify-center ${className}`}>
         <div className="text-center">
           <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
           <h3 className="text-sm font-semibold text-gray-900 mb-1">Weather Unavailable</h3>
           <p className="text-xs text-gray-600 mb-3">{error}</p>
-          <button
-            onClick={fetchWeather}
-            disabled={loading}
-            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-            Retry
-          </button>
+          {isNoLocation ? (
+            <a
+              href="/profile"
+              className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
+            >
+              📍 Set Address
+            </a>
+          ) : (
+            <button
+              onClick={fetchWeather}
+              disabled={loading}
+              className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+              Retry
+            </button>
+          )}
         </div>
       </div>
     );
@@ -230,7 +317,7 @@ function WeatherWidgetComponent({
   return (
     <div className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col ${className}`}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-gray-600">Today&apos;s Weather</h3>
+        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-blue-500 to-cyan-600 px-3 py-1 rounded-lg tracking-wide">TODAY'S WEATHER</h3>
         <button
           onClick={fetchWeather}
           disabled={loading}
@@ -322,7 +409,7 @@ function WeatherWidgetComponent({
         
         {/* Location and Last Updated */}
         <div className="flex items-center justify-between">
-          <p className="text-xs text-gray-500">📍 {location}</p>
+          <p className="text-xs text-gray-500">📍 {household?.name || household?.city || 'Location'}</p>
           {lastUpdated && (
             <p className="text-xs text-gray-400">
               {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

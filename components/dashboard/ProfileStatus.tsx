@@ -15,7 +15,21 @@
  */
 
 
-import { Home, Users, Settings, Sparkles, Activity } from 'lucide-react';
+import { 
+  Home, 
+  Users, 
+  Settings, 
+  Sparkles, 
+  Activity,
+  Sun,
+  CloudRain,
+  Cloud,
+  CloudSnow,
+  CloudLightning,
+  CloudDrizzle,
+  RefreshCw,
+  MapPin
+} from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,6 +56,51 @@ interface HouseholdMember {
   is_active: boolean;
   profile_photo_url: string | null;
 }
+
+interface WeatherData {
+  current: {
+    temp: number;
+    feels_like: number;
+    humidity: number;
+    wind_speed: number;
+    uvi: number;
+    sunrise: number;
+    sunset: number;
+    weather: Array<{
+      id: number;
+      main: string;
+      description: string;
+      icon: string;
+    }>;
+  };
+  daily?: Array<{
+    temp: {
+      min: number;
+      max: number;
+    };
+  }>;
+}
+
+const getWeatherIcon = (weatherId: number, size: string = "h-5 w-5") => {
+  const baseClasses = `${size}`;
+  
+  if (weatherId >= 200 && weatherId < 300) {
+    return <CloudLightning className={`${baseClasses} text-purple-500`} />;
+  } else if (weatherId >= 300 && weatherId < 400) {
+    return <CloudDrizzle className={`${baseClasses} text-blue-400`} />;
+  } else if (weatherId >= 500 && weatherId < 600) {
+    return <CloudRain className={`${baseClasses} text-blue-600`} />;
+  } else if (weatherId >= 600 && weatherId < 700) {
+    return <CloudSnow className={`${baseClasses} text-blue-200`} />;
+  } else if (weatherId >= 700 && weatherId < 800) {
+    return <Cloud className={`${baseClasses} text-gray-400`} />;
+  } else if (weatherId === 800) {
+    return <Sun className={`${baseClasses} text-yellow-500`} />;
+  } else if (weatherId > 800) {
+    return <Cloud className={`${baseClasses} text-gray-500`} />;
+  }
+  return <Sun className={`${baseClasses} text-yellow-500`} />;
+};
 
 const getTimeBasedGreeting = () => {
   const hour = new Date().getHours();
@@ -78,6 +137,8 @@ export function ProfileStatus() {
     totalMembers: 0,
     membersOnline: 0
   });
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const supabase = createClient();
@@ -152,6 +213,35 @@ export function ProfileStatus() {
     }
   }, [profile?.household_id, supabase]);
 
+  // Weather fetching function - Use household coordinates
+  const fetchWeather = useCallback(async () => {
+    if (!household?.coordinates) {
+      console.log('No household coordinates available for weather');
+      return;
+    }
+    
+    // Type cast coordinates to expected format
+    const coords = household.coordinates as { lat: number; lng: number };
+    if (!coords.lat || !coords.lng) {
+      console.log('Invalid coordinates format:', coords);
+      return;
+    }
+    
+    setWeatherLoading(true);
+    try {
+      const res = await fetch(`/api/weather?lat=${coords.lat}&lon=${coords.lng}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      
+      const data = await res.json();
+      setWeather(data);
+      console.log('Weather fetched for household location:', household.name || 'Unknown location');
+    } catch (error) {
+      console.error('Error loading weather:', error);
+    } finally {
+      setWeatherLoading(false);
+    }
+  }, [household?.coordinates, household?.name]);
+
   // Memoize members with computed properties to avoid recalculation
   const membersWithStatus = useMemo(() => 
     householdMembers.map(member => {
@@ -175,6 +265,13 @@ export function ProfileStatus() {
   useEffect(() => {
     loadHouseholdData();
   }, [loadHouseholdData]);
+
+  // Fetch weather when household data is loaded
+  useEffect(() => {
+    if (household?.coordinates) {
+      fetchWeather();
+    }
+  }, [household?.coordinates, fetchWeather]);
 
   if (loading) {
     return (
@@ -201,7 +298,7 @@ export function ProfileStatus() {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 mb-4">
       <div className="flex items-start justify-between space-x-6">
-        {/* Left Half - Greeting & Household Info */}
+        {/* Left Half - Greeting & Weather Info */}
         <div className="flex-1 max-w-[50%]">
           <div className="text-lg font-semibold text-gray-900 mb-1">
             {greeting}
@@ -217,62 +314,124 @@ export function ProfileStatus() {
             )}
           </div>
 
-          {/* Household Stats */}
-          <div className="flex flex-col space-y-2">
-            <div className="flex items-center space-x-4 text-sm">
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-orange-400 rounded-full mr-2"></div>
-                <span className="text-gray-600">
-                  {stats.projectsInProgress} projects active
-                </span>
+          {/* Weather Info - Enhanced */}
+          {weather ? (
+            <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-100">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center space-x-3">
+                  {getWeatherIcon(weather.current.weather[0].id, "h-8 w-8")}
+                  <div>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {Math.round(weather.current.temp)}°F
+                    </div>
+                    <div className="text-sm text-gray-700 capitalize font-medium">
+                      {weather.current.weather[0].description}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right text-sm text-gray-600 space-y-1">
+                  <div>Feels like <span className="font-medium">{Math.round(weather.current.feels_like)}°F</span></div>
+                  <div>Humidity <span className="font-medium">{weather.current.humidity}%</span></div>
+                  <div>Wind <span className="font-medium">{Math.round(weather.current.wind_speed)} mph</span></div>
+                  <div>UV Index <span className="font-medium">{Math.round(weather.current.uvi)}</span></div>
+                </div>
               </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-pink-400 rounded-full mr-2"></div>
-                <span className="text-gray-600">
-                  {stats.mealsPlanned} meals planned
-                </span>
+              
+              {/* Today's forecast */}
+              {weather.daily && weather.daily[0] && (
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-blue-200">
+                  <div className="text-sm text-gray-600">
+                    Today: <span className="font-medium">{Math.round(weather.daily[0].temp.max)}°/{Math.round(weather.daily[0].temp.min)}°</span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Sunrise: <span className="font-medium">{new Date(weather.current.sunrise * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Sunset: <span className="font-medium">{new Date(weather.current.sunset * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : weatherLoading ? (
+            <div className="mb-4 p-4 bg-gray-50 rounded-lg animate-pulse">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gray-200 rounded"></div>
+                  <div>
+                    <div className="w-20 h-6 bg-gray-200 rounded mb-2"></div>
+                    <div className="w-24 h-4 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="w-24 h-3 bg-gray-200 rounded"></div>
+                  <div className="w-20 h-3 bg-gray-200 rounded"></div>
+                  <div className="w-16 h-3 bg-gray-200 rounded"></div>
+                </div>
               </div>
             </div>
-            {stats.activitiesScheduled > 0 && (
-              <div className="flex items-center text-sm">
-                <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
-                <span className="text-gray-600">
-                  {stats.activitiesScheduled} activities today
+          ) : null}
+
+          {/* Quick Profile Actions & Stats */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {/* AI Assistant Button (Premium feature) */}
+              <button 
+                className="p-2 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 rounded-lg transition-all duration-200 group"
+                title="AI Assistant (Premium Feature)"
+              >
+                <Sparkles className="h-4 w-4 text-purple-600 group-hover:text-purple-700" />
+              </button>
+
+              {/* Household Members Quick View */}
+              <Link 
+                href="/household/members"
+                className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                title="View Household Members"
+              >
+                <Users className="h-4 w-4 text-gray-600" />
+              </Link>
+
+              {/* Settings */}
+              <Link 
+                href="/profile"
+                className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                title="Profile Settings"
+              >
+                <Settings className="h-4 w-4 text-gray-600" />
+              </Link>
+            </div>
+
+            {/* Today's Stats - Inline */}
+            <div className="flex items-center space-x-4 text-sm">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-orange-400 rounded-full mr-1"></div>
+                <span className="text-gray-700">
+                  {stats.projectsInProgress} projects
                 </span>
               </div>
-            )}
-          </div>
-
-          {/* Quick Profile Actions */}
-          <div className="flex items-center space-x-2 mt-4">
-            {/* AI Assistant Button (Premium feature) */}
-            <button className="p-2 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 rounded-lg transition-all duration-200 group">
-              <Sparkles className="h-4 w-4 text-purple-600 group-hover:text-purple-700" />
-            </button>
-
-            {/* Household Members Quick View */}
-            <Link 
-              href="/household/members"
-              className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <Users className="h-4 w-4 text-gray-600" />
-            </Link>
-
-            {/* Settings */}
-            <Link 
-              href="/profile"
-              className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <Settings className="h-4 w-4 text-gray-600" />
-            </Link>
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-pink-400 rounded-full mr-1"></div>
+                <span className="text-gray-700">
+                  {stats.mealsPlanned} meals
+                </span>
+              </div>
+              {stats.activitiesScheduled > 0 && (
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-400 rounded-full mr-1"></div>
+                  <span className="text-gray-700">
+                    {stats.activitiesScheduled} activities
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Right Half - Member Tiles */}
         <div className="flex-1 max-w-[50%]">
-          {/* Household Member Tiles - Much larger to match quick actions */}
+          {/* Household Member Tiles */}
           {membersWithStatus.length > 0 && (
-            <div className="flex flex-wrap gap-4 justify-end items-start">
+            <div className="flex flex-wrap gap-3 justify-end items-start">
               {membersWithStatus.map((member) => {
                 const initials = member.displayName
                   .split(' ')
@@ -283,10 +442,10 @@ export function ProfileStatus() {
                 return (
                   <div
                     key={member.id}
-                    className="flex flex-col items-center space-y-2"
+                    className="flex flex-col items-center space-y-1"
                   >
                     <div
-                      className={`w-32 h-32 flex items-center justify-center transition-all duration-200 group cursor-pointer rounded-xl ${
+                      className={`w-20 h-20 flex items-center justify-center transition-all duration-200 group cursor-pointer rounded-xl ${
                         member.isCurrentUser 
                           ? 'bg-blue-500 text-white ring-2 ring-blue-200 shadow-md' 
                           : member.isOnline
@@ -300,29 +459,24 @@ export function ProfileStatus() {
                         <Image 
                           src={member.profile_photo_url} 
                           alt={member.displayName}
-                          width={96}
-                          height={96}
-                          className="w-24 h-24 rounded-lg object-cover"
+                          width={64}
+                          height={64}
+                          className="w-16 h-16 rounded-lg object-cover"
                         />
                       ) : (
-                        <span className="text-3xl font-semibold">{initials}</span>
+                        <span className="text-lg font-semibold">{initials}</span>
                       )}
                       
                       {/* Online status indicator */}
-                      <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-4 border-white ${
+                      <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
                         member.isOnline ? 'bg-green-500' : 'bg-gray-300'
                       }`} />
                     </div>
                     
-                    {/* Member name below tile */}
-                    <div className="text-center">
-                      <span className={`text-sm font-medium ${
-                        member.isCurrentUser ? 'text-blue-700' : 'text-gray-700'
-                      }`}>
-                        {member.displayName.split(' ')[0]}
-                        {member.isCurrentUser && ' (You)'}
-                      </span>
-                    </div>
+                    {/* Member name */}
+                    <span className="text-xs text-gray-600 text-center truncate max-w-[80px]">
+                      {member.displayName.split(' ')[0]}
+                    </span>
                   </div>
                 );
               })}
@@ -330,8 +484,6 @@ export function ProfileStatus() {
           )}
         </div>
       </div>
-
-      {/* Household Member Section - Now inline above in header */}
     </div>
   );
 }

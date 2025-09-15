@@ -142,7 +142,7 @@ export function preloadRouteComponents(route: string) {
         import('@/components/budget/BudgetDashboard');
         break;
       case '/entertainment':
-        import('@/components/dashboard/Magic8BallWidget');
+        import('@/components/entertainment/Magic8BallWidget');
         break;
     }
   }

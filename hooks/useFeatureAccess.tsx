@@ -99,7 +99,7 @@ export function FeatureGate({
 /**
  * Utility functions for direct access checks (non-reactive)
  */
-export const getFeatureAccess = (userRole: UserRole, featureName: string): boolean => {
+export const getFeatureAccess = (_userRole: UserRole, _featureName: string): boolean => {
   // For now, just return true for basic access
   return true;
 };

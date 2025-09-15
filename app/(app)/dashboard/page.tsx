@@ -32,12 +32,11 @@ const ProfileStatus = lazy(() => import('@/components/dashboard/ProfileStatus').
 const DaycareWidget = lazy(() => import('@/components/dashboard/DaycareWidget').then(m => ({ default: m.DaycareWidget })));
 const HouseholdMapWidget = lazy(() => import('@/components/dashboard/HouseholdMapWidget').then(m => ({ default: m.HouseholdMapWidget })));
 const FinancialWidget = lazy(() => import('@/components/financial/FinancialWidget').then(m => ({ default: m.FinancialWidget })));
-const Magic8BallWidget = lazy(() => import('@/components/dashboard/Magic8BallWidget'));
 const EntertainmentWidget = lazy(() => import('@/components/dashboard/EntertainmentWidget'));
 
 // Optimized loading component
 const WidgetSkeleton = () => (
-  <div className="h-full bg-white rounded-2xl shadow-lg animate-pulse">
+  <div className="widget-container bg-white rounded-2xl shadow-lg animate-pulse">
     <div className="p-4 space-y-3 h-full flex flex-col">
       <div className="h-4 bg-gray-200 rounded w-3/4"></div>
       <div className="space-y-2 flex-1">
@@ -150,70 +149,70 @@ export default function DashboardPage() {
           <QuickActionsRibbon />
         </Suspense>
 
-        {/* Main Dashboard Grid - Uniform Card Heights */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        {/* Main Dashboard Grid - Equal Height Cards per Row */}
+        <div className="space-y-6">
           {/* Row 1 - Primary Widgets */}
-          <div className="lg:col-span-1 h-80">
-            <Suspense fallback={<WidgetSkeleton />}>
-              <WeatherWidget />
-            </Suspense>
-          </div>
+          <div className="dashboard-row grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+            <div className="dashboard-card">
+              <Suspense fallback={<WidgetSkeleton />}>
+                <WeatherWidget />
+              </Suspense>
+            </div>
 
-          <div className="lg:col-span-1 h-80">
-            <Suspense fallback={<WidgetSkeleton />}>
-              <HouseholdMapWidget />
-            </Suspense>
-          </div>
-          
-          <div className="lg:col-span-1 h-80">
-            <Suspense fallback={<WidgetSkeleton />}>
-              <CalendarWidget />
-            </Suspense>
-          </div>
-
-          <div className="lg:col-span-1 h-80">
-            <Suspense fallback={<WidgetSkeleton />}>
-              <Magic8BallWidget />
-            </Suspense>
+            <div className="dashboard-card">
+              <Suspense fallback={<WidgetSkeleton />}>
+                <HouseholdMapWidget />
+              </Suspense>
+            </div>
+            
+            <div className="dashboard-card">
+              <Suspense fallback={<WidgetSkeleton />}>
+                <CalendarWidget />
+              </Suspense>
+            </div>
           </div>
 
           {/* Row 2 - Core Household Features */}
-          <div className="lg:col-span-1 h-80">
-            <Suspense fallback={<WidgetSkeleton />}>
-              <MealsWidget />
-            </Suspense>
-          </div>
+          <div className="dashboard-row grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="dashboard-card">
+              <Suspense fallback={<WidgetSkeleton />}>
+                <MealsWidget />
+              </Suspense>
+            </div>
 
-          <div className="lg:col-span-1 h-80">
-            <Suspense fallback={<WidgetSkeleton />}>
-              <GroceryWidget />
-            </Suspense>
-          </div>
+            <div className="dashboard-card">
+              <Suspense fallback={<WidgetSkeleton />}>
+                <GroceryWidget />
+              </Suspense>
+            </div>
 
-          <div className="lg:col-span-1 h-80">
-            <Suspense fallback={<WidgetSkeleton />}>
-              <ProjectsWidget />
-            </Suspense>
-          </div>
+            <div className="dashboard-card">
+              <Suspense fallback={<WidgetSkeleton />}>
+                <ProjectsWidget />
+              </Suspense>
+            </div>
 
-          <div className="lg:col-span-1 h-80">
-            <Suspense fallback={<WidgetSkeleton />}>
-              <FinancialWidget />
-            </Suspense>
+            <div className="dashboard-card">
+              <Suspense fallback={<WidgetSkeleton />}>
+                <FinancialWidget />
+              </Suspense>
+            </div>
           </div>
 
           {/* Row 3 - Additional Widgets */}
-          <div className="lg:col-span-1 h-80">
-            <Suspense fallback={<WidgetSkeleton />}>
-              <EntertainmentWidget />
-            </Suspense>
-          </div>
+          <div className="dashboard-row grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="dashboard-card">
+              <Suspense fallback={<WidgetSkeleton />}>
+                <EntertainmentWidget />
+              </Suspense>
+            </div>
 
-          {/* Daycare Widget - Wider span */}
-          <div className="lg:col-span-3 h-80">
-            <Suspense fallback={<WidgetSkeleton />}>
-              <DaycareWidget />
-            </Suspense>
+            {/* Daycare Widget - Wider span */}
+            <div className="dashboard-card lg:col-span-3">
+              <Suspense fallback={<WidgetSkeleton />}>
+                <DaycareWidget />
+              </Suspense>
+            </div>
           </div>
         </div>
 

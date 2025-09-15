@@ -209,7 +209,7 @@ export function useCoreWebVitals() {
 
     try {
       observer.observe({ entryTypes: ['largest-contentful-paint', 'layout-shift'] });
-    } catch (e) {
+    } catch {
       // Browser doesn't support these metrics
     }
 
@@ -229,7 +229,7 @@ export function useCoreWebVitals() {
 
       try {
         fidObserver.observe({ entryTypes: ['first-input'] });
-      } catch (e) {
+      } catch {
         // Browser doesn't support FID
       }
     }
@@ -288,7 +288,7 @@ export function useBundleMonitoring() {
 
     try {
       observer.observe({ entryTypes: ['resource'] });
-    } catch (e) {
+    } catch {
       // Browser doesn't support resource timing
     }
 

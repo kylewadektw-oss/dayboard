@@ -18,7 +18,7 @@
 
 import { memo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import Magic8BallWidget from '@/components/dashboard/Magic8BallWidget';
+import Magic8BallWidget from '@/components/entertainment/Magic8BallWidget';
 
 export const Magic8BallTab = memo(() => {
   const { user, profile } = useAuth();

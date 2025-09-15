@@ -232,15 +232,12 @@ export const LazyProjectsComponent = createLazyWrapper(
 
 // 🚀 PERFORMANCE: Widget-specific lazy loading
 export const LazyMagic8BallWidget = createLazyWrapper(
-  () => import('@/components/dashboard/Magic8BallWidget'),
-  { 
-    fallbackType: 'widget', 
+  () => import('@/components/entertainment/Magic8BallWidget'),
+  {
+    fallbackType: 'widget',
     logComponentName: 'Magic8BallWidget',
-    retryAttempts: 1
   }
-);
-
-export const LazyWeatherWidget = createLazyWrapper(
+);export const LazyWeatherWidget = createLazyWrapper(
   () => import('@/components/dashboard/WeatherWidget'),
   { 
     fallbackType: 'widget', 

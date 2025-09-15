@@ -60,7 +60,7 @@ interface CacheEntry<T> {
 }
 
 class Magic8BallCache {
-  private cache = new Map<string, CacheEntry<any>>();
+  private cache = new Map<string, CacheEntry<unknown>>();
   private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
   
   set<T>(key: string, data: T, ttl: number = this.DEFAULT_TTL): void {
@@ -81,7 +81,7 @@ class Magic8BallCache {
       return null;
     }
     
-    return entry.data;
+    return entry.data as T;
   }
   
   invalidate(pattern: string): void {
@@ -100,7 +100,13 @@ class Magic8BallCache {
 const magic8BallCache = new Magic8BallCache();
 
 // 🚀 Request deduplication map
-const pendingRequests = new Map<string, Promise<any>>();
+const pendingRequests = new Map<string, Promise<unknown>>();
+
+// Helper function for type-safe promise retrieval
+function getPendingRequest<T>(key: string): Promise<T> | undefined {
+  const promise = pendingRequests.get(key);
+  return promise as Promise<T> | undefined;
+}
 
 // 🎯 Optimized hook with caching and deduplication
 export const useMagic8Ball = (): UseMagic8BallReturn => {
@@ -190,7 +196,8 @@ export const useMagic8Ball = (): UseMagic8BallReturn => {
       await enhancedLogger.logWithFullContext(LogLevel.DEBUG, "Magic 8-Ball history request deduplicated", "useMagic8Ball", {
         householdId
       });
-      return pendingRequests.get(cacheKey);
+      const pending = getPendingRequest<Magic8BallQuestion[]>(cacheKey);
+      return pending || [];
     }
 
     const requestPromise = (async () => {
@@ -256,7 +263,8 @@ export const useMagic8Ball = (): UseMagic8BallReturn => {
 
     // 🚀 Check for pending request (deduplication)
     if (pendingRequests.has(cacheKey)) {
-      return pendingRequests.get(cacheKey);
+      const pending = getPendingRequest<Magic8BallStats | null>(cacheKey);
+      return pending || null;
     }
 
     const requestPromise = (async () => {

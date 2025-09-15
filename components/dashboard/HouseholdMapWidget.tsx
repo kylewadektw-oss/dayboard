@@ -335,17 +335,13 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-2xl shadow-lg p-6 h-full flex flex-col ${className}`}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <MapPin className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="font-semibold text-gray-900">Household Location</h3>
-              <p className="text-sm text-gray-500">Loading...</p>
-            </div>
-          </div>
+      <div className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col ${className}`}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-1 rounded-lg tracking-wide">HOUSEHOLD LOCATION</h3>
+          <Home className="h-4 w-4 text-gray-400" />
+        </div>
+        <div className="mb-3">
+          <p className="text-sm text-gray-500">Loading...</p>
         </div>
         <div className="h-48 bg-gray-100 rounded-lg animate-pulse"></div>
       </div>
@@ -379,30 +375,26 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
   }
 
   return (
-    <div className={`bg-white rounded-2xl shadow-lg p-6 h-full flex flex-col ${className}`}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <Home className="h-5 w-5 text-green-600" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">{household.name}</h3>
-            <p className="text-sm text-gray-500">
-              {formatAddress(household) || 'Address not set'}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {household.coordinates && (
-            <button
-              onClick={openInGoogleMaps}
-              className="p-2 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
-              title="Open in Google Maps"
-            >
-              <Navigation className="h-4 w-4 text-blue-600" />
-            </button>
-          )}
-        </div>
+    <div className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col ${className}`}>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-1 rounded-lg tracking-wide">HOUSEHOLD LOCATION</h3>
+        <Home className="h-4 w-4 text-gray-400" />
+      </div>
+      <div className="mb-3">
+        <p className="text-sm text-gray-500">
+          {formatAddress(household) || 'Address not set'}
+        </p>
+      </div>
+      <div className="flex items-center gap-2 mb-4">
+        {household.coordinates && (
+          <button
+            onClick={openInGoogleMaps}
+            className="p-2 bg-blue-100 hover:bg-blue-200 rounded-lg transition-colors"
+            title="Open in Google Maps"
+          >
+            <Navigation className="h-4 w-4 text-blue-600" />
+          </button>
+        )}
       </div>
 
       <div className="relative">

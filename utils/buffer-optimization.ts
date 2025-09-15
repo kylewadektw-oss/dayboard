@@ -28,7 +28,7 @@
 /**
  * Efficiently serialize large objects using Buffer compression
  */
-export function serializeToBuffer(obj: any): Buffer {
+export function serializeToBuffer(obj: unknown): Buffer {
   try {
     const jsonString = JSON.stringify(obj);
     
@@ -48,7 +48,7 @@ export function serializeToBuffer(obj: any): Buffer {
 /**
  * Efficiently deserialize from Buffer
  */
-export function deserializeFromBuffer<T = any>(buffer: Buffer): T {
+export function deserializeFromBuffer<T = unknown>(buffer: Buffer): T {
   try {
     const jsonString = buffer.toString('utf8');
     return JSON.parse(jsonString);
@@ -61,7 +61,7 @@ export function deserializeFromBuffer<T = any>(buffer: Buffer): T {
 /**
  * Optimized JSON stringification for large objects
  */
-export function optimizedStringify(obj: any, space?: number): string {
+export function optimizedStringify(obj: unknown, space?: number): string {
   try {
     const result = JSON.stringify(obj, null, space);
     
@@ -110,7 +110,7 @@ export class BufferedStringBuilder {
     return this;
   }
 
-  appendObject(obj: any): this {
+  appendObject(obj: unknown): this {
     const str = JSON.stringify(obj);
     return this.append(str);
   }
@@ -139,10 +139,10 @@ export class BufferedStringBuilder {
 /**
  * Efficient circular reference detection and removal
  */
-export function sanitizeForSerialization(obj: any, maxDepth: number = 10): any {
+export function sanitizeForSerialization(obj: unknown, maxDepth: number = 10): unknown {
   const seen = new WeakSet();
   
-  function clean(value: any, depth: number): any {
+  function clean(value: unknown, depth: number): unknown {
     if (depth > maxDepth) {
       return '[Max Depth Reached]';
     }

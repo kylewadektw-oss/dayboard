@@ -120,3 +120,28 @@ p a:hover { text-decoration:underline; }
 .ribbon-scroll::-webkit-scrollbar {
   display: none;
 }
+
+/* Dashboard equal height cards */
+.dashboard-row {
+  display: grid;
+  align-items: stretch;
+}
+
+.dashboard-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 320px; /* Minimum height for content visibility */
+}
+
+.dashboard-card > * {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure widgets stretch to fill their containers */
+.widget-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}

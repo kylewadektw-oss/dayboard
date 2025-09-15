@@ -4,7 +4,6 @@ import type {
   BudgetPeriod, 
   SavingsGoal, 
   AllowanceAccount, 
-  AllowanceTransaction,
   BudgetInsight,
   RecurringTransaction,
   BudgetSettings
