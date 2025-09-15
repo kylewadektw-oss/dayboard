@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Sun, CloudRain, CloudSnow, Cloud, CloudDrizzle, Zap, Wind, Eye } from 'lucide-react';
+import { Sun, CloudRain, CloudSnow, Cloud, CloudDrizzle, Zap, Eye } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
 import { Database } from '@/types_db';

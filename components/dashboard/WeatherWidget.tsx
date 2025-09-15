@@ -317,7 +317,7 @@ function WeatherWidgetComponent({
   return (
     <div className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col ${className}`}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-blue-500 to-cyan-600 px-3 py-1 rounded-lg tracking-wide">TODAY'S WEATHER</h3>
+        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-blue-500 to-cyan-600 px-3 py-1 rounded-lg tracking-wide">TODAY&apos;S WEATHER</h3>
         <button
           onClick={fetchWeather}
           disabled={loading}

@@ -42,7 +42,7 @@
 'use client';
 
 import { useState, useEffect, useRef, memo } from 'react';
-import { MapPin, Home, Navigation, AlertCircle, RefreshCw } from 'lucide-react';
+import { Home, Navigation, AlertCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
 import { loadGoogleMaps, GOOGLE_MAPS_LIBRARIES } from '@/utils/googleMaps';
