@@ -111,10 +111,11 @@ export function updateSession(request: NextRequest) {
     if (authed && isAuthRoute) {
       console.log(`📱 [MIDDLEWARE] Redirecting authed user from auth route to dashboard: ${cleanPath}, reqId: ${requestId}`);
       const url = new URL('/dashboard', request.url);
-      const res = NextResponse.redirect(url, 307);
+      const res = NextResponse.redirect(url, 302); // Use 302 instead of 307 to prevent browser caching
       res.headers.set('x-auth-redirect', 'dashboard');
       res.headers.set('x-auth-loop-count', String(loopCount + 1));
       res.headers.set('x-request-id', requestId);
+      res.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       return res;
     }
 

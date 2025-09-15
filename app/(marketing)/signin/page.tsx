@@ -15,22 +15,13 @@
  */
 
 
-import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
 import OauthSignIn from '@/components/ui/AuthForms/OauthSignIn';
 import SignInLogger from '@/components/auth/SignInLogger';
 
 export default async function SignIn() {
-  // Check if user is already logged in
-  const supabase = await createClient();
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
-
-  if (user) {
-    return redirect('/dashboard');
-  }
-
+  // Note: Auth redirect logic is handled by middleware
+  // This page focuses purely on the signin UI
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <SignInLogger />

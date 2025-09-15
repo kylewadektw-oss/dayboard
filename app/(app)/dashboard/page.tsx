@@ -86,18 +86,14 @@ export default function DashboardPage() {
 
   // Fallback for edge case where middleware allowed but client auth failed
   if (!user) {
-    authLogger.error('🚨 Dashboard reached without user - redirecting to signin');
+    authLogger.error('🚨 Dashboard reached without user - staying on dashboard and retrying auth');
     
-    // Force redirect to signin
-    if (typeof window !== 'undefined') {
-      window.location.href = '/signin';
-    }
-    
+    // Don't redirect - let middleware handle routing. Just show a message and retry.
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
-          <p className="text-gray-600 mb-4">Redirecting to sign in...</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Loading</h2>
+          <p className="text-gray-600 mb-4">Verifying your session...</p>
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto"></div>
         </div>
       </div>
