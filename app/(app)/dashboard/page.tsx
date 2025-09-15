@@ -72,9 +72,8 @@ export default function DashboardPage() {
     }
   }, [user, profile, loading]);
 
-  // Note: Authentication is handled by middleware, so we trust that users reaching this page are authenticated
-  // Show loading state if user data is still being fetched
-  if (!user && loading) {
+  // Enhanced loading state with timeout protection
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
         <div className="text-center">
@@ -86,18 +85,20 @@ export default function DashboardPage() {
   }
 
   // Fallback for edge case where middleware allowed but client auth failed
-  if (!user && !loading) {
+  if (!user) {
+    authLogger.error('🚨 Dashboard reached without user - redirecting to signin');
+    
+    // Force redirect to signin
+    if (typeof window !== 'undefined') {
+      window.location.href = '/signin';
+    }
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
-          <p className="text-gray-600 mb-4">Please sign in to access your dashboard.</p>
-          <a 
-            href="/signin" 
-            className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            Sign In
-          </a>
+          <p className="text-gray-600 mb-4">Redirecting to sign in...</p>
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mx-auto"></div>
         </div>
       </div>
     );

@@ -37,14 +37,21 @@ const AUTH_ROUTES = ['/signin', '/signup'];
 // Helper: detect any Supabase auth cookie variants
 function hasSupabaseAuthCookie(req: NextRequest) {
   const cookies = req.cookies.getAll();
-  return cookies.some(c => {
+  const authCookies = cookies.filter(c => {
     const n = c.name;
     // Standard pattern sb-<project-ref>-auth-token (and numbered refresh tokens)
-    if (n.startsWith('sb-') && n.includes('-auth-token')) return true;
+    if (n.startsWith('sb-') && (n.includes('-auth-token') || n.includes('-refresh-token'))) return true;
     // Fallback older generic name (rare)
     if (n === 'supabase-auth-token') return true;
     return false;
   });
+  
+  // Check if we have at least an auth token with a valid value
+  const hasValidAuthToken = authCookies.some(c => 
+    c.name.includes('-auth-token') && c.value && c.value.length > 10
+  );
+  
+  return hasValidAuthToken;
 }
 
 export function updateSession(request: NextRequest) {

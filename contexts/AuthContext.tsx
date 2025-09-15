@@ -131,14 +131,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!envValid) return;
     fireInfo('🚀 [AUTH] AuthContext init',{ FAST_AUTH_LOG });
+    
+    // Initial session check
     refreshUser();
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       fireInfo('🔄 [AUTH] Auth state change', { event, hasSession: !!session });
-      const currentUser = session?.user ?? null; setUser(currentUser);
-      if (currentUser) await fetchUserData(currentUser); else { setProfile(null); setPermissions(null); }
-      setLoading(false);
+      
+      if (event === 'SIGNED_OUT' || !session) {
+        fireInfo('👋 [AUTH] User signed out or session lost');
+        setUser(null);
+        setProfile(null);
+        setPermissions(null);
+        setLoading(false);
+        
+        // Clear any stale data and redirect to home if needed
+        if (typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard')) {
+          window.location.href = '/';
+        }
+        return;
+      }
+      
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        
+        if (currentUser) {
+          await fetchUserData(currentUser);
+        } else {
+          setProfile(null);
+          setPermissions(null);
+        }
+        setLoading(false);
+      }
     });
-    return () => { fireInfo('🧹 [AUTH] Cleanup'); subscription.unsubscribe(); };
+    
+    return () => { 
+      fireInfo('🧹 [AUTH] Cleanup'); 
+      subscription.unsubscribe(); 
+    };
   }, [envValid]);
 
   const value = { user, profile, permissions, loading, signOut, refreshUser };
