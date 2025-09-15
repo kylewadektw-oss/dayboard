@@ -1284,6 +1284,20 @@ export default function ProfileViewImproved() {
   const showLoading = authLoading || initialLoading || householdLoading;
   const shouldHideForSetup = !showLoading && (!profile || !profile.onboarding_completed);
 
+  console.log('🔍 [DEBUG] ProfileViewImproved state:', {
+    authLoading,
+    initialLoading,
+    householdLoading,
+    showLoading,
+    profile: profile ? {
+      id: profile.id,
+      name: profile.name,
+      onboarding_completed: profile.onboarding_completed,
+      household_id: profile.household_id
+    } : null,
+    shouldHideForSetup
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 text-gray-900">
       {showLoading && <div aria-label="Loading profile content" className="pb-16 p-4 md:p-8">{renderSkeleton()}</div>}

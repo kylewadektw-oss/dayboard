@@ -16,7 +16,7 @@
 
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { Database } from '@/types_db';
@@ -47,9 +47,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const FAST_AUTH_LOG = process.env.NEXT_PUBLIC_FAST_AUTH_LOG === '1' || process.env.NEXT_PUBLIC_FAST_AUTH_LOG === 'true';
 
   // Lightweight no-wait wrappers
-  const fireInfo = (msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.info(msg, data); } catch {} };
-  const fireWarn = (msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.warn(msg, data); } catch {} };
-  const fireError = (msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.error(msg, data); } catch {} };
+  const fireInfo = useCallback((msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.info(msg, data); } catch {} }, [FAST_AUTH_LOG]);
+  const fireWarn = useCallback((msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.warn(msg, data); } catch {} }, [FAST_AUTH_LOG]);
+  const fireError = useCallback((msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.error(msg, data); } catch {} }, [FAST_AUTH_LOG]);
 
   // Validate env early
   useEffect(() => {
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       fireError('❌ [AUTH] Missing Supabase env vars (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY)');
       setLoading(false);
     }
-  }, [envValid]);
+  }, [envValid, fireError]);
 
   // Fallback timeout to prevent infinite loading spinner
   useEffect(() => {
@@ -65,9 +65,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const t = setTimeout(() => { if (loading) { fireWarn('⚠️ [AUTH] Loading timeout fallback (5s) – forcing UI continuation', { envValid }); setLoading(false); } }, 5000);
     const safety = setTimeout(() => { if (loading) { fireWarn('⚠️ [AUTH] Secondary safety timeout (12s)', { envValid }); setLoading(false); } }, 12000);
     return () => { clearTimeout(t); clearTimeout(safety); };
-  }, [loading, envValid]);
+  }, [loading, envValid, fireWarn]);
 
-  const fetchUserData = async (currentUser: User) => {
+  const fetchUserData = useCallback(async (currentUser: User) => {
     try {
       fireInfo('🔍 [AUTH] Fetching profile', { userId: currentUser.id });
       const { data: profileData, error: profileError } = await supabase
@@ -77,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (profileError) fireError('❌ [AUTH] Profile fetch error', { userId: currentUser.id, error: profileError });
+      console.log('🔍 [DEBUG] Profile data fetched:', profileData);
       setProfile(profileData ?? null);
 
       try {
@@ -93,9 +94,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else setPermissions(permissionsData ?? null);
       } catch (permErr) { fireWarn('⚠️ [AUTH] Permissions fetch exception – defaults', { userId: currentUser.id, error: permErr }); setPermissions(null); }
     } catch (err) { fireError('❌ [AUTH] fetchUserData critical error', { userId: currentUser.id, error: err }); }
-  };
+  }, [supabase, fireInfo, fireError, fireWarn]);
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     try {
       fireInfo('🔄 [AUTH] Refreshing session');
       const { data: { user: currentUser }, error } = await supabase.auth.getUser();
@@ -107,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (currentUser) await fetchUserData(currentUser); else { setProfile(null); setPermissions(null); }
     } catch (err) { fireError('❌ [AUTH] refreshUser error', { error: err }); setUser(null); setProfile(null); setPermissions(null); }
     finally { setLoading(false); }
-  };
+  }, [supabase, fireInfo, fireWarn, fireError, fetchUserData]);
 
   const signOut = async () => { 
     try { 
@@ -170,7 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       fireInfo('🧹 [AUTH] Cleanup'); 
       subscription.unsubscribe(); 
     };
-  }, [envValid]);
+  }, [envValid, FAST_AUTH_LOG, fetchUserData, fireInfo, refreshUser, supabase.auth]);
 
   const value = { user, profile, permissions, loading, signOut, refreshUser };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

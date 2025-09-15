@@ -9,7 +9,7 @@ export default async function DebugProfilePage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/auth/signin')
+    redirect('/signin')
   }
 
   // Get user profile to debug

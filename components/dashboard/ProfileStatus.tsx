@@ -155,7 +155,14 @@ export function ProfileStatus() {
 
   // Memoize household data loading function
   const loadHouseholdData = useCallback(async () => {
+    console.log('🔍 [DEBUG] ProfileStatus - loadHouseholdData called with profile:', {
+      hasProfile: !!profile,
+      householdId: profile?.household_id,
+      profileName: profile?.name
+    });
+
     if (!profile?.household_id) {
+      console.log('❌ [DEBUG] ProfileStatus - No household_id, stopping');
       setLoading(false);
       return;
     }
@@ -209,7 +216,7 @@ export function ProfileStatus() {
     } finally {
       setLoading(false);
     }
-  }, [profile?.household_id, supabase]);
+  }, [profile, supabase]);
 
   // Weather fetching function - Use household coordinates
   const fetchWeather = useCallback(async () => {
