@@ -74,5 +74,19 @@ export const createClient = () =>
   createBrowserClient<Database>(
     // Pass Supabase URL and anonymous key from the environment to the client
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      auth: {
+        // Enable automatic refresh token handling
+        autoRefreshToken: true,
+        // Persist session in localStorage by default  
+        persistSession: true,
+        // Enable debug mode for auth issues
+        debug: process.env.NODE_ENV === 'development',
+        // Configure storage
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        // Set flowType for better OAuth handling
+        flowType: 'pkce'
+      }
+    }
   );

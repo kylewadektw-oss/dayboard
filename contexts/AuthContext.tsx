@@ -99,15 +99,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = useCallback(async () => {
     try {
       fireInfo('🔄 [AUTH] Refreshing session');
+      
+      // First try to get the current session from storage/cookies
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        fireWarn('⚠️ [AUTH] Session error during refresh', { error: sessionError.message });
+      }
+      
+      // If we have a valid session, use it
+      if (session?.user && session?.access_token) {
+        fireInfo('✅ [AUTH] Valid session found during refresh', { userId: session.user.id });
+        setUser(session.user);
+        await fetchUserData(session.user);
+        return;
+      }
+      
+      // If no session or session is invalid, try to get user directly
+      // This will attempt to refresh the token if needed
+      fireInfo('🔄 [AUTH] No valid session found, attempting token refresh');
       const { data: { user: currentUser }, error } = await supabase.auth.getUser();
-      if (error && error.message?.includes('refresh_token_not_found')) {
-        fireWarn('🔄 [AUTH] Refresh token expired – clearing session');
-        setUser(null); setProfile(null); setPermissions(null); await supabase.auth.signOut(); return; }
-      if (error) throw error;
+      
+      if (error) {
+        if (error.message?.includes('refresh_token_not_found') || 
+            error.message?.includes('Invalid Refresh Token') ||
+            error.message?.includes('Refresh Token Not Found')) {
+          fireWarn('🔄 [AUTH] Refresh token invalid - user needs to sign in again', { error: error.message });
+          setUser(null); 
+          setProfile(null); 
+          setPermissions(null);
+          return;
+        }
+        throw error;
+      }
+      
       setUser(currentUser);
-      if (currentUser) await fetchUserData(currentUser); else { setProfile(null); setPermissions(null); }
-    } catch (err) { fireError('❌ [AUTH] refreshUser error', { error: err }); setUser(null); setProfile(null); setPermissions(null); }
-    finally { setLoading(false); }
+      if (currentUser) {
+        fireInfo('✅ [AUTH] User refreshed successfully', { userId: currentUser.id });
+        await fetchUserData(currentUser);
+      } else { 
+        fireInfo('ℹ️ [AUTH] No user found after refresh');
+        setProfile(null); 
+        setPermissions(null); 
+      }
+    } catch (err) { 
+      fireError('❌ [AUTH] refreshUser error', { error: err }); 
+      setUser(null); 
+      setProfile(null); 
+      setPermissions(null); 
+    }
+    finally { 
+      setLoading(false); 
+    }
   }, [supabase, fireInfo, fireWarn, fireError, fetchUserData]);
 
   const signOut = async () => { 
@@ -133,11 +176,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!envValid) return;
     fireInfo('🚀 [AUTH] AuthContext init',{ FAST_AUTH_LOG });
     
-    // Initial session check
-    refreshUser();
+    // Check if we're in an OAuth callback or have OAuth tokens in URL
+    const isOAuthCallback = typeof window !== 'undefined' && 
+      (window.location.hash.includes('access_token') || 
+       window.location.hash.includes('refresh_token') ||
+       window.location.pathname.includes('/auth/callback') ||
+       new URLSearchParams(window.location.search).has('code'));
+    
+    if (!isOAuthCallback) {
+      // Normal initialization - check for existing session
+      refreshUser();
+    } else {
+      fireInfo('🔄 [AUTH] OAuth callback detected - waiting for Supabase to handle tokens');
+      // For OAuth callbacks, wait a moment for Supabase to process the tokens
+      // then set loading to false since the auth state change handler will take over
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+    }
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      fireInfo('🔄 [AUTH] Auth state change', { event, hasSession: !!session });
+      fireInfo('🔄 [AUTH] Auth state change', { 
+        event, 
+        hasSession: !!session, 
+        userId: session?.user?.id,
+        hasAccessToken: !!session?.access_token,
+        hasRefreshToken: !!session?.refresh_token 
+      });
       
       if (event === 'SIGNED_OUT' || !session) {
         fireInfo('👋 [AUTH] User signed out or session lost');
@@ -154,6 +219,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        fireInfo('✅ [AUTH] User authenticated', { 
+          event, 
+          userId: session?.user?.id,
+          hasValidTokens: !!(session?.access_token && session?.refresh_token)
+        });
         const currentUser = session?.user ?? null;
         setUser(currentUser);
         
