@@ -8,25 +8,59 @@ export default function AuthDebug() {
   const { user, profile, loading } = useAuth();
   const [sessionData, setSessionData] = useState<object | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [authChecks, setAuthChecks] = useState<string[]>([]);
 
   useEffect(() => {
+    const addCheck = (message: string) => {
+      setAuthChecks(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
+    };
+
     const checkSession = async () => {
       try {
+        addCheck('Starting session check...');
         const supabase = createClient();
+        
+        addCheck('Getting session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
+          addCheck(`Session error: ${error.message}`);
           setError(error.message);
         } else {
+          addCheck(`Session result: ${session ? 'Found' : 'None'}`);
           setSessionData(session);
         }
+
+        addCheck('Getting user...');
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          addCheck(`User error: ${userError.message}`);
+        } else {
+          addCheck(`User result: ${user ? 'Found' : 'None'}`);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        const message = err instanceof Error ? err.message : 'Unknown error';
+        addCheck(`Critical error: ${message}`);
+        setError(message);
       }
     };
 
+    addCheck('Component mounted');
     checkSession();
   }, []);
+
+  useEffect(() => {
+    setAuthChecks(prev => [...prev, `${new Date().toLocaleTimeString()}: Auth loading state: ${loading}`]);
+  }, [loading]);
+
+  useEffect(() => {
+    setAuthChecks(prev => [...prev, `${new Date().toLocaleTimeString()}: User state: ${user ? 'Present' : 'None'}`]);
+  }, [user]);
+
+  useEffect(() => {
+    setAuthChecks(prev => [...prev, `${new Date().toLocaleTimeString()}: Profile state: ${profile ? 'Present' : 'None'}`]);
+  }, [profile]);
 
   return (
     <div className="p-8 max-w-4xl mx-auto bg-white min-h-screen">
@@ -69,6 +103,17 @@ export default function AuthDebug() {
                 origin: typeof window !== 'undefined' ? window.location.origin : 'server'
               }, null, 2)}
             </pre>
+          </div>
+        </div>
+
+        <div className="bg-green-50 border border-green-200 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold mb-4 text-green-800">Auth Timeline:</h2>
+          <div className="bg-white p-4 rounded border overflow-auto max-h-64">
+            {authChecks.map((check, index) => (
+              <div key={index} className="text-sm text-gray-700 font-mono py-1 border-b border-gray-100">
+                {check}
+              </div>
+            ))}
           </div>
         </div>
       </div>
