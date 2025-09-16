@@ -3,8 +3,8 @@
  * 
  * Copyright (c)   // Memoize display name from profile
   const displayName = useMemo(() => 
-    profile?.preferred_name || profile?.name || user?.email || 'Guest',
-    [profile?.preferred_name, profile?.name, user?.email]
+    profile?.display_name || profile?.full_name || user?.email || 'Guest',
+    [profile?.display_name, profile?.full_name, user?.email]
   );
 
   // Get user role for display (keep the display version)
@@ -69,8 +69,8 @@ function AppNavigationComponent() {
 
   // Memoize user display name
   const displayName = useMemo(() => 
-    profile?.preferred_name || profile?.name || user?.email || 'Guest',
-    [profile?.preferred_name, profile?.name, user?.email]
+    profile?.display_name || profile?.full_name || user?.email || 'Guest',
+    [profile?.display_name, profile?.full_name, user?.email]
   );
 
   // Get user role for display

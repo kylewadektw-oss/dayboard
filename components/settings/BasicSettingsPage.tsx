@@ -206,7 +206,7 @@ export default function BasicSettingsPage() {
       if (profile.household_id && (userRole === 'admin' || userRole === 'super_admin')) {
         // For now, use placeholder data - will be replaced when new tables are available
         setHouseholdSettings({
-          household_name: profile.name || '',
+          household_name: profile.display_name || profile.full_name || '',
           invite_notifications: true,
           auto_assign_chores: false
         });

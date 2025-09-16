@@ -231,8 +231,8 @@ export default function ProfileViewImproved() {
   useEffect(() => {
     if (profile) {
       const next: ProfileFormState = {
-        name: profile.name || '',
-        preferred_name: profile.preferred_name || '',
+        name: profile.display_name || profile.full_name || '',
+        preferred_name: profile.display_name || '',
         phone_number: formatPhoneNumber(profile.phone_number || ''),
         date_of_birth: profile.date_of_birth || '',
         timezone: profile.timezone || '',
@@ -595,13 +595,13 @@ export default function ProfileViewImproved() {
             <div className="flex items-start gap-6 mb-8">
               <div className="relative">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-3xl flex items-center justify-center text-white text-3xl font-bold shadow-xl">
-                  {(profile.preferred_name || profile.name || user?.email || 'U').charAt(0).toUpperCase()}
+                  {(profile.display_name || profile.full_name || user?.email || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-3 border-white shadow-lg"></div>
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-3xl font-bold text-gray-900 leading-tight mb-2">
-                  {profile.preferred_name || profile.name || 'No name set'}
+                  {profile.display_name || profile.full_name || 'No name set'}
                 </h2>
                 {profile.family_role && (
                   <span className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-full text-sm font-semibold tracking-wide shadow-sm">
@@ -1291,7 +1291,7 @@ export default function ProfileViewImproved() {
     showLoading,
     profile: profile ? {
       id: profile.id,
-      name: profile.name,
+      name: profile.display_name || profile.full_name,
       onboarding_completed: profile.onboarding_completed,
       household_id: profile.household_id
     } : null,

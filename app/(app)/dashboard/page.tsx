@@ -59,7 +59,7 @@ export default function DashboardPage() {
       authLogger.info('🏠 Dashboard accessed successfully', {
         userId: user?.id,
         profileId: profile.id,
-        displayName: profile.name,
+        displayName: profile.display_name || profile.full_name,
         role: profile.role,
         householdId: profile.household_id,
         url: typeof window !== 'undefined' ? window.location.href : 'unknown'

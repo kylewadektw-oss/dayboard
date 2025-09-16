@@ -148,15 +148,15 @@ export async function GET(request: NextRequest) {
         serverAuthLogger.info(`👤 Existing profile found`, { 
           userId: user.id, 
           profileId: profile.id,
-          displayName: profile.preferred_name || profile.name 
+          displayName: profile.display_name || profile.full_name 
         });
 
         // Check if household setup is complete
-        if (!profile.household_id || !profile.onboarding_completed || !profile.name) {
+        if (!profile.household_id || !profile.onboarding_completed || !(profile.display_name || profile.full_name)) {
           serverAuthLogger.info(`🏠 Redirecting to profile setup - incomplete household/profile`, {
             userId: user.id,
             hasHousehold: !!profile.household_id,
-            hasName: !!profile.name,
+            hasName: !!(profile.display_name || profile.full_name),
             onboardingCompleted: profile.onboarding_completed
           });
           return NextResponse.redirect(

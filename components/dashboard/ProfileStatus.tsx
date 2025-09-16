@@ -143,8 +143,8 @@ export function ProfileStatus() {
   
   // Memoize display name calculation to avoid recomputation
   const displayName = useMemo(() => 
-    profile?.preferred_name || profile?.name || user?.email?.split('@')[0] || 'there',
-    [profile?.preferred_name, profile?.name, user?.email]
+    profile?.display_name || profile?.full_name || user?.email?.split('@')[0] || 'there',
+    [profile?.display_name, profile?.full_name, user?.email]
   );
 
   // Memoize greeting to avoid string concatenation on every render
@@ -158,7 +158,7 @@ export function ProfileStatus() {
     console.log('🔍 [DEBUG] ProfileStatus - loadHouseholdData called with profile:', {
       hasProfile: !!profile,
       householdId: profile?.household_id,
-      profileName: profile?.name
+      profileDisplayName: profile?.display_name || profile?.full_name
     });
 
     if (!profile?.household_id) {

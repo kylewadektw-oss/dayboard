@@ -77,7 +77,7 @@ export default function AuthDebug() {
                 userId: user?.id,
                 userEmail: user?.email,
                 hasProfile: !!profile,
-                profileName: profile?.name
+                profileName: profile?.display_name || profile?.full_name
               }, null, 2)}
             </pre>
           </div>

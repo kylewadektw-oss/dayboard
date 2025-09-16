@@ -110,8 +110,8 @@ export default function ProfileView() {
   useEffect(() => {
     if (profile) {
       const next: ProfileFormState = {
-        name: profile.name || '',
-        preferred_name: profile.preferred_name || '',
+        name: profile.display_name || profile.full_name || '',
+        preferred_name: profile.display_name || '',
         phone_number: profile.phone_number || '',
         date_of_birth: profile.date_of_birth || '',
         timezone: profile.timezone || '',
@@ -313,7 +313,7 @@ export default function ProfileView() {
           <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-start gap-4 mb-6">
               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-semibold shadow">
-                {(profile.preferred_name || profile.name || user?.email || 'U').charAt(0).toUpperCase()}
+                {(profile.display_name || profile.full_name || user?.email || 'U').charAt(0).toUpperCase()}
               </div>
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-gray-900 leading-tight">{profile.preferred_name || profile.name || 'No name set'}</h2>
