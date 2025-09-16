@@ -1,28 +1,27 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 'use client';
 
 import Link from 'next/link';
-import { 
-  ChefHat, 
-  ListTodo, 
-  Users, 
-  Timer, 
+import {
+  ChefHat,
+  ListTodo,
+  Users,
+  Timer,
   Star,
   ArrowRight,
   PlayCircle,
@@ -52,20 +51,22 @@ import LandingPageLogger from '@/components/marketing/LandingPageLogger';
 export default function LandingPage() {
   // Remove auth redirect for now to avoid provider issues
   // The signin page will handle auth flow properly
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <LandingPageLogger />
-      
+
       {/* Hero Section */}
       <section className="relative px-4 pt-20 pb-24 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="text-center">
           {/* Badge */}
           <div className="inline-flex items-center px-4 py-2 mb-8 bg-white/80 backdrop-blur-sm rounded-full shadow-lg border border-gray-200">
             <Sparkles className="w-4 h-4 text-purple-600 mr-2" />
-            <span className="text-sm font-medium text-gray-700">75% Complete • Production Ready</span>
+            <span className="text-sm font-medium text-gray-700">
+              75% Complete • Production Ready
+            </span>
           </div>
-          
+
           {/* Main Headline */}
           <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-7xl leading-tight">
             Your Complete
@@ -73,13 +74,16 @@ export default function LandingPage() {
               Household OS
             </span>
           </h1>
-          
+
           {/* Subtitle */}
           <p className="mt-6 text-xl leading-relaxed text-gray-700 max-w-3xl mx-auto">
-            Stop juggling apps. Dayboard unifies <strong>meal planning</strong>, <strong>household coordination</strong>, 
-            <strong> project tracking</strong>, and <strong>family organization</strong> into one intelligent command center.
+            Stop juggling apps. Dayboard unifies <strong>meal planning</strong>,{' '}
+            <strong>household coordination</strong>,
+            <strong> project tracking</strong>, and{' '}
+            <strong>family organization</strong> into one intelligent command
+            center.
           </p>
-          
+
           {/* CTA Buttons */}
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -98,7 +102,7 @@ export default function LandingPage() {
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-          
+
           {/* Trust Indicators */}
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
             <div className="flex items-center gap-2">
@@ -129,11 +133,12 @@ export default function LandingPage() {
               Everything You Need, Built & Ready
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Unlike concept apps, Dayboard is production-ready with real features you can use today. 
-              Here&apos;s what&apos;s already built and working.
+              Unlike concept apps, Dayboard is production-ready with real
+              features you can use today. Here&apos;s what&apos;s already built
+              and working.
             </p>
           </div>
-          
+
           {/* Core Dashboard Features */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             {/* Smart Dashboard */}
@@ -142,10 +147,13 @@ export default function LandingPage() {
                 <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Home className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Smart Dashboard</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  Smart Dashboard
+                </h3>
                 <p className="text-gray-700 mb-4">
-                  <strong>8 interactive widgets</strong> including real weather, household maps, 
-                  calendar events, quick actions, and profile status monitoring.
+                  <strong>8 interactive widgets</strong> including real weather,
+                  household maps, calendar events, quick actions, and profile
+                  status monitoring.
                 </p>
                 <div className="text-blue-600 font-semibold">
                   Weather • Maps • Calendar • Actions →
@@ -159,10 +167,15 @@ export default function LandingPage() {
                 <div className="w-14 h-14 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <ChefHat className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Complete Meal System</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  Complete Meal System
+                </h3>
                 <p className="text-gray-700 mb-4">
-                  <strong>Recipe library, weekly planning, favorites management</strong>, 
-                  plus TheCocktailDB integration for beverages and entertaining.
+                  <strong>
+                    Recipe library, weekly planning, favorites management
+                  </strong>
+                  , plus TheCocktailDB integration for beverages and
+                  entertaining.
                 </p>
                 <div className="text-orange-600 font-semibold">
                   Recipes • Planning • Cocktails • Lists →
@@ -176,10 +189,13 @@ export default function LandingPage() {
                 <div className="w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <ListTodo className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Smart List Management</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  Smart List Management
+                </h3>
                 <p className="text-gray-700 mb-4">
-                  <strong>Multi-type lists</strong> with grocery categories, todo tracking, 
-                  shopping progress, and real-time household collaboration.
+                  <strong>Multi-type lists</strong> with grocery categories,
+                  todo tracking, shopping progress, and real-time household
+                  collaboration.
                 </p>
                 <div className="text-emerald-600 font-semibold">
                   Grocery • Todo • Shopping • Progress →
@@ -193,10 +209,13 @@ export default function LandingPage() {
                 <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Timer className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Work & Time Management</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  Work & Time Management
+                </h3>
                 <p className="text-gray-700 mb-4">
-                  <strong>Built-in timers, productivity tracking</strong>, schedule management, 
-                  and analytics for balancing work and household responsibilities.
+                  <strong>Built-in timers, productivity tracking</strong>,
+                  schedule management, and analytics for balancing work and
+                  household responsibilities.
                 </p>
                 <div className="text-purple-600 font-semibold">
                   Timers • Analytics • Productivity • Reports →
@@ -210,10 +229,13 @@ export default function LandingPage() {
                 <div className="w-14 h-14 bg-gradient-to-r from-rose-500 to-pink-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Wrench className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Project Coordination</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  Project Coordination
+                </h3>
                 <p className="text-gray-700 mb-4">
-                  <strong>Visual project tracking</strong> with progress bars, priority levels, 
-                  task management, and collaborative household project coordination.
+                  <strong>Visual project tracking</strong> with progress bars,
+                  priority levels, task management, and collaborative household
+                  project coordination.
                 </p>
                 <div className="text-rose-600 font-semibold">
                   Projects • Tasks • Progress • Teams →
@@ -227,10 +249,13 @@ export default function LandingPage() {
                 <div className="w-14 h-14 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Users className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">Family Coordination</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  Family Coordination
+                </h3>
                 <p className="text-gray-700 mb-4">
-                  <strong>Household profiles, role management</strong>, permissions system, 
-                  daycare updates, and multi-member coordination tools.
+                  <strong>Household profiles, role management</strong>,
+                  permissions system, daycare updates, and multi-member
+                  coordination tools.
                 </p>
                 <div className="text-cyan-600 font-semibold">
                   Profiles • Roles • Updates • Coordination →
@@ -241,84 +266,102 @@ export default function LandingPage() {
 
           {/* Advanced Features Grid */}
           <div className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-3xl p-8 mb-16">
-            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Advanced Features Built-In</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+              Advanced Features Built-In
+            </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
                   <Cloud className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Weather Integration</div>
+                  <div className="font-semibold text-gray-900">
+                    Weather Integration
+                  </div>
                   <div className="text-sm text-gray-600">6-day forecasts</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
                   <MapPin className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Location Maps</div>
+                  <div className="font-semibold text-gray-900">
+                    Location Maps
+                  </div>
                   <div className="text-sm text-gray-600">Google Maps</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
                   <BarChart3 className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Analytics Suite</div>
+                  <div className="font-semibold text-gray-900">
+                    Analytics Suite
+                  </div>
                   <div className="text-sm text-gray-600">7 dashboards</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
                   <Baby className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Daycare Updates</div>
+                  <div className="font-semibold text-gray-900">
+                    Daycare Updates
+                  </div>
                   <div className="text-sm text-gray-600">Photo feeds</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center">
                   <Martini className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Cocktail Database</div>
+                  <div className="font-semibold text-gray-900">
+                    Cocktail Database
+                  </div>
                   <div className="text-sm text-gray-600">TheCocktailDB</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
                   <ActivitySquare className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Real-time Logging</div>
+                  <div className="font-semibold text-gray-900">
+                    Real-time Logging
+                  </div>
                   <div className="text-sm text-gray-600">Debug system</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-teal-500 rounded-lg flex items-center justify-center">
                   <BookOpen className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Recipe Library</div>
+                  <div className="font-semibold text-gray-900">
+                    Recipe Library
+                  </div>
                   <div className="text-sm text-gray-600">50+ recipes</div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-pink-500 rounded-lg flex items-center justify-center">
                   <Settings className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Advanced Settings</div>
+                  <div className="font-semibold text-gray-900">
+                    Advanced Settings
+                  </div>
                   <div className="text-sm text-gray-600">Full control</div>
                 </div>
               </div>
@@ -335,10 +378,11 @@ export default function LandingPage() {
               Simple, Transparent Pricing
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Start free with core features. Upgrade for advanced household coordination and premium integrations.
+              Start free with core features. Upgrade for advanced household
+              coordination and premium integrations.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Free Plan */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 relative">
@@ -347,7 +391,7 @@ export default function LandingPage() {
                 <div className="text-4xl font-bold text-gray-900 mb-1">$0</div>
                 <div className="text-gray-600">Forever</div>
               </div>
-              
+
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center gap-3">
                   <Check className="w-5 h-5 text-green-500" />
@@ -378,7 +422,7 @@ export default function LandingPage() {
                   <span className="text-gray-500">Premium integrations</span>
                 </li>
               </ul>
-              
+
               <Link
                 href="/signin"
                 className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-semibold transition-colors text-center block"
@@ -394,13 +438,13 @@ export default function LandingPage() {
                   Most Popular
                 </span>
               </div>
-              
+
               <div className="text-center mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Pro</h3>
                 <div className="text-4xl font-bold text-gray-900 mb-1">$12</div>
                 <div className="text-gray-600">per month</div>
               </div>
-              
+
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center gap-3">
                   <Check className="w-5 h-5 text-green-500" />
@@ -431,7 +475,7 @@ export default function LandingPage() {
                   <span>Export & backup features</span>
                 </li>
               </ul>
-              
+
               <Link
                 href="/signin"
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors text-center block"
@@ -443,11 +487,13 @@ export default function LandingPage() {
             {/* Enterprise Plan */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-8 relative">
               <div className="text-center mb-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Enterprise</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  Enterprise
+                </h3>
                 <div className="text-4xl font-bold text-gray-900 mb-1">$29</div>
                 <div className="text-gray-600">per month</div>
               </div>
-              
+
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center gap-3">
                   <Check className="w-5 h-5 text-green-500" />
@@ -478,7 +524,7 @@ export default function LandingPage() {
                   <span>Dedicated account manager</span>
                 </li>
               </ul>
-              
+
               <Link
                 href="mailto:kyle.wade.ktw@gmail.com"
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition-colors text-center block"
@@ -487,10 +533,11 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
-          
+
           <div className="text-center mt-12">
             <p className="text-gray-600 mb-4">
-              All plans include free updates, mobile access, and data export. No setup fees.
+              All plans include free updates, mobile access, and data export. No
+              setup fees.
             </p>
             <div className="flex items-center justify-center gap-8 text-sm text-gray-500">
               <div className="flex items-center gap-2">
@@ -516,12 +563,17 @@ export default function LandingPage() {
           <div className="text-center">
             <div className="flex justify-center items-center gap-2 mb-8">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-8 w-8 fill-yellow-400 text-yellow-400" />
+                <Star
+                  key={i}
+                  className="h-8 w-8 fill-yellow-400 text-yellow-400"
+                />
               ))}
             </div>
             <blockquote className="text-2xl font-light text-white max-w-4xl mx-auto leading-relaxed mb-8">
-              &ldquo;This isn&apos;t just another household app concept. Dayboard actually works - 
-              comprehensive features, beautiful design, and real functionality that eliminated our family chaos.&rdquo;
+              &ldquo;This isn&apos;t just another household app concept.
+              Dayboard actually works - comprehensive features, beautiful
+              design, and real functionality that eliminated our family
+              chaos.&rdquo;
             </blockquote>
             <div className="text-gray-300 text-lg">
               — Sarah Chen, Working Parent of 3
@@ -540,10 +592,10 @@ export default function LandingPage() {
             Ready to Unify Your Household?
           </h2>
           <p className="text-xl text-gray-700 mb-10">
-            Join the families who&apos;ve transformed their home management with a single, 
-            powerful platform that actually works.
+            Join the families who&apos;ve transformed their home management with
+            a single, powerful platform that actually works.
           </p>
-          
+
           <div className="mb-10">
             <Link
               href="/signin"
@@ -552,12 +604,13 @@ export default function LandingPage() {
               <PlayCircle className="w-6 h-6" />
               Start Your Free Dashboard
             </Link>
-            
+
             <p className="mt-6 text-base text-gray-600">
-              Free forever • No credit card required • All core features included
+              Free forever • No credit card required • All core features
+              included
             </p>
           </div>
-          
+
           {/* Feature Summary */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-gray-700">
             <div className="flex items-center gap-2 justify-center">

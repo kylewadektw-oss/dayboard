@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -112,18 +112,18 @@ export function MealDragDrop({
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    
+
     try {
       const dragDataStr = e.dataTransfer.getData('application/json');
       if (dragDataStr) {
         const dragData: DragData = JSON.parse(dragDataStr);
-        
+
         // Determine drop position based on mouse position
         const rect = elementRef.current?.getBoundingClientRect();
         if (rect) {
           const dropY = e.clientY - rect.top;
           const position = dropY < rect.height / 2 ? 'above' : 'below';
-          
+
           const dropTarget: DropTarget = {
             dayIndex,
             mealIndex,
@@ -140,8 +140,9 @@ export function MealDragDrop({
     }
   };
 
-  const isDropTarget = dragOverTarget && 
-    dragOverTarget.dayIndex === dayIndex && 
+  const isDropTarget =
+    dragOverTarget &&
+    dragOverTarget.dayIndex === dayIndex &&
     dragOverTarget.mealIndex === mealIndex;
 
   const showDropIndicator = isDropTarget && !isDragging;
@@ -165,19 +166,26 @@ export function MealDragDrop({
         className={cn(
           'group relative bg-white border border-gray-200 rounded-lg p-3 cursor-move transition-all duration-200',
           'hover:border-blue-300 hover:shadow-md',
-          isDragging && 'opacity-50 transform rotate-2 scale-105 shadow-lg z-20',
-          isDropTarget && dragOverTarget?.position === 'replace' && 'border-blue-500 bg-blue-50',
+          isDragging &&
+            'opacity-50 transform rotate-2 scale-105 shadow-lg z-20',
+          isDropTarget &&
+            dragOverTarget?.position === 'replace' &&
+            'border-blue-500 bg-blue-50',
           className
         )}
         style={{
-          transform: isDragging ? `translate(${dragOffset.x}px, ${dragOffset.y}px)` : undefined
+          transform: isDragging
+            ? `translate(${dragOffset.x}px, ${dragOffset.y}px)`
+            : undefined
         }}
       >
         {/* Drag Handle */}
-        <div className={cn(
-          'absolute left-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity',
-          isHovering && 'opacity-100'
-        )}>
+        <div
+          className={cn(
+            'absolute left-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity',
+            isHovering && 'opacity-100'
+          )}
+        >
           <GripVertical className="h-4 w-4 text-gray-400" />
         </div>
 
@@ -209,25 +217,34 @@ export function MealDragDrop({
 
             {/* Meal Status */}
             <div className="flex items-center justify-between mt-2">
-              <span className={cn(
-                'px-2 py-1 rounded-full text-xs font-medium',
-                mealPlan.status === 'completed' && 'bg-green-100 text-green-700',
-                mealPlan.status === 'preparing' && 'bg-yellow-100 text-yellow-700',
-                mealPlan.status === 'planned' && 'bg-blue-100 text-blue-700',
-                mealPlan.status === 'skipped' && 'bg-gray-100 text-gray-700'
-              )}>
-                {mealPlan.status.charAt(0).toUpperCase() + mealPlan.status.slice(1)}
+              <span
+                className={cn(
+                  'px-2 py-1 rounded-full text-xs font-medium',
+                  mealPlan.status === 'completed' &&
+                    'bg-green-100 text-green-700',
+                  mealPlan.status === 'preparing' &&
+                    'bg-yellow-100 text-yellow-700',
+                  mealPlan.status === 'planned' && 'bg-blue-100 text-blue-700',
+                  mealPlan.status === 'skipped' && 'bg-gray-100 text-gray-700'
+                )}
+              >
+                {mealPlan.status.charAt(0).toUpperCase() +
+                  mealPlan.status.slice(1)}
               </span>
 
               {/* Difficulty & Cuisine Tags */}
               <div className="flex items-center space-x-1">
                 {recipe.difficulty && (
-                  <span className={cn(
-                    'px-1.5 py-0.5 rounded text-xs font-medium',
-                    recipe.difficulty === 'easy' && 'bg-green-100 text-green-600',
-                    recipe.difficulty === 'medium' && 'bg-yellow-100 text-yellow-600',
-                    recipe.difficulty === 'hard' && 'bg-red-100 text-red-600'
-                  )}>
+                  <span
+                    className={cn(
+                      'px-1.5 py-0.5 rounded text-xs font-medium',
+                      recipe.difficulty === 'easy' &&
+                        'bg-green-100 text-green-600',
+                      recipe.difficulty === 'medium' &&
+                        'bg-yellow-100 text-yellow-600',
+                      recipe.difficulty === 'hard' && 'bg-red-100 text-red-600'
+                    )}
+                  >
                     {recipe.difficulty}
                   </span>
                 )}
@@ -299,12 +316,12 @@ export function MealDropZone({
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    
+
     try {
       const dragDataStr = e.dataTransfer.getData('application/json');
       if (dragDataStr) {
         const dragData: DragData = JSON.parse(dragDataStr);
-        
+
         const dropTarget: DropTarget = {
           dayIndex,
           mealIndex: 0,

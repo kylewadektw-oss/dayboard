@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 'use client';
 
@@ -22,7 +21,7 @@ import { initAllProtections } from '@/utils/code-protection';
 
 /**
  * 🛡️ CODE PROTECTION COMPONENT
- * 
+ *
  * Initializes client-side code protection measures to prevent unauthorized
  * copying and inspection by large corporations or competing services.
  */
@@ -30,7 +29,7 @@ export default function CodeProtection() {
   useEffect(() => {
     // Initialize all protection measures
     initAllProtections();
-    
+
     // Temporarily disable console overrides during development to prevent infinite loops
     // Only override console in production to avoid development issues
     // if (process.env.NODE_ENV !== 'development') {
@@ -44,12 +43,12 @@ export default function CodeProtection() {
     //       originalLog(...args);
     //     }
     //   };
-    //   
+    //
     //   return () => {
     //     console.log = originalLog;
     //   };
     // }
-    
+
     // Detect automated scraping attempts (only in production)
     if (process.env.NODE_ENV !== 'development') {
       let rapidRequests = 0;
@@ -59,13 +58,15 @@ export default function CodeProtection() {
           console.warn('🛡️ Potential automated scraping detected');
           // Could implement rate limiting or other protections here
         }
-        setTimeout(() => { rapidRequests = Math.max(0, rapidRequests - 1); }, 1000);
+        setTimeout(() => {
+          rapidRequests = Math.max(0, rapidRequests - 1);
+        }, 1000);
       };
-      
+
       // Track page interactions
       document.addEventListener('click', requestTracker);
       document.addEventListener('keydown', requestTracker);
-      
+
       return () => {
         document.removeEventListener('click', requestTracker);
         document.removeEventListener('keydown', requestTracker);

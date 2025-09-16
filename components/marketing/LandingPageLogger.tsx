@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 'use client';
 
@@ -34,16 +33,28 @@ export default function LandingPageLogger() {
     // Track scroll events for engagement
     let maxScroll = 0;
     const trackScroll = () => {
-      const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+      const scrollPercent = Math.round(
+        (window.scrollY / (document.body.scrollHeight - window.innerHeight)) *
+          100
+      );
       if (scrollPercent > maxScroll) {
         maxScroll = scrollPercent;
         // Log significant scroll milestones
         if (scrollPercent >= 25 && scrollPercent < 50) {
-          logger.info('📊 Landing page: 25% scroll depth reached', 'LandingPage');
+          logger.info(
+            '📊 Landing page: 25% scroll depth reached',
+            'LandingPage'
+          );
         } else if (scrollPercent >= 50 && scrollPercent < 75) {
-          logger.info('📊 Landing page: 50% scroll depth reached', 'LandingPage');
+          logger.info(
+            '📊 Landing page: 50% scroll depth reached',
+            'LandingPage'
+          );
         } else if (scrollPercent >= 75) {
-          logger.info('📊 Landing page: 75% scroll depth reached', 'LandingPage');
+          logger.info(
+            '📊 Landing page: 75% scroll depth reached',
+            'LandingPage'
+          );
         }
       }
     };
@@ -54,7 +65,9 @@ export default function LandingPageLogger() {
     const startTime = Date.now();
     const trackTimeOnPage = () => {
       const timeSpent = Math.round((Date.now() - startTime) / 1000);
-      logger.info('⏱️ Landing page: Time spent', 'LandingPage', { timeSpentSeconds: timeSpent });
+      logger.info('⏱️ Landing page: Time spent', 'LandingPage', {
+        timeSpentSeconds: timeSpent
+      });
     };
 
     // Log time spent when user leaves

@@ -1,54 +1,64 @@
-'use client'
+'use client';
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react';
 
 interface EnvironmentStatus {
-  name: string
-  url: string
-  status: 'online' | 'offline' | 'checking'
-  lastCheck: string
-  responseTime?: number
+  name: string;
+  url: string;
+  status: 'online' | 'offline' | 'checking';
+  lastCheck: string;
+  responseTime?: number;
 }
 
 export default function EnterpriseDashboard() {
   const [environments, setEnvironments] = useState<EnvironmentStatus[]>([
-    { name: 'Production', url: 'https://dayboard.bentlolabs.com', status: 'checking', lastCheck: '' },
-    { name: 'Stashhouse', url: 'https://stashhouse.dayboard.bentlolabs.com', status: 'checking', lastCheck: '' },
-  ])
+    {
+      name: 'Production',
+      url: 'https://dayboard.bentlolabs.com',
+      status: 'checking',
+      lastCheck: ''
+    },
+    {
+      name: 'Stashhouse',
+      url: 'https://stashhouse.dayboard.bentlolabs.com',
+      status: 'checking',
+      lastCheck: ''
+    }
+  ]);
   const checkEnvironments = useCallback(async () => {
     const updatedEnvironments = await Promise.all(
       environments.map(async (env) => {
         try {
-          const startTime = Date.now()
+          const startTime = Date.now();
           const response = await fetch(`${env.url}/api/bentlolabs-monitor`, {
             method: 'GET',
             headers: { 'Cache-Control': 'no-cache' }
-          })
-          const responseTime = Date.now() - startTime
-          
+          });
+          const responseTime = Date.now() - startTime;
+
           return {
             ...env,
-            status: response.ok ? 'online' as const : 'offline' as const,
+            status: response.ok ? ('online' as const) : ('offline' as const),
             lastCheck: new Date().toLocaleTimeString(),
             responseTime: response.ok ? responseTime : undefined
-          }
+          };
         } catch {
           return {
             ...env,
             status: 'offline' as const,
             lastCheck: new Date().toLocaleTimeString()
-          }
+          };
         }
       })
-    )
-    setEnvironments(updatedEnvironments)
-  }, [environments])
+    );
+    setEnvironments(updatedEnvironments);
+  }, [environments]);
 
   useEffect(() => {
-    checkEnvironments()
-    const interval = setInterval(checkEnvironments, 60000) // Check every minute
-    return () => clearInterval(interval)
-  }, [checkEnvironments])
+    checkEnvironments();
+    const interval = setInterval(checkEnvironments, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [checkEnvironments]);
 
   return (
     <div className="enterprise-dashboard">
@@ -67,7 +77,11 @@ export default function EnterpriseDashboard() {
                 <div className="env-header">
                   <span className="env-name">{env.name}</span>
                   <span className={`status-badge ${env.status}`}>
-                    {env.status === 'online' ? '✅' : env.status === 'offline' ? '❌' : '⏳'}
+                    {env.status === 'online'
+                      ? '✅'
+                      : env.status === 'offline'
+                        ? '❌'
+                        : '⏳'}
                     {env.status}
                   </span>
                 </div>
@@ -78,8 +92,12 @@ export default function EnterpriseDashboard() {
                   )}
                 </div>
                 <div className="env-footer">
-                  <span className="last-check">Last check: {env.lastCheck}</span>
-                  <a href={env.url} target="_blank" className="visit-link">Visit →</a>
+                  <span className="last-check">
+                    Last check: {env.lastCheck}
+                  </span>
+                  <a href={env.url} target="_blank" className="visit-link">
+                    Visit →
+                  </a>
                 </div>
               </div>
             ))}
@@ -115,19 +133,27 @@ export default function EnterpriseDashboard() {
           <div className="health-metrics">
             <div className="metric">
               <span className="metric-label">Active Environments</span>
-              <span className="metric-value">{environments.filter(e => e.status === 'online').length}</span>
+              <span className="metric-value">
+                {environments.filter((e) => e.status === 'online').length}
+              </span>
             </div>
             <div className="metric">
               <span className="metric-label">Average Response Time</span>
               <span className="metric-value">
-                {Math.round(environments
-                  .filter(e => e.responseTime)
-                  .reduce((avg, e) => avg + (e.responseTime || 0), 0) / environments.length) || 0}ms
+                {Math.round(
+                  environments
+                    .filter((e) => e.responseTime)
+                    .reduce((avg, e) => avg + (e.responseTime || 0), 0) /
+                    environments.length
+                ) || 0}
+                ms
               </span>
             </div>
             <div className="metric">
               <span className="metric-label">Last Updated</span>
-              <span className="metric-value">{new Date().toLocaleTimeString()}</span>
+              <span className="metric-value">
+                {new Date().toLocaleTimeString()}
+              </span>
             </div>
             <div className="metric">
               <span className="metric-label">Monitoring Status</span>
@@ -335,5 +361,5 @@ export default function EnterpriseDashboard() {
         }
       `}</style>
     </div>
-  )
+  );
 }

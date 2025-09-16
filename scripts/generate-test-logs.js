@@ -13,7 +13,7 @@ console.log(`🧪 Generating ${count} ${logType} logs for testing...\n`);
 // Generate logs by making HTTP requests to the Next.js API
 const generateLogs = async () => {
   const baseUrl = 'http://localhost:3000';
-  
+
   const logMessages = {
     error: [
       'Database connection timeout',
@@ -47,7 +47,7 @@ const generateLogs = async () => {
 
   const components = [
     'AuthService',
-    'DatabaseService', 
+    'DatabaseService',
     'PaymentProcessor',
     'EmailService',
     'CacheManager',
@@ -61,18 +61,18 @@ const generateLogs = async () => {
   for (let i = 0; i < count; i++) {
     let selectedType;
     let messages;
-    
+
     if (logType === 'mixed') {
       const types = ['error', 'warn', 'info', 'debug'];
       selectedType = types[Math.floor(Math.random() * types.length)];
     } else {
       selectedType = logType;
     }
-    
+
     messages = logMessages[selectedType] || logMessages.info;
     const message = messages[Math.floor(Math.random() * messages.length)];
     const component = components[Math.floor(Math.random() * components.length)];
-    
+
     const logData = {
       level: selectedType,
       message: message,
@@ -84,20 +84,23 @@ const generateLogs = async () => {
         randomData: Math.random().toString(36).substring(7)
       }
     };
-    
+
     try {
-      console.log(`📝 [${selectedType.toUpperCase()}] ${component}: ${message}`);
-      
+      console.log(
+        `📝 [${selectedType.toUpperCase()}] ${component}: ${message}`
+      );
+
       // In a real implementation, you'd make an HTTP request to log the data
       // For now, we'll just simulate the delay
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
     } catch (error) {
       console.error(`❌ Failed to generate log ${i + 1}:`, error.message);
     }
   }
-  
-  console.log(`\n✅ Generated ${count} test logs! Check the dashboard at ${baseUrl}/logs-dashboard`);
+
+  console.log(
+    `\n✅ Generated ${count} test logs! Check the dashboard at ${baseUrl}/logs-dashboard`
+  );
 };
 
 // Handle different log types

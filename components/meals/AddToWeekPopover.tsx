@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -18,8 +18,8 @@
 
 import { useState } from 'react';
 
-const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] as const;
-const SLOTS = ['breakfast','lunch','dinner'] as const;
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+const SLOTS = ['breakfast', 'lunch', 'dinner'] as const;
 
 interface AddToWeekPopoverProps {
   onPick: (selection: { dayIdx: number; slot: string }) => void;
@@ -27,9 +27,15 @@ interface AddToWeekPopoverProps {
   className?: string;
 }
 
-export function AddToWeekPopover({ onPick, onClose, className = '' }: AddToWeekPopoverProps) {
-  const [dayIdx, setDayIdx] = useState<number>(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
-  const [slot, setSlot] = useState<typeof SLOTS[number]>('dinner');
+export function AddToWeekPopover({
+  onPick,
+  onClose,
+  className = ''
+}: AddToWeekPopoverProps) {
+  const [dayIdx, setDayIdx] = useState<number>(
+    new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
+  );
+  const [slot, setSlot] = useState<(typeof SLOTS)[number]>('dinner');
 
   const handleAdd = () => {
     onPick({ dayIdx, slot });
@@ -40,15 +46,19 @@ export function AddToWeekPopover({ onPick, onClose, className = '' }: AddToWeekP
   const currentDayIdx = today.getDay() === 0 ? 6 : today.getDay() - 1;
 
   return (
-    <div className={`w-64 p-3 rounded-xl border bg-white shadow-lg z-50 ${className}`}>
-      <div className="text-sm font-medium mb-3 text-gray-900">Schedule this meal</div>
-      
+    <div
+      className={`w-64 p-3 rounded-xl border bg-white shadow-lg z-50 ${className}`}
+    >
+      <div className="text-sm font-medium mb-3 text-gray-900">
+        Schedule this meal
+      </div>
+
       {/* Day Selection */}
       <div className="grid grid-cols-7 gap-1 mb-4">
         {DAYS.map((d, i) => {
           const isToday = i === currentDayIdx;
           const isSelected = i === dayIdx;
-          
+
           return (
             <button
               key={d}
@@ -57,8 +67,8 @@ export function AddToWeekPopover({ onPick, onClose, className = '' }: AddToWeekP
                 isSelected
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : isToday
-                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                  : 'hover:bg-gray-100 text-gray-700'
+                    ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                    : 'hover:bg-gray-100 text-gray-700'
               }`}
             >
               <div className="font-medium">{d}</div>
@@ -74,9 +84,9 @@ export function AddToWeekPopover({ onPick, onClose, className = '' }: AddToWeekP
       <div className="mb-4">
         <div className="text-xs text-gray-600 mb-2">Meal type</div>
         <div className="flex gap-2">
-          {SLOTS.map(s => {
+          {SLOTS.map((s) => {
             const isSelected = s === slot;
-            
+
             return (
               <button
                 key={s}

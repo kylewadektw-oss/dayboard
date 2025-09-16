@@ -9,7 +9,9 @@
 
 export default function LegacyUnusedProfileSetupPage() {
   if (process.env.NODE_ENV === 'development') {
-    console.warn('Legacy file app/profile/setup/page_new.tsx is unused and can be removed.');
+    console.warn(
+      'Legacy file app/profile/setup/page_new.tsx is unused and can be removed.'
+    );
   }
   return null;
 }

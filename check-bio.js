@@ -19,18 +19,18 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function checkBio() {
   try {
     console.log('🔍 Checking user profiles and bio data...');
-    
+
     const { data: profiles, error } = await supabase
       .from('profiles')
       .select('id, user_id, name, preferred_name, bio, created_at')
       .order('created_at', { ascending: false })
       .limit(5);
-    
+
     if (error) {
       console.error('❌ Error fetching profiles:', error);
       return;
     }
-    
+
     console.log('📋 Found', profiles?.length || 0, 'profiles:');
     profiles?.forEach((profile, index) => {
       console.log(`\n${index + 1}. Profile:`, {
@@ -43,7 +43,6 @@ async function checkBio() {
         bioLength: profile.bio?.length || 0
       });
     });
-    
   } catch (error) {
     console.error('❌ Error:', error.message);
   }

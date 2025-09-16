@@ -17,7 +17,5 @@
     "autoAlias": true,
     "silent": true
   },
-  "alias": [
-    "dayboard.bentlolabs.com"
-  ]
+  "alias": ["dayboard.bentlolabs.com"]
 }

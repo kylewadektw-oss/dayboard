@@ -1,26 +1,26 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 'use client';
 
 import { memo, useState } from 'react';
-import { 
-  Gamepad2, 
-  Users, 
-  Clock, 
+import {
+  Gamepad2,
+  Users,
+  Clock,
   Star,
   Play,
   Plus,
@@ -39,43 +39,45 @@ import {
 const boardGames = [
   {
     id: 1,
-    title: "Codenames",
-    category: "Board Game",
-    players: "2-8 players",
-    duration: "15-30 min",
-    difficulty: "Easy",
+    title: 'Codenames',
+    category: 'Board Game',
+    players: '2-8 players',
+    duration: '15-30 min',
+    difficulty: 'Easy',
     rating: 4.8,
-    emoji: "🕵️",
-    description: "Team-based word game where you give one-word clues to help teammates identify their agents.",
-    ages: "14+",
+    emoji: '🕵️',
+    description:
+      'Team-based word game where you give one-word clues to help teammates identify their agents.',
+    ages: '14+',
     owned: true,
-    lastPlayed: "2 weeks ago"
+    lastPlayed: '2 weeks ago'
   },
   {
     id: 2,
-    title: "Ticket to Ride",
-    category: "Board Game",
-    players: "2-5 players", 
-    duration: "30-60 min",
-    difficulty: "Medium",
+    title: 'Ticket to Ride',
+    category: 'Board Game',
+    players: '2-5 players',
+    duration: '30-60 min',
+    difficulty: 'Medium',
     rating: 4.6,
-    emoji: "🚂",
-    description: "Railway adventure where players collect train cards to claim railway routes across the country.",
-    ages: "8+",
+    emoji: '🚂',
+    description:
+      'Railway adventure where players collect train cards to claim railway routes across the country.',
+    ages: '8+',
     owned: true,
-    lastPlayed: "1 month ago"
+    lastPlayed: '1 month ago'
   },
   {
     id: 3,
-    title: "Azul",
-    category: "Board Game",
-    players: "2-4 players",
-    duration: "30-45 min", 
-    difficulty: "Medium",
+    title: 'Azul',
+    category: 'Board Game',
+    players: '2-4 players',
+    duration: '30-45 min',
+    difficulty: 'Medium',
     rating: 4.7,
-    emoji: "🎨",
-    description: "Beautiful tile-laying game inspired by Portuguese azulejos.",
-    ages: "8+",
+    emoji: '🎨',
+    description: 'Beautiful tile-laying game inspired by Portuguese azulejos.',
+    ages: '8+',
     owned: false,
     wishlist: true
   }
@@ -84,105 +86,136 @@ const boardGames = [
 const digitalGames = [
   {
     id: 1,
-    title: "Jackbox Party Pack",
-    category: "Party Game",
-    players: "3-8 players",
-    platform: "Any device",
+    title: 'Jackbox Party Pack',
+    category: 'Party Game',
+    players: '3-8 players',
+    platform: 'Any device',
     rating: 4.9,
-    emoji: "🎉",
-    description: "Collection of hilarious party games that everyone can play using their phones."
+    emoji: '🎉',
+    description:
+      'Collection of hilarious party games that everyone can play using their phones.'
   },
   {
     id: 2,
-    title: "Among Us",
-    category: "Social Deduction",
-    players: "4-10 players",
-    platform: "Mobile/PC",
+    title: 'Among Us',
+    category: 'Social Deduction',
+    players: '4-10 players',
+    platform: 'Mobile/PC',
     rating: 4.5,
-    emoji: "👾",
-    description: "Work together to find the impostor among your crew before they eliminate everyone."
+    emoji: '👾',
+    description:
+      'Work together to find the impostor among your crew before they eliminate everyone.'
   },
   {
     id: 3,
-    title: "Minecraft",
-    category: "Sandbox",
-    players: "1-8 players",
-    platform: "All platforms",
+    title: 'Minecraft',
+    category: 'Sandbox',
+    players: '1-8 players',
+    platform: 'All platforms',
     rating: 4.7,
-    emoji: "⛏️",
-    description: "Build, explore, and survive in procedurally generated worlds."
+    emoji: '⛏️',
+    description: 'Build, explore, and survive in procedurally generated worlds.'
   }
 ];
 
 const quickActivities = [
   {
     id: 1,
-    name: "20 Questions",
-    category: "No Equipment",
-    players: "2+ players",
-    time: "5-15 min",
-    emoji: "❓",
-    description: "Classic guessing game where one person thinks of something and others ask yes/no questions."
+    name: '20 Questions',
+    category: 'No Equipment',
+    players: '2+ players',
+    time: '5-15 min',
+    emoji: '❓',
+    description:
+      'Classic guessing game where one person thinks of something and others ask yes/no questions.'
   },
   {
     id: 2,
-    name: "Two Truths and a Lie",
-    category: "Icebreaker",
-    players: "3+ players", 
-    time: "10-20 min",
-    emoji: "🤔",
-    description: "Each person tells three statements about themselves - two true, one false."
+    name: 'Two Truths and a Lie',
+    category: 'Icebreaker',
+    players: '3+ players',
+    time: '10-20 min',
+    emoji: '🤔',
+    description:
+      'Each person tells three statements about themselves - two true, one false.'
   },
   {
     id: 3,
-    name: "Story Building",
-    category: "Creative",
-    players: "2+ players",
-    time: "10-30 min",
-    emoji: "📚",
-    description: "Take turns adding one sentence to create a collaborative story."
+    name: 'Story Building',
+    category: 'Creative',
+    players: '2+ players',
+    time: '10-30 min',
+    emoji: '📚',
+    description:
+      'Take turns adding one sentence to create a collaborative story.'
   },
   {
     id: 4,
-    name: "Charades",
-    category: "Acting",
-    players: "4+ players",
-    time: "15-30 min",
-    emoji: "🎭",
-    description: "Act out words or phrases without speaking while others guess."
+    name: 'Charades',
+    category: 'Acting',
+    players: '4+ players',
+    time: '15-30 min',
+    emoji: '🎭',
+    description: 'Act out words or phrases without speaking while others guess.'
   }
 ];
 
 const gameNights = [
   {
     id: 1,
-    date: "Friday, Jan 19",
-    theme: "Family Game Night",
-    games: ["Codenames", "Ticket to Ride"],
-    attendees: ["Mom", "Dad", "Kids"],
-    snacks: "Pizza & Soda",
-    status: "planned"
+    date: 'Friday, Jan 19',
+    theme: 'Family Game Night',
+    games: ['Codenames', 'Ticket to Ride'],
+    attendees: ['Mom', 'Dad', 'Kids'],
+    snacks: 'Pizza & Soda',
+    status: 'planned'
   },
   {
     id: 2,
-    date: "Saturday, Jan 27", 
-    theme: "Friends Game Night",
-    games: ["Jackbox Games", "Among Us"],
-    attendees: ["Couple Friends", "College Friends"],
-    snacks: "Snack mix & Beer",
-    status: "planned"
+    date: 'Saturday, Jan 27',
+    theme: 'Friends Game Night',
+    games: ['Jackbox Games', 'Among Us'],
+    attendees: ['Couple Friends', 'College Friends'],
+    snacks: 'Snack mix & Beer',
+    status: 'planned'
   }
 ];
 
 const achievements = [
-  { id: 1, title: "Game Night Host", description: "Hosted 5 game nights", earned: true, emoji: "🏆" },
-  { id: 2, title: "Strategy Master", description: "Won 10 strategy games", earned: true, emoji: "🧠" },
-  { id: 3, title: "Social Butterfly", description: "Played with 20 different people", earned: false, emoji: "🦋" },
-  { id: 4, title: "Quick Draw", description: "Completed 50 quick activities", earned: false, emoji: "⚡" }
+  {
+    id: 1,
+    title: 'Game Night Host',
+    description: 'Hosted 5 game nights',
+    earned: true,
+    emoji: '🏆'
+  },
+  {
+    id: 2,
+    title: 'Strategy Master',
+    description: 'Won 10 strategy games',
+    earned: true,
+    emoji: '🧠'
+  },
+  {
+    id: 3,
+    title: 'Social Butterfly',
+    description: 'Played with 20 different people',
+    earned: false,
+    emoji: '🦋'
+  },
+  {
+    id: 4,
+    title: 'Quick Draw',
+    description: 'Completed 50 quick activities',
+    earned: false,
+    emoji: '⚡'
+  }
 ];
 
 export const GamesTab = memo(() => {
-  const [activeSection, setActiveSection] = useState<'collection' | 'digital' | 'activities' | 'nights'>('collection');
+  const [activeSection, setActiveSection] = useState<
+    'collection' | 'digital' | 'activities' | 'nights'
+  >('collection');
   const [searchQuery, setSearchQuery] = useState('');
 
   const sections = [
@@ -228,24 +261,33 @@ export const GamesTab = memo(() => {
 
       {/* Board Games Collection */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">🎲 Board Game Collection</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          🎲 Board Game Collection
+        </h3>
         <div className="space-y-4">
           {boardGames.map((game) => (
-            <div key={game.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div
+              key={game.id}
+              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+            >
               <div className="flex items-start gap-4">
                 <div className="text-3xl">{game.emoji}</div>
                 <div className="flex-1">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="font-semibold text-gray-900">{game.title}</h4>
-                      <p className="text-gray-600 text-sm mt-1">{game.description}</p>
+                      <h4 className="font-semibold text-gray-900">
+                        {game.title}
+                      </h4>
+                      <p className="text-gray-600 text-sm mt-1">
+                        {game.description}
+                      </p>
                     </div>
                     <div className="flex items-center gap-1">
                       <Star className="w-4 h-4 text-yellow-500" />
                       <span className="text-sm font-medium">{game.rating}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-600">
                     <div className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
@@ -309,13 +351,20 @@ export const GamesTab = memo(() => {
     <div className="space-y-6">
       <div className="text-center">
         <Gamepad2 className="w-12 h-12 text-blue-500 mx-auto mb-3" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Digital Games</h3>
-        <p className="text-gray-600">Video games and digital party games for all devices</p>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          Digital Games
+        </h3>
+        <p className="text-gray-600">
+          Video games and digital party games for all devices
+        </p>
       </div>
 
       <div className="grid gap-4">
         {digitalGames.map((game) => (
-          <div key={game.id} className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+          <div
+            key={game.id}
+            className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4"
+          >
             <div className="flex items-center gap-4">
               <div className="text-3xl">{game.emoji}</div>
               <div className="flex-1">
@@ -346,14 +395,27 @@ export const GamesTab = memo(() => {
       <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4">
         <h4 className="font-medium text-green-900 mb-3">Gaming Platforms</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {['Steam', 'Xbox Game Pass', 'Nintendo Switch', 'Mobile Games'].map((platform) => (
-            <div key={platform} className="text-center p-3 bg-white rounded-lg border hover:shadow-md transition-shadow cursor-pointer">
-              <div className="text-lg mb-1">
-                {platform === 'Steam' ? '🎮' : platform === 'Xbox Game Pass' ? '🎯' : platform === 'Nintendo Switch' ? '🕹️' : '📱'}
+          {['Steam', 'Xbox Game Pass', 'Nintendo Switch', 'Mobile Games'].map(
+            (platform) => (
+              <div
+                key={platform}
+                className="text-center p-3 bg-white rounded-lg border hover:shadow-md transition-shadow cursor-pointer"
+              >
+                <div className="text-lg mb-1">
+                  {platform === 'Steam'
+                    ? '🎮'
+                    : platform === 'Xbox Game Pass'
+                      ? '🎯'
+                      : platform === 'Nintendo Switch'
+                        ? '🕹️'
+                        : '📱'}
+                </div>
+                <div className="font-medium text-sm text-gray-900">
+                  {platform}
+                </div>
               </div>
-              <div className="font-medium text-sm text-gray-900">{platform}</div>
-            </div>
-          ))}
+            )
+          )}
         </div>
       </div>
     </div>
@@ -363,18 +425,27 @@ export const GamesTab = memo(() => {
     <div className="space-y-6">
       <div className="text-center">
         <Zap className="w-12 h-12 text-yellow-500 mx-auto mb-3" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Quick Activities</h3>
-        <p className="text-gray-600">No-equipment games you can play anywhere, anytime</p>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          Quick Activities
+        </h3>
+        <p className="text-gray-600">
+          No-equipment games you can play anywhere, anytime
+        </p>
       </div>
 
       <div className="grid gap-4">
         {quickActivities.map((activity) => (
-          <div key={activity.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div
+            key={activity.id}
+            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+          >
             <div className="flex items-start gap-4">
               <div className="text-3xl">{activity.emoji}</div>
               <div className="flex-1">
                 <h4 className="font-semibold text-gray-900">{activity.name}</h4>
-                <p className="text-gray-600 text-sm mt-1">{activity.description}</p>
+                <p className="text-gray-600 text-sm mt-1">
+                  {activity.description}
+                </p>
                 <div className="flex items-center gap-4 mt-3 text-sm text-gray-600">
                   <span>👥 {activity.players}</span>
                   <span>⏱️ {activity.time}</span>
@@ -393,9 +464,12 @@ export const GamesTab = memo(() => {
       </div>
 
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <h4 className="font-medium text-yellow-900 mb-3">🎯 Random Activity Generator</h4>
+        <h4 className="font-medium text-yellow-900 mb-3">
+          🎯 Random Activity Generator
+        </h4>
         <p className="text-sm text-yellow-800 mb-3">
-          Can&apos;t decide what to play? Let us pick a perfect activity for your group!
+          Can&apos;t decide what to play? Let us pick a perfect activity for
+          your group!
         </p>
         <button className="w-full px-4 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium">
           <Dice6 className="w-4 h-4 inline mr-2" />
@@ -409,28 +483,43 @@ export const GamesTab = memo(() => {
     <div className="space-y-6">
       <div className="text-center">
         <Trophy className="w-12 h-12 text-gold-500 mx-auto mb-3" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Game Nights & Achievements</h3>
-        <p className="text-gray-600">Plan game nights and track your gaming accomplishments</p>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          Game Nights & Achievements
+        </h3>
+        <p className="text-gray-600">
+          Plan game nights and track your gaming accomplishments
+        </p>
       </div>
 
       {/* Planned Game Nights */}
       <div>
-        <h4 className="font-semibold text-gray-900 mb-4">📅 Upcoming Game Nights</h4>
+        <h4 className="font-semibold text-gray-900 mb-4">
+          📅 Upcoming Game Nights
+        </h4>
         <div className="space-y-3">
           {gameNights.map((night) => (
-            <div key={night.id} className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4">
+            <div
+              key={night.id}
+              className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-4"
+            >
               <div className="flex items-center justify-between mb-3">
                 <h5 className="font-semibold text-gray-900">{night.theme}</h5>
-                <span className="text-sm font-medium text-orange-700">{night.date}</span>
+                <span className="text-sm font-medium text-orange-700">
+                  {night.date}
+                </span>
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <Gamepad2 className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-700">Games: {night.games.join(', ')}</span>
+                  <span className="text-gray-700">
+                    Games: {night.games.join(', ')}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-700">Attendees: {night.attendees.join(', ')}</span>
+                  <span className="text-gray-700">
+                    Attendees: {night.attendees.join(', ')}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4 text-gray-500" />
@@ -444,25 +533,34 @@ export const GamesTab = memo(() => {
 
       {/* Achievements */}
       <div>
-        <h4 className="font-semibold text-gray-900 mb-4">🏆 Gaming Achievements</h4>
+        <h4 className="font-semibold text-gray-900 mb-4">
+          🏆 Gaming Achievements
+        </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {achievements.map((achievement) => (
-            <div key={achievement.id} className={`p-4 rounded-lg border-2 ${
-              achievement.earned 
-                ? 'bg-gold-50 border-gold-200' 
-                : 'bg-gray-50 border-gray-200'
-            }`}>
+            <div
+              key={achievement.id}
+              className={`p-4 rounded-lg border-2 ${
+                achievement.earned
+                  ? 'bg-gold-50 border-gold-200'
+                  : 'bg-gray-50 border-gray-200'
+              }`}
+            >
               <div className="flex items-center gap-3">
                 <div className="text-2xl">{achievement.emoji}</div>
                 <div className="flex-1">
-                  <h5 className={`font-medium ${
-                    achievement.earned ? 'text-gold-900' : 'text-gray-700'
-                  }`}>
+                  <h5
+                    className={`font-medium ${
+                      achievement.earned ? 'text-gold-900' : 'text-gray-700'
+                    }`}
+                  >
                     {achievement.title}
                   </h5>
-                  <p className={`text-sm ${
-                    achievement.earned ? 'text-gold-700' : 'text-gray-600'
-                  }`}>
+                  <p
+                    className={`text-sm ${
+                      achievement.earned ? 'text-gold-700' : 'text-gray-600'
+                    }`}
+                  >
                     {achievement.description}
                   </p>
                 </div>
@@ -491,11 +589,19 @@ export const GamesTab = memo(() => {
         {sections.map((section) => {
           const Icon = section.icon;
           const isActive = activeSection === section.id;
-          
+
           return (
             <button
               key={section.id}
-              onClick={() => setActiveSection(section.id as 'collection' | 'digital' | 'activities' | 'nights')}
+              onClick={() =>
+                setActiveSection(
+                  section.id as
+                    | 'collection'
+                    | 'digital'
+                    | 'activities'
+                    | 'nights'
+                )
+              }
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-orange-100 text-orange-700 border border-orange-200'

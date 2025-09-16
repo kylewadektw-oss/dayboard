@@ -1,26 +1,40 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-import { lazy, Suspense, ComponentType, ReactNode, Component, useState, useRef, useEffect, useCallback } from 'react';
+import {
+  lazy,
+  Suspense,
+  ComponentType,
+  ReactNode,
+  Component,
+  useState,
+  useRef,
+  useEffect,
+  useCallback
+} from 'react';
 import { enhancedLogger, LogLevel } from '@/utils/logger';
 
 // 🚀 PERFORMANCE: Fallback loading components with different styles
-export const LoadingFallback = ({ type = 'default' }: { type?: 'default' | 'widget' | 'page' }) => {
-  const baseClasses = "animate-pulse";
-  
+export const LoadingFallback = ({
+  type = 'default'
+}: {
+  type?: 'default' | 'widget' | 'page';
+}) => {
+  const baseClasses = 'animate-pulse';
+
   switch (type) {
     case 'widget':
       return (
@@ -35,7 +49,7 @@ export const LoadingFallback = ({ type = 'default' }: { type?: 'default' | 'widg
           </div>
         </div>
       );
-    
+
     case 'page':
       return (
         <div className="p-6 max-w-7xl mx-auto">
@@ -49,7 +63,7 @@ export const LoadingFallback = ({ type = 'default' }: { type?: 'default' | 'widg
           </div>
         </div>
       );
-    
+
     default:
       return (
         <div className={`${baseClasses} space-y-4`}>
@@ -86,13 +100,17 @@ export class LazyErrorBoundary extends Component<
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback || (
-        <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-          <div className="text-red-800 font-medium">Failed to load component</div>
-          <div className="text-red-600 text-sm mt-1">
-            Please refresh the page or try again later.
+      return (
+        this.props.fallback || (
+          <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+            <div className="text-red-800 font-medium">
+              Failed to load component
+            </div>
+            <div className="text-red-600 text-sm mt-1">
+              Please refresh the page or try again later.
+            </div>
           </div>
-        </div>
+        )
       );
     }
 
@@ -127,34 +145,36 @@ export function createLazyWrapper<T extends ComponentType<any>>(
       const start = performance.now();
       const module = await importFn();
       const loadTime = performance.now() - start;
-      
+
       // Log successful lazy load
       enhancedLogger.logWithFullContext(
         LogLevel.INFO,
         `Lazy component loaded successfully`,
         'LazyLoader',
-        { 
-          component: logComponentName, 
+        {
+          component: logComponentName,
           loadTime: `${loadTime.toFixed(2)}ms`,
-          attempt 
+          attempt
         }
       );
-      
+
       return module;
     } catch (error) {
       enhancedLogger.logWithFullContext(
         LogLevel.WARN,
         `Lazy component load attempt ${attempt} failed`,
         'LazyLoader',
-        { 
-          component: logComponentName, 
-          attempt, 
-          error: error instanceof Error ? error.message : 'Unknown error' 
+        {
+          component: logComponentName,
+          attempt,
+          error: error instanceof Error ? error.message : 'Unknown error'
         }
       );
 
       if (attempt < retryAttempts) {
-        await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
+        await new Promise((resolve) =>
+          setTimeout(resolve, retryDelay * attempt)
+        );
         return importWithRetry(attempt + 1);
       }
       throw error;
@@ -177,7 +197,7 @@ export function createLazyWrapper<T extends ComponentType<any>>(
 // 🚀 PERFORMANCE: Preload utility for critical components
 export function preloadComponent<T>(importFn: () => Promise<{ default: T }>) {
   const componentPromise = importFn();
-  
+
   // Preload on idle
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
     requestIdleCallback(() => {
@@ -189,15 +209,15 @@ export function preloadComponent<T>(importFn: () => Promise<{ default: T }>) {
       componentPromise.catch(console.error);
     }, 1);
   }
-  
+
   return componentPromise;
 }
 
 // 🚀 PERFORMANCE: Component-specific lazy loading helpers
 export const LazyMealsComponent = createLazyWrapper(
   () => import('@/components/meals/EnhancedMealPlanWrapper'),
-  { 
-    fallbackType: 'page', 
+  {
+    fallbackType: 'page',
     logComponentName: 'MealsComponent',
     retryAttempts: 2
   }
@@ -205,8 +225,8 @@ export const LazyMealsComponent = createLazyWrapper(
 
 export const LazyBudgetComponent = createLazyWrapper(
   () => import('@/components/budget/BudgetDashboard'),
-  { 
-    fallbackType: 'page', 
+  {
+    fallbackType: 'page',
     logComponentName: 'BudgetComponent',
     retryAttempts: 2
   }
@@ -214,8 +234,8 @@ export const LazyBudgetComponent = createLazyWrapper(
 
 export const LazyListsComponent = createLazyWrapper(
   () => import('@/components/lists/EnhancedListsManager'),
-  { 
-    fallbackType: 'page', 
+  {
+    fallbackType: 'page',
     logComponentName: 'ListsComponent',
     retryAttempts: 2
   }
@@ -223,8 +243,8 @@ export const LazyListsComponent = createLazyWrapper(
 
 export const LazyProjectsComponent = createLazyWrapper(
   () => import('@/components/projects/ProjectsManager'),
-  { 
-    fallbackType: 'page', 
+  {
+    fallbackType: 'page',
     logComponentName: 'ProjectsComponent',
     retryAttempts: 2
   }
@@ -235,12 +255,13 @@ export const LazyMagic8BallWidget = createLazyWrapper(
   () => import('@/components/entertainment/Magic8BallWidget'),
   {
     fallbackType: 'widget',
-    logComponentName: 'Magic8BallWidget',
+    logComponentName: 'Magic8BallWidget'
   }
-);export const LazyWeatherWidget = createLazyWrapper(
+);
+export const LazyWeatherWidget = createLazyWrapper(
   () => import('@/components/dashboard/WeatherWidget'),
-  { 
-    fallbackType: 'widget', 
+  {
+    fallbackType: 'widget',
     logComponentName: 'WeatherWidget',
     retryAttempts: 1
   }
@@ -248,13 +269,13 @@ export const LazyMagic8BallWidget = createLazyWrapper(
 
 // 🚀 PERFORMANCE: Utility to get component loading priority
 export const ComponentPriority = {
-  CRITICAL: 'critical',    // Load immediately
-  HIGH: 'high',           // Load on interaction
-  MEDIUM: 'medium',       // Load on viewport
-  LOW: 'low'             // Load on idle
+  CRITICAL: 'critical', // Load immediately
+  HIGH: 'high', // Load on interaction
+  MEDIUM: 'medium', // Load on viewport
+  LOW: 'low' // Load on idle
 } as const;
 
-type Priority = typeof ComponentPriority[keyof typeof ComponentPriority];
+type Priority = (typeof ComponentPriority)[keyof typeof ComponentPriority];
 
 export interface LazyComponentConfig {
   priority: Priority;
@@ -269,17 +290,19 @@ export function createViewportLazyWrapper<T extends ComponentType<any>>(
   options: LazyWrapperOptions = {}
 ) {
   const LazyComponent = createLazyWrapper(importFn, options);
-  
+
   return function ViewportLazyComponent(props: React.ComponentProps<T>) {
-    const [shouldLoad, setShouldLoad] = useState(config.priority === 'critical');
+    const [shouldLoad, setShouldLoad] = useState(
+      config.priority === 'critical'
+    );
     const ref = useRef<HTMLDivElement>(null);
-    
+
     useEffect(() => {
       if (config.priority === 'critical' || shouldLoad) return;
-      
+
       const element = ref.current;
       if (!element) return;
-      
+
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
@@ -289,23 +312,23 @@ export function createViewportLazyWrapper<T extends ComponentType<any>>(
         },
         { threshold: config.intersectionThreshold || 0.1 }
       );
-      
+
       observer.observe(element);
-      
+
       return () => observer.disconnect();
     }, [shouldLoad, config.intersectionThreshold, config.priority]);
-    
+
     // Preload on hover for high priority components
     const handleMouseEnter = useCallback(() => {
       if (config.priority === 'high' && !shouldLoad) {
         setShouldLoad(true);
       }
     }, [config.priority, shouldLoad]);
-    
+
     if (!shouldLoad) {
       return (
-        <div 
-          ref={ref} 
+        <div
+          ref={ref}
           onMouseEnter={handleMouseEnter}
           className="min-h-[100px]"
         >
@@ -313,7 +336,7 @@ export function createViewportLazyWrapper<T extends ComponentType<any>>(
         </div>
       );
     }
-    
+
     return <LazyComponent {...props} />;
   };
 }

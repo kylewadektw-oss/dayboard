@@ -1,13 +1,13 @@
 /**
  * Dayboard - Family Management Platform
- * 
+ *
  * © 2025 BentLo Labs LLC. All Rights Reserved.
- * 
+ *
  * PROPRIETARY AND CONFIDENTIAL
- * 
+ *
  * This source code is the proprietary and confidential property of BentLo Labs LLC.
  * Unauthorized copying, distribution, or use is strictly prohibited.
- * 
+ *
  * @company BentLo Labs LLC
  * @product Dayboard
  * @license Proprietary
@@ -60,18 +60,18 @@ let cacheStats: CacheStats = {
  */
 export function getCachedProfile(userId: string): Profile | null {
   if (!userId) return null;
-  
+
   const cached = profileCache.get(userId);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     cacheStats.hits++;
     return cached.data;
   }
-  
+
   // Remove expired entry
   if (cached) {
     profileCache.delete(userId);
   }
-  
+
   cacheStats.misses++;
   return null;
 }
@@ -81,14 +81,14 @@ export function getCachedProfile(userId: string): Profile | null {
  */
 export function setCachedProfile(userId: string, data: Profile): void {
   if (!userId || !data) return;
-  
+
   profileCache.set(userId, {
     data,
     timestamp: Date.now()
   });
-  
+
   cacheStats.sets++;
-  
+
   // Clean up if cache is getting large
   if (profileCache.size > MAX_CACHE_SIZE) {
     cleanupCache();
@@ -98,15 +98,18 @@ export function setCachedProfile(userId: string, data: Profile): void {
 /**
  * Get profile with automatic caching
  */
-export async function getProfile(userId: string, supabase: Supabase): Promise<Profile | null> {
+export async function getProfile(
+  userId: string,
+  supabase: Supabase
+): Promise<Profile | null> {
   if (!userId || !supabase) return null;
-  
+
   // Try cache first
   const cached = getCachedProfile(userId);
   if (cached) {
     return cached;
   }
-  
+
   // Fetch from database
   const startTime = Date.now();
   const { data, error } = await supabase
@@ -114,35 +117,39 @@ export async function getProfile(userId: string, supabase: Supabase): Promise<Pr
     .select('*')
     .eq('user_id', userId)
     .single();
-  
+
   const queryTime = Date.now() - startTime;
-  
+
   // Log slow queries
   if (queryTime > 100) {
     console.warn(`Slow profile query: ${queryTime}ms for user ${userId}`);
   }
-  
+
   if (data && !error) {
     setCachedProfile(userId, data);
     return data;
   }
-  
-  if (error && error.code !== 'PGRST116') { // Ignore "not found" errors
+
+  if (error && error.code !== 'PGRST116') {
+    // Ignore "not found" errors
     console.error('Profile query error:', error.message);
   }
-  
+
   return null;
 }
 
 /**
  * Get multiple profiles with batch optimization
  */
-export async function getProfiles(userIds: string[], supabase: Supabase): Promise<Profile[]> {
+export async function getProfiles(
+  userIds: string[],
+  supabase: Supabase
+): Promise<Profile[]> {
   if (!userIds?.length || !supabase) return [];
-  
+
   const profiles: Profile[] = [];
   const uncachedIds: string[] = [];
-  
+
   // Check cache for each user
   for (const userId of userIds) {
     const cached = getCachedProfile(userId);
@@ -152,7 +159,7 @@ export async function getProfiles(userIds: string[], supabase: Supabase): Promis
       uncachedIds.push(userId);
     }
   }
-  
+
   // Fetch uncached profiles in batch
   if (uncachedIds.length > 0) {
     const startTime = Date.now();
@@ -160,22 +167,24 @@ export async function getProfiles(userIds: string[], supabase: Supabase): Promis
       .from('profiles')
       .select('*')
       .in('user_id', uncachedIds);
-    
+
     const queryTime = Date.now() - startTime;
-    
+
     if (queryTime > 200) {
-      console.warn(`Slow batch profile query: ${queryTime}ms for ${uncachedIds.length} users`);
+      console.warn(
+        `Slow batch profile query: ${queryTime}ms for ${uncachedIds.length} users`
+      );
     }
-    
+
     if (data && !error) {
       // Cache all fetched profiles
-      data.forEach(profile => {
+      data.forEach((profile) => {
         setCachedProfile(profile.user_id, profile);
         profiles.push(profile);
       });
     }
   }
-  
+
   return profiles;
 }
 
@@ -192,7 +201,10 @@ export function invalidateProfile(userId: string): void {
 /**
  * Update a cached profile
  */
-export function updateCachedProfile(userId: string, updates: Partial<Profile>): void {
+export function updateCachedProfile(
+  userId: string,
+  updates: Partial<Profile>
+): void {
   const cached = profileCache.get(userId);
   if (cached) {
     cached.data = { ...cached.data, ...updates };
@@ -207,7 +219,7 @@ export function clearProfileCache(): void {
   const size = profileCache.size;
   profileCache.clear();
   cacheStats.evictions += size;
-  
+
   if (process.env.NODE_ENV === 'development') {
     console.log(`Cleared ${size} profiles from cache`);
   }
@@ -219,7 +231,7 @@ export function clearProfileCache(): void {
 function cleanupCache(): void {
   const now = Date.now();
   let cleaned = 0;
-  
+
   // Use Array.from to avoid iterator issues
   const entries = Array.from(profileCache.entries());
   for (const [userId, cached] of entries) {
@@ -228,9 +240,9 @@ function cleanupCache(): void {
       cleaned++;
     }
   }
-  
+
   cacheStats.evictions += cleaned;
-  
+
   if (cleaned > 0 && process.env.NODE_ENV === 'development') {
     console.log(`Cleaned up ${cleaned} expired profile cache entries`);
   }
@@ -241,8 +253,9 @@ function cleanupCache(): void {
  */
 export function getCacheStats() {
   const total = cacheStats.hits + cacheStats.misses;
-  const hitRate = total > 0 ? (cacheStats.hits / total * 100).toFixed(1) : '0';
-    
+  const hitRate =
+    total > 0 ? ((cacheStats.hits / total) * 100).toFixed(1) : '0';
+
   return {
     ...cacheStats,
     hitRate: `${hitRate}%`,
@@ -276,16 +289,20 @@ export function useCachedProfile(userId: string): Profile | null {
 export function logCachePerformance(): void {
   const stats = getCacheStats();
   console.log('Profile Cache Performance:', stats);
-  
+
   // Alert if hit rate is low
   const hitRateNum = parseFloat(stats.hitRate);
   if (cacheStats.hits + cacheStats.misses > 100 && hitRateNum < 70) {
-    console.warn(`Low profile cache hit rate: ${stats.hitRate} - Consider increasing cache TTL or fixing cache invalidation`);
+    console.warn(
+      `Low profile cache hit rate: ${stats.hitRate} - Consider increasing cache TTL or fixing cache invalidation`
+    );
   }
-  
+
   // Alert if cache is getting too large
   if (profileCache.size > MAX_CACHE_SIZE * 0.8) {
-    console.warn(`Profile cache is ${profileCache.size}/${MAX_CACHE_SIZE} entries - Consider cleanup`);
+    console.warn(
+      `Profile cache is ${profileCache.size}/${MAX_CACHE_SIZE} entries - Consider cleanup`
+    );
   }
 }
 
@@ -296,17 +313,19 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
     cleanupCache();
     logCachePerformance();
   }, 60000); // Every minute
-  
+
   // Expose cache to window for debugging
-  (window as Window & { 
-    profileCache?: {
-      stats: typeof getCacheStats;
-      clear: typeof clearProfileCache;
-      size: () => number;
-      get: typeof getCachedProfile;
-      invalidate: typeof invalidateProfile;
-    };
-  }).profileCache = {
+  (
+    window as Window & {
+      profileCache?: {
+        stats: typeof getCacheStats;
+        clear: typeof clearProfileCache;
+        size: () => number;
+        get: typeof getCachedProfile;
+        invalidate: typeof invalidateProfile;
+      };
+    }
+  ).profileCache = {
     stats: getCacheStats,
     clear: clearProfileCache,
     size: () => profileCache.size,

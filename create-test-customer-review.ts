@@ -7,10 +7,12 @@ import { createClient } from '@/utils/supabase/client';
 
 async function createTestCustomerReview() {
   const supabase = createClient();
-  
+
   // Get current user (should be an admin)
-  const { data: { user } } = await supabase.auth.getUser();
-  
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
   if (!user) {
     console.error('No user logged in');
     return;
@@ -36,7 +38,11 @@ async function createTestCustomerReview() {
 
 // For testing in browser console
 if (typeof window !== 'undefined') {
-  (window as Window & { createTestCustomerReview?: typeof createTestCustomerReview }).createTestCustomerReview = createTestCustomerReview;
+  (
+    window as Window & {
+      createTestCustomerReview?: typeof createTestCustomerReview;
+    }
+  ).createTestCustomerReview = createTestCustomerReview;
 }
 
 export { createTestCustomerReview };

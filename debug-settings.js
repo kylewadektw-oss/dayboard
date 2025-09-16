@@ -28,32 +28,42 @@ async function debugSettings() {
     }
 
     console.log('✅ Profiles found:', allProfiles.length);
-    allProfiles?.forEach(profile => {
-      console.log(`   • ${profile.name || profile.id} - ID: ${profile.id} - Role: ${profile.role}`);
+    allProfiles?.forEach((profile) => {
+      console.log(
+        `   • ${profile.name || profile.id} - ID: ${profile.id} - Role: ${profile.role}`
+      );
     });
 
     // Use the first super admin or admin profile we find
-    const adminProfile = allProfiles?.find(p => p.role === 'super_admin') || allProfiles?.find(p => p.role === 'admin') || allProfiles?.[0];
-    
+    const adminProfile =
+      allProfiles?.find((p) => p.role === 'super_admin') ||
+      allProfiles?.find((p) => p.role === 'admin') ||
+      allProfiles?.[0];
+
     if (!adminProfile) {
       console.log('❌ No profiles found!');
       return;
     }
 
     const userID = adminProfile.id;
-    console.log(`\n🎯 Using profile: ${adminProfile.name || adminProfile.id} (${userID})`);
+    console.log(
+      `\n🎯 Using profile: ${adminProfile.name || adminProfile.id} (${userID})`
+    );
 
     // Check settings tabs function
     console.log('\n2. Testing get_user_settings_tabs function...');
-    const { data: tabs, error: tabsError } = await supabase.rpc('get_user_settings_tabs', {
-      user_id_param: userID
-    });
+    const { data: tabs, error: tabsError } = await supabase.rpc(
+      'get_user_settings_tabs',
+      {
+        user_id_param: userID
+      }
+    );
 
     if (tabsError) {
       console.log('❌ Tabs error:', tabsError.message);
     } else {
       console.log('✅ Tabs loaded:', tabs?.length || 0);
-      tabs?.forEach(tab => {
+      tabs?.forEach((tab) => {
         console.log(`   • ${tab.display_name} (${tab.category_key})`);
       });
     }
@@ -69,8 +79,10 @@ async function debugSettings() {
       console.log('❌ Categories error:', categoriesError.message);
     } else {
       console.log('✅ Categories found:', categories?.length || 0);
-      categories?.forEach(cat => {
-        console.log(`   • ${cat.display_name} (${cat.category_key}) - Role: ${cat.required_role}`);
+      categories?.forEach((cat) => {
+        console.log(
+          `   • ${cat.display_name} (${cat.category_key}) - Role: ${cat.required_role}`
+        );
       });
     }
 
@@ -85,7 +97,7 @@ async function debugSettings() {
       console.log('❌ Items error:', itemsError.message);
     } else {
       console.log('✅ Settings items found:', items?.length || 0);
-      
+
       if (items && items.length > 0) {
         const itemsByCategory = items.reduce((acc, item) => {
           if (!acc[item.category_key]) acc[item.category_key] = [];
@@ -95,13 +107,12 @@ async function debugSettings() {
 
         Object.entries(itemsByCategory).forEach(([category, categoryItems]) => {
           console.log(`\n   📂 ${category}:`);
-          categoryItems.forEach(item => {
+          categoryItems.forEach((item) => {
             console.log(`      • ${item.display_name} (${item.setting_key})`);
           });
         });
       }
     }
-
   } catch (err) {
     console.error('🔥 Fatal error:', err.message);
   }

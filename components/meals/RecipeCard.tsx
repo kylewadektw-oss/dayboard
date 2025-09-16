@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -18,7 +18,15 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Clock, Users, Star, Heart, Plus, MoreVertical, ChefHat } from 'lucide-react';
+import {
+  Clock,
+  Users,
+  Star,
+  Heart,
+  Plus,
+  MoreVertical,
+  ChefHat
+} from 'lucide-react';
 
 interface RecipeData {
   id: number;
@@ -118,8 +126,8 @@ export function RecipeCard({
         <div className="flex items-center gap-3">
           {/* Recipe Image */}
           {recipe.image_url ? (
-            <Image 
-              src={recipe.image_url} 
+            <Image
+              src={recipe.image_url}
               alt={recipe.title}
               width={48}
               height={48}
@@ -136,7 +144,7 @@ export function RecipeCard({
             <h4 className="font-medium text-gray-900 text-sm leading-tight truncate">
               {recipe.title}
             </h4>
-            
+
             <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
               {recipe.total_time_minutes && (
                 <span className="flex items-center">
@@ -159,12 +167,14 @@ export function RecipeCard({
             <button
               onClick={handleToggleFavorite}
               className={`p-1.5 rounded-md transition-colors ${
-                recipe.is_favorite 
-                  ? 'text-red-500 bg-red-50 hover:bg-red-100' 
+                recipe.is_favorite
+                  ? 'text-red-500 bg-red-50 hover:bg-red-100'
                   : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
               }`}
             >
-              <Heart className={`h-4 w-4 ${recipe.is_favorite ? 'fill-current' : ''}`} />
+              <Heart
+                className={`h-4 w-4 ${recipe.is_favorite ? 'fill-current' : ''}`}
+              />
             </button>
             <button
               onClick={handleAddToWeek}
@@ -190,8 +200,8 @@ export function RecipeCard({
       {/* Recipe Image */}
       <div className="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200">
         {recipe.image_url ? (
-          <Image 
-            src={recipe.image_url} 
+          <Image
+            src={recipe.image_url}
             alt={recipe.title}
             fill
             className="w-full h-full object-cover"
@@ -207,12 +217,14 @@ export function RecipeCard({
           <button
             onClick={handleToggleFavorite}
             className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
-              recipe.is_favorite 
-                ? 'text-white bg-red-500/80 hover:bg-red-600/80' 
+              recipe.is_favorite
+                ? 'text-white bg-red-500/80 hover:bg-red-600/80'
                 : 'text-white bg-black/20 hover:bg-red-500/80'
             }`}
           >
-            <Heart className={`h-4 w-4 ${recipe.is_favorite ? 'fill-current' : ''}`} />
+            <Heart
+              className={`h-4 w-4 ${recipe.is_favorite ? 'fill-current' : ''}`}
+            />
           </button>
           <button
             onClick={handleAddToWeek}
@@ -230,11 +242,15 @@ export function RecipeCard({
             </span>
           )}
           {recipe.difficulty && (
-            <span className={`px-2 py-1 text-xs rounded-full backdrop-blur-sm ${
-              recipe.difficulty === 'Easy' ? 'bg-green-600/90 text-white' :
-              recipe.difficulty === 'Medium' ? 'bg-yellow-600/90 text-white' :
-              'bg-red-600/90 text-white'
-            }`}>
+            <span
+              className={`px-2 py-1 text-xs rounded-full backdrop-blur-sm ${
+                recipe.difficulty === 'Easy'
+                  ? 'bg-green-600/90 text-white'
+                  : recipe.difficulty === 'Medium'
+                    ? 'bg-yellow-600/90 text-white'
+                    : 'bg-red-600/90 text-white'
+              }`}
+            >
               {recipe.difficulty}
             </span>
           )}
@@ -349,7 +365,10 @@ export function RecipeCard({
             </span>
           )}
           {recipe.dietary_tags?.slice(0, 2).map((tag) => (
-            <span key={tag} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+            <span
+              key={tag}
+              className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
+            >
               {tag}
             </span>
           ))}

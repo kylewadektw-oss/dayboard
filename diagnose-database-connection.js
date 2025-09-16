@@ -1,22 +1,22 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 /**
  * 🔧 DATABASE CONNECTION DIAGNOSTICS
- * 
+ *
  * Tests Supabase database connectivity for both local and production environments.
  * Helps diagnose "Failed to fetch" errors in production deployments.
  */
@@ -30,12 +30,23 @@ async function diagnoseDatabaseConnection() {
   // Test environment variables
   console.log('📋 Environment Variables:');
   console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
-  console.log(`NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Set' : '❌ Missing'}`);
-  console.log(`NEXT_PUBLIC_SUPABASE_ANON_KEY: ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ Set' : '❌ Missing'}`);
-  console.log(`SUPABASE_SERVICE_ROLE_KEY: ${process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Set' : '❌ Missing'}`);
+  console.log(
+    `NEXT_PUBLIC_SUPABASE_URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL ? '✅ Set' : '❌ Missing'}`
+  );
+  console.log(
+    `NEXT_PUBLIC_SUPABASE_ANON_KEY: ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '✅ Set' : '❌ Missing'}`
+  );
+  console.log(
+    `SUPABASE_SERVICE_ROLE_KEY: ${process.env.SUPABASE_SERVICE_ROLE_KEY ? '✅ Set' : '❌ Missing'}`
+  );
 
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    console.log('\n❌ Missing required environment variables. Please check your .env configuration.');
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    console.log(
+      '\n❌ Missing required environment variables. Please check your .env configuration.'
+    );
     return;
   }
 
@@ -64,26 +75,33 @@ async function diagnoseDatabaseConnection() {
 
     // Test authentication
     console.log('\n🔐 Testing Authentication:');
-    const { data: { session }, error: authError } = await supabase.auth.getSession();
-    
+    const {
+      data: { session },
+      error: authError
+    } = await supabase.auth.getSession();
+
     if (authError) {
       console.log('❌ Auth check failed:', authError.message);
     } else {
       console.log('✅ Authentication system accessible');
-      console.log(`Session status: ${session ? 'Active' : 'No active session'}`);
+      console.log(
+        `Session status: ${session ? 'Active' : 'No active session'}`
+      );
     }
 
     // Test specific tables
     console.log('\n📊 Testing Table Access:');
-    const tables = ['profiles', 'application_logs', 'households', 'user_permissions'];
-    
+    const tables = [
+      'profiles',
+      'application_logs',
+      'households',
+      'user_permissions'
+    ];
+
     for (const table of tables) {
       try {
-        const { data, error } = await supabase
-          .from(table)
-          .select('*')
-          .limit(1);
-        
+        const { data, error } = await supabase.from(table).select('*').limit(1);
+
         if (error) {
           console.log(`❌ ${table}: ${error.message}`);
         } else {
@@ -113,7 +131,6 @@ async function diagnoseDatabaseConnection() {
         console.log('✅ Service role access working');
       }
     }
-
   } catch (error) {
     console.log('❌ Failed to create Supabase client:', error.message);
     console.log('Full error:', error);

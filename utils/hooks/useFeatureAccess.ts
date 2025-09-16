@@ -1,7 +1,7 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
  * Feature Access React Hook
- * 
+ *
  * This hook provides React components with access to role-based feature control.
  * It integrates with the authentication system and feature access database.
  */
@@ -10,13 +10,13 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  featureAccessManager, 
+import {
+  featureAccessManager,
   checkFeatureAccess,
   checkMultipleFeatureAccess,
   getDefaultAccess,
   type FeatureName,
-  type UserRole 
+  type UserRole
 } from '@/utils/feature-access';
 import { logger } from '@/utils/logger';
 
@@ -26,20 +26,22 @@ interface FeatureAccessState {
   userRole: UserRole;
   hasAccess: (featureName: FeatureName) => boolean;
   checkAccess: (featureName: FeatureName) => Promise<boolean>;
-  checkMultiple: (featureNames: FeatureName[]) => Promise<Record<FeatureName, boolean>>;
+  checkMultiple: (
+    featureNames: FeatureName[]
+  ) => Promise<Record<FeatureName, boolean>>;
   refreshAccess: () => Promise<void>;
 }
 
 /**
  * React hook for checking feature access in components
- * 
+ *
  * @example
  * ```tsx
  * function MyComponent() {
  *   const { hasAccess, isLoading, userRole } = useFeatureAccess();
- *   
+ *
  *   if (isLoading) return <div>Loading...</div>;
- *   
+ *
  *   return (
  *     <div>
  *       {hasAccess('meals_tab') && <MealsTab />}
@@ -73,7 +75,7 @@ export function useFeatureAccess(): FeatureAccessState {
         setError(null);
 
         const role = await featureAccessManager.getUserRole(user.id);
-        
+
         if (isMounted) {
           setUserRole(role);
           setIsLoading(false);
@@ -102,100 +104,115 @@ export function useFeatureAccess(): FeatureAccessState {
   }, [user?.id, authLoading]);
 
   // Check feature access with caching
-  const checkAccess = useCallback(async (featureName: FeatureName): Promise<boolean> => {
-    if (!user?.id) {
-      // Return default access for non-authenticated users (typically core features only)
-      return getDefaultAccess('member', featureName);
-    }
+  const checkAccess = useCallback(
+    async (featureName: FeatureName): Promise<boolean> => {
+      if (!user?.id) {
+        // Return default access for non-authenticated users (typically core features only)
+        return getDefaultAccess('member', featureName);
+      }
 
-    const cacheKey = `${user.id}:${featureName}`;
-    
-    // Return cached result if available
-    if (cacheKey in accessCache) {
-      return accessCache[cacheKey];
-    }
+      const cacheKey = `${user.id}:${featureName}`;
 
-    try {
-      const hasAccess = await checkFeatureAccess(user.id, featureName);
-      
-      // Cache the result
-      setAccessCache(prev => ({
-        ...prev,
-        [cacheKey]: hasAccess
-      }));
+      // Return cached result if available
+      if (cacheKey in accessCache) {
+        return accessCache[cacheKey];
+      }
 
-      return hasAccess;
-    } catch (err) {
-      logger.error('Feature access check failed', 'useFeatureAccess', {
-        error: err instanceof Error ? err.message : 'Unknown error',
-        userId: user.id,
-        featureName
-      });
+      try {
+        const hasAccess = await checkFeatureAccess(user.id, featureName);
 
-      // Fallback to default access for the user's role
-      return getDefaultAccess(userRole, featureName);
-    }
-  }, [user?.id, accessCache, userRole]);
+        // Cache the result
+        setAccessCache((prev) => ({
+          ...prev,
+          [cacheKey]: hasAccess
+        }));
+
+        return hasAccess;
+      } catch (err) {
+        logger.error('Feature access check failed', 'useFeatureAccess', {
+          error: err instanceof Error ? err.message : 'Unknown error',
+          userId: user.id,
+          featureName
+        });
+
+        // Fallback to default access for the user's role
+        return getDefaultAccess(userRole, featureName);
+      }
+    },
+    [user?.id, accessCache, userRole]
+  );
 
   // Check multiple features at once
-  const checkMultiple = useCallback(async (featureNames: FeatureName[]): Promise<Record<FeatureName, boolean>> => {
-    if (!user?.id) {
-      // Return default access for non-authenticated users
-      const results: Record<string, boolean> = {};
-      featureNames.forEach(featureName => {
-        results[featureName] = getDefaultAccess('member', featureName);
-      });
-      return results as Record<FeatureName, boolean>;
-    }
+  const checkMultiple = useCallback(
+    async (
+      featureNames: FeatureName[]
+    ): Promise<Record<FeatureName, boolean>> => {
+      if (!user?.id) {
+        // Return default access for non-authenticated users
+        const results: Record<string, boolean> = {};
+        featureNames.forEach((featureName) => {
+          results[featureName] = getDefaultAccess('member', featureName);
+        });
+        return results as Record<FeatureName, boolean>;
+      }
 
-    try {
-      const results = await checkMultipleFeatureAccess(user.id, featureNames);
-      
-      // Cache all results
-      const newCache: Record<string, boolean> = {};
-      Object.entries(results).forEach(([featureName, hasAccess]) => {
-        const cacheKey = `${user.id}:${featureName}`;
-        newCache[cacheKey] = hasAccess;
-      });
+      try {
+        const results = await checkMultipleFeatureAccess(user.id, featureNames);
 
-      setAccessCache(prev => ({
-        ...prev,
-        ...newCache
-      }));
+        // Cache all results
+        const newCache: Record<string, boolean> = {};
+        Object.entries(results).forEach(([featureName, hasAccess]) => {
+          const cacheKey = `${user.id}:${featureName}`;
+          newCache[cacheKey] = hasAccess;
+        });
 
-      return results;
-    } catch (err) {
-      logger.error('Multiple feature access check failed', 'useFeatureAccess', {
-        error: err instanceof Error ? err.message : 'Unknown error',
-        userId: user.id,
-        featureCount: featureNames.length
-      });
+        setAccessCache((prev) => ({
+          ...prev,
+          ...newCache
+        }));
 
-      // Fallback to default access for the user's role
-      const results: Record<string, boolean> = {};
-      featureNames.forEach(featureName => {
-        results[featureName] = getDefaultAccess(userRole, featureName);
-      });
-      return results as Record<FeatureName, boolean>;
-    }
-  }, [user?.id, userRole]);
+        return results;
+      } catch (err) {
+        logger.error(
+          'Multiple feature access check failed',
+          'useFeatureAccess',
+          {
+            error: err instanceof Error ? err.message : 'Unknown error',
+            userId: user.id,
+            featureCount: featureNames.length
+          }
+        );
+
+        // Fallback to default access for the user's role
+        const results: Record<string, boolean> = {};
+        featureNames.forEach((featureName) => {
+          results[featureName] = getDefaultAccess(userRole, featureName);
+        });
+        return results as Record<FeatureName, boolean>;
+      }
+    },
+    [user?.id, userRole]
+  );
 
   // Synchronous access check using cache (for render-time decisions)
-  const hasAccess = useCallback((featureName: FeatureName): boolean => {
-    if (!user?.id) {
-      return getDefaultAccess('member', featureName);
-    }
+  const hasAccess = useCallback(
+    (featureName: FeatureName): boolean => {
+      if (!user?.id) {
+        return getDefaultAccess('member', featureName);
+      }
 
-    const cacheKey = `${user.id}:${featureName}`;
-    
-    // Use cached result if available
-    if (cacheKey in accessCache) {
-      return accessCache[cacheKey];
-    }
+      const cacheKey = `${user.id}:${featureName}`;
 
-    // Fallback to default role-based access if not cached
-    return getDefaultAccess(userRole, featureName);
-  }, [user?.id, accessCache, userRole]);
+      // Use cached result if available
+      if (cacheKey in accessCache) {
+        return accessCache[cacheKey];
+      }
+
+      // Fallback to default role-based access if not cached
+      return getDefaultAccess(userRole, featureName);
+    },
+    [user?.id, accessCache, userRole]
+  );
 
   // Refresh access cache
   const refreshAccess = useCallback(async (): Promise<void> => {
@@ -266,17 +283,21 @@ export function useFeatureAccessCheck(featureName: FeatureName) {
         setError(null);
 
         const access = await checkFeatureAccess(user.id, featureName);
-        
+
         if (isMounted) {
           setHasAccess(access);
           setIsLoading(false);
         }
       } catch (err) {
-        logger.error('Single feature access check failed', 'useFeatureAccessCheck', {
-          error: err instanceof Error ? err.message : 'Unknown error',
-          userId: user.id,
-          featureName
-        });
+        logger.error(
+          'Single feature access check failed',
+          'useFeatureAccessCheck',
+          {
+            error: err instanceof Error ? err.message : 'Unknown error',
+            userId: user.id,
+            featureName
+          }
+        );
 
         if (isMounted) {
           setError('Failed to check feature access');

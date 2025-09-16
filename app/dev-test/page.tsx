@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -24,10 +24,11 @@ export default function DevelopmentTestPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">🧪 Development Testing</h1>
-        
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+          🧪 Development Testing
+        </h1>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
           {/* Lists System Test */}
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
@@ -40,10 +41,11 @@ export default function DevelopmentTestPage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                Test the comprehensive family list management system with 5 core list types, 
-                search functionality, and interactive item management.
+                Test the comprehensive family list management system with 5 core
+                list types, search functionality, and interactive item
+                management.
               </p>
-              
+
               <div className="space-y-2 mb-4">
                 <div className="text-sm">
                   <span className="font-medium">Features:</span>
@@ -55,11 +57,9 @@ export default function DevelopmentTestPage() {
                   </ul>
                 </div>
               </div>
-              
+
               <Link href="/lists">
-                <Button className="w-full">
-                  🚀 Test Lists System
-                </Button>
+                <Button className="w-full">🚀 Test Lists System</Button>
               </Link>
             </CardContent>
           </Card>
@@ -76,10 +76,10 @@ export default function DevelopmentTestPage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                Google OAuth authentication has been disabled for development. 
+                Google OAuth authentication has been disabled for development.
                 Protected routes require auth bypass for testing.
               </p>
-              
+
               <div className="space-y-2 mb-4">
                 <div className="text-sm">
                   <span className="font-medium">Current Status:</span>
@@ -91,7 +91,7 @@ export default function DevelopmentTestPage() {
                   </ul>
                 </div>
               </div>
-              
+
               <Link href="/test-auth">
                 <Button variant="outline" className="w-full">
                   View Auth Details
@@ -112,10 +112,11 @@ export default function DevelopmentTestPage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                Comprehensive lists database schema created with Supabase migration. 
-                Ready for 24 list types with household sharing and RLS policies.
+                Comprehensive lists database schema created with Supabase
+                migration. Ready for 24 list types with household sharing and
+                RLS policies.
               </p>
-              
+
               <div className="space-y-2 mb-4">
                 <div className="text-sm">
                   <span className="font-medium">Migration Ready:</span>
@@ -127,7 +128,7 @@ export default function DevelopmentTestPage() {
                   </ul>
                 </div>
               </div>
-              
+
               <Button variant="outline" className="w-full" disabled>
                 Migration File Created
               </Button>
@@ -146,9 +147,10 @@ export default function DevelopmentTestPage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">
-                Track the development progress of the comprehensive family list management system.
+                Track the development progress of the comprehensive family list
+                management system.
               </p>
-              
+
               <div className="space-y-2 mb-4">
                 <div className="text-sm">
                   <span className="font-medium">Completed:</span>
@@ -158,7 +160,7 @@ export default function DevelopmentTestPage() {
                     <li>✅ 5 list types implementation</li>
                     <li>✅ UI/UX with mock data</li>
                   </ul>
-                  
+
                   <span className="font-medium">Next Steps:</span>
                   <ul className="list-disc list-inside text-gray-600 ml-2">
                     <li>🔄 Database integration</li>
@@ -168,13 +170,12 @@ export default function DevelopmentTestPage() {
                   </ul>
                 </div>
               </div>
-              
+
               <Button variant="outline" className="w-full" disabled>
                 View Project Roadmap
               </Button>
             </CardContent>
           </Card>
-
         </div>
 
         {/* Quick Actions */}
@@ -182,19 +183,13 @@ export default function DevelopmentTestPage() {
           <h2 className="text-xl font-semibold mb-4">🚀 Quick Test Actions</h2>
           <div className="flex flex-wrap gap-3">
             <Link href="/lists">
-              <Button>
-                📋 Test Lists System
-              </Button>
+              <Button>📋 Test Lists System</Button>
             </Link>
             <Link href="/">
-              <Button variant="outline">
-                🏠 Home Page
-              </Button>
+              <Button variant="outline">🏠 Home Page</Button>
             </Link>
             <Link href="/signin">
-              <Button variant="outline">
-                🔐 Sign In Page
-              </Button>
+              <Button variant="outline">🔐 Sign In Page</Button>
             </Link>
           </div>
         </div>

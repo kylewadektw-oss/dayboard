@@ -15,8 +15,8 @@ export default function SessionExpired({ onRetry }: SessionExpiredProps) {
   useEffect(() => {
     // Log session expiry with full context
     enhancedLogger.logWithFullContext(
-      LogLevel.WARN, 
-      'User session expired - showing session expired page', 
+      LogLevel.WARN,
+      'User session expired - showing session expired page',
       'SessionExpired',
       {
         hasRetryCallback: !!onRetry,
@@ -37,7 +37,7 @@ export default function SessionExpired({ onRetry }: SessionExpiredProps) {
       'User clicked Sign In Again from session expired page',
       'SessionExpired'
     );
-    
+
     router.push('/signin');
   };
 
@@ -93,7 +93,8 @@ export default function SessionExpired({ onRetry }: SessionExpiredProps) {
 
         <div className="text-center">
           <p className="text-xs text-gray-500">
-            If this problem persists, please clear your browser cache and cookies.
+            If this problem persists, please clear your browser cache and
+            cookies.
           </p>
         </div>
       </div>

@@ -1,24 +1,24 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 /*
  * 🧪 TEST LOG GENERATION - Controlled Log Testing Environment
- * 
+ *
  * PURPOSE: Generate various types of logs for testing the logging system functionality
- * 
+ *
  * FEATURES:
  * - Generate individual log types (ERROR, WARN, INFO, DEBUG)
  * - Batch log generation (10, 50, 100+ logs with mixed types)
@@ -26,15 +26,15 @@
  * - Component-specific logs to test source detection
  * - Custom message templates and error simulation
  * - Real-time generation counter and status indicators
- * 
+ *
  * ACCESS: Public - No authentication required (development/testing tool)
- * 
+ *
  * TECHNICAL:
  * - Uses enhanced logger with circular reference protection
  * - Generates realistic log scenarios for testing
  * - Performance-optimized batch operations
  * - Integrates with real-time logs dashboard
- * 
+ *
  * NAVIGATION: Part of logging suite with LoggingNav sidebar
  * Best used with: logs-dashboard (open in another tab to see generated logs)
  */
@@ -53,7 +53,7 @@ export default function TestLogGeneration() {
   const generateTestLogs = async () => {
     setIsGenerating(true);
     setGeneratedCount(0);
-    
+
     const testScenarios = [
       // Error logs
       () => {
@@ -93,7 +93,7 @@ export default function TestLogGeneration() {
           });
         }
       },
-      
+
       // Warning logs
       () => {
         logger.warn('High memory usage detected', 'PerformanceMonitor', {
@@ -118,7 +118,7 @@ export default function TestLogGeneration() {
           file: 'components/profile/Settings.tsx'
         });
       },
-      
+
       // Info logs
       () => {
         logger.info('User successfully logged in', 'AuthService', {
@@ -158,7 +158,7 @@ export default function TestLogGeneration() {
           completedAt: new Date().toISOString()
         });
       },
-      
+
       // Debug logs
       () => {
         logger.debug('Component render cycle', 'DashboardWidget', {
@@ -175,7 +175,7 @@ export default function TestLogGeneration() {
           url: '/api/meals/favorites',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer [REDACTED]'
+            Authorization: 'Bearer [REDACTED]'
           },
           responseTime: '145ms',
           statusCode: 200,
@@ -199,7 +199,7 @@ export default function TestLogGeneration() {
       setTimeout(() => {
         testScenarios[i]();
         setGeneratedCount(i + 1);
-        
+
         if (i === testScenarios.length - 1) {
           setTimeout(() => {
             setIsGenerating(false);
@@ -211,16 +211,16 @@ export default function TestLogGeneration() {
 
   const generateCriticalErrorBurst = () => {
     setIsGenerating(true);
-    
+
     // Simulate a critical system failure with multiple related errors
     const errors = [
       'Redis connection lost',
-      'Session store unavailable', 
+      'Session store unavailable',
       'User authentication failing',
       'Database query timeout',
       'Cache miss causing performance degradation'
     ];
-    
+
     errors.forEach((errorMsg, index) => {
       setTimeout(() => {
         logger.error(errorMsg, 'SystemCritical', {
@@ -230,7 +230,7 @@ export default function TestLogGeneration() {
           systemLoad: Math.random() * 100,
           errorSequence: index + 1
         });
-        
+
         if (index === errors.length - 1) {
           setTimeout(() => setIsGenerating(false), 200);
         }
@@ -241,48 +241,69 @@ export default function TestLogGeneration() {
   const generateHighVolumeTraffic = () => {
     setIsGenerating(true);
     let count = 0;
-    
+
     const generateLog = () => {
       const logTypes = [
-        () => logger.info('Page view', 'Analytics', { page: '/dashboard', userId: `user_${Math.floor(Math.random() * 1000)}` }),
-        () => logger.info('API call', 'HTTPLogger', { endpoint: '/api/meals', method: 'GET', responseTime: Math.floor(Math.random() * 200) + 'ms' }),
-        () => logger.debug('Component mount', 'ReactProfiler', { component: 'MealWidget', renderTime: Math.floor(Math.random() * 50) + 'ms' }),
-        () => logger.warn('Slow query', 'DatabaseMonitor', { query: 'SELECT * FROM meals', duration: Math.floor(Math.random() * 1000) + 500 + 'ms' })
+        () =>
+          logger.info('Page view', 'Analytics', {
+            page: '/dashboard',
+            userId: `user_${Math.floor(Math.random() * 1000)}`
+          }),
+        () =>
+          logger.info('API call', 'HTTPLogger', {
+            endpoint: '/api/meals',
+            method: 'GET',
+            responseTime: Math.floor(Math.random() * 200) + 'ms'
+          }),
+        () =>
+          logger.debug('Component mount', 'ReactProfiler', {
+            component: 'MealWidget',
+            renderTime: Math.floor(Math.random() * 50) + 'ms'
+          }),
+        () =>
+          logger.warn('Slow query', 'DatabaseMonitor', {
+            query: 'SELECT * FROM meals',
+            duration: Math.floor(Math.random() * 1000) + 500 + 'ms'
+          })
       ];
-      
+
       const randomLog = logTypes[Math.floor(Math.random() * logTypes.length)];
       randomLog();
       count++;
-      
+
       if (count < 20) {
         setTimeout(generateLog, Math.random() * 100 + 50); // Random interval 50-150ms
       } else {
         setIsGenerating(false);
       }
     };
-    
+
     generateLog();
   };
 
   return (
     <>
       {/* Sidebar Navigation */}
-      <LoggingNav 
+      <LoggingNav
         variant="sidebar"
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-      
+
       {/* Main Content Area */}
-      <div className={`transition-all duration-300 ${
-        sidebarCollapsed ? 'ml-16' : 'ml-80'
-      }`}>
+      <div
+        className={`transition-all duration-300 ${
+          sidebarCollapsed ? 'ml-16' : 'ml-80'
+        }`}
+      >
         <div className="min-h-screen bg-gray-50 p-8">
           <div className="max-w-4xl mx-auto">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900">🧪 Log Generation Testing</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                🧪 Log Generation Testing
+              </h1>
             </div>
-            
+
             <div className="grid gap-6">
               {/* Comprehensive Test Suite */}
               <div className="bg-white rounded-lg shadow p-6">
@@ -290,15 +311,18 @@ export default function TestLogGeneration() {
                   🎯 Comprehensive Test Suite
                 </h2>
                 <p className="text-gray-900 font-semibold mb-4">
-                  Generates a variety of realistic logs including errors, warnings, info, and debug messages 
-                  across different components and services.
+                  Generates a variety of realistic logs including errors,
+                  warnings, info, and debug messages across different components
+                  and services.
                 </p>
                 <button
                   onClick={generateTestLogs}
                   disabled={isGenerating}
                   className="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {isGenerating ? `Generating... (${generatedCount}/15)` : 'Generate Test Logs'}
+                  {isGenerating
+                    ? `Generating... (${generatedCount}/15)`
+                    : 'Generate Test Logs'}
                 </button>
               </div>
 
@@ -308,15 +332,17 @@ export default function TestLogGeneration() {
                   🚨 Critical Error Simulation
                 </h2>
                 <p className="text-gray-900 font-semibold mb-4">
-                  Simulates a cascading system failure with multiple related critical errors 
-                  to test error handling and alerting systems.
+                  Simulates a cascading system failure with multiple related
+                  critical errors to test error handling and alerting systems.
                 </p>
                 <button
                   onClick={generateCriticalErrorBurst}
                   disabled={isGenerating}
                   className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {isGenerating ? 'Generating Critical Errors...' : 'Simulate System Failure'}
+                  {isGenerating
+                    ? 'Generating Critical Errors...'
+                    : 'Simulate System Failure'}
                 </button>
               </div>
 
@@ -326,15 +352,17 @@ export default function TestLogGeneration() {
                   📈 High Volume Traffic Test
                 </h2>
                 <p className="text-gray-900 font-semibold mb-4">
-                  Generates rapid-fire logs to test dashboard performance and filtering 
-                  under high-volume conditions.
+                  Generates rapid-fire logs to test dashboard performance and
+                  filtering under high-volume conditions.
                 </p>
                 <button
                   onClick={generateHighVolumeTraffic}
                   disabled={isGenerating}
                   className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {isGenerating ? 'Generating High Volume...' : 'Generate Traffic Burst'}
+                  {isGenerating
+                    ? 'Generating High Volume...'
+                    : 'Generate Traffic Burst'}
                 </button>
               </div>
 
@@ -345,25 +373,41 @@ export default function TestLogGeneration() {
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <button
-                    onClick={() => logger.error('Test error message', 'TestComponent', { testData: 'error test' })}
+                    onClick={() =>
+                      logger.error('Test error message', 'TestComponent', {
+                        testData: 'error test'
+                      })
+                    }
                     className="px-4 py-2 bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors"
                   >
                     ❌ Error
                   </button>
                   <button
-                    onClick={() => logger.warn('Test warning message', 'TestComponent', { testData: 'warning test' })}
+                    onClick={() =>
+                      logger.warn('Test warning message', 'TestComponent', {
+                        testData: 'warning test'
+                      })
+                    }
                     className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors"
                   >
                     ⚠️ Warning
                   </button>
                   <button
-                    onClick={() => logger.info('Test info message', 'TestComponent', { testData: 'info test' })}
+                    onClick={() =>
+                      logger.info('Test info message', 'TestComponent', {
+                        testData: 'info test'
+                      })
+                    }
                     className="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors"
                   >
                     ℹ️ Info
                   </button>
                   <button
-                    onClick={() => logger.debug('Test debug message', 'TestComponent', { testData: 'debug test' })}
+                    onClick={() =>
+                      logger.debug('Test debug message', 'TestComponent', {
+                        testData: 'debug test'
+                      })
+                    }
                     className="px-4 py-2 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     🐛 Debug
@@ -373,14 +417,34 @@ export default function TestLogGeneration() {
 
               {/* Instructions */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-blue-900 mb-3">📋 Testing Instructions</h3>
+                <h3 className="text-lg font-semibold text-blue-900 mb-3">
+                  📋 Testing Instructions
+                </h3>
                 <ul className="space-y-2 text-blue-900 font-semibold">
-                  <li>• <strong>Comprehensive Test:</strong> Generates 15 realistic logs across all levels</li>
-                  <li>• <strong>Critical Errors:</strong> Tests error handling with cascading failures</li>
-                  <li>• <strong>High Volume:</strong> Tests dashboard performance with rapid log generation</li>
-                  <li>• <strong>Individual Tests:</strong> Quick single-log generation for specific testing</li>
-                  <li>• Open the <strong>Logs Dashboard</strong> to see real-time results</li>
-                  <li>• Test the new <strong>time range buttons</strong> to filter by time periods</li>
+                  <li>
+                    • <strong>Comprehensive Test:</strong> Generates 15
+                    realistic logs across all levels
+                  </li>
+                  <li>
+                    • <strong>Critical Errors:</strong> Tests error handling
+                    with cascading failures
+                  </li>
+                  <li>
+                    • <strong>High Volume:</strong> Tests dashboard performance
+                    with rapid log generation
+                  </li>
+                  <li>
+                    • <strong>Individual Tests:</strong> Quick single-log
+                    generation for specific testing
+                  </li>
+                  <li>
+                    • Open the <strong>Logs Dashboard</strong> to see real-time
+                    results
+                  </li>
+                  <li>
+                    • Test the new <strong>time range buttons</strong> to filter
+                    by time periods
+                  </li>
                 </ul>
               </div>
             </div>

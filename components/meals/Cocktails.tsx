@@ -1,23 +1,33 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Heart, Wine, Coffee, Martini, Package, CheckCircle, Clock, ShoppingCart } from 'lucide-react';
+import {
+  Search,
+  Heart,
+  Wine,
+  Coffee,
+  Martini,
+  Package,
+  CheckCircle,
+  Clock,
+  ShoppingCart
+} from 'lucide-react';
 // Unused imports commented out to fix build errors:
 // import { Shuffle, Star } from 'lucide-react';
 // import CocktailAPI from '@/utils/cocktailApi';
@@ -55,7 +65,8 @@ export function Cocktails() {
           strCategory: 'Ordinary Drink',
           strAlcoholic: 'Alcoholic',
           strGlass: 'Cocktail glass',
-          strInstructions: 'Mix tequila, lime juice, and triple sec. Serve with salt rim.',
+          strInstructions:
+            'Mix tequila, lime juice, and triple sec. Serve with salt rim.',
           strDrinkThumb: '',
           ingredients: [
             { name: 'Tequila', measure: '2 oz' },
@@ -69,7 +80,8 @@ export function Cocktails() {
           strCategory: 'Cocktail',
           strAlcoholic: 'Alcoholic',
           strGlass: 'Highball glass',
-          strInstructions: 'Muddle mint with simple syrup, add rum and lime juice, top with soda water.',
+          strInstructions:
+            'Muddle mint with simple syrup, add rum and lime juice, top with soda water.',
           strDrinkThumb: '',
           ingredients: [
             { name: 'White rum', measure: '2 oz' },
@@ -92,7 +104,7 @@ export function Cocktails() {
     return (
       <div className="animate-pulse">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map(i => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="bg-gray-200 rounded-lg h-64"></div>
           ))}
         </div>
@@ -109,7 +121,9 @@ export function Cocktails() {
             <h2 className="text-2xl font-bold text-gray-900 flex items-center">
               🍹 Cocktails & Beverages
             </h2>
-            <p className="text-gray-600 mt-1">Discover and create amazing cocktails for your household</p>
+            <p className="text-gray-600 mt-1">
+              Discover and create amazing cocktails for your household
+            </p>
           </div>
         </div>
 
@@ -139,7 +153,7 @@ export function Cocktails() {
 
       {/* Tab Content */}
       {activeTab === 'inventory' && <CocktailInventory />}
-      
+
       {activeTab === 'make' && (
         <div className="space-y-6">
           {/* What Can I Make Header */}
@@ -151,12 +165,15 @@ export function Cocktails() {
                   What Can I Make?
                 </h3>
                 <p className="text-green-700">
-                  Based on your current bar inventory, here are cocktails you can make right now
+                  Based on your current bar inventory, here are cocktails you
+                  can make right now
                 </p>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-green-600">12</div>
-                <div className="text-sm text-green-600">Available cocktails</div>
+                <div className="text-sm text-green-600">
+                  Available cocktails
+                </div>
               </div>
             </div>
           </div>
@@ -164,7 +181,9 @@ export function Cocktails() {
           {/* Available Cocktails Grid */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-semibold text-gray-900">Ready to Make</h4>
+              <h4 className="text-lg font-semibold text-gray-900">
+                Ready to Make
+              </h4>
               <div className="flex gap-2">
                 <button className="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-sm font-medium">
                   All ingredients ✓
@@ -190,7 +209,7 @@ export function Cocktails() {
                   name: 'Gin & Tonic',
                   ingredients: ['Tanqueray Gin', 'Fever-Tree Tonic'],
                   missing: [],
-                  difficulty: 'Easy', 
+                  difficulty: 'Easy',
                   time: '1 min',
                   glass: 'Highball'
                 },
@@ -204,7 +223,11 @@ export function Cocktails() {
                 },
                 {
                   name: 'Old Fashioned',
-                  ingredients: ['Bulleit Bourbon', 'Simple Syrup', 'Angostura Bitters'],
+                  ingredients: [
+                    'Bulleit Bourbon',
+                    'Simple Syrup',
+                    'Angostura Bitters'
+                  ],
                   missing: [],
                   difficulty: 'Medium',
                   time: '4 mins',
@@ -212,7 +235,11 @@ export function Cocktails() {
                 },
                 {
                   name: 'Margarita',
-                  ingredients: ['Jose Cuervo Tequila', 'Cointreau', 'Fresh Lime Juice'],
+                  ingredients: [
+                    'Jose Cuervo Tequila',
+                    'Cointreau',
+                    'Fresh Lime Juice'
+                  ],
                   missing: [],
                   difficulty: 'Medium',
                   time: '3 mins',
@@ -220,7 +247,11 @@ export function Cocktails() {
                 },
                 {
                   name: 'White Russian',
-                  ingredients: ['Grey Goose Vodka', 'Kahlua', 'Baileys Irish Cream'],
+                  ingredients: [
+                    'Grey Goose Vodka',
+                    'Kahlua',
+                    'Baileys Irish Cream'
+                  ],
                   missing: [],
                   difficulty: 'Easy',
                   time: '2 mins',
@@ -230,7 +261,9 @@ export function Cocktails() {
                 <div
                   key={index}
                   className={`bg-white rounded-lg border p-4 hover:shadow-md transition-shadow ${
-                    cocktail.missing.length === 0 ? 'border-green-200' : 'border-orange-200'
+                    cocktail.missing.length === 0
+                      ? 'border-green-200'
+                      : 'border-orange-200'
                   }`}
                 >
                   {/* Header */}
@@ -250,12 +283,16 @@ export function Cocktails() {
                         <span>{cocktail.difficulty}</span>
                       </div>
                     </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      cocktail.missing.length === 0 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-orange-100 text-orange-800'
-                    }`}>
-                      {cocktail.missing.length === 0 ? 'Ready' : `Missing ${cocktail.missing.length}`}
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        cocktail.missing.length === 0
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-orange-100 text-orange-800'
+                      }`}
+                    >
+                      {cocktail.missing.length === 0
+                        ? 'Ready'
+                        : `Missing ${cocktail.missing.length}`}
                     </span>
                   </div>
 
@@ -278,7 +315,9 @@ export function Cocktails() {
                       {cocktail.missing.map((ingredient, idx) => (
                         <div key={idx} className="flex items-center text-xs">
                           <div className="h-3 w-3 border border-orange-400 rounded-full mr-2"></div>
-                          <span className="text-orange-600">{ingredient} (missing)</span>
+                          <span className="text-orange-600">
+                            {ingredient} (missing)
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -286,12 +325,16 @@ export function Cocktails() {
 
                   {/* Actions */}
                   <div className="flex gap-2 pt-3 border-t border-gray-100">
-                    <button className={`flex-1 py-2 rounded text-sm font-medium transition-colors ${
-                      cocktail.missing.length === 0
-                        ? 'bg-green-600 text-white hover:bg-green-700'
-                        : 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                    }`}>
-                      {cocktail.missing.length === 0 ? '🍹 Make Now' : '🛒 Need Items'}
+                    <button
+                      className={`flex-1 py-2 rounded text-sm font-medium transition-colors ${
+                        cocktail.missing.length === 0
+                          ? 'bg-green-600 text-white hover:bg-green-700'
+                          : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      {cocktail.missing.length === 0
+                        ? '🍹 Make Now'
+                        : '🛒 Need Items'}
                     </button>
                     <button className="px-3 bg-purple-100 text-purple-700 py-2 rounded text-sm hover:bg-purple-200 transition-colors">
                       ❤️
@@ -310,7 +353,9 @@ export function Cocktails() {
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h5 className="font-medium text-orange-800 mb-2">High Priority (unlocks 5+ cocktails)</h5>
+                <h5 className="font-medium text-orange-800 mb-2">
+                  High Priority (unlocks 5+ cocktails)
+                </h5>
                 <ul className="space-y-1 text-sm text-orange-700">
                   <li>• Ginger Beer (Moscow Mule, Dark & Stormy)</li>
                   <li>• Orange Juice (Screwdriver, Mimosa)</li>
@@ -318,7 +363,9 @@ export function Cocktails() {
                 </ul>
               </div>
               <div>
-                <h5 className="font-medium text-orange-800 mb-2">Nice to Have (specialty cocktails)</h5>
+                <h5 className="font-medium text-orange-800 mb-2">
+                  Nice to Have (specialty cocktails)
+                </h5>
                 <ul className="space-y-1 text-sm text-orange-700">
                   <li>• Champagne (Mimosa, French 75)</li>
                   <li>• Elderflower Liqueur (Aviation, Hugo)</li>
@@ -337,25 +384,33 @@ export function Cocktails() {
         <div className="space-y-6">
           <div className="text-center py-12">
             <div className="text-6xl mb-4">❤️</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Your Cocktail Favorites</h3>
-            <p className="text-gray-600 mb-4">Save and rate your favorite cocktails</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Your Cocktail Favorites
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Save and rate your favorite cocktails
+            </p>
             <div className="text-sm text-gray-500">
-              Feature coming soon - track your household&apos;s favorite cocktails and ratings
+              Feature coming soon - track your household&apos;s favorite
+              cocktails and ratings
             </div>
           </div>
         </div>
       )}
-      
+
       {activeTab === 'discover' && (
         <div className="space-y-6">
           {/* Coming Soon Notice */}
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
             <div className="text-center">
               <div className="text-4xl mb-4">🍹</div>
-              <h3 className="text-xl font-semibold text-purple-900 mb-2">Cocktail Discovery Coming Soon!</h3>
+              <h3 className="text-xl font-semibold text-purple-900 mb-2">
+                Cocktail Discovery Coming Soon!
+              </h3>
               <p className="text-purple-700 mb-4">
-                We&apos;re integrating with TheCocktailDB API to bring you thousands of cocktail recipes, 
-                ingredient search, and smart recommendations based on your bar inventory.
+                We&apos;re integrating with TheCocktailDB API to bring you
+                thousands of cocktail recipes, ingredient search, and smart
+                recommendations based on your bar inventory.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-purple-600">
                 <div className="bg-white/60 p-3 rounded-lg">
@@ -382,7 +437,9 @@ export function Cocktails() {
 
           {/* Mock Cocktails Grid */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Popular Cocktails Preview</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Popular Cocktails Preview
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {cocktails.map((cocktail) => (
                 <div
@@ -394,51 +451,61 @@ export function Cocktails() {
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="text-6xl">🍹</span>
                     </div>
-                    
+
                     {/* Alcoholic Badge */}
                     <div className="absolute bottom-2 left-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        cocktail.strAlcoholic === 'Alcoholic'
-                          ? 'bg-red-100 text-red-800'
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {cocktail.strAlcoholic === 'Alcoholic' ? '🍷 Alcoholic' : '🥤 Non-Alcoholic'}
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          cocktail.strAlcoholic === 'Alcoholic'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        {cocktail.strAlcoholic === 'Alcoholic'
+                          ? '🍷 Alcoholic'
+                          : '🥤 Non-Alcoholic'}
                       </span>
                     </div>
                   </div>
 
                   {/* Content */}
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">{cocktail.strDrink}</h3>
-                    
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {cocktail.strDrink}
+                    </h3>
+
                     <div className="space-y-2 text-sm text-gray-600 mb-3">
                       <div className="flex items-center">
                         <Wine className="h-4 w-4 mr-2" />
                         <span>{cocktail.strCategory}</span>
                       </div>
-                      
+
                       <div className="flex items-center">
                         <Martini className="h-4 w-4 mr-2" />
                         <span>{cocktail.strGlass}</span>
                       </div>
-                      
+
                       <div className="flex items-center">
                         <span className="text-xs">🧪</span>
-                        <span className="ml-2">{cocktail.ingredients.length} ingredients</span>
+                        <span className="ml-2">
+                          {cocktail.ingredients.length} ingredients
+                        </span>
                       </div>
                     </div>
 
                     {/* Quick ingredient preview */}
                     <div className="pt-3 border-t border-gray-100">
                       <div className="flex flex-wrap gap-1">
-                        {cocktail.ingredients.slice(0, 3).map((ingredient, index) => (
-                          <span
-                            key={index}
-                            className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs"
-                          >
-                            {ingredient.name}
-                          </span>
-                        ))}
+                        {cocktail.ingredients
+                          .slice(0, 3)
+                          .map((ingredient, index) => (
+                            <span
+                              key={index}
+                              className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs"
+                            >
+                              {ingredient.name}
+                            </span>
+                          ))}
                         {cocktail.ingredients.length > 3 && (
                           <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
                             +{cocktail.ingredients.length - 3} more

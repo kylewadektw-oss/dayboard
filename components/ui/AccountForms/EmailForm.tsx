@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 'use client';
 
@@ -48,7 +47,9 @@ export default function EmailForm({
     <Card>
       <CardHeader>
         <CardTitle>Your Email</CardTitle>
-        <p className="text-sm text-gray-600">Please enter the email address you want to use to login.</p>
+        <p className="text-sm text-gray-600">
+          Please enter the email address you want to use to login.
+        </p>
       </CardHeader>
       <CardContent>
         <div className="mt-8 mb-4 text-xl font-semibold">
@@ -63,7 +64,7 @@ export default function EmailForm({
             />
           </form>
         </div>
-        
+
         <div className="flex flex-col items-start justify-between sm:flex-row sm:items-center">
           <p className="pb-4 sm:pb-0">
             We will email you to verify the change.

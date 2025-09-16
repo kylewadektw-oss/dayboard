@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 import { Wrench, Calendar, Users, Eye } from 'lucide-react';
 
@@ -39,7 +38,7 @@ const mockProjects: Project[] = [
     priority: 'medium'
   },
   {
-    id: '2', 
+    id: '2',
     title: 'Install Kitchen Shelving',
     status: 'in-progress',
     dueDate: '2025-09-10',
@@ -95,13 +94,13 @@ const getDaysUntilDue = (dueDate: string) => {
 export function ProjectsWidget() {
   // Show projects due soon and in progress
   const priorityProjects = mockProjects
-    .filter(project => project.status !== 'completed')
+    .filter((project) => project.status !== 'completed')
     .sort((a, b) => {
       // Sort by due date, then by priority
       const daysA = getDaysUntilDue(a.dueDate);
       const daysB = getDaysUntilDue(b.dueDate);
       if (daysA !== daysB) return daysA - daysB;
-      
+
       const priorityOrder = { high: 0, medium: 1, low: 2 };
       return priorityOrder[a.priority] - priorityOrder[b.priority];
     })
@@ -110,7 +109,9 @@ export function ProjectsWidget() {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-amber-500 to-orange-600 px-3 py-1 rounded-lg tracking-wide">PROJECTS</h3>
+        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-amber-500 to-orange-600 px-3 py-1 rounded-lg tracking-wide">
+          PROJECTS
+        </h3>
         <Wrench className="h-4 w-4 text-gray-400" />
       </div>
 
@@ -118,9 +119,12 @@ export function ProjectsWidget() {
       <div className="space-y-3 mb-4">
         {priorityProjects.map((project) => {
           const daysUntilDue = getDaysUntilDue(project.dueDate);
-          
+
           return (
-            <div key={project.id} className="border border-gray-200 rounded-lg p-3">
+            <div
+              key={project.id}
+              className="border border-gray-200 rounded-lg p-3"
+            >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm text-gray-900 truncate">
@@ -131,7 +135,9 @@ export function ProjectsWidget() {
                     {project.assignedTo}
                   </div>
                 </div>
-                <div className={`ml-2 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
+                <div
+                  className={`ml-2 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}
+                >
                   {project.status.replace('-', ' ')}
                 </div>
               </div>
@@ -140,10 +146,12 @@ export function ProjectsWidget() {
               <div className="mb-2">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs text-gray-500">Progress</span>
-                  <span className="text-xs font-medium text-gray-700">{project.progress}%</span>
+                  <span className="text-xs font-medium text-gray-700">
+                    {project.progress}%
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div 
+                  <div
                     className="bg-green-500 h-1.5 rounded-full transition-all"
                     style={{ width: `${project.progress}%` }}
                   />
@@ -154,12 +162,17 @@ export function ProjectsWidget() {
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center text-gray-500">
                   <Calendar className="h-3 w-3 mr-1" />
-                  {daysUntilDue === 0 ? 'Due today' : 
-                   daysUntilDue === 1 ? 'Due tomorrow' :
-                   daysUntilDue > 0 ? `${daysUntilDue} days left` :
-                   `${Math.abs(daysUntilDue)} days overdue`}
+                  {daysUntilDue === 0
+                    ? 'Due today'
+                    : daysUntilDue === 1
+                      ? 'Due tomorrow'
+                      : daysUntilDue > 0
+                        ? `${daysUntilDue} days left`
+                        : `${Math.abs(daysUntilDue)} days overdue`}
                 </div>
-                <div className={`font-medium ${getPriorityColor(project.priority)}`}>
+                <div
+                  className={`font-medium ${getPriorityColor(project.priority)}`}
+                >
                   {project.priority} priority
                 </div>
               </div>
@@ -174,7 +187,7 @@ export function ProjectsWidget() {
           <Wrench className="h-3 w-3 mr-1" />
           Log New Project
         </button>
-        
+
         <button className="w-full py-2 px-3 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-xs font-medium transition-colors flex items-center justify-center">
           <Eye className="h-3 w-3 mr-1" />
           View All Projects
@@ -186,7 +199,7 @@ export function ProjectsWidget() {
         <div className="flex justify-between items-center text-xs">
           <span className="text-gray-500">Active projects</span>
           <span className="font-medium text-gray-700">
-            {mockProjects.filter(p => p.status !== 'completed').length}
+            {mockProjects.filter((p) => p.status !== 'completed').length}
           </span>
         </div>
       </div>

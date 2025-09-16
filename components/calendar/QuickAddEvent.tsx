@@ -1,23 +1,23 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-"use client";
+'use client';
 
-import { useState, useCallback, memo, useMemo } from "react";
-import { Plus, Calendar, Clock, MapPin, Palette, X } from "lucide-react";
+import { useState, useCallback, memo, useMemo } from 'react';
+import { Plus, Calendar, Clock, MapPin, Palette, X } from 'lucide-react';
 
 interface QuickAddEventProps {
   selectedDate?: Date | null;
@@ -39,32 +39,32 @@ interface EventFormData {
 
 const PRESET_COLORS = [
   '#3b82f6', // blue
-  '#22c55e', // green  
+  '#22c55e', // green
   '#f59e0b', // amber
   '#ef4444', // red
   '#8b5cf6', // violet
   '#ec4899', // pink
   '#10b981', // emerald
-  '#f97316', // orange
+  '#f97316' // orange
 ];
 
 // 🚀 PERFORMANCE: Memoized component
-function QuickAddEventComponent({ 
-  selectedDate, 
-  onEventCreated, 
+function QuickAddEventComponent({
+  selectedDate,
+  onEventCreated,
   onCancel,
-  inline = false 
+  inline = false
 }: QuickAddEventProps) {
   const [isOpen, setIsOpen] = useState(inline);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // 🚀 PERFORMANCE: Memoize initial form data calculation
   const initialFormData = useMemo((): EventFormData => {
     const defaultDate = selectedDate || new Date();
     const dateStr = defaultDate.toISOString().split('T')[0];
     const timeStr = formatTimeForInput(defaultDate);
-    
+
     return {
       title: '',
       description: '',
@@ -73,7 +73,7 @@ function QuickAddEventComponent({
       startTime: timeStr,
       endTime: addHour(timeStr),
       allDay: false,
-      color: PRESET_COLORS[0],
+      color: PRESET_COLORS[0]
     };
   }, [selectedDate]);
 
@@ -92,91 +92,100 @@ function QuickAddEventComponent({
     }
   }, [onCancel]);
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.title.trim()) {
-      setError('Event title is required');
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      // Construct start and end timestamps
-      let startTs: string;
-      let endTs: string;
-
-      if (formData.allDay) {
-        // All-day events: use date only
-        startTs = `${formData.date}T00:00:00`;
-        endTs = `${formData.date}T23:59:59`;
-      } else {
-        // Timed events: combine date and time
-        startTs = `${formData.date}T${formData.startTime}:00`;
-        endTs = `${formData.date}T${formData.endTime}:00`;
+      if (!formData.title.trim()) {
+        setError('Event title is required');
+        return;
       }
 
-      const eventData = {
-        title: formData.title.trim(),
-        description: formData.description.trim() || null,
-        location: formData.location.trim() || null,
-        start_ts: startTs,
-        end_ts: endTs,
-        all_day: formData.allDay,
-        color: formData.color,
-      };
+      setIsSubmitting(true);
+      setError(null);
 
-      const response = await fetch('/api/calendar/manual', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(eventData),
-      });
+      try {
+        // Construct start and end timestamps
+        let startTs: string;
+        let endTs: string;
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `Server error: ${response.status}`);
+        if (formData.allDay) {
+          // All-day events: use date only
+          startTs = `${formData.date}T00:00:00`;
+          endTs = `${formData.date}T23:59:59`;
+        } else {
+          // Timed events: combine date and time
+          startTs = `${formData.date}T${formData.startTime}:00`;
+          endTs = `${formData.date}T${formData.endTime}:00`;
+        }
+
+        const eventData = {
+          title: formData.title.trim(),
+          description: formData.description.trim() || null,
+          location: formData.location.trim() || null,
+          start_ts: startTs,
+          end_ts: endTs,
+          all_day: formData.allDay,
+          color: formData.color
+        };
+
+        const response = await fetch('/api/calendar/manual', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(eventData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: 'Unknown error' }));
+          throw new Error(
+            errorData.error || `Server error: ${response.status}`
+          );
+        }
+
+        const result = await response.json();
+        console.log('✅ Event created:', result.event);
+
+        // Reset form
+        setFormData({
+          title: '',
+          description: '',
+          location: '',
+          date: formData.date, // Keep selected date
+          startTime: formData.startTime,
+          endTime: formData.endTime,
+          allDay: false,
+          color: PRESET_COLORS[0]
+        });
+
+        // Close form if not inline
+        if (!inline) {
+          setIsOpen(false);
+        }
+
+        // Notify parent component
+        if (onEventCreated) {
+          onEventCreated();
+        }
+      } catch (err) {
+        console.error('Failed to create event:', err);
+        setError(err instanceof Error ? err.message : 'Failed to create event');
+      } finally {
+        setIsSubmitting(false);
       }
+    },
+    [formData, inline, onEventCreated]
+  );
 
-      const result = await response.json();
-      console.log('✅ Event created:', result.event);
-
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        location: '',
-        date: formData.date, // Keep selected date
-        startTime: formData.startTime,
-        endTime: formData.endTime,
-        allDay: false,
-        color: PRESET_COLORS[0],
-      });
-      
-      // Close form if not inline
-      if (!inline) {
-        setIsOpen(false);
-      }
-
-      // Notify parent component
-      if (onEventCreated) {
-        onEventCreated();
-      }
-      
-    } catch (err) {
-      console.error('Failed to create event:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create event');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [formData, inline, onEventCreated]);
-
-  const updateField = useCallback((field: keyof EventFormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  }, []);
+  const updateField = useCallback(
+    (field: keyof EventFormData, value: string | boolean) => {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    },
+    []
+  );
 
   // If not inline and not open, show the trigger button
   if (!inline && !isOpen) {
@@ -192,7 +201,9 @@ function QuickAddEventComponent({
   }
 
   return (
-    <div className={`bg-white rounded-lg ${inline ? '' : 'border border-gray-200 shadow-lg'}`}>
+    <div
+      className={`bg-white rounded-lg ${inline ? '' : 'border border-gray-200 shadow-lg'}`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center gap-2">
@@ -327,13 +338,15 @@ function QuickAddEventComponent({
             Color
           </label>
           <div className="flex gap-2">
-            {PRESET_COLORS.map(color => (
+            {PRESET_COLORS.map((color) => (
               <button
                 key={color}
                 type="button"
                 onClick={() => updateField('color', color)}
                 className={`w-8 h-8 rounded-full border-2 transition-all ${
-                  formData.color === color ? 'border-gray-400 scale-110' : 'border-gray-200'
+                  formData.color === color
+                    ? 'border-gray-400 scale-110'
+                    : 'border-gray-200'
                 }`}
                 style={{ backgroundColor: color }}
                 title={`Select ${color}`}

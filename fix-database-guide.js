@@ -2,7 +2,7 @@
 
 /**
  * 🔧 DATABASE FIX GUIDE
- * 
+ *
  * This script provides instructions to fix the RLS infinite recursion issue
  */
 
@@ -10,14 +10,20 @@ console.log('🔧 DATABASE RLS POLICY FIX REQUIRED');
 console.log('=====================================\n');
 
 console.log('❌ ISSUE DETECTED:');
-console.log('   "infinite recursion detected in policy for relation \\"profiles\\""');
+console.log(
+  '   "infinite recursion detected in policy for relation \\"profiles\\""'
+);
 console.log('   This is causing authentication to fail after OAuth success.\n');
 
 console.log('✅ SOLUTION:');
-console.log('   You need to run the RLS policy fix in your Supabase SQL editor.\n');
+console.log(
+  '   You need to run the RLS policy fix in your Supabase SQL editor.\n'
+);
 
 console.log('📋 STEPS TO FIX:');
-console.log('1. Go to: https://supabase.com/dashboard/project/csbwewirwzeitavhvykr/sql/new');
+console.log(
+  '1. Go to: https://supabase.com/dashboard/project/csbwewirwzeitavhvykr/sql/new'
+);
 console.log('2. Copy the contents of: fix-rls-policies.sql');
 console.log('3. Paste it into the SQL editor');
 console.log('4. Click "Run" to execute the SQL commands');

@@ -6,11 +6,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Settings as SettingsIcon, 
-  Shield, 
-  Crown, 
-  User, 
+import {
+  Settings as SettingsIcon,
+  Shield,
+  Crown,
+  User,
   Check,
   X,
   Info
@@ -44,7 +44,9 @@ interface SettingsPermissionsMatrixProps {
 //   none: Lock
 // };
 
-export default function SettingsPermissionsMatrix({ className = '' }: SettingsPermissionsMatrixProps) {
+export default function SettingsPermissionsMatrix({
+  className = ''
+}: SettingsPermissionsMatrixProps) {
   const { profile } = useAuth();
   const [settings, setSettings] = useState<SettingPermission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +61,7 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
 
       try {
         setLoading(true);
-        
+
         // Get all settings items
         const { data: settingsData, error: settingsError } = await supabase
           .from('settings_items')
@@ -69,38 +71,53 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
         if (settingsError) throw settingsError;
 
         // Get current permission settings
-        const { data: permissionsData, error: permissionsError } = await supabase
-          .from('user_settings')
-          .select('setting_key, setting_value')
-          .eq('user_id', profile.id)
-          .like('setting_key', '%_permission%');
+        const { data: permissionsData, error: permissionsError } =
+          await supabase
+            .from('user_settings')
+            .select('setting_key, setting_value')
+            .eq('user_id', profile.id)
+            .like('setting_key', '%_permission%');
 
-        if (permissionsError) console.warn('Permissions error:', permissionsError);
+        if (permissionsError)
+          console.warn('Permissions error:', permissionsError);
 
         // Build settings permission matrix
-        const permissionsMap = (permissionsData || []).reduce((acc, permission) => {
-          acc[permission.setting_key] = permission.setting_value as boolean;
-          return acc;
-        }, {} as Record<string, boolean>);
+        const permissionsMap = (permissionsData || []).reduce(
+          (acc, permission) => {
+            acc[permission.setting_key] = permission.setting_value as boolean;
+            return acc;
+          },
+          {} as Record<string, boolean>
+        );
 
-        const settingPermissions: SettingPermission[] = (settingsData || []).map(setting => {
+        const settingPermissions: SettingPermission[] = (
+          settingsData || []
+        ).map((setting) => {
           const memberViewKey = `${setting.setting_key}_member_view_permission`;
           const memberEditKey = `${setting.setting_key}_member_edit_permission`;
           const adminViewKey = `${setting.setting_key}_admin_view_permission`;
           const adminEditKey = `${setting.setting_key}_admin_edit_permission`;
-          
+
           return {
             setting_key: setting.setting_key,
             display_name: setting.display_name,
             description: setting.description || '',
             category_key: setting.category_key,
             setting_type: setting.setting_type,
-            member_view: permissionsMap[memberViewKey] ?? getDefaultPermission('member', 'view', setting.category_key),
-            member_edit: permissionsMap[memberEditKey] ?? getDefaultPermission('member', 'edit', setting.category_key),
-            admin_view: permissionsMap[adminViewKey] ?? getDefaultPermission('admin', 'view', setting.category_key),
-            admin_edit: permissionsMap[adminEditKey] ?? getDefaultPermission('admin', 'edit', setting.category_key),
+            member_view:
+              permissionsMap[memberViewKey] ??
+              getDefaultPermission('member', 'view', setting.category_key),
+            member_edit:
+              permissionsMap[memberEditKey] ??
+              getDefaultPermission('member', 'edit', setting.category_key),
+            admin_view:
+              permissionsMap[adminViewKey] ??
+              getDefaultPermission('admin', 'view', setting.category_key),
+            admin_edit:
+              permissionsMap[adminEditKey] ??
+              getDefaultPermission('admin', 'edit', setting.category_key),
             super_admin_view: true, // Super admin always has view access
-            super_admin_edit: true  // Super admin always has edit access
+            super_admin_edit: true // Super admin always has edit access
           };
         });
 
@@ -116,7 +133,11 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
     loadSettings();
   }, [profile?.id, supabase]);
 
-  const getDefaultPermission = (role: string, action: string, category: string): boolean => {
+  const getDefaultPermission = (
+    role: string,
+    action: string,
+    category: string
+  ): boolean => {
     // Default permission rules
     switch (category) {
       case 'member':
@@ -131,9 +152,9 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
   };
 
   const handlePermissionChange = async (
-    settingKey: string, 
-    role: 'member' | 'admin', 
-    action: 'view' | 'edit', 
+    settingKey: string,
+    role: 'member' | 'admin',
+    action: 'view' | 'edit',
     enabled: boolean
   ) => {
     if (!profile?.id) return;
@@ -141,65 +162,85 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
     setSaving(true);
     try {
       const permissionKey = `${settingKey}_${role}_${action}_permission`;
-      
-      const { error } = await supabase
-        .from('user_settings')
-        .upsert({
+
+      const { error } = await supabase.from('user_settings').upsert(
+        {
           user_id: profile.id,
           setting_key: permissionKey,
           setting_value: enabled.toString(),
           updated_at: new Date().toISOString()
-        }, {
+        },
+        {
           onConflict: 'user_id,setting_key'
-        });
+        }
+      );
 
       if (error) throw error;
 
       // Update local state
-      setSettings(prev => prev.map(setting => 
-        setting.setting_key === settingKey 
-          ? { ...setting, [`${role}_${action}`]: enabled }
-          : setting
-      ));
+      setSettings((prev) =>
+        prev.map((setting) =>
+          setting.setting_key === settingKey
+            ? { ...setting, [`${role}_${action}`]: enabled }
+            : setting
+        )
+      );
 
-      console.log(`✅ Updated ${role} ${action} permission for ${settingKey}: ${enabled}`);
+      console.log(
+        `✅ Updated ${role} ${action} permission for ${settingKey}: ${enabled}`
+      );
     } catch (err: unknown) {
       console.error('Error updating permission:', err);
-      setError(`Failed to update permission: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setError(
+        `Failed to update permission: ${err instanceof Error ? err.message : 'Unknown error'}`
+      );
     } finally {
       setSaving(false);
     }
   };
 
-  const groupedSettings = settings.reduce((acc, setting) => {
-    if (!acc[setting.category_key]) {
-      acc[setting.category_key] = [];
-    }
-    acc[setting.category_key].push(setting);
-    return acc;
-  }, {} as Record<string, SettingPermission[]>);
+  const groupedSettings = settings.reduce(
+    (acc, setting) => {
+      if (!acc[setting.category_key]) {
+        acc[setting.category_key] = [];
+      }
+      acc[setting.category_key].push(setting);
+      return acc;
+    },
+    {} as Record<string, SettingPermission[]>
+  );
 
   const getCategoryTitle = (categoryKey: string): string => {
     switch (categoryKey) {
-      case 'member': return 'Personal Settings';
-      case 'admin': return 'Administrative Settings';
-      case 'super_admin': return 'System Settings';
-      default: return categoryKey.replace('_', ' ').toUpperCase();
+      case 'member':
+        return 'Personal Settings';
+      case 'admin':
+        return 'Administrative Settings';
+      case 'super_admin':
+        return 'System Settings';
+      default:
+        return categoryKey.replace('_', ' ').toUpperCase();
     }
   };
 
   const getCategoryColor = (categoryKey: string): string => {
     switch (categoryKey) {
-      case 'member': return 'text-green-600 bg-green-50 border-green-200';
-      case 'admin': return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'super_admin': return 'text-purple-600 bg-purple-50 border-purple-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'member':
+        return 'text-green-600 bg-green-50 border-green-200';
+      case 'admin':
+        return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'super_admin':
+        return 'text-purple-600 bg-purple-50 border-purple-200';
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-xl shadow-sm border border-gray-200 p-6 ${className}`}>
+      <div
+        className={`bg-white rounded-xl shadow-sm border border-gray-200 p-6 ${className}`}
+      >
         <div className="animate-pulse">
           <div className="h-6 bg-gray-200 rounded w-64 mb-4"></div>
           <div className="space-y-3">
@@ -214,11 +255,15 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
 
   if (error) {
     return (
-      <div className={`bg-red-50 border border-red-200 rounded-xl p-6 ${className}`}>
+      <div
+        className={`bg-red-50 border border-red-200 rounded-xl p-6 ${className}`}
+      >
         <div className="flex items-center">
           <X className="h-5 w-5 text-red-400 mr-3" />
           <div>
-            <h3 className="text-sm font-medium text-red-800">Error Loading Settings Permissions</h3>
+            <h3 className="text-sm font-medium text-red-800">
+              Error Loading Settings Permissions
+            </h3>
             <p className="mt-1 text-sm text-red-700">{error}</p>
           </div>
         </div>
@@ -227,14 +272,19 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
   }
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-gray-200 p-6 ${className}`}>
+    <div
+      className={`bg-white rounded-xl shadow-sm border border-gray-200 p-6 ${className}`}
+    >
       {/* Header */}
       <div className="flex items-center mb-6">
         <SettingsIcon className="h-6 w-6 text-gray-600 mr-3" />
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Settings Permissions Matrix</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Settings Permissions Matrix
+          </h2>
           <p className="text-sm text-gray-600 mt-1">
-            Control who can view and edit different settings. Use checkboxes to grant specific permissions to each role.
+            Control who can view and edit different settings. Use checkboxes to
+            grant specific permissions to each role.
           </p>
         </div>
       </div>
@@ -244,7 +294,9 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
         {Object.entries(groupedSettings).map(([category, categorySettings]) => (
           <div key={category}>
             {/* Category Header */}
-            <div className={`flex items-center mb-4 p-3 rounded-lg border ${getCategoryColor(category)}`}>
+            <div
+              className={`flex items-center mb-4 p-3 rounded-lg border ${getCategoryColor(category)}`}
+            >
               <SettingsIcon className="h-5 w-5 mr-2" />
               <h3 className="text-lg font-medium">
                 {getCategoryTitle(category)}
@@ -302,12 +354,19 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
                 </thead>
                 <tbody>
                   {categorySettings.map((setting, index) => (
-                    <tr key={setting.setting_key} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <tr
+                      key={setting.setting_key}
+                      className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                    >
                       {/* Setting Name */}
                       <td className="px-4 py-3 border-b border-gray-200">
                         <div>
-                          <div className="font-medium text-gray-900">{setting.display_name}</div>
-                          <div className="text-sm text-gray-600 mt-1">{setting.description}</div>
+                          <div className="font-medium text-gray-900">
+                            {setting.display_name}
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {setting.description}
+                          </div>
                         </div>
                       </td>
 
@@ -326,11 +385,24 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
                             <input
                               type="checkbox"
                               checked={setting.member_view}
-                              onChange={(e) => handlePermissionChange(setting.setting_key, 'member', 'view', e.target.checked)}
-                              disabled={saving || setting.category_key === 'admin' || setting.category_key === 'super_admin'}
+                              onChange={(e) =>
+                                handlePermissionChange(
+                                  setting.setting_key,
+                                  'member',
+                                  'view',
+                                  e.target.checked
+                                )
+                              }
+                              disabled={
+                                saving ||
+                                setting.category_key === 'admin' ||
+                                setting.category_key === 'super_admin'
+                              }
                               className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500 disabled:opacity-50"
                             />
-                            <span className="sr-only">Member view permission</span>
+                            <span className="sr-only">
+                              Member view permission
+                            </span>
                           </label>
 
                           {/* Edit Permission */}
@@ -338,15 +410,33 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
                             <input
                               type="checkbox"
                               checked={setting.member_edit}
-                              onChange={(e) => handlePermissionChange(setting.setting_key, 'member', 'edit', e.target.checked)}
-                              disabled={saving || setting.category_key === 'admin' || setting.category_key === 'super_admin' || !setting.member_view}
+                              onChange={(e) =>
+                                handlePermissionChange(
+                                  setting.setting_key,
+                                  'member',
+                                  'edit',
+                                  e.target.checked
+                                )
+                              }
+                              disabled={
+                                saving ||
+                                setting.category_key === 'admin' ||
+                                setting.category_key === 'super_admin' ||
+                                !setting.member_view
+                              }
                               className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500 disabled:opacity-50"
                             />
-                            <span className="sr-only">Member edit permission</span>
+                            <span className="sr-only">
+                              Member edit permission
+                            </span>
                           </label>
                         </div>
-                        {(setting.category_key === 'admin' || setting.category_key === 'super_admin') && (
-                          <div className="flex justify-center mt-1" title="Not available for members">
+                        {(setting.category_key === 'admin' ||
+                          setting.category_key === 'super_admin') && (
+                          <div
+                            className="flex justify-center mt-1"
+                            title="Not available for members"
+                          >
                             <Info className="h-3 w-3 text-gray-400" />
                           </div>
                         )}
@@ -360,11 +450,22 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
                             <input
                               type="checkbox"
                               checked={setting.admin_view}
-                              onChange={(e) => handlePermissionChange(setting.setting_key, 'admin', 'view', e.target.checked)}
-                              disabled={saving || setting.category_key === 'super_admin'}
+                              onChange={(e) =>
+                                handlePermissionChange(
+                                  setting.setting_key,
+                                  'admin',
+                                  'view',
+                                  e.target.checked
+                                )
+                              }
+                              disabled={
+                                saving || setting.category_key === 'super_admin'
+                              }
                               className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50"
                             />
-                            <span className="sr-only">Admin view permission</span>
+                            <span className="sr-only">
+                              Admin view permission
+                            </span>
                           </label>
 
                           {/* Edit Permission */}
@@ -372,15 +473,31 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
                             <input
                               type="checkbox"
                               checked={setting.admin_edit}
-                              onChange={(e) => handlePermissionChange(setting.setting_key, 'admin', 'edit', e.target.checked)}
-                              disabled={saving || setting.category_key === 'super_admin' || !setting.admin_view}
+                              onChange={(e) =>
+                                handlePermissionChange(
+                                  setting.setting_key,
+                                  'admin',
+                                  'edit',
+                                  e.target.checked
+                                )
+                              }
+                              disabled={
+                                saving ||
+                                setting.category_key === 'super_admin' ||
+                                !setting.admin_view
+                              }
                               className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50"
                             />
-                            <span className="sr-only">Admin edit permission</span>
+                            <span className="sr-only">
+                              Admin edit permission
+                            </span>
                           </label>
                         </div>
                         {setting.category_key === 'super_admin' && (
-                          <div className="flex justify-center mt-1" title="Super admin only">
+                          <div
+                            className="flex justify-center mt-1"
+                            title="Super admin only"
+                          >
                             <Info className="h-3 w-3 text-gray-400" />
                           </div>
                         )}
@@ -409,11 +526,20 @@ export default function SettingsPermissionsMatrix({ className = '' }: SettingsPe
           <div className="text-sm text-blue-800">
             <p className="font-medium mb-1">Permission Rules:</p>
             <ul className="space-y-1 text-blue-700">
-              <li>• Super Admin always has full view and edit access to all settings</li>
-              <li>• Edit permission requires view permission to be enabled first</li>
-              <li>• Members cannot access admin or super admin category settings</li>
+              <li>
+                • Super Admin always has full view and edit access to all
+                settings
+              </li>
+              <li>
+                • Edit permission requires view permission to be enabled first
+              </li>
+              <li>
+                • Members cannot access admin or super admin category settings
+              </li>
               <li>• Admins cannot access super admin category settings</li>
-              <li>• Settings marked as disabled show an info icon with explanation</li>
+              <li>
+                • Settings marked as disabled show an info icon with explanation
+              </li>
             </ul>
           </div>
         </div>

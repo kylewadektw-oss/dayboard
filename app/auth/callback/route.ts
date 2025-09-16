@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
@@ -27,20 +26,25 @@ export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
 
-  serverAuthLogger.info(`🔄 Auth callback received`, { 
-    url: requestUrl.toString(), 
+  serverAuthLogger.info(`🔄 Auth callback received`, {
+    url: requestUrl.toString(),
     hasCode: !!code,
-    origin: requestUrl.origin 
+    origin: requestUrl.origin
   });
 
   if (code) {
     const supabase = await createClient();
 
     serverAuthLogger.info(`🔑 Exchanging code for session`);
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data: sessionData, error } =
+      await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
-      serverAuthLogger.error(`❌ Code exchange failed`, { error: error.message }, error);
+      serverAuthLogger.error(
+        `❌ Code exchange failed`,
+        { error: error.message },
+        error
+      );
       return NextResponse.redirect(
         getErrorRedirect(
           `${requestUrl.origin}/signin`,
@@ -50,41 +54,64 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check if we got a session
+    if (sessionData?.session) {
+      serverAuthLogger.info(`✅ Session created successfully`, {
+        userId: sessionData.session.user?.id,
+        hasAccessToken: !!sessionData.session.access_token,
+        hasRefreshToken: !!sessionData.session.refresh_token,
+        expiresAt: sessionData.session.expires_at
+      });
+    } else {
+      serverAuthLogger.warn(`⚠️ No session data returned from code exchange`);
+    }
+
     serverAuthLogger.info(`✅ Code exchange successful, checking user profile`);
 
     // After successful auth, check if user profile exists
-    const { data: { user } } = await supabase.auth.getUser();
-    
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
     if (user) {
-      serverAuthLogger.info(`👤 User authenticated`, { userId: user.id, email: user.email });
-      
+      serverAuthLogger.info(`👤 User authenticated`, {
+        userId: user.id,
+        email: user.email
+      });
+
       // Check if profile exists
       const { data: profile, error: profileSelectError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', user.id)  // Use 'user_id' to match actual schema
+        .eq('user_id', user.id) // Use 'user_id' to match actual schema
         .maybeSingle(); // Use maybeSingle instead of single to avoid error if no profile
 
-      serverAuthLogger.info(`📊 Profile check result`, { 
-        hasProfile: !!profile, 
+      serverAuthLogger.info(`📊 Profile check result`, {
+        hasProfile: !!profile,
         hasError: !!profileSelectError,
-        error: profileSelectError?.message 
+        error: profileSelectError?.message
       });
 
       // If no profile exists, create one
       if (!profile && !profileSelectError) {
-        serverAuthLogger.info(`🆕 Creating new profile for user`, { userId: user.id });
-        
+        serverAuthLogger.info(`🆕 Creating new profile for user`, {
+          userId: user.id
+        });
+
         const newProfile = {
           id: user.id,
           user_id: user.id,
           name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-          avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
+          avatar_url:
+            user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
           role: 'member' as const,
           household_id: null
         };
 
-        serverAuthLogger.debug(`📝 Profile data prepared`, { profileData: newProfile });
+        serverAuthLogger.info(`📝 Profile data prepared`, {
+          profileData: newProfile,
+          userMetadata: user.user_metadata
+        });
 
         const { data: insertedProfile, error: profileError } = await supabase
           .from('profiles')
@@ -92,24 +119,70 @@ export async function GET(request: NextRequest) {
           .select()
           .single();
 
+        serverAuthLogger.info(`📝 Profile creation result`, {
+          success: !!insertedProfile,
+          hasError: !!profileError,
+          profileId: insertedProfile?.id,
+          errorMessage: profileError?.message,
+          errorDetails: profileError?.details,
+          errorHint: profileError?.hint
+        });
+
         if (profileError) {
-          serverAuthLogger.error(`❌ Profile creation failed`, { 
-            userId: user.id, 
-            error: profileError.message 
-          }, profileError);
-          return NextResponse.redirect(
-            getErrorRedirect(
-              `${requestUrl.origin}/signin`,
-              'ProfileCreationError',
-              'Failed to create user profile. Please try signing in again.'
-            )
+          serverAuthLogger.error(
+            `❌ Profile creation failed`,
+            {
+              userId: user.id,
+              error: profileError.message,
+              errorDetails: profileError.details,
+              errorHint: profileError.hint,
+              errorCode: profileError.code
+            },
+            profileError
           );
+
+          // Try a simpler profile creation as fallback
+          serverAuthLogger.info(`🔄 Attempting simplified profile creation`);
+          const simpleProfile = {
+            user_id: user.id,
+            name:
+              user.user_metadata?.full_name ||
+              user.email?.split('@')[0] ||
+              'New User',
+            role: 'member' as const
+          };
+
+          const { data: fallbackProfile, error: fallbackError } = await supabase
+            .from('profiles')
+            .insert(simpleProfile)
+            .select()
+            .single();
+
+          if (fallbackError) {
+            serverAuthLogger.error(`❌ Fallback profile creation also failed`, {
+              userId: user.id,
+              error: fallbackError.message,
+              errorCode: fallbackError.code
+            });
+            return NextResponse.redirect(
+              getErrorRedirect(
+                `${requestUrl.origin}/signin`,
+                'ProfileCreationError',
+                'Failed to create user profile. Please try signing in again.'
+              )
+            );
+          } else {
+            serverAuthLogger.info(`✅ Fallback profile created successfully`, {
+              userId: user.id,
+              profileId: fallbackProfile.id
+            });
+          }
         } else {
-          serverAuthLogger.info(`✅ Profile created successfully`, { 
-            userId: user.id, 
-            profileId: insertedProfile.id 
+          serverAuthLogger.info(`✅ Profile created successfully`, {
+            userId: user.id,
+            profileId: insertedProfile.id
           });
-          
+
           // Create customer review entry for new users
           const { error: reviewError } = await supabase
             .from('customer_reviews')
@@ -119,15 +192,17 @@ export async function GET(request: NextRequest) {
             });
 
           if (reviewError) {
-            serverAuthLogger.warn(`⚠️ Customer review creation failed`, { 
-              userId: user.id, 
-              error: reviewError.message 
+            serverAuthLogger.warn(`⚠️ Customer review creation failed`, {
+              userId: user.id,
+              error: reviewError.message
             });
             // Don't block signup if review creation fails
           } else {
-            serverAuthLogger.info(`📋 Customer review created for new user`, { userId: user.id });
+            serverAuthLogger.info(`📋 Customer review created for new user`, {
+              userId: user.id
+            });
           }
-          
+
           // New users always need to complete household setup
           serverAuthLogger.info(`🏠 Redirecting new user to profile setup`);
           return NextResponse.redirect(
@@ -139,20 +214,26 @@ export async function GET(request: NextRequest) {
           );
         }
       } else if (profile) {
-        serverAuthLogger.info(`👤 Existing profile found`, { 
-          userId: user.id, 
+        serverAuthLogger.info(`👤 Existing profile found`, {
+          userId: user.id,
           profileId: profile.id,
-          displayName: profile.preferred_name || profile.name 
+          displayName: profile.preferred_name || profile.name
         });
 
         // Check if household setup is complete
-        if (!profile.household_id || !(profile.preferred_name || profile.name)) {
-          serverAuthLogger.info(`🏠 Redirecting to profile setup - incomplete household/profile`, {
-            userId: user.id,
-            hasHousehold: !!profile.household_id,
-            hasName: !!(profile.preferred_name || profile.name),
-            onboardingCompleted: true // Assume completed since field doesn't exist in current schema
-          });
+        if (
+          !profile.household_id ||
+          !(profile.preferred_name || profile.name)
+        ) {
+          serverAuthLogger.info(
+            `🏠 Redirecting to profile setup - incomplete household/profile`,
+            {
+              userId: user.id,
+              hasHousehold: !!profile.household_id,
+              hasName: !!(profile.preferred_name || profile.name),
+              onboardingCompleted: true // Assume completed since field doesn't exist in current schema
+            }
+          );
           return NextResponse.redirect(
             getStatusRedirect(
               `${requestUrl.origin}/profile/setup`,
@@ -175,11 +256,15 @@ export async function GET(request: NextRequest) {
           )
         );
       } else if (profileSelectError) {
-        serverAuthLogger.error(`❌ Error checking for existing profile`, { 
-          userId: user.id, 
-          error: profileSelectError.message 
-        }, profileSelectError);
-        
+        serverAuthLogger.error(
+          `❌ Error checking for existing profile`,
+          {
+            userId: user.id,
+            error: profileSelectError.message
+          },
+          profileSelectError
+        );
+
         // Handle profile error - redirect to signin with error
         return NextResponse.redirect(
           getErrorRedirect(

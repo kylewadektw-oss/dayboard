@@ -1,6 +1,6 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Simple script to create feedback table using Supabase client
  */
 
@@ -9,9 +9,13 @@ const { createClient } = require('@supabase/supabase-js');
 async function createFeedbackTable() {
   try {
     // Use your actual Supabase credentials
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://csbwewirwzeitavhvykr.supabase.co";
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzYndld2lyd3plaXRhdmh2eWtyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjM1ODc2MiwiZXhwIjoyMDcxOTM0NzYyfQ.9cYI_QLZEqI6HmTmhUKKmI0xeP37Xe1Jt5CJhQgOfF8";
-    
+    const supabaseUrl =
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      'https://csbwewirwzeitavhvykr.supabase.co';
+    const supabaseKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzYndld2lyd3plaXRhdmh2eWtyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjM1ODc2MiwiZXhwIjoyMDcxOTM0NzYyfQ.9cYI_QLZEqI6HmTmhUKKmI0xeP37Xe1Jt5CJhQgOfF8';
+
     console.log('Creating Supabase client...');
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -21,12 +25,21 @@ async function createFeedbackTable() {
       .from('user_feedback')
       .select('count', { count: 'exact', head: true });
 
-    if (error && error.message.includes('relation "public.user_feedback" does not exist')) {
-      console.log('Table does not exist. Creating feedback table using manual SQL...');
-      
+    if (
+      error &&
+      error.message.includes('relation "public.user_feedback" does not exist')
+    ) {
+      console.log(
+        'Table does not exist. Creating feedback table using manual SQL...'
+      );
+
       // Since we can't execute raw SQL directly, let's try inserting a test record to see if it works
-      console.log('You need to create the table manually in Supabase Studio or SQL Editor.');
-      console.log('Go to https://supabase.com/dashboard and run the following SQL:');
+      console.log(
+        'You need to create the table manually in Supabase Studio or SQL Editor.'
+      );
+      console.log(
+        'Go to https://supabase.com/dashboard and run the following SQL:'
+      );
       console.log(`
 CREATE TABLE public.user_feedback (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -96,13 +109,11 @@ CREATE TRIGGER update_user_feedback_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
       `);
-      
     } else if (error) {
       console.error('Error checking table:', error);
     } else {
       console.log('Table already exists!');
     }
-
   } catch (error) {
     console.error('Error:', error);
   }

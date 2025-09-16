@@ -2,14 +2,14 @@
 
 /**
  * 🔍 AUTHENTICATION LOGGING DEMO
- * 
+ *
  * Shows what enhanced authentication logging will capture
  */
 
 console.log('🔍 ENHANCED AUTHENTICATION LOGGING ACTIVATED');
 console.log('===========================================\n');
 
-console.log('✅ WHAT\'S NOW BEING LOGGED:');
+console.log("✅ WHAT'S NOW BEING LOGGED:");
 console.log('============================');
 console.log('📋 OAuth Events:');
 console.log('   • 🚀 OAuth sign-in initiated');
@@ -41,13 +41,15 @@ console.log('1. Browser Console (F12 → Console)');
 console.log('2. Application logs dashboard');
 console.log('3. Supabase application_logs table');
 
-console.log('\n💡 EXAMPLE LOG ENTRIES YOU\'LL SEE:');
+console.log("\n💡 EXAMPLE LOG ENTRIES YOU'LL SEE:");
 console.log('===================================');
 console.log('🚀 [OAUTH] Google OAuth sign-in initiated');
 console.log('🔄 [AUTH] Auth state changed: SIGNED_IN');
 console.log('👤 [AUTH] User authenticated via SIGNED_IN: kwade1984@gmail.com');
 console.log('🔍 [AUTH] Starting profile fetch for user: [user-id]');
-console.log('✅ [AUTH] Profile loaded successfully for user: kwade1984@gmail.com');
+console.log(
+  '✅ [AUTH] Profile loaded successfully for user: kwade1984@gmail.com'
+);
 
 console.log('\n🚀 NEXT STEPS:');
 console.log('==============');

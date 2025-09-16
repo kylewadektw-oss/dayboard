@@ -1,23 +1,30 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 'use client';
 
 import { useState } from 'react';
-import { Plus, Search, Wine, Camera, BarChart3, AlertTriangle } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Wine,
+  Camera,
+  BarChart3,
+  AlertTriangle
+} from 'lucide-react';
 // Unused imports commented out to fix build errors:
 // import { Coffee, Martini, TrendingUp, Package } from 'lucide-react';
 import { CocktailInventoryItem } from '@/types/cocktails';
@@ -226,7 +233,7 @@ const MOCK_INVENTORY: CocktailInventoryItem[] = [
     unit: 'ml',
     location: 'fridge',
     brand: 'Freshly Squeezed',
-    cost: 0.00, // Homemade
+    cost: 0.0, // Homemade
     bottle_size: 250,
     fill_percentage: 72,
     expiry_date: '2025-01-28',
@@ -243,7 +250,7 @@ const MOCK_INVENTORY: CocktailInventoryItem[] = [
     unit: 'ml',
     location: 'pantry',
     brand: 'Homemade',
-    cost: 2.50,
+    cost: 2.5,
     bottle_size: 500,
     fill_percentage: 70,
     expiry_date: '2025-02-25',
@@ -333,7 +340,7 @@ const MOCK_INVENTORY: CocktailInventoryItem[] = [
     quantity: 110,
     unit: 'ml',
     location: 'bar',
-    brand: 'Regan\'s',
+    brand: "Regan's",
     cost: 12.99,
     barcode: '0851261000025',
     alcohol_content: 45.0,
@@ -351,7 +358,7 @@ const MOCK_INVENTORY: CocktailInventoryItem[] = [
     quantity: 240,
     unit: 'ml',
     location: 'fridge',
-    brand: 'Rose\'s',
+    brand: "Rose's",
     cost: 4.99,
     barcode: '0041570051207',
     bottle_size: 354,
@@ -386,43 +393,58 @@ export function CocktailInventory() {
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
-  const [sortBy, setSortBy] = useState<'name' | 'quantity' | 'cost' | 'expiry' | 'fill_percentage'>('name');
+  const [sortBy, setSortBy] = useState<
+    'name' | 'quantity' | 'cost' | 'expiry' | 'fill_percentage'
+  >('name');
   const [showLowStock, setShowLowStock] = useState(false);
 
-  const filteredInventory = inventory.filter(item => {
-    const matchesSearch = item.ingredient_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.brand?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLocation = selectedLocation === 'all' || item.location === selectedLocation;
-    const isLowStock = showLowStock ? (item.fill_percentage && item.fill_percentage < 25) : true;
-    
-    return matchesSearch && matchesLocation && isLowStock;
-  }).sort((a, b) => {
-    switch (sortBy) {
-      case 'name':
-        return a.ingredient_name.localeCompare(b.ingredient_name);
-      case 'quantity':
-        return (b.quantity || 0) - (a.quantity || 0);
-      case 'cost':
-        return (b.cost || 0) - (a.cost || 0);
-      case 'fill_percentage':
-        return (b.fill_percentage || 100) - (a.fill_percentage || 100);
-      case 'expiry':
-        if (!a.expiry_date && !b.expiry_date) return 0;
-        if (!a.expiry_date) return 1;
-        if (!b.expiry_date) return -1;
-        return new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime();
-      default:
-        return 0;
-    }
-  });
+  const filteredInventory = inventory
+    .filter((item) => {
+      const matchesSearch =
+        item.ingredient_name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        item.brand?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesLocation =
+        selectedLocation === 'all' || item.location === selectedLocation;
+      const isLowStock = showLowStock
+        ? item.fill_percentage && item.fill_percentage < 25
+        : true;
+
+      return matchesSearch && matchesLocation && isLowStock;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.ingredient_name.localeCompare(b.ingredient_name);
+        case 'quantity':
+          return (b.quantity || 0) - (a.quantity || 0);
+        case 'cost':
+          return (b.cost || 0) - (a.cost || 0);
+        case 'fill_percentage':
+          return (b.fill_percentage || 100) - (a.fill_percentage || 100);
+        case 'expiry':
+          if (!a.expiry_date && !b.expiry_date) return 0;
+          if (!a.expiry_date) return 1;
+          if (!b.expiry_date) return -1;
+          return (
+            new Date(a.expiry_date).getTime() -
+            new Date(b.expiry_date).getTime()
+          );
+        default:
+          return 0;
+      }
+    });
 
   const getExpiryStatus = (expiryDate?: string) => {
     if (!expiryDate) return 'none';
-    
+
     const expiry = new Date(expiryDate);
     const today = new Date();
-    const daysUntilExpiry = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const daysUntilExpiry = Math.ceil(
+      (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
     if (daysUntilExpiry < 0) return 'expired';
     if (daysUntilExpiry <= 7) return 'warning';
     if (daysUntilExpiry <= 30) return 'caution';
@@ -431,36 +453,51 @@ export function CocktailInventory() {
 
   const getExpiryColor = (status: string) => {
     switch (status) {
-      case 'expired': return 'bg-red-100 text-red-800';
-      case 'warning': return 'bg-orange-100 text-orange-800';
-      case 'caution': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-green-100 text-green-800';
+      case 'expired':
+        return 'bg-red-100 text-red-800';
+      case 'warning':
+        return 'bg-orange-100 text-orange-800';
+      case 'caution':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-green-100 text-green-800';
     }
   };
 
   const getExpiryText = (expiryDate?: string) => {
     if (!expiryDate) return '';
-    
+
     const expiry = new Date(expiryDate);
     const today = new Date();
-    const daysUntilExpiry = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (daysUntilExpiry < 0) return `Expired ${Math.abs(daysUntilExpiry)} days ago`;
+    const daysUntilExpiry = Math.ceil(
+      (expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysUntilExpiry < 0)
+      return `Expired ${Math.abs(daysUntilExpiry)} days ago`;
     if (daysUntilExpiry === 0) return 'Expires today';
     if (daysUntilExpiry === 1) return 'Expires tomorrow';
     return `Expires in ${daysUntilExpiry} days`;
   };
 
   const totalValue = inventory.reduce((sum, item) => sum + (item.cost || 0), 0);
-  const lowStockItems = inventory.filter(item => (item.fill_percentage && item.fill_percentage < 25));
-  const expiringItems = inventory.filter(item => {
+  const lowStockItems = inventory.filter(
+    (item) => item.fill_percentage && item.fill_percentage < 25
+  );
+  const expiringItems = inventory.filter((item) => {
     const expiry = getExpiryStatus(item.expiry_date);
     return expiry === 'warning' || expiry === 'expired';
   });
-  const uniqueLocations = Array.from(new Set(inventory.map(item => item.location).filter(Boolean))).length;
-  const averageFillLevel = inventory.reduce((sum, item) => sum + (item.fill_percentage || 100), 0) / inventory.length;
-  const premiumItems = inventory.filter(item => (item.cost && item.cost > 30));
-  const totalBottles = inventory.filter(item => item.unit === 'ml' || item.unit === 'bottle').length;
+  const uniqueLocations = Array.from(
+    new Set(inventory.map((item) => item.location).filter(Boolean))
+  ).length;
+  const averageFillLevel =
+    inventory.reduce((sum, item) => sum + (item.fill_percentage || 100), 0) /
+    inventory.length;
+  const premiumItems = inventory.filter((item) => item.cost && item.cost > 30);
+  const totalBottles = inventory.filter(
+    (item) => item.unit === 'ml' || item.unit === 'bottle'
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -470,7 +507,9 @@ export function CocktailInventory() {
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
             🍸 Cocktail Inventory
           </h2>
-          <p className="text-gray-600 mt-1">Manage your household bar ingredients and supplies</p>
+          <p className="text-gray-600 mt-1">
+            Manage your household bar ingredients and supplies
+          </p>
         </div>
         <button
           onClick={() => setShowAddForm(true)}
@@ -490,7 +529,9 @@ export function CocktailInventory() {
             </div>
             <div className="ml-3">
               <p className="text-sm text-gray-600">Total Items</p>
-              <p className="text-xl font-semibold text-gray-900">{inventory.length}</p>
+              <p className="text-xl font-semibold text-gray-900">
+                {inventory.length}
+              </p>
               <p className="text-xs text-gray-500">{totalBottles} bottles</p>
             </div>
           </div>
@@ -503,8 +544,12 @@ export function CocktailInventory() {
             </div>
             <div className="ml-3">
               <p className="text-sm text-gray-600">Total Value</p>
-              <p className="text-xl font-semibold text-gray-900">${totalValue.toFixed(2)}</p>
-              <p className="text-xs text-gray-500">{premiumItems.length} premium items</p>
+              <p className="text-xl font-semibold text-gray-900">
+                ${totalValue.toFixed(2)}
+              </p>
+              <p className="text-xs text-gray-500">
+                {premiumItems.length} premium items
+              </p>
             </div>
           </div>
         </div>
@@ -516,8 +561,12 @@ export function CocktailInventory() {
             </div>
             <div className="ml-3">
               <p className="text-sm text-gray-600">Low Stock</p>
-              <p className="text-xl font-semibold text-gray-900">{lowStockItems.length}</p>
-              <p className="text-xs text-gray-500">{expiringItems.length} expiring soon</p>
+              <p className="text-xl font-semibold text-gray-900">
+                {lowStockItems.length}
+              </p>
+              <p className="text-xs text-gray-500">
+                {expiringItems.length} expiring soon
+              </p>
             </div>
           </div>
         </div>
@@ -529,8 +578,12 @@ export function CocktailInventory() {
             </div>
             <div className="ml-3">
               <p className="text-sm text-gray-600">Avg. Fill Level</p>
-              <p className="text-xl font-semibold text-gray-900">{averageFillLevel.toFixed(0)}%</p>
-              <p className="text-xs text-gray-500">{uniqueLocations} locations</p>
+              <p className="text-xl font-semibold text-gray-900">
+                {averageFillLevel.toFixed(0)}%
+              </p>
+              <p className="text-xs text-gray-500">
+                {uniqueLocations} locations
+              </p>
             </div>
           </div>
         </div>
@@ -544,8 +597,12 @@ export function CocktailInventory() {
               <Camera className="h-6 w-6 text-purple-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Quick Add with Barcode Scanning</h3>
-              <p className="text-sm text-gray-600">Scan product barcodes to instantly add items to your inventory</p>
+              <h3 className="font-semibold text-gray-900">
+                Quick Add with Barcode Scanning
+              </h3>
+              <p className="text-sm text-gray-600">
+                Scan product barcodes to instantly add items to your inventory
+              </p>
             </div>
           </div>
           <button
@@ -573,7 +630,16 @@ export function CocktailInventory() {
           </div>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'name' | 'quantity' | 'cost' | 'fill_percentage' | 'expiry')}
+            onChange={(e) =>
+              setSortBy(
+                e.target.value as
+                  | 'name'
+                  | 'quantity'
+                  | 'cost'
+                  | 'fill_percentage'
+                  | 'expiry'
+              )
+            }
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
           >
             <option value="name">Sort by Name</option>
@@ -596,7 +662,9 @@ export function CocktailInventory() {
             All Locations ({inventory.length})
           </button>
           {Object.entries(LOCATION_ICONS).map(([location, icon]) => {
-            const count = inventory.filter(item => item.location === location).length;
+            const count = inventory.filter(
+              (item) => item.location === location
+            ).length;
             return (
               <button
                 key={location}
@@ -608,7 +676,9 @@ export function CocktailInventory() {
                 }`}
               >
                 <span className="mr-1">{icon}</span>
-                {location.charAt(0).toUpperCase() + location.slice(1).replace('_', ' ')} ({count})
+                {location.charAt(0).toUpperCase() +
+                  location.slice(1).replace('_', ' ')}{' '}
+                ({count})
               </button>
             );
           })}
@@ -633,27 +703,43 @@ export function CocktailInventory() {
           const fillLevel = item.fill_percentage || 100;
           const isLowStock = fillLevel < 25;
           const isVeryLowStock = fillLevel < 10;
-          
+
           return (
-            <div key={item.id} className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+            <div
+              key={item.id}
+              className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow"
+            >
               {/* Header with fill level indicator */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 flex items-center">
                     {item.ingredient_name}
-                    {isVeryLowStock && <span className="ml-2 text-red-500">🚨</span>}
-                    {isLowStock && !isVeryLowStock && <span className="ml-2 text-orange-500">⚠️</span>}
+                    {isVeryLowStock && (
+                      <span className="ml-2 text-red-500">🚨</span>
+                    )}
+                    {isLowStock && !isVeryLowStock && (
+                      <span className="ml-2 text-orange-500">⚠️</span>
+                    )}
                   </h3>
                   {item.brand && (
                     <p className="text-sm text-gray-600">{item.brand}</p>
                   )}
                   {item.barcode && (
-                    <p className="text-xs text-gray-400 font-mono">#{item.barcode}</p>
+                    <p className="text-xs text-gray-400 font-mono">
+                      #{item.barcode}
+                    </p>
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${LOCATION_COLORS[item.location as keyof typeof LOCATION_COLORS]}`}>
-                    {LOCATION_ICONS[item.location as keyof typeof LOCATION_ICONS]} {item.location?.replace('_', ' ')}
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${LOCATION_COLORS[item.location as keyof typeof LOCATION_COLORS]}`}
+                  >
+                    {
+                      LOCATION_ICONS[
+                        item.location as keyof typeof LOCATION_ICONS
+                      ]
+                    }{' '}
+                    {item.location?.replace('_', ' ')}
                   </span>
                 </div>
               </div>
@@ -663,14 +749,20 @@ export function CocktailInventory() {
                 <div className="mb-3">
                   <div className="flex items-center justify-between text-sm text-gray-600 mb-1">
                     <span>Fill Level</span>
-                    <span className={`font-medium ${isVeryLowStock ? 'text-red-600' : isLowStock ? 'text-orange-600' : 'text-green-600'}`}>
+                    <span
+                      className={`font-medium ${isVeryLowStock ? 'text-red-600' : isLowStock ? 'text-orange-600' : 'text-green-600'}`}
+                    >
                       {fillLevel}%
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${
-                        isVeryLowStock ? 'bg-red-500' : isLowStock ? 'bg-orange-500' : 'bg-green-500'
+                        isVeryLowStock
+                          ? 'bg-red-500'
+                          : isLowStock
+                            ? 'bg-orange-500'
+                            : 'bg-green-500'
                       }`}
                       style={{ width: `${fillLevel}%` }}
                     ></div>
@@ -695,14 +787,18 @@ export function CocktailInventory() {
                 {item.alcohol_content && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">ABV</span>
-                    <span className="font-medium text-gray-900">{item.alcohol_content}%</span>
+                    <span className="font-medium text-gray-900">
+                      {item.alcohol_content}%
+                    </span>
                   </div>
                 )}
 
                 {item.cost && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Cost</span>
-                    <span className="font-medium text-gray-900">${item.cost.toFixed(2)}</span>
+                    <span className="font-medium text-gray-900">
+                      ${item.cost.toFixed(2)}
+                    </span>
                   </div>
                 )}
 
@@ -725,7 +821,9 @@ export function CocktailInventory() {
               {/* Expiry Status */}
               {item.expiry_date && (
                 <div className="mb-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getExpiryColor(expiryStatus)}`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${getExpiryColor(expiryStatus)}`}
+                  >
                     {getExpiryText(item.expiry_date)}
                   </span>
                 </div>
@@ -752,8 +850,12 @@ export function CocktailInventory() {
       {filteredInventory.length === 0 && (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">🍸</div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No ingredients found</h3>
-          <p className="text-gray-600 mb-4">Try adjusting your search or add some ingredients to get started</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No ingredients found
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Try adjusting your search or add some ingredients to get started
+          </p>
           <button
             onClick={() => setShowAddForm(true)}
             className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
@@ -768,7 +870,9 @@ export function CocktailInventory() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Add Ingredient</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Add Ingredient
+              </h3>
               <button
                 onClick={() => setShowAddForm(false)}
                 className="text-gray-400 hover:text-gray-600 text-2xl"
@@ -776,11 +880,15 @@ export function CocktailInventory() {
                 ×
               </button>
             </div>
-            
+
             <div className="text-center py-8">
               <div className="text-4xl mb-4">🚧</div>
-              <p className="text-gray-600">Manual ingredient entry form coming soon!</p>
-              <p className="text-sm text-gray-500 mt-2">Use the barcode scanner for quick additions.</p>
+              <p className="text-gray-600">
+                Manual ingredient entry form coming soon!
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                Use the barcode scanner for quick additions.
+              </p>
             </div>
 
             <div className="flex gap-2">
@@ -821,7 +929,7 @@ export function CocktailInventory() {
                 ×
               </button>
             </div>
-            
+
             {/* Scanner Interface Demo */}
             <div className="border-2 border-dashed border-purple-300 rounded-lg p-8 mb-4">
               <div className="text-center">
@@ -831,8 +939,12 @@ export function CocktailInventory() {
                   <div className="h-2 bg-purple-300 rounded-full w-3/4 mx-auto mb-2"></div>
                   <div className="h-2 bg-purple-200 rounded-full w-1/2 mx-auto"></div>
                 </div>
-                <p className="text-purple-600 font-medium mt-4">Scanning for barcodes...</p>
-                <p className="text-sm text-gray-500 mt-2">Point camera at product barcode</p>
+                <p className="text-purple-600 font-medium mt-4">
+                  Scanning for barcodes...
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Point camera at product barcode
+                </p>
               </div>
             </div>
 
@@ -842,12 +954,14 @@ export function CocktailInventory() {
                 <div className="flex items-center text-green-800">
                   <span className="text-lg mr-2">✅</span>
                   <div>
-                    <p className="font-medium">Last Scan: Hendrick&apos;s Gin</p>
+                    <p className="font-medium">
+                      Last Scan: Hendrick&apos;s Gin
+                    </p>
                     <p className="text-sm">Barcode: 083664871555 • $34.99</p>
                   </div>
                 </div>
               </div>
-              
+
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center text-blue-800">
                   <span className="text-lg mr-2">📱</span>
@@ -861,7 +975,9 @@ export function CocktailInventory() {
 
             {/* Scanner Features */}
             <div className="text-sm text-gray-600 mb-4">
-              <h4 className="font-medium text-gray-900 mb-2">Scanner Features:</h4>
+              <h4 className="font-medium text-gray-900 mb-2">
+                Scanner Features:
+              </h4>
               <ul className="space-y-1">
                 <li>• 📱 Web-based scanning with ZXing-js</li>
                 <li>• 🔍 Automatic product lookup</li>

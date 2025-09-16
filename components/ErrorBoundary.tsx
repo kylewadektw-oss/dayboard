@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -36,15 +36,15 @@ interface State {
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { 
-      hasError: false, 
-      retryCount: 0 
+    this.state = {
+      hasError: false,
+      retryCount: 0
     };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { 
-      hasError: true, 
+    return {
+      hasError: true,
       error,
       retryCount: 0
     };
@@ -52,7 +52,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('🚨 Error Boundary caught an error:', error, errorInfo);
-    
+
     this.setState({
       error,
       errorInfo
@@ -76,7 +76,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       hasError: false,
       error: undefined,
       errorInfo: undefined,
@@ -132,7 +132,8 @@ export class ErrorBoundary extends Component<Props, State> {
             <h3 className="text-lg font-medium">Component Error</h3>
           </div>
           <p className="text-red-600 mb-4">
-            This component encountered an error and couldn&apos;t render properly.
+            This component encountered an error and couldn&apos;t render
+            properly.
           </p>
           {process.env.NODE_ENV === 'development' && error && (
             <details className="mb-4">
@@ -155,7 +156,7 @@ export class ErrorBoundary extends Component<Props, State> {
               {retryCount >= 3 ? 'Max retries reached' : 'Try Again'}
             </button>
             <button
-              onClick={() => window.location.href = '/dashboard'}
+              onClick={() => (window.location.href = '/dashboard')}
               className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded flex items-center gap-2"
             >
               <Home className="h-4 w-4" />
@@ -175,7 +176,8 @@ export class ErrorBoundary extends Component<Props, State> {
             <h1 className="text-xl font-semibold">Page Error</h1>
           </div>
           <p className="text-gray-600 mb-6">
-            Something went wrong while loading this page. This is usually temporary.
+            Something went wrong while loading this page. This is usually
+            temporary.
           </p>
           {process.env.NODE_ENV === 'development' && error && (
             <details className="mb-6">
@@ -198,7 +200,7 @@ export class ErrorBoundary extends Component<Props, State> {
               {retryCount >= 3 ? 'Max retries reached' : 'Try Again'}
             </button>
             <button
-              onClick={() => window.location.href = '/dashboard'}
+              onClick={() => (window.location.href = '/dashboard')}
               className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded flex items-center justify-center gap-2"
             >
               <Home className="h-4 w-4" />
@@ -229,19 +231,19 @@ export function withErrorBoundary<P extends object>(
   );
 
   WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
-  
+
   return WrappedComponent;
 }
 
 // 🚀 PERFORMANCE: Preset error boundaries for common use cases
-export const PageErrorBoundary: React.FC<{ children: ReactNode }> = ({ children }) => (
-  <ErrorBoundary level="page">{children}</ErrorBoundary>
-);
+export const PageErrorBoundary: React.FC<{ children: ReactNode }> = ({
+  children
+}) => <ErrorBoundary level="page">{children}</ErrorBoundary>;
 
-export const ComponentErrorBoundary: React.FC<{ children: ReactNode }> = ({ children }) => (
-  <ErrorBoundary level="component">{children}</ErrorBoundary>
-);
+export const ComponentErrorBoundary: React.FC<{ children: ReactNode }> = ({
+  children
+}) => <ErrorBoundary level="component">{children}</ErrorBoundary>;
 
-export const WidgetErrorBoundary: React.FC<{ children: ReactNode }> = ({ children }) => (
-  <ErrorBoundary level="widget">{children}</ErrorBoundary>
-);
+export const WidgetErrorBoundary: React.FC<{ children: ReactNode }> = ({
+  children
+}) => <ErrorBoundary level="widget">{children}</ErrorBoundary>;

@@ -80,7 +80,10 @@ export default function RealTimeChart({
     const now = new Date();
     const labels = Array.from({ length: 10 }, (_, i) => {
       const time = new Date(now.getTime() - (9 - i) * 60000);
-      return time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return time.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     });
 
     switch (type) {
@@ -90,7 +93,10 @@ export default function RealTimeChart({
           datasets: [
             {
               label: 'Active Users',
-              data: Array.from({ length: 10 }, () => Math.floor(Math.random() * 100) + 20),
+              data: Array.from(
+                { length: 10 },
+                () => Math.floor(Math.random() * 100) + 20
+              ),
               borderColor: '#3b82f6',
               backgroundColor: 'rgba(59, 130, 246, 0.1)',
               fill: true,
@@ -98,7 +104,10 @@ export default function RealTimeChart({
             },
             {
               label: 'Page Views',
-              data: Array.from({ length: 10 }, () => Math.floor(Math.random() * 200) + 50),
+              data: Array.from(
+                { length: 10 },
+                () => Math.floor(Math.random() * 200) + 50
+              ),
               borderColor: '#10b981',
               backgroundColor: 'rgba(16, 185, 129, 0.1)',
               fill: true,
@@ -109,11 +118,20 @@ export default function RealTimeChart({
 
       case 'bar':
         return {
-          labels: ['Entertainment', 'Lists', 'Dashboard', 'Profile', 'Settings'],
+          labels: [
+            'Entertainment',
+            'Lists',
+            'Dashboard',
+            'Profile',
+            'Settings'
+          ],
           datasets: [
             {
               label: 'Page Visits',
-              data: Array.from({ length: 5 }, () => Math.floor(Math.random() * 500) + 100),
+              data: Array.from(
+                { length: 5 },
+                () => Math.floor(Math.random() * 500) + 100
+              ),
               backgroundColor: [
                 '#3b82f6',
                 '#10b981',
@@ -174,7 +192,7 @@ export default function RealTimeChart({
     plugins: {
       legend: {
         display: showLegend,
-        position: 'top' as const,
+        position: 'top' as const
       },
       title: {
         display: true,
@@ -186,28 +204,31 @@ export default function RealTimeChart({
       },
       tooltip: {
         mode: 'index' as const,
-        intersect: false,
+        intersect: false
       }
     },
-    scales: type !== 'doughnut' ? {
-      x: {
-        display: true,
-        grid: {
-          display: false
-        }
-      },
-      y: {
-        display: true,
-        beginAtZero: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)'
-        }
-      }
-    } : undefined,
+    scales:
+      type !== 'doughnut'
+        ? {
+            x: {
+              display: true,
+              grid: {
+                display: false
+              }
+            },
+            y: {
+              display: true,
+              beginAtZero: true,
+              grid: {
+                color: 'rgba(0, 0, 0, 0.1)'
+              }
+            }
+          }
+        : undefined,
     interaction: {
       mode: 'nearest' as const,
       axis: 'x' as const,
-      intersect: false,
+      intersect: false
     },
     animation: {
       duration: 750,
@@ -230,7 +251,9 @@ export default function RealTimeChart({
 
   if (isLoading) {
     return (
-      <div className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}>
+      <div
+        className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}
+      >
         <div className="animate-pulse">
           <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
           <div className="h-64 bg-gray-200 rounded"></div>
@@ -240,7 +263,9 @@ export default function RealTimeChart({
   }
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}>
+    <div
+      className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}
+    >
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
         <div className="flex items-center space-x-2">
@@ -248,13 +273,12 @@ export default function RealTimeChart({
           <span className="text-xs text-gray-500">Live</span>
         </div>
       </div>
-      
-      <div style={{ height: `${height}px` }}>
-        {renderChart()}
-      </div>
-      
+
+      <div style={{ height: `${height}px` }}>{renderChart()}</div>
+
       <div className="mt-4 text-xs text-gray-500 text-center">
-        Updates every {updateInterval / 1000} seconds • Data Source: {dataSource}
+        Updates every {updateInterval / 1000} seconds • Data Source:{' '}
+        {dataSource}
       </div>
     </div>
   );

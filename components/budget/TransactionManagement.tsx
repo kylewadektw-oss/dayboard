@@ -10,26 +10,26 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  DialogTrigger
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  SelectValue
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { 
-  Plus, 
-  Search, 
+  TableRow
+} from '@/components/ui/table';
+import {
+  Plus,
+  Search,
   Filter,
   Download,
   Edit,
@@ -43,19 +43,23 @@ import { mockTransactions, mockBudgetCategories } from '@/fixtures/budget-data';
 import type { Transaction, BudgetCategory } from '@/types/budget';
 
 const TransactionManagement = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>(mockTransactions);
+  const [transactions, setTransactions] =
+    useState<Transaction[]>(mockTransactions);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [editingTransaction, setEditingTransaction] =
+    useState<Transaction | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'income' | 'expense'>(
+    'all'
+  );
   const [filterCategory, setFilterCategory] = useState<string>('all');
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 2,
+      minimumFractionDigits: 2
     }).format(amount);
   };
 
@@ -70,7 +74,7 @@ const TransactionManagement = () => {
   // Get flat list of all categories and subcategories
   const getAllCategories = (): BudgetCategory[] => {
     const allCategories: BudgetCategory[] = [];
-    mockBudgetCategories.forEach(category => {
+    mockBudgetCategories.forEach((category) => {
       allCategories.push(category);
       if (category.subcategories) {
         allCategories.push(...category.subcategories);
@@ -80,31 +84,47 @@ const TransactionManagement = () => {
   };
 
   const getCategoryById = (id: string): BudgetCategory | undefined => {
-    return getAllCategories().find(cat => cat.id === id);
+    return getAllCategories().find((cat) => cat.id === id);
   };
 
   const getPaymentMethodIcon = (method: string) => {
     switch (method) {
-      case 'credit': return '💳';
-      case 'debit': return '🏧';
-      case 'cash': return '💵';
-      case 'check': return '🏦';
-      case 'transfer': return '🔄';
-      default: return '💳';
+      case 'credit':
+        return '💳';
+      case 'debit':
+        return '🏧';
+      case 'cash':
+        return '💵';
+      case 'check':
+        return '🏦';
+      case 'transfer':
+        return '🔄';
+      default:
+        return '💳';
     }
   };
 
-  const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredTransactions = transactions.filter((transaction) => {
+    const matchesSearch =
+      transaction.description
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      transaction.tags.some((tag) =>
+        tag.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     const matchesType = filterType === 'all' || transaction.type === filterType;
-    const matchesCategory = filterCategory === 'all' || transaction.categoryId === filterCategory;
-    
+    const matchesCategory =
+      filterCategory === 'all' || transaction.categoryId === filterCategory;
+
     return matchesSearch && matchesType && matchesCategory;
   });
 
-  const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-  const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+  const totalIncome = transactions
+    .filter((t) => t.type === 'income')
+    .reduce((sum, t) => sum + t.amount, 0);
+  const totalExpenses = transactions
+    .filter((t) => t.type === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const handleCreateTransaction = (formData: FormData) => {
     const newTransaction: Transaction = {
@@ -114,19 +134,27 @@ const TransactionManagement = () => {
       categoryId: formData.get('categoryId') as string,
       type: formData.get('type') as 'income' | 'expense',
       date: formData.get('date') as string,
-      paymentMethod: formData.get('paymentMethod') as 'credit' | 'debit' | 'cash' | 'check' | 'transfer',
+      paymentMethod: formData.get('paymentMethod') as
+        | 'credit'
+        | 'debit'
+        | 'cash'
+        | 'check'
+        | 'transfer',
       isRecurring: formData.get('isRecurring') === 'on',
-      tags: (formData.get('tags') as string || '').split(',').map(tag => tag.trim()).filter(Boolean),
-      notes: formData.get('notes') as string || undefined,
+      tags: ((formData.get('tags') as string) || '')
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+      notes: (formData.get('notes') as string) || undefined
     };
-    
+
     setTransactions([newTransaction, ...transactions]);
     setIsCreateDialogOpen(false);
   };
 
   const handleEditTransaction = (formData: FormData) => {
     if (!editingTransaction) return;
-    
+
     const updatedTransaction: Transaction = {
       ...editingTransaction,
       amount: parseFloat(formData.get('amount') as string) || 0,
@@ -134,24 +162,40 @@ const TransactionManagement = () => {
       categoryId: formData.get('categoryId') as string,
       type: formData.get('type') as 'income' | 'expense',
       date: formData.get('date') as string,
-      paymentMethod: formData.get('paymentMethod') as 'credit' | 'debit' | 'cash' | 'check' | 'transfer',
+      paymentMethod: formData.get('paymentMethod') as
+        | 'credit'
+        | 'debit'
+        | 'cash'
+        | 'check'
+        | 'transfer',
       isRecurring: formData.get('isRecurring') === 'on',
-      tags: (formData.get('tags') as string || '').split(',').map(tag => tag.trim()).filter(Boolean),
-      notes: formData.get('notes') as string || undefined,
+      tags: ((formData.get('tags') as string) || '')
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+      notes: (formData.get('notes') as string) || undefined
     };
-    
-    setTransactions(transactions.map(t => 
-      t.id === editingTransaction.id ? updatedTransaction : t
-    ));
+
+    setTransactions(
+      transactions.map((t) =>
+        t.id === editingTransaction.id ? updatedTransaction : t
+      )
+    );
     setEditingTransaction(null);
     setIsEditDialogOpen(false);
   };
 
   const handleDeleteTransaction = (transactionId: string) => {
-    setTransactions(transactions.filter(t => t.id !== transactionId));
+    setTransactions(transactions.filter((t) => t.id !== transactionId));
   };
 
-  const TransactionForm = ({ transaction, onSubmit }: { transaction?: Transaction, onSubmit: (formData: FormData) => void }) => {
+  const TransactionForm = ({
+    transaction,
+    onSubmit
+  }: {
+    transaction?: Transaction;
+    onSubmit: (formData: FormData) => void;
+  }) => {
     return (
       <form action={onSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
@@ -190,7 +234,7 @@ const TransactionManagement = () => {
 
         <div>
           <Label htmlFor="description">Description</Label>
-                    <Input
+          <Input
             id="description"
             name="description"
             placeholder="Transaction description"
@@ -203,7 +247,10 @@ const TransactionManagement = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="categoryId">Category</Label>
-            <Select name="categoryId" defaultValue={transaction?.categoryId || ''}>
+            <Select
+              name="categoryId"
+              defaultValue={transaction?.categoryId || ''}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
@@ -219,7 +266,10 @@ const TransactionManagement = () => {
 
           <div>
             <Label htmlFor="paymentMethod">Payment Method</Label>
-            <Select name="paymentMethod" defaultValue={transaction?.paymentMethod || 'credit'}>
+            <Select
+              name="paymentMethod"
+              defaultValue={transaction?.paymentMethod || 'credit'}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select method" />
               </SelectTrigger>
@@ -240,7 +290,9 @@ const TransactionManagement = () => {
             id="date"
             name="date"
             type="date"
-            defaultValue={transaction?.date || new Date().toISOString().split('T')[0]}
+            defaultValue={
+              transaction?.date || new Date().toISOString().split('T')[0]
+            }
             required
             onChange={() => {}}
           />
@@ -280,11 +332,15 @@ const TransactionManagement = () => {
         </div>
 
         <div className="flex justify-end space-x-2 pt-4">
-          <Button type="button" variant="slim" onClick={() => {
-            setIsCreateDialogOpen(false);
-            setIsEditDialogOpen(false);
-            setEditingTransaction(null);
-          }}>
+          <Button
+            type="button"
+            variant="slim"
+            onClick={() => {
+              setIsCreateDialogOpen(false);
+              setIsEditDialogOpen(false);
+              setEditingTransaction(null);
+            }}
+          >
             Cancel
           </Button>
           <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
@@ -301,14 +357,19 @@ const TransactionManagement = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Transactions</h1>
-          <p className="text-gray-600">Track and manage all your income and expenses</p>
+          <p className="text-gray-600">
+            Track and manage all your income and expenses
+          </p>
         </div>
         <div className="flex space-x-2">
           <Button variant="slim">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="h-4 w-4 mr-2" />
@@ -331,8 +392,12 @@ const TransactionManagement = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Income</p>
-                <p className="text-2xl font-bold text-green-600">{formatCurrency(totalIncome)}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Income
+                </p>
+                <p className="text-2xl font-bold text-green-600">
+                  {formatCurrency(totalIncome)}
+                </p>
               </div>
               <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-green-600" />
@@ -345,8 +410,12 @@ const TransactionManagement = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Expenses</p>
-                <p className="text-2xl font-bold text-red-600">{formatCurrency(totalExpenses)}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Expenses
+                </p>
+                <p className="text-2xl font-bold text-red-600">
+                  {formatCurrency(totalExpenses)}
+                </p>
               </div>
               <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
                 <TrendingDown className="h-6 w-6 text-red-600" />
@@ -360,7 +429,9 @@ const TransactionManagement = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Net Amount</p>
-                <p className={`text-2xl font-bold ${totalIncome - totalExpenses >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <p
+                  className={`text-2xl font-bold ${totalIncome - totalExpenses >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                >
                   {formatCurrency(totalIncome - totalExpenses)}
                 </p>
               </div>
@@ -392,7 +463,12 @@ const TransactionManagement = () => {
 
             <div>
               <Label htmlFor="filterType">Type</Label>
-              <Select value={filterType} onValueChange={(value) => setFilterType(value as 'all' | 'income' | 'expense')}>
+              <Select
+                value={filterType}
+                onValueChange={(value) =>
+                  setFilterType(value as 'all' | 'income' | 'expense')
+                }
+              >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue />
                 </SelectTrigger>
@@ -432,7 +508,9 @@ const TransactionManagement = () => {
       {/* Transactions Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Transactions ({filteredTransactions.length})</CardTitle>
+          <CardTitle>
+            Recent Transactions ({filteredTransactions.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -464,7 +542,9 @@ const TransactionManagement = () => {
                         )}
                         <span>{transaction.description}</span>
                         {transaction.isRecurring && (
-                          <Badge variant="slim" className="text-xs">Recurring</Badge>
+                          <Badge variant="slim" className="text-xs">
+                            Recurring
+                          </Badge>
                         )}
                       </div>
                     </TableCell>
@@ -478,21 +558,34 @@ const TransactionManagement = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-1">
-                        <span>{getPaymentMethodIcon(transaction.paymentMethod)}</span>
-                        <span className="text-sm capitalize">{transaction.paymentMethod}</span>
+                        <span>
+                          {getPaymentMethodIcon(transaction.paymentMethod)}
+                        </span>
+                        <span className="text-sm capitalize">
+                          {transaction.paymentMethod}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className={`font-semibold ${
-                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                      <span
+                        className={`font-semibold ${
+                          transaction.type === 'income'
+                            ? 'text-green-600'
+                            : 'text-red-600'
+                        }`}
+                      >
+                        {transaction.type === 'income' ? '+' : '-'}
+                        {formatCurrency(transaction.amount)}
                       </span>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {transaction.tags.map((tag, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="text-xs"
+                          >
                             {tag}
                           </Badge>
                         ))}
@@ -513,7 +606,9 @@ const TransactionManagement = () => {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => handleDeleteTransaction(transaction.id)}
+                          onClick={() =>
+                            handleDeleteTransaction(transaction.id)
+                          }
                           className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -529,7 +624,9 @@ const TransactionManagement = () => {
           {filteredTransactions.length === 0 && (
             <div className="text-center py-8">
               <Receipt className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No transactions found matching your filters.</p>
+              <p className="text-gray-500">
+                No transactions found matching your filters.
+              </p>
             </div>
           )}
         </CardContent>
@@ -542,7 +639,10 @@ const TransactionManagement = () => {
             <DialogTitle>Edit Transaction</DialogTitle>
           </DialogHeader>
           {editingTransaction && (
-            <TransactionForm transaction={editingTransaction} onSubmit={handleEditTransaction} />
+            <TransactionForm
+              transaction={editingTransaction}
+              onSubmit={handleEditTransaction}
+            />
           )}
         </DialogContent>
       </Dialog>

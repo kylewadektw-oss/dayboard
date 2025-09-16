@@ -2,7 +2,16 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Shield, AlertTriangle, Activity, Database, Clock, Users, TrendingUp, Eye } from 'lucide-react';
+import {
+  Shield,
+  AlertTriangle,
+  Activity,
+  Database,
+  Clock,
+  Users,
+  TrendingUp,
+  Eye
+} from 'lucide-react';
 
 interface SupabaseLog {
   id: string;
@@ -22,22 +31,37 @@ function categorizeSupabaseError(message: string) {
   const lowerMessage = message.toLowerCase();
 
   // Security categories
-  if (lowerMessage.includes('auth') || lowerMessage.includes('unauthorized') || lowerMessage.includes('permission')) {
+  if (
+    lowerMessage.includes('auth') ||
+    lowerMessage.includes('unauthorized') ||
+    lowerMessage.includes('permission')
+  ) {
     categories.push('security');
   }
 
   // Performance categories
-  if (lowerMessage.includes('slow') || lowerMessage.includes('timeout') || lowerMessage.includes('performance')) {
+  if (
+    lowerMessage.includes('slow') ||
+    lowerMessage.includes('timeout') ||
+    lowerMessage.includes('performance')
+  ) {
     categories.push('performance');
   }
 
   // Database categories
-  if (lowerMessage.includes('postgres') || lowerMessage.includes('sql') || lowerMessage.includes('database')) {
+  if (
+    lowerMessage.includes('postgres') ||
+    lowerMessage.includes('sql') ||
+    lowerMessage.includes('database')
+  ) {
     categories.push('database');
   }
 
   // RLS categories
-  if (lowerMessage.includes('rls') || lowerMessage.includes('row level security')) {
+  if (
+    lowerMessage.includes('rls') ||
+    lowerMessage.includes('row level security')
+  ) {
     categories.push('rls');
   }
 
@@ -49,22 +73,36 @@ function categorizeSupabaseError(message: string) {
   return categories.length > 0 ? categories : ['general'];
 }
 
-function getSeverityLevel(level: string, message: string): 'low' | 'medium' | 'high' | 'critical' {
+function getSeverityLevel(
+  level: string,
+  message: string
+): 'low' | 'medium' | 'high' | 'critical' {
   const lowerLevel = level.toLowerCase();
   const lowerMessage = message.toLowerCase();
 
   // Critical level indicators
-  if (lowerLevel === 'error' || lowerMessage.includes('critical') || lowerMessage.includes('fatal')) {
+  if (
+    lowerLevel === 'error' ||
+    lowerMessage.includes('critical') ||
+    lowerMessage.includes('fatal')
+  ) {
     return 'critical';
   }
 
   // High level indicators
-  if (lowerLevel === 'warn' || lowerMessage.includes('security') || lowerMessage.includes('unauthorized')) {
+  if (
+    lowerLevel === 'warn' ||
+    lowerMessage.includes('security') ||
+    lowerMessage.includes('unauthorized')
+  ) {
     return 'high';
   }
 
   // Medium level indicators
-  if (lowerLevel === 'info' && (lowerMessage.includes('slow') || lowerMessage.includes('performance'))) {
+  if (
+    lowerLevel === 'info' &&
+    (lowerMessage.includes('slow') || lowerMessage.includes('performance'))
+  ) {
     return 'medium';
   }
 
@@ -73,7 +111,11 @@ function getSeverityLevel(level: string, message: string): 'low' | 'medium' | 'h
 }
 
 interface SecurityEvent {
-  type: 'auth_failure' | 'unauthorized_access' | 'suspicious_activity' | 'rate_limit';
+  type:
+    | 'auth_failure'
+    | 'unauthorized_access'
+    | 'suspicious_activity'
+    | 'rate_limit';
   severity: 'low' | 'medium' | 'high' | 'critical';
   details: unknown;
   timestamp: string;
@@ -90,9 +132,12 @@ interface PerformanceMetric {
 export default function SupabaseMonitorPage() {
   const [logs, setLogs] = useState<SupabaseLog[]>([]);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
-  const [performanceMetrics, setPerformanceMetrics] = useState<PerformanceMetric | null>(null);
+  const [performanceMetrics, setPerformanceMetrics] =
+    useState<PerformanceMetric | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'errors' | 'security' | 'performance'>('all');
+  const [filter, setFilter] = useState<
+    'all' | 'errors' | 'security' | 'performance'
+  >('all');
   const [timeRange, setTimeRange] = useState<'1h' | '6h' | '24h' | '7d'>('1h');
   const [autoRefresh, setAutoRefresh] = useState(true);
 
@@ -104,24 +149,27 @@ export default function SupabaseMonitorPage() {
       const { data: appLogs, error } = await supabase
         .from('application_logs')
         .select('*')
-        .or('message.ilike.%supabase%,message.ilike.%database%,message.ilike.%auth%,message.ilike.%rls%')
+        .or(
+          'message.ilike.%supabase%,message.ilike.%database%,message.ilike.%auth%,message.ilike.%rls%'
+        )
         .order('timestamp', { ascending: false })
         .limit(100);
 
       if (error) throw error;
 
       // Transform and categorize logs
-      const transformedLogs: SupabaseLog[] = appLogs?.map(log => ({
-        id: log.id,
-        timestamp: log.created_at || new Date().toISOString(),
-        level: log.level || 'info',
-        message: log.message,
-        user_id: log.user_id || undefined,
-        category: categorizeSupabaseError(log.message || ''),
-        severity: getSeverityLevel(log.level || 'info', log.message || ''),
-        source: log.source || 'application',
-        data: log.metadata
-      })) || [];
+      const transformedLogs: SupabaseLog[] =
+        appLogs?.map((log) => ({
+          id: log.id,
+          timestamp: log.created_at || new Date().toISOString(),
+          level: log.level || 'info',
+          message: log.message,
+          user_id: log.user_id || undefined,
+          category: categorizeSupabaseError(log.message || ''),
+          severity: getSeverityLevel(log.level || 'info', log.message || ''),
+          source: log.source || 'application',
+          data: log.metadata
+        })) || [];
 
       setLogs(transformedLogs);
 
@@ -132,7 +180,6 @@ export default function SupabaseMonitorPage() {
       // Calculate performance metrics
       const perfMetrics = calculatePerformanceMetrics(transformedLogs);
       setPerformanceMetrics(perfMetrics);
-
     } catch (error) {
       console.error('Failed to fetch Supabase logs:', error);
     } finally {
@@ -162,11 +209,14 @@ export default function SupabaseMonitorPage() {
   const extractSecurityEvents = (logs: SupabaseLog[]): SecurityEvent[] => {
     const events: SecurityEvent[] = [];
 
-    logs.forEach(log => {
+    logs.forEach((log) => {
       const message = log.message.toLowerCase();
-      
+
       // Authentication failures
-      if (message.includes('auth') && (message.includes('failed') || message.includes('error'))) {
+      if (
+        message.includes('auth') &&
+        (message.includes('failed') || message.includes('error'))
+      ) {
         events.push({
           type: 'auth_failure',
           severity: 'medium',
@@ -176,7 +226,10 @@ export default function SupabaseMonitorPage() {
       }
 
       // Unauthorized access attempts
-      if (message.includes('unauthorized') || message.includes('permission denied')) {
+      if (
+        message.includes('unauthorized') ||
+        message.includes('permission denied')
+      ) {
         events.push({
           type: 'unauthorized_access',
           severity: 'high',
@@ -196,7 +249,10 @@ export default function SupabaseMonitorPage() {
       }
 
       // Rate limiting
-      if (message.includes('rate limit') || message.includes('too many requests')) {
+      if (
+        message.includes('rate limit') ||
+        message.includes('too many requests')
+      ) {
         events.push({
           type: 'rate_limit',
           severity: 'low',
@@ -209,10 +265,12 @@ export default function SupabaseMonitorPage() {
     return events.slice(0, 20); // Limit to recent events
   };
 
-  const calculatePerformanceMetrics = (logs: SupabaseLog[]): PerformanceMetric => {
-    const errorLogs = logs.filter(log => log.level === 'error');
+  const calculatePerformanceMetrics = (
+    logs: SupabaseLog[]
+  ): PerformanceMetric => {
+    const errorLogs = logs.filter((log) => log.level === 'error');
     const totalLogs = logs.length;
-    
+
     return {
       query_time: Math.random() * 100 + 50, // Mock data - replace with real metrics
       connection_count: Math.floor(Math.random() * 50) + 10,
@@ -224,33 +282,49 @@ export default function SupabaseMonitorPage() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'text-red-600 bg-red-50';
-      case 'high': return 'text-orange-600 bg-orange-50';
-      case 'medium': return 'text-yellow-600 bg-yellow-50';
-      case 'low': return 'text-blue-600 bg-blue-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'critical':
+        return 'text-red-600 bg-red-50';
+      case 'high':
+        return 'text-orange-600 bg-orange-50';
+      case 'medium':
+        return 'text-yellow-600 bg-yellow-50';
+      case 'low':
+        return 'text-blue-600 bg-blue-50';
+      default:
+        return 'text-gray-600 bg-gray-50';
     }
   };
 
   const getEventIcon = (type: string) => {
     switch (type) {
-      case 'auth_failure': return <Shield className="w-4 h-4" />;
-      case 'unauthorized_access': return <AlertTriangle className="w-4 h-4" />;
-      case 'suspicious_activity': return <Eye className="w-4 h-4" />;
-      case 'rate_limit': return <Clock className="w-4 h-4" />;
-      default: return <Activity className="w-4 h-4" />;
+      case 'auth_failure':
+        return <Shield className="w-4 h-4" />;
+      case 'unauthorized_access':
+        return <AlertTriangle className="w-4 h-4" />;
+      case 'suspicious_activity':
+        return <Eye className="w-4 h-4" />;
+      case 'rate_limit':
+        return <Clock className="w-4 h-4" />;
+      default:
+        return <Activity className="w-4 h-4" />;
     }
   };
 
-  const filteredLogs = logs.filter(log => {
+  const filteredLogs = logs.filter((log) => {
     if (filter === 'all') return true;
     if (filter === 'errors') return log.level === 'error';
-    if (filter === 'security') return log.message.toLowerCase().includes('auth') || 
-                                         log.message.toLowerCase().includes('unauthorized') ||
-                                         log.message.toLowerCase().includes('rls');
-    if (filter === 'performance') return log.message.toLowerCase().includes('slow') ||
-                                           log.message.toLowerCase().includes('timeout') ||
-                                           log.message.toLowerCase().includes('performance');
+    if (filter === 'security')
+      return (
+        log.message.toLowerCase().includes('auth') ||
+        log.message.toLowerCase().includes('unauthorized') ||
+        log.message.toLowerCase().includes('rls')
+      );
+    if (filter === 'performance')
+      return (
+        log.message.toLowerCase().includes('slow') ||
+        log.message.toLowerCase().includes('timeout') ||
+        log.message.toLowerCase().includes('performance')
+      );
     return true;
   });
 
@@ -274,7 +348,9 @@ export default function SupabaseMonitorPage() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-12">
             <Database className="w-12 h-12 mx-auto text-purple-600 animate-spin" />
-            <p className="mt-4 text-gray-600">Loading Supabase monitoring data...</p>
+            <p className="mt-4 text-gray-600">
+              Loading Supabase monitoring data...
+            </p>
           </div>
         </div>
       </div>
@@ -290,11 +366,15 @@ export default function SupabaseMonitorPage() {
             <div className="flex items-center space-x-3">
               <Database className="w-8 h-8 text-purple-600" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Supabase Monitor</h1>
-                <p className="text-gray-600">Real-time security and performance monitoring</p>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Supabase Monitor
+                </h1>
+                <p className="text-gray-600">
+                  Real-time security and performance monitoring
+                </p>
               </div>
             </div>
-            
+
             {/* Controls */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
@@ -302,18 +382,20 @@ export default function SupabaseMonitorPage() {
                 <button
                   onClick={() => setAutoRefresh(!autoRefresh)}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                    autoRefresh 
-                      ? 'bg-green-100 text-green-800' 
+                    autoRefresh
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-600'
                   }`}
                 >
                   {autoRefresh ? 'ON' : 'OFF'}
                 </button>
               </div>
-              
+
               <select
                 value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value as '1h' | '6h' | '24h' | '7d')}
+                onChange={(e) =>
+                  setTimeRange(e.target.value as '1h' | '6h' | '24h' | '7d')
+                }
                 className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="1h">Last Hour</option>
@@ -333,7 +415,9 @@ export default function SupabaseMonitorPage() {
                 <TrendingUp className="w-8 h-8 text-blue-600" />
                 <div>
                   <p className="text-sm text-gray-600">Avg Query Time</p>
-                  <p className="text-2xl font-bold text-gray-900">{performanceMetrics.query_time.toFixed(1)}ms</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {performanceMetrics.query_time.toFixed(1)}ms
+                  </p>
                 </div>
               </div>
             </div>
@@ -343,7 +427,9 @@ export default function SupabaseMonitorPage() {
                 <Users className="w-8 h-8 text-green-600" />
                 <div>
                   <p className="text-sm text-gray-600">Active Connections</p>
-                  <p className="text-2xl font-bold text-gray-900">{performanceMetrics.connection_count}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {performanceMetrics.connection_count}
+                  </p>
                 </div>
               </div>
             </div>
@@ -353,7 +439,9 @@ export default function SupabaseMonitorPage() {
                 <Activity className="w-8 h-8 text-purple-600" />
                 <div>
                   <p className="text-sm text-gray-600">Cache Hit Rate</p>
-                  <p className="text-2xl font-bold text-gray-900">{performanceMetrics.cache_hit_rate.toFixed(1)}%</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {performanceMetrics.cache_hit_rate.toFixed(1)}%
+                  </p>
                 </div>
               </div>
             </div>
@@ -363,7 +451,9 @@ export default function SupabaseMonitorPage() {
                 <AlertTriangle className="w-8 h-8 text-red-600" />
                 <div>
                   <p className="text-sm text-gray-600">Error Rate</p>
-                  <p className="text-2xl font-bold text-gray-900">{performanceMetrics.error_rate.toFixed(1)}%</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {performanceMetrics.error_rate.toFixed(1)}%
+                  </p>
                 </div>
               </div>
             </div>
@@ -379,9 +469,14 @@ export default function SupabaseMonitorPage() {
             </h2>
             <div className="space-y-3">
               {securityEvents.slice(0, 5).map((event, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                >
                   <div className="flex items-center space-x-3">
-                    <span className={`p-2 rounded-full ${getSeverityColor(event.severity)}`}>
+                    <span
+                      className={`p-2 rounded-full ${getSeverityColor(event.severity)}`}
+                    >
                       {getEventIcon(event.type)}
                     </span>
                     <div>
@@ -389,12 +484,17 @@ export default function SupabaseMonitorPage() {
                         {event.type.replace('_', ' ')}
                       </p>
                       <p className="text-sm text-gray-600">
-                        {(event.details as { message?: string })?.message?.slice(0, 100) || 'No details'}...
+                        {(
+                          event.details as { message?: string }
+                        )?.message?.slice(0, 100) || 'No details'}
+                        ...
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getSeverityColor(event.severity)}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getSeverityColor(event.severity)}`}
+                    >
                       {event.severity}
                     </span>
                     <p className="text-xs text-gray-500 mt-1">
@@ -411,19 +511,29 @@ export default function SupabaseMonitorPage() {
         <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-6">
           <div className="flex items-center space-x-4">
             <span className="text-sm font-medium text-gray-700">Filter:</span>
-            {['all', 'errors', 'security', 'performance'].map((filterOption) => (
-              <button
-                key={filterOption}
-                onClick={() => setFilter(filterOption as 'all' | 'errors' | 'security' | 'performance')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  filter === filterOption
-                    ? 'bg-purple-100 text-purple-800'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
-              </button>
-            ))}
+            {['all', 'errors', 'security', 'performance'].map(
+              (filterOption) => (
+                <button
+                  key={filterOption}
+                  onClick={() =>
+                    setFilter(
+                      filterOption as
+                        | 'all'
+                        | 'errors'
+                        | 'security'
+                        | 'performance'
+                    )
+                  }
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    filter === filterOption
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+                </button>
+              )
+            )}
           </div>
         </div>
 
@@ -433,22 +543,31 @@ export default function SupabaseMonitorPage() {
             <Activity className="w-5 h-5 mr-2 text-purple-600" />
             Supabase Logs Feed ({filteredLogs.length} entries)
           </h2>
-          
+
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {filteredLogs.map((log) => (
-              <div key={log.id} className="p-4 bg-gray-50 rounded-lg border-l-4 border-purple-200">
+              <div
+                key={log.id}
+                className="p-4 bg-gray-50 rounded-lg border-l-4 border-purple-200"
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        log.level === 'error' ? 'bg-red-100 text-red-800' :
-                        log.level === 'warn' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          log.level === 'error'
+                            ? 'bg-red-100 text-red-800'
+                            : log.level === 'warn'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-blue-100 text-blue-800'
+                        }`}
+                      >
                         {log.level.toUpperCase()}
                       </span>
                     </div>
-                    <p className="text-gray-900 font-medium mb-1">{log.message}</p>
+                    <p className="text-gray-900 font-medium mb-1">
+                      {log.message}
+                    </p>
                     {!!log.data && (
                       <details className="mt-2">
                         <summary className="text-sm text-gray-600 cursor-pointer hover:text-gray-800">
@@ -463,7 +582,9 @@ export default function SupabaseMonitorPage() {
                   <div className="text-right text-sm text-gray-500 ml-4">
                     <p>{new Date(log.timestamp).toLocaleString()}</p>
                     {log.user_id && (
-                      <p className="text-xs">User: {log.user_id.slice(0, 8)}...</p>
+                      <p className="text-xs">
+                        User: {log.user_id.slice(0, 8)}...
+                      </p>
                     )}
                   </div>
                 </div>

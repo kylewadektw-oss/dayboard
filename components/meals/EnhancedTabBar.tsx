@@ -1,29 +1,29 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { 
-  Heart, 
-  Calendar, 
-  BookOpen, 
-  Martini, 
-  Clock, 
-  Bookmark, 
+import {
+  Heart,
+  Calendar,
+  BookOpen,
+  Martini,
+  Clock,
+  Bookmark,
   ShoppingCart,
   MoreHorizontal,
   ChevronLeft,
@@ -38,15 +38,44 @@ interface EnhancedTabBarProps {
 
 export const MEAL_TABS = [
   { id: 'favorites', name: 'Favorites', icon: Heart, color: 'text-green-600' },
-  { id: 'this-week', name: 'This Week', icon: Calendar, color: 'text-amber-600' },
-  { id: 'library', name: 'Recipe Library', icon: BookOpen, color: 'text-blue-600' },
-  { id: 'cocktails', name: 'Cocktails', icon: Martini, color: 'text-purple-600' },
-  { id: 'quick-meals', name: 'Quick Meals', icon: Clock, color: 'text-indigo-600' },
+  {
+    id: 'this-week',
+    name: 'This Week',
+    icon: Calendar,
+    color: 'text-amber-600'
+  },
+  {
+    id: 'library',
+    name: 'Recipe Library',
+    icon: BookOpen,
+    color: 'text-blue-600'
+  },
+  {
+    id: 'cocktails',
+    name: 'Cocktails',
+    icon: Martini,
+    color: 'text-purple-600'
+  },
+  {
+    id: 'quick-meals',
+    name: 'Quick Meals',
+    icon: Clock,
+    color: 'text-indigo-600'
+  },
   { id: 'to-try', name: 'To-Try', icon: Bookmark, color: 'text-orange-600' },
-  { id: 'grocery-builder', name: 'Grocery Builder', icon: ShoppingCart, color: 'text-emerald-600' }
+  {
+    id: 'grocery-builder',
+    name: 'Grocery Builder',
+    icon: ShoppingCart,
+    color: 'text-emerald-600'
+  }
 ] as const;
 
-export function EnhancedTabBar({ activeTab, onTabChange, className = '' }: EnhancedTabBarProps) {
+export function EnhancedTabBar({
+  activeTab,
+  onTabChange,
+  className = ''
+}: EnhancedTabBarProps) {
   const [showOverflow, setShowOverflow] = useState(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -56,7 +85,7 @@ export function EnhancedTabBar({ activeTab, onTabChange, className = '' }: Enhan
   // Check scroll position and update scroll indicators
   const updateScrollState = () => {
     if (!scrollContainerRef.current) return;
-    
+
     const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
     setCanScrollLeft(scrollLeft > 0);
     setCanScrollRight(scrollLeft < scrollWidth - clientWidth);
@@ -65,7 +94,7 @@ export function EnhancedTabBar({ activeTab, onTabChange, className = '' }: Enhan
   // Check if overflow is needed
   const checkOverflow = () => {
     if (!scrollContainerRef.current || !tabsContainerRef.current) return;
-    
+
     const containerWidth = scrollContainerRef.current.clientWidth;
     const tabsWidth = tabsContainerRef.current.scrollWidth;
     setShowOverflow(tabsWidth > containerWidth);
@@ -79,19 +108,20 @@ export function EnhancedTabBar({ activeTab, onTabChange, className = '' }: Enhan
 
     checkSizes();
     window.addEventListener('resize', checkSizes);
-    
+
     return () => window.removeEventListener('resize', checkSizes);
   }, []);
 
   const scrollTabs = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
-    
+
     const scrollAmount = 200;
     const currentScroll = scrollContainerRef.current.scrollLeft;
-    const targetScroll = direction === 'left' 
-      ? currentScroll - scrollAmount 
-      : currentScroll + scrollAmount;
-    
+    const targetScroll =
+      direction === 'left'
+        ? currentScroll - scrollAmount
+        : currentScroll + scrollAmount;
+
     scrollContainerRef.current.scrollTo({
       left: targetScroll,
       behavior: 'smooth'
@@ -101,10 +131,10 @@ export function EnhancedTabBar({ activeTab, onTabChange, className = '' }: Enhan
   // Get visible tabs for main display (first 4-5 depending on screen size)
   const getVisibleTabs = () => {
     if (typeof window === 'undefined') return MEAL_TABS.slice(0, 4);
-    
+
     const isMobile = window.innerWidth < 768;
     const isTablet = window.innerWidth < 1024;
-    
+
     if (isMobile) return MEAL_TABS.slice(0, 3);
     if (isTablet) return MEAL_TABS.slice(0, 4);
     return MEAL_TABS.slice(0, 5);
@@ -143,7 +173,7 @@ export function EnhancedTabBar({ activeTab, onTabChange, className = '' }: Enhan
                 {MEAL_TABS.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
-                  
+
                   return (
                     <button
                       key={tab.id}
@@ -166,7 +196,7 @@ export function EnhancedTabBar({ activeTab, onTabChange, className = '' }: Enhan
                 {visibleTabs.map((tab) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
-                  
+
                   return (
                     <button
                       key={tab.id}
@@ -189,7 +219,7 @@ export function EnhancedTabBar({ activeTab, onTabChange, className = '' }: Enhan
                     <button
                       onClick={() => setShowOverflow(!showOverflow)}
                       className={`flex items-center px-3 py-3 text-xs font-medium border-b-2 transition-all justify-center ${
-                        overflowTabs.some(tab => tab.id === activeTab)
+                        overflowTabs.some((tab) => tab.id === activeTab)
                           ? 'border-purple-500 text-purple-600 bg-purple-50'
                           : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                       }`}
@@ -209,7 +239,7 @@ export function EnhancedTabBar({ activeTab, onTabChange, className = '' }: Enhan
                           {overflowTabs.map((tab) => {
                             const Icon = tab.icon;
                             const isActive = activeTab === tab.id;
-                            
+
                             return (
                               <button
                                 key={tab.id}
@@ -218,7 +248,9 @@ export function EnhancedTabBar({ activeTab, onTabChange, className = '' }: Enhan
                                   setShowOverflow(false);
                                 }}
                                 className={`w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center text-sm transition-colors ${
-                                  isActive ? `${tab.color} bg-purple-50` : 'text-gray-700'
+                                  isActive
+                                    ? `${tab.color} bg-purple-50`
+                                    : 'text-gray-700'
                                 }`}
                               >
                                 <Icon className="h-4 w-4 mr-3 flex-shrink-0" />
@@ -253,8 +285,12 @@ export function EnhancedTabBar({ activeTab, onTabChange, className = '' }: Enhan
             style={{
               width: `${100 / Math.min(visibleTabs.length + (overflowTabs.length > 0 ? 1 : 0), 4)}%`,
               transform: `translateX(${
-                visibleTabs.findIndex(tab => tab.id === activeTab) * 
-                (100 / Math.min(visibleTabs.length + (overflowTabs.length > 0 ? 1 : 0), 4))
+                visibleTabs.findIndex((tab) => tab.id === activeTab) *
+                (100 /
+                  Math.min(
+                    visibleTabs.length + (overflowTabs.length > 0 ? 1 : 0),
+                    4
+                  ))
               }%)`
             }}
           />

@@ -18,7 +18,9 @@ console.log('To deploy the enhanced permissions system:');
 console.log('');
 console.log('1. 🔗 Open your Supabase Dashboard');
 console.log('2. 📝 Go to SQL Editor');
-console.log('3. 📋 Copy and paste the SQL from: DEPLOY_ENHANCED_PERMISSIONS.sql');
+console.log(
+  '3. 📋 Copy and paste the SQL from: DEPLOY_ENHANCED_PERMISSIONS.sql'
+);
 console.log('4. ▶️  Click "Run" to execute the migration');
 console.log('');
 
@@ -50,4 +52,6 @@ console.log('   • System-wide settings');
 console.log('   • Full permission management');
 console.log('');
 
-module.exports = { deployEnhancedPermissions: () => console.log('Manual deployment required') };
+module.exports = {
+  deployEnhancedPermissions: () => console.log('Manual deployment required')
+};

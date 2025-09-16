@@ -1,9 +1,9 @@
-import type { 
-  BudgetCategory, 
-  Transaction, 
-  BudgetPeriod, 
-  SavingsGoal, 
-  AllowanceAccount, 
+import type {
+  BudgetCategory,
+  Transaction,
+  BudgetPeriod,
+  SavingsGoal,
+  AllowanceAccount,
   BudgetInsight,
   RecurringTransaction,
   BudgetSettings
@@ -20,9 +20,33 @@ export const mockBudgetCategories: BudgetCategory[] = [
     spentAmount: 2450,
     isCustom: false,
     subcategories: [
-      { id: 'rent', name: 'Rent/Mortgage', icon: '🏡', color: 'bg-blue-400', budgetAmount: 2000, spentAmount: 2000, isCustom: false },
-      { id: 'utilities', name: 'Utilities', icon: '⚡', color: 'bg-blue-300', budgetAmount: 300, spentAmount: 285, isCustom: false },
-      { id: 'maintenance', name: 'Maintenance', icon: '🔧', color: 'bg-blue-200', budgetAmount: 200, spentAmount: 165, isCustom: false }
+      {
+        id: 'rent',
+        name: 'Rent/Mortgage',
+        icon: '🏡',
+        color: 'bg-blue-400',
+        budgetAmount: 2000,
+        spentAmount: 2000,
+        isCustom: false
+      },
+      {
+        id: 'utilities',
+        name: 'Utilities',
+        icon: '⚡',
+        color: 'bg-blue-300',
+        budgetAmount: 300,
+        spentAmount: 285,
+        isCustom: false
+      },
+      {
+        id: 'maintenance',
+        name: 'Maintenance',
+        icon: '🔧',
+        color: 'bg-blue-200',
+        budgetAmount: 200,
+        spentAmount: 165,
+        isCustom: false
+      }
     ]
   },
   {
@@ -34,9 +58,33 @@ export const mockBudgetCategories: BudgetCategory[] = [
     spentAmount: 720,
     isCustom: false,
     subcategories: [
-      { id: 'groceries', name: 'Groceries', icon: '🛒', color: 'bg-green-400', budgetAmount: 600, spentAmount: 540, isCustom: false },
-      { id: 'restaurants', name: 'Restaurants', icon: '🍕', color: 'bg-green-300', budgetAmount: 150, spentAmount: 130, isCustom: false },
-      { id: 'takeout', name: 'Takeout/Delivery', icon: '🥡', color: 'bg-green-200', budgetAmount: 50, spentAmount: 50, isCustom: false }
+      {
+        id: 'groceries',
+        name: 'Groceries',
+        icon: '🛒',
+        color: 'bg-green-400',
+        budgetAmount: 600,
+        spentAmount: 540,
+        isCustom: false
+      },
+      {
+        id: 'restaurants',
+        name: 'Restaurants',
+        icon: '🍕',
+        color: 'bg-green-300',
+        budgetAmount: 150,
+        spentAmount: 130,
+        isCustom: false
+      },
+      {
+        id: 'takeout',
+        name: 'Takeout/Delivery',
+        icon: '🥡',
+        color: 'bg-green-200',
+        budgetAmount: 50,
+        spentAmount: 50,
+        isCustom: false
+      }
     ]
   },
   {
@@ -48,9 +96,33 @@ export const mockBudgetCategories: BudgetCategory[] = [
     spentAmount: 520,
     isCustom: false,
     subcategories: [
-      { id: 'gas', name: 'Gas', icon: '⛽', color: 'bg-yellow-400', budgetAmount: 200, spentAmount: 180, isCustom: false },
-      { id: 'insurance', name: 'Car Insurance', icon: '🛡️', color: 'bg-yellow-300', budgetAmount: 150, spentAmount: 150, isCustom: false },
-      { id: 'maintenance_car', name: 'Car Maintenance', icon: '🔧', color: 'bg-yellow-200', budgetAmount: 250, spentAmount: 190, isCustom: false }
+      {
+        id: 'gas',
+        name: 'Gas',
+        icon: '⛽',
+        color: 'bg-yellow-400',
+        budgetAmount: 200,
+        spentAmount: 180,
+        isCustom: false
+      },
+      {
+        id: 'insurance',
+        name: 'Car Insurance',
+        icon: '🛡️',
+        color: 'bg-yellow-300',
+        budgetAmount: 150,
+        spentAmount: 150,
+        isCustom: false
+      },
+      {
+        id: 'maintenance_car',
+        name: 'Car Maintenance',
+        icon: '🔧',
+        color: 'bg-yellow-200',
+        budgetAmount: 250,
+        spentAmount: 190,
+        isCustom: false
+      }
     ]
   },
   {
@@ -62,9 +134,33 @@ export const mockBudgetCategories: BudgetCategory[] = [
     spentAmount: 420,
     isCustom: false,
     subcategories: [
-      { id: 'childcare', name: 'Childcare', icon: '🏫', color: 'bg-purple-400', budgetAmount: 200, spentAmount: 200, isCustom: false },
-      { id: 'activities', name: 'Activities', icon: '⚽', color: 'bg-purple-300', budgetAmount: 150, spentAmount: 120, isCustom: false },
-      { id: 'allowance', name: 'Allowance', icon: '💰', color: 'bg-purple-200', budgetAmount: 150, spentAmount: 100, isCustom: false }
+      {
+        id: 'childcare',
+        name: 'Childcare',
+        icon: '🏫',
+        color: 'bg-purple-400',
+        budgetAmount: 200,
+        spentAmount: 200,
+        isCustom: false
+      },
+      {
+        id: 'activities',
+        name: 'Activities',
+        icon: '⚽',
+        color: 'bg-purple-300',
+        budgetAmount: 150,
+        spentAmount: 120,
+        isCustom: false
+      },
+      {
+        id: 'allowance',
+        name: 'Allowance',
+        icon: '💰',
+        color: 'bg-purple-200',
+        budgetAmount: 150,
+        spentAmount: 100,
+        isCustom: false
+      }
     ]
   },
   {
@@ -137,7 +233,7 @@ export const mockTransactions: Transaction[] = [
   },
   {
     id: 'tx4',
-    amount: 45.30,
+    amount: 45.3,
     description: 'Target Household Items',
     categoryId: 'groceries',
     type: 'expense',
@@ -149,7 +245,7 @@ export const mockTransactions: Transaction[] = [
   },
   {
     id: 'tx5',
-    amount: 65.00,
+    amount: 65.0,
     description: 'Pizza Family Night',
     categoryId: 'restaurants',
     type: 'expense',
@@ -161,7 +257,7 @@ export const mockTransactions: Transaction[] = [
   },
   {
     id: 'tx6',
-    amount: 42.50,
+    amount: 42.5,
     description: 'Gas Station Fill-up',
     categoryId: 'gas',
     type: 'expense',
@@ -229,16 +325,16 @@ export const mockAllowanceAccounts: AllowanceAccount[] = [
   {
     id: 'allow1',
     householdMemberId: 'child1',
-    balance: 45.50,
-    totalEarned: 180.00,
-    totalSpent: 134.50,
+    balance: 45.5,
+    totalEarned: 180.0,
+    totalSpent: 134.5,
     chorePoints: 23,
-    allowanceRate: 0.50, // 50 cents per point
+    allowanceRate: 0.5, // 50 cents per point
     transactions: [
       {
         id: 'allow_tx1',
         allowanceAccountId: 'allow1',
-        amount: 5.00,
+        amount: 5.0,
         type: 'earned',
         description: 'Completed kitchen cleanup',
         date: '2025-09-10',
@@ -248,7 +344,7 @@ export const mockAllowanceAccounts: AllowanceAccount[] = [
       {
         id: 'allow_tx2',
         allowanceAccountId: 'allow1',
-        amount: 2.50,
+        amount: 2.5,
         type: 'earned',
         description: 'Took out trash',
         date: '2025-09-09',
@@ -258,7 +354,7 @@ export const mockAllowanceAccounts: AllowanceAccount[] = [
       {
         id: 'allow_tx3',
         allowanceAccountId: 'allow1',
-        amount: 15.00,
+        amount: 15.0,
         type: 'spent',
         description: 'Toy purchase at Target',
         date: '2025-09-08',
@@ -269,16 +365,16 @@ export const mockAllowanceAccounts: AllowanceAccount[] = [
   {
     id: 'allow2',
     householdMemberId: 'child2',
-    balance: 28.00,
-    totalEarned: 95.00,
-    totalSpent: 67.00,
+    balance: 28.0,
+    totalEarned: 95.0,
+    totalSpent: 67.0,
     chorePoints: 19,
-    allowanceRate: 0.50,
+    allowanceRate: 0.5,
     transactions: [
       {
         id: 'allow_tx4',
         allowanceAccountId: 'allow2',
-        amount: 3.50,
+        amount: 3.5,
         type: 'earned',
         description: 'Organized bedroom',
         date: '2025-09-11',
@@ -288,7 +384,7 @@ export const mockAllowanceAccounts: AllowanceAccount[] = [
       {
         id: 'allow_tx5',
         allowanceAccountId: 'allow2',
-        amount: 12.00,
+        amount: 12.0,
         type: 'spent',
         description: 'Books at bookstore',
         date: '2025-09-07',
@@ -304,7 +400,8 @@ export const mockBudgetInsights: BudgetInsight[] = [
     id: 'insight1',
     type: 'overspend',
     title: 'Food Budget Alert',
-    description: 'You\'ve spent 90% of your food budget with 20 days left in the month.',
+    description:
+      "You've spent 90% of your food budget with 20 days left in the month.",
     priority: 'medium',
     actionable: true,
     date: '2025-09-12',
@@ -314,7 +411,8 @@ export const mockBudgetInsights: BudgetInsight[] = [
     id: 'insight2',
     type: 'savings_opportunity',
     title: 'Transportation Savings',
-    description: 'You\'re under budget on transportation this month! Consider moving $80 to savings.',
+    description:
+      "You're under budget on transportation this month! Consider moving $80 to savings.",
     priority: 'low',
     actionable: true,
     date: '2025-09-12',
@@ -324,7 +422,8 @@ export const mockBudgetInsights: BudgetInsight[] = [
     id: 'insight3',
     type: 'goal_progress',
     title: 'Emergency Fund Progress',
-    description: 'Great job! You\'re 83% of the way to your emergency fund goal.',
+    description:
+      "Great job! You're 83% of the way to your emergency fund goal.",
     priority: 'low',
     actionable: false,
     date: '2025-09-12',
@@ -414,26 +513,35 @@ export const mockCurrentBudgetPeriod: BudgetPeriod = {
 };
 
 // Utility functions for mock data
-export const getBudgetCategoryById = (id: string): BudgetCategory | undefined => {
+export const getBudgetCategoryById = (
+  id: string
+): BudgetCategory | undefined => {
   for (const category of mockBudgetCategories) {
     if (category.id === id) return category;
     if (category.subcategories) {
-      const subcategory = category.subcategories.find(sub => sub.id === id);
+      const subcategory = category.subcategories.find((sub) => sub.id === id);
       if (subcategory) return subcategory;
     }
   }
   return undefined;
 };
 
-export const getTransactionsByCategory = (categoryId: string): Transaction[] => {
-  return mockTransactions.filter(transaction => transaction.categoryId === categoryId);
+export const getTransactionsByCategory = (
+  categoryId: string
+): Transaction[] => {
+  return mockTransactions.filter(
+    (transaction) => transaction.categoryId === categoryId
+  );
 };
 
-export const getMonthlySpendingByCategory = (): { [categoryId: string]: number } => {
+export const getMonthlySpendingByCategory = (): {
+  [categoryId: string]: number;
+} => {
   const spending: { [categoryId: string]: number } = {};
-  mockTransactions.forEach(transaction => {
+  mockTransactions.forEach((transaction) => {
     if (transaction.type === 'expense') {
-      spending[transaction.categoryId] = (spending[transaction.categoryId] || 0) + transaction.amount;
+      spending[transaction.categoryId] =
+        (spending[transaction.categoryId] || 0) + transaction.amount;
     }
   });
   return spending;
@@ -441,12 +549,12 @@ export const getMonthlySpendingByCategory = (): { [categoryId: string]: number }
 
 export const getTotalMonthlyIncome = (): number => {
   return mockTransactions
-    .filter(transaction => transaction.type === 'income')
+    .filter((transaction) => transaction.type === 'income')
     .reduce((sum, transaction) => sum + transaction.amount, 0);
 };
 
 export const getTotalMonthlyExpenses = (): number => {
   return mockTransactions
-    .filter(transaction => transaction.type === 'expense')
+    .filter((transaction) => transaction.type === 'expense')
     .reduce((sum, transaction) => sum + transaction.amount, 0);
 };

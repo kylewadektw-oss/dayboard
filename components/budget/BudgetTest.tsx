@@ -8,7 +8,7 @@ const BudgetTest = () => {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Budget System Test</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
@@ -42,7 +42,9 @@ const BudgetTest = () => {
           </CardHeader>
           <CardContent>
             <Badge variant="secondary">On Track</Badge>
-            <p className="text-sm text-gray-600 mt-2">$1,653 remaining this month</p>
+            <p className="text-sm text-gray-600 mt-2">
+              $1,653 remaining this month
+            </p>
           </CardContent>
         </Card>
       </div>

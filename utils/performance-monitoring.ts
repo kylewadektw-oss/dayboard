@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -85,7 +85,7 @@ class PerformanceMonitor {
 
     // Monitor Core Web Vitals
     this.observeLCP(); // Largest Contentful Paint
-    this.observeFID(); // First Input Delay  
+    this.observeFID(); // First Input Delay
     this.observeCLS(); // Cumulative Layout Shift
     // First Contentful Paint is handled in paint metrics
   }
@@ -103,7 +103,9 @@ class PerformanceMonitor {
       });
 
       // Observe different types of performance entries
-      this.observer.observe({ entryTypes: ['navigation', 'resource', 'measure', 'paint'] });
+      this.observer.observe({
+        entryTypes: ['navigation', 'resource', 'measure', 'paint']
+      });
     } catch (error) {
       enhancedLogger.logWithFullContext(
         LogLevel.WARN,
@@ -116,7 +118,7 @@ class PerformanceMonitor {
 
   // 🚀 PERFORMANCE: Process performance entries
   private processPerformanceEntries(entries: PerformanceEntry[]) {
-    entries.forEach(entry => {
+    entries.forEach((entry) => {
       if (entry.entryType === 'navigation') {
         this.recordNavigationMetrics(entry as PerformanceNavigationTiming);
       } else if (entry.entryType === 'resource') {
@@ -147,9 +149,10 @@ class PerformanceMonitor {
   // 🚀 PERFORMANCE: Record resource metrics
   private recordResourceMetrics(entry: PerformanceResourceTiming) {
     const duration = entry.responseEnd - entry.startTime;
-    
+
     // Log slow resources
-    if (duration > 1000) { // Resources taking more than 1 second
+    if (duration > 1000) {
+      // Resources taking more than 1 second
       enhancedLogger.logWithFullContext(
         LogLevel.WARN,
         'Slow resource detected',
@@ -176,13 +179,14 @@ class PerformanceMonitor {
 
   // 🚀 PERFORMANCE: Observe Largest Contentful Paint
   private observeLCP() {
-    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window))
+      return;
 
     try {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1];
-        
+
         const latestMetric = this.metricsBuffer[this.metricsBuffer.length - 1];
         if (latestMetric && lastEntry) {
           latestMetric.largestContentfulPaint = lastEntry.startTime;
@@ -197,15 +201,18 @@ class PerformanceMonitor {
 
   // 🚀 PERFORMANCE: Observe First Input Delay
   private observeFID() {
-    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window))
+      return;
 
     try {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach(entry => {
-          const latestMetric = this.metricsBuffer[this.metricsBuffer.length - 1];
+        entries.forEach((entry) => {
+          const latestMetric =
+            this.metricsBuffer[this.metricsBuffer.length - 1];
           if (latestMetric) {
-            latestMetric.firstInputDelay = (entry as any).processingStart - entry.startTime;
+            latestMetric.firstInputDelay =
+              (entry as any).processingStart - entry.startTime;
           }
         });
       });
@@ -218,18 +225,20 @@ class PerformanceMonitor {
 
   // 🚀 PERFORMANCE: Observe Cumulative Layout Shift
   private observeCLS() {
-    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window))
+      return;
 
     try {
       let clsValue = 0;
-      
+
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (!(entry as any).hadRecentInput) {
             clsValue += (entry as any).value;
-            
-            const latestMetric = this.metricsBuffer[this.metricsBuffer.length - 1];
+
+            const latestMetric =
+              this.metricsBuffer[this.metricsBuffer.length - 1];
             if (latestMetric) {
               latestMetric.cumulativeLayoutShift = clsValue;
             }
@@ -274,7 +283,7 @@ class PerformanceMonitor {
   // 🚀 PERFORMANCE: Add metric to buffer
   private addMetric(metric: PerformanceMetrics) {
     this.metricsBuffer.push(metric);
-    
+
     if (this.metricsBuffer.length > this.maxBufferSize) {
       this.metricsBuffer.shift();
     }
@@ -299,9 +308,9 @@ class PerformanceMonitor {
   // 🚀 PERFORMANCE: Start monitoring
   startMonitoring() {
     if (this.isMonitoring) return;
-    
+
     this.isMonitoring = true;
-    
+
     enhancedLogger.logWithFullContext(
       LogLevel.INFO,
       'Performance monitoring started',
@@ -313,10 +322,10 @@ class PerformanceMonitor {
   // 🚀 PERFORMANCE: Stop monitoring
   stopMonitoring() {
     if (!this.isMonitoring) return;
-    
+
     this.isMonitoring = false;
     this.observer?.disconnect();
-    
+
     enhancedLogger.logWithFullContext(
       LogLevel.INFO,
       'Performance monitoring stopped',
@@ -328,7 +337,7 @@ class PerformanceMonitor {
   // 🚀 PERFORMANCE: Record component performance
   recordComponentMetric(componentName: string, renderTime: number) {
     const existing = this.componentMetrics.get(componentName);
-    
+
     if (existing) {
       existing.renderTime = (existing.renderTime + renderTime) / 2; // Running average
       existing.rerenderCount++;
@@ -385,9 +394,12 @@ class PerformanceMonitor {
       (acc, metric) => ({
         pageLoadTime: acc.pageLoadTime + metric.pageLoadTime,
         domContentLoaded: acc.domContentLoaded + metric.domContentLoaded,
-        firstContentfulPaint: acc.firstContentfulPaint + metric.firstContentfulPaint,
-        largestContentfulPaint: acc.largestContentfulPaint + metric.largestContentfulPaint,
-        cumulativeLayoutShift: acc.cumulativeLayoutShift + metric.cumulativeLayoutShift,
+        firstContentfulPaint:
+          acc.firstContentfulPaint + metric.firstContentfulPaint,
+        largestContentfulPaint:
+          acc.largestContentfulPaint + metric.largestContentfulPaint,
+        cumulativeLayoutShift:
+          acc.cumulativeLayoutShift + metric.cumulativeLayoutShift,
         firstInputDelay: acc.firstInputDelay + metric.firstInputDelay
       }),
       {
@@ -412,28 +424,44 @@ class PerformanceMonitor {
   }
 
   // 🚀 PERFORMANCE: Generate performance recommendations
-  private generateRecommendations(current?: PerformanceMetrics, averages?: Partial<PerformanceMetrics>) {
+  private generateRecommendations(
+    current?: PerformanceMetrics,
+    averages?: Partial<PerformanceMetrics>
+  ) {
     const recommendations: string[] = [];
 
     if (current) {
       if (current.pageLoadTime > 3000) {
-        recommendations.push('Page load time is high. Consider code splitting and lazy loading.');
-      }
-      
-      if (current.largestContentfulPaint > 2500) {
-        recommendations.push('LCP is poor. Optimize critical resources and images.');
-      }
-      
-      if (current.cumulativeLayoutShift > 0.1) {
-        recommendations.push('CLS is poor. Add size attributes to images and reserve space for dynamic content.');
-      }
-      
-      if (current.firstInputDelay > 100) {
-        recommendations.push('FID is poor. Optimize JavaScript execution and consider web workers.');
+        recommendations.push(
+          'Page load time is high. Consider code splitting and lazy loading.'
+        );
       }
 
-      if (current.memoryUsage && current.memoryUsage.used > current.memoryUsage.limit * 0.8) {
-        recommendations.push('Memory usage is high. Check for memory leaks and optimize component cleanup.');
+      if (current.largestContentfulPaint > 2500) {
+        recommendations.push(
+          'LCP is poor. Optimize critical resources and images.'
+        );
+      }
+
+      if (current.cumulativeLayoutShift > 0.1) {
+        recommendations.push(
+          'CLS is poor. Add size attributes to images and reserve space for dynamic content.'
+        );
+      }
+
+      if (current.firstInputDelay > 100) {
+        recommendations.push(
+          'FID is poor. Optimize JavaScript execution and consider web workers.'
+        );
+      }
+
+      if (
+        current.memoryUsage &&
+        current.memoryUsage.used > current.memoryUsage.limit * 0.8
+      ) {
+        recommendations.push(
+          'Memory usage is high. Check for memory leaks and optimize component cleanup.'
+        );
       }
     }
 
@@ -459,15 +487,16 @@ export function withPerformanceMonitoring<P extends object>(
   WrappedComponent: React.ComponentType<P>,
   componentName?: string
 ) {
-  const displayName = componentName || WrappedComponent.displayName || WrappedComponent.name;
+  const displayName =
+    componentName || WrappedComponent.displayName || WrappedComponent.name;
 
   return function PerformanceMonitoredComponent(props: P) {
     const startTime = performance.now();
-    
+
     React.useEffect(() => {
       const endTime = performance.now();
       const renderTime = endTime - startTime;
-      
+
       performanceMonitor.recordComponentMetric(displayName, renderTime);
     });
 

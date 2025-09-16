@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -41,15 +41,19 @@ const LayoutSkeleton = () => (
 export default function AppLayout({ children }: PropsWithChildren) {
   return (
     <SettingsProvider>
-      <ErrorBoundary 
+      <ErrorBoundary
         level="page"
         onError={(error, errorInfo) => {
-          logger.error('🚨 React Error Boundary triggered in app layout', 'AppLayout', {
-            error: error.message,
-            stack: error.stack,
-            componentStack: errorInfo.componentStack,
-            location: 'AppLayout'
-          });
+          logger.error(
+            '🚨 React Error Boundary triggered in app layout',
+            'AppLayout',
+            {
+              error: error.message,
+              stack: error.stack,
+              componentStack: errorInfo.componentStack,
+              location: 'AppLayout'
+            }
+          );
         }}
       >
         <Suspense fallback={<LayoutSkeleton />}>
@@ -57,15 +61,19 @@ export default function AppLayout({ children }: PropsWithChildren) {
           <div className="min-h-screen bg-gray-50">
             {/* Main content with responsive margin - CSS classes handle sidebar states */}
             <main className="pt-16 pb-20 md:pt-0 md:pb-0 md:ml-64 transition-all duration-300">
-              <ErrorBoundary 
+              <ErrorBoundary
                 level="component"
                 onError={(error, errorInfo) => {
-                  logger.error('🚨 React Error Boundary triggered in main content', 'MainContent', {
-                    error: error.message,
-                    stack: error.stack,
-                    componentStack: errorInfo.componentStack,
-                    location: 'MainContent'
-                  });
+                  logger.error(
+                    '🚨 React Error Boundary triggered in main content',
+                    'MainContent',
+                    {
+                      error: error.message,
+                      stack: error.stack,
+                      componentStack: errorInfo.componentStack,
+                      location: 'MainContent'
+                    }
+                  );
                 }}
               >
                 {children}

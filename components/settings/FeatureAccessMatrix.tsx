@@ -6,10 +6,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Shield, 
-  Users, 
-  Crown, 
+import {
+  Shield,
+  Users,
+  Crown,
   User,
   Save,
   CheckCircle,
@@ -20,9 +20,9 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
+import {
   featureAccessManager,
-  FEATURE_DEFINITIONS, 
+  FEATURE_DEFINITIONS,
   type UserRole,
   type FeatureAccess,
   type FeatureName
@@ -41,7 +41,7 @@ interface AccessState {
   };
 }
 
-const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({ 
+const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
   className = ''
 }) => {
   const { profile } = useAuth();
@@ -55,7 +55,7 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
   // Initialize access state from feature definitions
   useEffect(() => {
     const initialState: AccessState = {};
-    
+
     Object.entries(FEATURE_DEFINITIONS).forEach(([featureName]) => {
       initialState[featureName] = {
         member: false,
@@ -76,13 +76,18 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
         setLoading(true);
         setError(null);
 
-        const accessRules = await featureAccessManager.getHouseholdFeatureAccess(profile.household_id);
-        
+        const accessRules =
+          await featureAccessManager.getHouseholdFeatureAccess(
+            profile.household_id
+          );
+
         // Update state with database values
         const newState: AccessState = { ...accessState };
         accessRules.forEach((rule: FeatureAccess) => {
           if (newState[rule.feature_name]) {
-            (newState[rule.feature_name] as Record<string, boolean>)[rule.role] = rule.available;
+            (newState[rule.feature_name] as Record<string, boolean>)[
+              rule.role
+            ] = rule.available;
           }
         });
 
@@ -102,7 +107,7 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
 
   // Handle permission toggle
   const handleToggle = (featureName: string, role: UserRole) => {
-    setAccessState(prev => ({
+    setAccessState((prev) => ({
       ...prev,
       [featureName]: {
         ...prev[featureName],
@@ -134,7 +139,7 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
       // Prepare all updates
       Object.entries(accessState).forEach(([featureName, roleAccess]) => {
         const roles: UserRole[] = ['member', 'admin', 'super_admin'];
-        roles.forEach(role => {
+        roles.forEach((role) => {
           updates.push({
             featureName: featureName as FeatureName,
             role,
@@ -169,8 +174,10 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
 
     try {
       setSaving(true);
-      const success = await featureAccessManager.setupDefaultFeatureAccess(profile.household_id);
-      
+      const success = await featureAccessManager.setupDefaultFeatureAccess(
+        profile.household_id
+      );
+
       if (success) {
         // Reload the data
         window.location.reload();
@@ -186,20 +193,31 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
   };
 
   // Group features by category
-  const featuresByCategory = Object.entries(FEATURE_DEFINITIONS).reduce((acc, [featureName, definition]) => {
-    const category = definition.category;
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push({ name: featureName as FeatureName, definition });
-    return acc;
-  }, {} as Record<string, Array<{ name: FeatureName; definition: typeof FEATURE_DEFINITIONS[FeatureName] }>>);
+  const featuresByCategory = Object.entries(FEATURE_DEFINITIONS).reduce(
+    (acc, [featureName, definition]) => {
+      const category = definition.category;
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push({ name: featureName as FeatureName, definition });
+      return acc;
+    },
+    {} as Record<
+      string,
+      Array<{
+        name: FeatureName;
+        definition: (typeof FEATURE_DEFINITIONS)[FeatureName];
+      }>
+    >
+  );
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        <span className="ml-2 text-gray-600">Loading feature access matrix...</span>
+        <span className="ml-2 text-gray-600">
+          Loading feature access matrix...
+        </span>
       </div>
     );
   }
@@ -212,13 +230,16 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
           <div className="flex items-center space-x-3">
             <Shield className="h-6 w-6 text-blue-600" />
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Feature Access Control</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Feature Access Control
+              </h2>
               <p className="text-sm text-gray-600">
-                Control which features are available to different user roles in your household
+                Control which features are available to different user roles in
+                your household
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {hasChanges && (
               <div className="flex items-center text-orange-600 text-sm">
@@ -226,7 +247,7 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
                 Unsaved changes
               </div>
             )}
-            
+
             <button
               onClick={handleReset}
               disabled={saving}
@@ -235,7 +256,7 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
               <RefreshCw className="h-4 w-4" />
               <span>Reset to Defaults</span>
             </button>
-            
+
             <button
               onClick={handleSave}
               disabled={!hasChanges || saving}
@@ -282,7 +303,9 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
           </div>
           <div className="flex items-center space-x-2">
             <Crown className="h-4 w-4 text-purple-600" />
-            <span className="text-sm font-medium text-purple-700">Super Admin</span>
+            <span className="text-sm font-medium text-purple-700">
+              Super Admin
+            </span>
             <span className="text-xs text-gray-500">Full control</span>
           </div>
         </div>
@@ -291,22 +314,29 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
       {/* Feature Matrix */}
       <div className="space-y-4">
         {Object.entries(featuresByCategory).map(([category, features]) => (
-          <div key={category} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div
+            key={category}
+            className="bg-white rounded-lg border border-gray-200 overflow-hidden"
+          >
             <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
               <h3 className="font-medium text-gray-900 capitalize">
-                {category === 'core' ? 'Core Features' : 
-                 category === 'admin' ? 'Administrative Features' :
-                 `${category.charAt(0).toUpperCase() + category.slice(1)} Features`}
+                {category === 'core'
+                  ? 'Core Features'
+                  : category === 'admin'
+                    ? 'Administrative Features'
+                    : `${category.charAt(0).toUpperCase() + category.slice(1)} Features`}
               </h3>
             </div>
-            
+
             <div className="divide-y divide-gray-200">
               {features.map(({ name: featureName, definition }) => (
                 <div key={featureName} className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3">
-                        <h4 className="font-medium text-gray-900">{definition.label}</h4>
+                        <h4 className="font-medium text-gray-900">
+                          {definition.label}
+                        </h4>
                         {definition.description && (
                           <div className="group relative">
                             <Info className="h-4 w-4 text-gray-400 hover:text-gray-600" />
@@ -317,7 +347,7 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center space-x-4">
                       {/* Member Toggle */}
                       <label className="flex items-center space-x-2">
@@ -329,7 +359,7 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                       </label>
-                      
+
                       {/* Admin Toggle */}
                       <label className="flex items-center space-x-2">
                         <Users className="h-4 w-4 text-blue-600" />
@@ -340,14 +370,18 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                       </label>
-                      
+
                       {/* Super Admin Toggle */}
                       <label className="flex items-center space-x-2">
                         <Crown className="h-4 w-4 text-purple-600" />
                         <input
                           type="checkbox"
-                          checked={accessState[featureName]?.super_admin || false}
-                          onChange={() => handleToggle(featureName, 'super_admin')}
+                          checked={
+                            accessState[featureName]?.super_admin || false
+                          }
+                          onChange={() =>
+                            handleToggle(featureName, 'super_admin')
+                          }
                           className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                         />
                       </label>

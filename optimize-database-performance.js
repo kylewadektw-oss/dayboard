@@ -2,7 +2,7 @@
 
 /**
  * ⚡ DATABASE PERFORMANCE OPTIMIZER
- * 
+ *
  * This script implements optimizations based on the performance analysis
  */
 
@@ -11,9 +11,9 @@ require('dotenv').config({ path: '.env.local' });
 async function optimizeDatabase() {
   try {
     const { createClient } = require('@supabase/supabase-js');
-    
+
     console.log('⚡ Database Performance Optimizer\n');
-    
+
     // Create Supabase client with service role
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -25,7 +25,7 @@ async function optimizeDatabase() {
 
     // Check if indexes exist on frequently queried columns
     console.log('📊 Checking database indexes...');
-    
+
     const indexCheckQueries = [
       {
         name: 'application_logs timestamp index',
@@ -60,17 +60,19 @@ async function optimizeDatabase() {
         const { data, error } = await supabase.rpc('execute_sql', {
           query: check.query
         });
-        
+
         if (error) {
           console.log(`❌ Failed to check ${check.name}:`, error.message);
         } else {
           console.log(`✅ ${check.name}: ${data?.length || 0} indexes found`);
           if (data?.length > 0) {
-            data.forEach(idx => console.log(`   - ${idx.indexname}`));
+            data.forEach((idx) => console.log(`   - ${idx.indexname}`));
           }
         }
       } catch (err) {
-        console.log(`⚠️  Cannot check ${check.name} - using direct queries instead`);
+        console.log(
+          `⚠️  Cannot check ${check.name} - using direct queries instead`
+        );
       }
     }
 
@@ -85,12 +87,11 @@ async function optimizeDatabase() {
         CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_application_logs_timestamp_level 
         ON application_logs(timestamp DESC, level);
       `;
-      
+
       console.log('   Creating timestamp index on application_logs...');
       // Note: We can't actually run DDL through PostgREST, so we'll log the SQL
       console.log('   📝 SQL to execute manually:');
       console.log('   ', logIndexSQL.trim());
-      
     } catch (error) {
       console.log('   ⚠️  Manual index creation required');
     }
@@ -103,12 +104,13 @@ async function optimizeDatabase() {
         .from('profiles')
         .select('user_id, full_name, avatar_url')
         .limit(1);
-      
+
       if (!profileTestQuery.error) {
         console.log('   ✅ Profile queries are responsive');
-        console.log('   💡 Consider implementing Redis caching for frequently accessed profiles');
+        console.log(
+          '   💡 Consider implementing Redis caching for frequently accessed profiles'
+        );
       }
-      
     } catch (error) {
       console.log('   ❌ Profile query test failed:', error.message);
     }
@@ -120,30 +122,35 @@ async function optimizeDatabase() {
       const { data: logCount, error: countError } = await supabase
         .from('application_logs')
         .select('id', { count: 'exact' });
-      
+
       if (!countError) {
-        console.log(`   📊 Total logs in database: ${logCount?.length || 'Unknown'}`);
-        
+        console.log(
+          `   📊 Total logs in database: ${logCount?.length || 'Unknown'}`
+        );
+
         // Check old logs (older than 30 days)
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        
+
         const { data: oldLogs, error: oldLogsError } = await supabase
           .from('application_logs')
           .select('id', { count: 'exact' })
           .lt('timestamp', thirtyDaysAgo.toISOString());
-        
+
         if (!oldLogsError) {
           console.log(`   📊 Logs older than 30 days: ${oldLogs?.length || 0}`);
-          
+
           if ((oldLogs?.length || 0) > 1000) {
-            console.log('   💡 Consider implementing log archival for logs older than 30 days');
+            console.log(
+              '   💡 Consider implementing log archival for logs older than 30 days'
+            );
             console.log('   📝 SQL for manual cleanup:');
-            console.log(`   DELETE FROM application_logs WHERE timestamp < '${thirtyDaysAgo.toISOString()}';`);
+            console.log(
+              `   DELETE FROM application_logs WHERE timestamp < '${thirtyDaysAgo.toISOString()}';`
+            );
           }
         }
       }
-      
     } catch (error) {
       console.log('   ❌ Log analysis failed:', error.message);
     }
@@ -189,16 +196,23 @@ async function optimizeDatabase() {
     console.log('\n📊 Manual SQL Commands to Execute:');
     console.log('===================================');
     console.log('-- Create optimized indexes');
-    console.log('CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_application_logs_timestamp_level ON application_logs(timestamp DESC, level);');
-    console.log('CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_profiles_user_id ON profiles(user_id);');
-    console.log('CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_households_id ON households(id);');
+    console.log(
+      'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_application_logs_timestamp_level ON application_logs(timestamp DESC, level);'
+    );
+    console.log(
+      'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_profiles_user_id ON profiles(user_id);'
+    );
+    console.log(
+      'CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_households_id ON households(id);'
+    );
     console.log('');
     console.log('-- Enable pg_stat_statements for monitoring');
-    console.log("CREATE EXTENSION IF NOT EXISTS pg_stat_statements;");
+    console.log('CREATE EXTENSION IF NOT EXISTS pg_stat_statements;');
     console.log('');
     console.log('-- Log cleanup (adjust date as needed)');
-    console.log(`DELETE FROM application_logs WHERE timestamp < NOW() - INTERVAL '30 days';`);
-
+    console.log(
+      `DELETE FROM application_logs WHERE timestamp < NOW() - INTERVAL '30 days';`
+    );
   } catch (error) {
     console.error('❌ Optimization Error:', error.message);
     console.log('\n💡 Manual Steps:');

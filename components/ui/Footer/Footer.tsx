@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 import Link from 'next/link';
 import Logo from '@/components/icons/Logo';
@@ -30,8 +29,9 @@ export default function Footer() {
             <Logo className="scale-75" />
           </Link>
           <p className="mt-4 text-sm text-zinc-400 max-w-xs">
-            Organize your household life with ease. From meal planning to project tracking, 
-            Dayboard helps families stay connected and productive.
+            Organize your household life with ease. From meal planning to
+            project tracking, Dayboard helps families stay connected and
+            productive.
           </p>
         </div>
         <div className="col-span-1 lg:col-span-2">
@@ -114,11 +114,12 @@ export default function Footer() {
         <div className="col-span-1 lg:col-span-3">
           <p className="font-bold text-white mb-4">STAY CONNECTED</p>
           <p className="text-sm text-zinc-400 mb-4">
-            Join our family community and get tips for better household organization.
+            Join our family community and get tips for better household
+            organization.
           </p>
           <div className="flex space-x-4">
-            <Link 
-              href="/signin" 
+            <Link
+              href="/signin"
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
             >
               Get Started
@@ -129,7 +130,8 @@ export default function Footer() {
       <div className="flex flex-col items-center justify-between py-12 space-y-4 md:flex-row bg-zinc-900">
         <div>
           <span className="text-zinc-400">
-            &copy; {new Date().getFullYear()} Dayboard. Built for families, by families.
+            &copy; {new Date().getFullYear()} Dayboard. Built for families, by
+            families.
           </span>
         </div>
         <div className="flex items-center">

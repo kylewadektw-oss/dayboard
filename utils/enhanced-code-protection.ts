@@ -1,15 +1,15 @@
 /*
  * 🛡️ ENHANCED DAYBOARD CODE PROTECTION SYSTEM
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * MULTI-LAYER PROTECTION SYSTEM:
  * - Domain validation with fingerprinting
  * - Anti-debugging and inspection blocking
  * - Runtime environment validation
  * - Emergency kill switch capability
  * - Code theft detection and reporting
- * 
+ *
  * VIOLATION PENALTIES: Up to $500,000 in damages
  * Report violations: kyle.wade.ktw@gmail.com
  */
@@ -81,28 +81,26 @@ export function validateDomain(): boolean {
     '127.0.0.1',
     '127.0.0.1:3000',
     'bentlolabs.com',
-    'www.bentlolabs.com',
+    'www.bentlolabs.com'
   ];
 
-  const developmentPatterns = [
-    '.vercel.app',
-    '.netlify.app',
-    '.railway.app'
-  ];
+  const developmentPatterns = ['.vercel.app', '.netlify.app', '.railway.app'];
 
   const currentDomain = window.location.hostname;
   const currentOrigin = window.location.origin;
 
   // Allow development environments
-  if (currentDomain.includes('localhost') || 
-      currentDomain.includes('127.0.0.1') || 
-      process.env.NODE_ENV !== 'production') {
+  if (
+    currentDomain.includes('localhost') ||
+    currentDomain.includes('127.0.0.1') ||
+    process.env.NODE_ENV !== 'production'
+  ) {
     return true;
   }
 
   // Check authorized domains
-  const isAuthorized = authorizedDomains.some(domain => 
-    currentDomain === domain || currentDomain.endsWith('.' + domain)
+  const isAuthorized = authorizedDomains.some(
+    (domain) => currentDomain === domain || currentDomain.endsWith('.' + domain)
   );
 
   if (isAuthorized) {
@@ -111,7 +109,7 @@ export function validateDomain(): boolean {
 
   // Check development patterns (staging only)
   if (process.env.NODE_ENV !== 'production') {
-    const isDevelopment = developmentPatterns.some(pattern => 
+    const isDevelopment = developmentPatterns.some((pattern) =>
       currentDomain.endsWith(pattern)
     );
     if (isDevelopment) return true;
@@ -119,7 +117,7 @@ export function validateDomain(): boolean {
 
   // 🚨 UNAUTHORIZED ACCESS DETECTED
   console.error('🛡️ UNAUTHORIZED DOMAIN:', currentDomain);
-  
+
   // Report violation
   reportSecurityViolation({
     type: 'unauthorized_domain',
@@ -141,16 +139,17 @@ export function validateDomain(): boolean {
  * 🐛 ANTI-DEBUGGING PROTECTION
  */
 function initAntiDebug(): void {
-  if (!PROTECTION_CONFIG.enableAntiDebug || typeof window === 'undefined') return;
+  if (!PROTECTION_CONFIG.enableAntiDebug || typeof window === 'undefined')
+    return;
 
   let debuggerDetected = false;
-  
+
   // Detect debugger with timing attack
   const checkDebugger = () => {
     const start = performance.now();
     debugger;
     const end = performance.now();
-    
+
     if (end - start > 100 && !debuggerDetected) {
       debuggerDetected = true;
       console.warn('🚨 Debugging attempt detected');
@@ -158,7 +157,7 @@ function initAntiDebug(): void {
         type: 'debugger_detected',
         timestamp: new Date().toISOString()
       });
-      
+
       if (PROTECTION_CONFIG.strictMode) {
         window.location.href = 'about:blank';
       }
@@ -172,9 +171,10 @@ function initAntiDebug(): void {
   let devToolsOpen = false;
   const checkDevTools = () => {
     const threshold = 160;
-    const isOpen = window.outerHeight - window.innerHeight > threshold || 
-                   window.outerWidth - window.innerWidth > threshold;
-    
+    const isOpen =
+      window.outerHeight - window.innerHeight > threshold ||
+      window.outerWidth - window.innerWidth > threshold;
+
     if (isOpen && !devToolsOpen) {
       devToolsOpen = true;
       console.warn('🚨 Developer tools detected');
@@ -194,7 +194,11 @@ function initAntiDebug(): void {
  * 🔒 SOURCE CODE PROTECTION
  */
 function initSourceProtection(): void {
-  if (!PROTECTION_CONFIG.enableSourceProtection || typeof window === 'undefined') return;
+  if (
+    !PROTECTION_CONFIG.enableSourceProtection ||
+    typeof window === 'undefined'
+  )
+    return;
 
   // Block common inspection shortcuts
   document.addEventListener('keydown', (e) => {
@@ -207,7 +211,7 @@ function initSourceProtection(): void {
       e.ctrlKey && e.shiftKey && e.key === 'J' // Console
     ];
 
-    if (blocked.some(condition => condition)) {
+    if (blocked.some((condition) => condition)) {
       e.preventDefault();
       e.stopPropagation();
       console.warn('🚨 Source inspection blocked');
@@ -249,7 +253,8 @@ function initSourceProtection(): void {
  * 🤖 RUNTIME ENVIRONMENT VALIDATION
  */
 function validateRuntimeEnvironment(): boolean {
-  if (!PROTECTION_CONFIG.enableRuntimeChecks || typeof window === 'undefined') return true;
+  if (!PROTECTION_CONFIG.enableRuntimeChecks || typeof window === 'undefined')
+    return true;
 
   const suspiciousIndicators = [
     'webdriver' in window,
@@ -264,7 +269,7 @@ function validateRuntimeEnvironment(): boolean {
     window.outerHeight === 0
   ];
 
-  if (suspiciousIndicators.some(indicator => indicator)) {
+  if (suspiciousIndicators.some((indicator) => indicator)) {
     console.warn('🚨 Suspicious runtime environment detected');
     reportSecurityViolation({
       type: 'suspicious_environment',
@@ -281,7 +286,8 @@ function validateRuntimeEnvironment(): boolean {
  * 🔢 CODE FINGERPRINTING
  */
 function initCodeFingerprinting(): void {
-  if (!PROTECTION_CONFIG.enableFingerprinting || typeof window === 'undefined') return;
+  if (!PROTECTION_CONFIG.enableFingerprinting || typeof window === 'undefined')
+    return;
 
   // Set application fingerprint
   (window as any)[CODE_FINGERPRINT] = {
@@ -293,8 +299,10 @@ function initCodeFingerprinting(): void {
 
   // Validate expected environment
   const expectedGlobals = ['React', 'next'];
-  const missingGlobals = expectedGlobals.filter(global => !(global in window));
-  
+  const missingGlobals = expectedGlobals.filter(
+    (global) => !(global in window)
+  );
+
   if (missingGlobals.length > 0) {
     console.warn('🚨 Missing expected globals:', missingGlobals);
     reportSecurityViolation({
@@ -364,7 +372,8 @@ export function addCopyrightProtection(): void {
 
   // Enhanced console warnings
   const styles = {
-    title: 'color: #ff0000; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);',
+    title:
+      'color: #ff0000; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);',
     warning: 'color: #ff6600; font-size: 14px; font-weight: bold;',
     info: 'color: #0066cc; font-size: 12px;',
     contact: 'color: #00aa00; font-weight: bold;'
@@ -372,16 +381,32 @@ export function addCopyrightProtection(): void {
 
   console.log('%c🛡️ DAYBOARD - PROPRIETARY SOFTWARE', styles.title);
   console.log('%c⚖️ COPYRIGHT PROTECTED CODE', styles.warning);
-  console.log('%c© 2025 Kyle Wade / BentloLabs - All Rights Reserved', styles.info);
-  console.log('%cUnauthorized use is strictly prohibited and may result in legal action.', styles.warning);
-  console.log('%cViolation penalties: Up to $500,000 in damages', styles.warning);
-  console.log('%c📧 Report violations: kyle.wade.ktw@gmail.com', styles.contact);
+  console.log(
+    '%c© 2025 Kyle Wade / BentloLabs - All Rights Reserved',
+    styles.info
+  );
+  console.log(
+    '%cUnauthorized use is strictly prohibited and may result in legal action.',
+    styles.warning
+  );
+  console.log(
+    '%cViolation penalties: Up to $500,000 in damages',
+    styles.warning
+  );
+  console.log(
+    '%c📧 Report violations: kyle.wade.ktw@gmail.com',
+    styles.contact
+  );
   console.log('%c🌐 Licensed for use only on: bentlolabs.com', styles.info);
 
   // Add invisible watermarks
   const watermark = document.createElement('div');
-  watermark.style.cssText = 'position:absolute;left:-9999px;opacity:0;pointer-events:none;';
-  watermark.setAttribute('data-copyright', `© 2025 Kyle Wade - Dayboard v${process.env.NEXT_PUBLIC_APP_VERSION}`);
+  watermark.style.cssText =
+    'position:absolute;left:-9999px;opacity:0;pointer-events:none;';
+  watermark.setAttribute(
+    'data-copyright',
+    `© 2025 Kyle Wade - Dayboard v${process.env.NEXT_PUBLIC_APP_VERSION}`
+  );
   watermark.setAttribute('data-fingerprint', CODE_FINGERPRINT);
   watermark.setAttribute('data-license', 'PROPRIETARY-COMMERCIAL');
   document.body.appendChild(watermark);
@@ -391,9 +416,11 @@ export function addCopyrightProtection(): void {
     mutations.forEach((mutation) => {
       if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
         Array.from(mutation.removedNodes).forEach((node) => {
-          if (node instanceof Element && 
-              (node.hasAttribute('data-copyright') || 
-               node.hasAttribute('data-fingerprint'))) {
+          if (
+            node instanceof Element &&
+            (node.hasAttribute('data-copyright') ||
+              node.hasAttribute('data-fingerprint'))
+          ) {
             reportSecurityViolation({
               type: 'copyright_tampering',
               timestamp: new Date().toISOString()
@@ -433,7 +460,6 @@ export function initializeProtection(): boolean {
 
     console.log('🛡️ Protection system initialized');
     return true;
-
   } catch (error) {
     console.error('Protection system error:', error);
     return false;

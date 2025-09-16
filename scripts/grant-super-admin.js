@@ -46,10 +46,10 @@ async function grantSuperAdminStatus() {
     if (!existingUser) {
       console.log('⚠️  User not found in profiles table.');
       console.log('   This might be because:');
-      console.log('   1. The user hasn\'t logged in yet');
+      console.log("   1. The user hasn't logged in yet");
       console.log('   2. The user_id is incorrect');
-      console.log('   3. The profile wasn\'t created properly');
-      
+      console.log("   3. The profile wasn't created properly");
+
       // Try to find any users with similar IDs
       const { data: similarUsers } = await supabase
         .from('profiles')
@@ -58,8 +58,10 @@ async function grantSuperAdminStatus() {
 
       if (similarUsers && similarUsers.length > 0) {
         console.log('\n🔍 Found similar user IDs:');
-        similarUsers.forEach(user => {
-          console.log(`   - ${user.user_id} (${user.name || user.preferred_name || 'No name'}) - Role: ${user.role}`);
+        similarUsers.forEach((user) => {
+          console.log(
+            `   - ${user.user_id} (${user.name || user.preferred_name || 'No name'}) - Role: ${user.role}`
+          );
         });
       }
 
@@ -67,7 +69,9 @@ async function grantSuperAdminStatus() {
     }
 
     console.log('✅ User found:');
-    console.log(`   Name: ${existingUser.name || existingUser.preferred_name || 'No name'}`);
+    console.log(
+      `   Name: ${existingUser.name || existingUser.preferred_name || 'No name'}`
+    );
     console.log(`   Current Role: ${existingUser.role}`);
     console.log(`   Household ID: ${existingUser.household_id || 'None'}`);
 
@@ -81,7 +85,7 @@ async function grantSuperAdminStatus() {
     // Update the user's role to super_admin
     const { data: updatedUser, error: updateError } = await supabase
       .from('profiles')
-      .update({ 
+      .update({
         role: 'super_admin',
         updated_at: new Date().toISOString()
       })
@@ -95,7 +99,9 @@ async function grantSuperAdminStatus() {
 
     console.log('✅ Successfully updated user role!');
     console.log('\n📋 Updated user details:');
-    console.log(`   Name: ${updatedUser.name || updatedUser.preferred_name || 'No name'}`);
+    console.log(
+      `   Name: ${updatedUser.name || updatedUser.preferred_name || 'No name'}`
+    );
     console.log(`   New Role: ${updatedUser.role}`);
     console.log(`   User ID: ${updatedUser.user_id}`);
     console.log(`   Profile ID: ${updatedUser.id}`);
@@ -107,7 +113,6 @@ async function grantSuperAdminStatus() {
     console.log('   • Can deploy enhanced permissions system');
 
     console.log('\n👑 Super Admin status granted successfully!');
-
   } catch (error) {
     console.error('❌ Error granting super admin status:', error.message);
     console.error(error);

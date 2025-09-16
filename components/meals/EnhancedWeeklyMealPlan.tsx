@@ -28,7 +28,17 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
-import { Calendar, Settings, BarChart3, ChevronLeft, ChevronRight, Clock, Star, Check, X } from 'lucide-react';
+import {
+  Calendar,
+  Settings,
+  BarChart3,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Star,
+  Check,
+  X
+} from 'lucide-react';
 // Sparkles import removed as unused
 import { Recipe, MealPlan, RecipeMealType } from '@/types/recipes';
 
@@ -36,7 +46,9 @@ interface EnhancedWeeklyMealPlanProps {
   recipes: Recipe[];
   mealPlans: MealPlan[];
   onUpdateMealPlan: (mealPlan: Partial<MealPlan>) => Promise<void>;
-  onCreateMealPlan: (mealPlan: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  onCreateMealPlan: (
+    mealPlan: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>
+  ) => Promise<void>;
   onDeleteMealPlan: (mealPlanId: string) => Promise<void>;
   householdId: string;
   userId: string;
@@ -53,7 +65,12 @@ const DEFAULT_SETTINGS: BasicSettings = {
   selectedMealTypes: ['breakfast', 'lunch', 'dinner']
 };
 
-const MEAL_TYPE_ORDER: RecipeMealType[] = ['breakfast', 'lunch', 'dinner', 'dessert'];
+const MEAL_TYPE_ORDER: RecipeMealType[] = [
+  'breakfast',
+  'lunch',
+  'dinner',
+  'dessert'
+];
 
 export function EnhancedWeeklyMealPlan({
   recipes,
@@ -66,13 +83,14 @@ export function EnhancedWeeklyMealPlan({
   // userId,
   className = ''
 }: EnhancedWeeklyMealPlanProps) {
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => 
-    startOfWeek(new Date(), { weekStartsOn: 0 }) // Sunday
+  const [currentWeekStart, setCurrentWeekStart] = useState(
+    () => startOfWeek(new Date(), { weekStartsOn: 0 }) // Sunday
   );
   const [showSettings, setShowSettings] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [settings, setSettings] = useState<BasicSettings>(DEFAULT_SETTINGS);
-  const [tempSettings, setTempSettings] = useState<BasicSettings>(DEFAULT_SETTINGS);
+  const [tempSettings, setTempSettings] =
+    useState<BasicSettings>(DEFAULT_SETTINGS);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   // Unused state variables commented out to fix build errors
   // const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -108,7 +126,7 @@ export function EnhancedWeeklyMealPlan({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!showSettings) return;
-      
+
       if (event.key === 'Escape') {
         handleCancelSettings();
       } else if ((event.metaKey || event.ctrlKey) && event.key === 's') {
@@ -121,11 +139,18 @@ export function EnhancedWeeklyMealPlan({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showSettings, hasUnsavedChanges, handleCancelSettings, handleSaveSettings]);
+  }, [
+    showSettings,
+    hasUnsavedChanges,
+    handleCancelSettings,
+    handleSaveSettings
+  ]);
 
   // Generate week days based on current week
   const weekDays = useMemo(() => {
-    const days = Array.from({ length: 7 }, (_, i) => addDays(currentWeekStart, i));
+    const days = Array.from({ length: 7 }, (_, i) =>
+      addDays(currentWeekStart, i)
+    );
     if (!settings.showWeekends) {
       return days.slice(1, 6); // Monday to Friday
     }
@@ -134,17 +159,17 @@ export function EnhancedWeeklyMealPlan({
 
   // Filter meal plans for current week
   const weekMealPlans = useMemo(() => {
-    return mealPlans.filter(plan => {
+    return mealPlans.filter((plan) => {
       const planDate = new Date(plan.planned_date);
-      return weekDays.some(day => isSameDay(planDate, day));
+      return weekDays.some((day) => isSameDay(planDate, day));
     });
   }, [mealPlans, weekDays]);
 
   // Organize meal plans by day and meal type
   const organizedMealPlans = useMemo(() => {
     const organized: Record<string, Record<RecipeMealType, MealPlan[]>> = {};
-    
-    weekDays.forEach(day => {
+
+    weekDays.forEach((day) => {
       const dayKey = format(day, 'yyyy-MM-dd');
       organized[dayKey] = {
         breakfast: [],
@@ -157,7 +182,7 @@ export function EnhancedWeeklyMealPlan({
       };
     });
 
-    weekMealPlans.forEach(plan => {
+    weekMealPlans.forEach((plan) => {
       const dayKey = format(new Date(plan.planned_date), 'yyyy-MM-dd');
       if (organized[dayKey] && organized[dayKey][plan.meal_type]) {
         organized[dayKey][plan.meal_type].push(plan);
@@ -181,13 +206,18 @@ export function EnhancedWeeklyMealPlan({
   }, []);
 
   // Get recipe for meal plan
-  const getRecipeForMealPlan = useCallback((mealPlan: MealPlan) => {
-    return recipes.find(recipe => recipe.id === mealPlan.recipe_id);
-  }, [recipes]);
+  const getRecipeForMealPlan = useCallback(
+    (mealPlan: MealPlan) => {
+      return recipes.find((recipe) => recipe.id === mealPlan.recipe_id);
+    },
+    [recipes]
+  );
 
   // Filter meal types based on settings
   const visibleMealTypes = useMemo(() => {
-    return MEAL_TYPE_ORDER.filter(mealType => settings.selectedMealTypes.includes(mealType));
+    return MEAL_TYPE_ORDER.filter((mealType) =>
+      settings.selectedMealTypes.includes(mealType)
+    );
   }, [settings.selectedMealTypes]);
 
   const formatTime = (minutes: number) => {
@@ -230,8 +260,8 @@ export function EnhancedWeeklyMealPlan({
             <button
               onClick={() => setShowSummary(!showSummary)}
               className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                showSummary 
-                  ? 'bg-blue-100 text-blue-700' 
+                showSummary
+                  ? 'bg-blue-100 text-blue-700'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
@@ -241,8 +271,8 @@ export function EnhancedWeeklyMealPlan({
             <button
               onClick={() => setShowSettings(!showSettings)}
               className={`flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                showSettings 
-                  ? 'bg-gray-100 text-gray-700' 
+                showSettings
+                  ? 'bg-gray-100 text-gray-700'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
@@ -254,7 +284,8 @@ export function EnhancedWeeklyMealPlan({
 
         {/* Week Range */}
         <div className="text-sm text-gray-600">
-          {format(weekDays[0], 'MMM d')} - {format(weekDays[weekDays.length - 1], 'MMM d, yyyy')}
+          {format(weekDays[0], 'MMM d')} -{' '}
+          {format(weekDays[weekDays.length - 1], 'MMM d, yyyy')}
         </div>
       </div>
 
@@ -262,28 +293,38 @@ export function EnhancedWeeklyMealPlan({
       {showSettings && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Week Settings</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Week Settings
+            </h3>
             {hasUnsavedChanges && (
-              <span className="text-sm text-orange-600 font-medium">Unsaved changes</span>
+              <span className="text-sm text-orange-600 font-medium">
+                Unsaved changes
+              </span>
             )}
           </div>
-          
+
           <div className="space-y-4">
             {/* Show Weekends Toggle */}
             <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-gray-700">Show Weekends</label>
+              <label className="text-sm font-medium text-gray-700">
+                Show Weekends
+              </label>
               <button
-                onClick={() => handleTempSettingsChange({ 
-                  ...tempSettings, 
-                  showWeekends: !tempSettings.showWeekends 
-                })}
+                onClick={() =>
+                  handleTempSettingsChange({
+                    ...tempSettings,
+                    showWeekends: !tempSettings.showWeekends
+                  })
+                }
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                   tempSettings.showWeekends ? 'bg-blue-600' : 'bg-gray-200'
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    tempSettings.showWeekends ? 'translate-x-6' : 'translate-x-1'
+                    tempSettings.showWeekends
+                      ? 'translate-x-6'
+                      : 'translate-x-1'
                   }`}
                 />
               </button>
@@ -291,17 +332,22 @@ export function EnhancedWeeklyMealPlan({
 
             {/* Meal Types */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Meal Types</label>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Meal Types
+              </label>
               <div className="flex flex-wrap gap-2">
-                {MEAL_TYPE_ORDER.map(mealType => (
+                {MEAL_TYPE_ORDER.map((mealType) => (
                   <button
                     key={mealType}
                     onClick={() => {
                       handleTempSettingsChange({
                         ...tempSettings,
-                        selectedMealTypes: tempSettings.selectedMealTypes.includes(mealType)
-                          ? tempSettings.selectedMealTypes.filter(type => type !== mealType)
-                          : [...tempSettings.selectedMealTypes, mealType]
+                        selectedMealTypes:
+                          tempSettings.selectedMealTypes.includes(mealType)
+                            ? tempSettings.selectedMealTypes.filter(
+                                (type) => type !== mealType
+                              )
+                            : [...tempSettings.selectedMealTypes, mealType]
                       });
                     }}
                     className={`px-3 py-1 rounded-full text-sm font-medium transition-colors capitalize ${
@@ -320,8 +366,15 @@ export function EnhancedWeeklyMealPlan({
             <div className="pt-4 border-t border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="text-xs text-gray-500">
-                  Press <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">Esc</kbd> to cancel or{' '}
-                  <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">⌘S</kbd> to save
+                  Press{' '}
+                  <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">
+                    Esc
+                  </kbd>{' '}
+                  to cancel or{' '}
+                  <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">
+                    ⌘S
+                  </kbd>{' '}
+                  to save
                 </div>
                 <div className="flex items-center space-x-3">
                   <button
@@ -353,15 +406,22 @@ export function EnhancedWeeklyMealPlan({
       {/* Summary Panel */}
       {showSummary && (
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Week Summary</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Week Summary
+          </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{weekMealPlans.length}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {weekMealPlans.length}
+              </div>
               <div className="text-sm text-gray-600">Total Meals</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {weekMealPlans.filter(plan => plan.status === 'completed').length}
+                {
+                  weekMealPlans.filter((plan) => plan.status === 'completed')
+                    .length
+                }
               </div>
               <div className="text-sm text-gray-600">Completed</div>
             </div>
@@ -370,7 +430,8 @@ export function EnhancedWeeklyMealPlan({
                 {weekMealPlans.reduce((total, plan) => {
                   const recipe = getRecipeForMealPlan(plan);
                   return total + (recipe?.total_time_minutes || 0);
-                }, 0)}m
+                }, 0)}
+                m
               </div>
               <div className="text-sm text-gray-600">Total Time</div>
             </div>
@@ -389,7 +450,10 @@ export function EnhancedWeeklyMealPlan({
 
       {/* Weekly Grid */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="grid gap-0 border-b border-gray-200" style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}>
+        <div
+          className="grid gap-0 border-b border-gray-200"
+          style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}
+        >
           {/* Day Headers */}
           {weekDays.map((day, dayIndex) => (
             <div
@@ -400,11 +464,13 @@ export function EnhancedWeeklyMealPlan({
                 <div className="text-sm font-medium text-gray-900">
                   {format(day, 'EEE')}
                 </div>
-                <div className={`text-lg font-bold mt-1 ${
-                  isSameDay(day, new Date()) 
-                    ? 'text-blue-600' 
-                    : 'text-gray-700'
-                }`}>
+                <div
+                  className={`text-lg font-bold mt-1 ${
+                    isSameDay(day, new Date())
+                      ? 'text-blue-600'
+                      : 'text-gray-700'
+                  }`}
+                >
                   {format(day, 'd')}
                 </div>
               </div>
@@ -414,7 +480,10 @@ export function EnhancedWeeklyMealPlan({
 
         {/* Meal Rows */}
         {visibleMealTypes.map((mealType) => (
-          <div key={mealType} className="border-b border-gray-200 last:border-b-0">
+          <div
+            key={mealType}
+            className="border-b border-gray-200 last:border-b-0"
+          >
             {/* Meal Type Header */}
             <div className="p-3 bg-gray-50 border-b border-gray-100">
               <h3 className="text-sm font-medium text-gray-700 capitalize">
@@ -423,10 +492,14 @@ export function EnhancedWeeklyMealPlan({
             </div>
 
             {/* Meal Grid */}
-            <div className="grid gap-0 min-h-[120px]" style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}>
+            <div
+              className="grid gap-0 min-h-[120px]"
+              style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}
+            >
               {weekDays.map((day) => {
                 const dayKey = format(day, 'yyyy-MM-dd');
-                const mealsForDay = organizedMealPlans[dayKey]?.[mealType] || [];
+                const mealsForDay =
+                  organizedMealPlans[dayKey]?.[mealType] || [];
 
                 return (
                   <div
@@ -465,13 +538,19 @@ export function EnhancedWeeklyMealPlan({
                                     </span>
                                   </div>
                                   <div className="mt-2">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                      mealPlan.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                      mealPlan.status === 'preparing' ? 'bg-yellow-100 text-yellow-700' :
-                                      mealPlan.status === 'planned' ? 'bg-blue-100 text-blue-700' :
-                                      'bg-gray-100 text-gray-700'
-                                    }`}>
-                                      {mealPlan.status.charAt(0).toUpperCase() + mealPlan.status.slice(1)}
+                                    <span
+                                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                        mealPlan.status === 'completed'
+                                          ? 'bg-green-100 text-green-700'
+                                          : mealPlan.status === 'preparing'
+                                            ? 'bg-yellow-100 text-yellow-700'
+                                            : mealPlan.status === 'planned'
+                                              ? 'bg-blue-100 text-blue-700'
+                                              : 'bg-gray-100 text-gray-700'
+                                      }`}
+                                    >
+                                      {mealPlan.status.charAt(0).toUpperCase() +
+                                        mealPlan.status.slice(1)}
                                     </span>
                                   </div>
                                 </div>

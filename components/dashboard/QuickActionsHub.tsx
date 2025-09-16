@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 import { Calendar, ShoppingCart, Wrench, ChefHat, Zap } from 'lucide-react';
 import Link from 'next/link';
@@ -79,15 +78,9 @@ const QuickActionButton = memo(({ action }: { action: QuickAction }) => (
     className={`${action.color} rounded-xl p-4 transition-all duration-200 active:scale-95 touch-manipulation`}
   >
     <div className="flex flex-col items-center text-center">
-      <div className="mb-2">
-        {action.icon}
-      </div>
-      <div className="text-sm font-semibold">
-        {action.title}
-      </div>
-      <div className="text-xs opacity-90 mt-1">
-        {action.description}
-      </div>
+      <div className="mb-2">{action.icon}</div>
+      <div className="text-sm font-semibold">{action.title}</div>
+      <div className="text-xs opacity-90 mt-1">{action.description}</div>
     </div>
   </Link>
 ));
@@ -98,22 +91,25 @@ function QuickActionsHubComponent() {
   const quickActions = useMemo(() => STATIC_QUICK_ACTIONS, []);
 
   // 🚀 PERFORMANCE: Memoize static suggestions array
-  const suggestions = useMemo(() => [
-    {
-      id: 'dinner',
-      text: 'Planning dinner? Check new recipes →',
-      bgColor: 'bg-yellow-50',
-      borderColor: 'border-yellow-200',
-      textColor: 'text-yellow-800'
-    },
-    {
-      id: 'weekend',
-      text: 'Both parents free Saturday 2-6PM for projects',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      textColor: 'text-blue-800'
-    }
-  ], []);
+  const suggestions = useMemo(
+    () => [
+      {
+        id: 'dinner',
+        text: 'Planning dinner? Check new recipes →',
+        bgColor: 'bg-yellow-50',
+        borderColor: 'border-yellow-200',
+        textColor: 'text-yellow-800'
+      },
+      {
+        id: 'weekend',
+        text: 'Both parents free Saturday 2-6PM for projects',
+        bgColor: 'bg-blue-50',
+        borderColor: 'border-blue-200',
+        textColor: 'text-blue-800'
+      }
+    ],
+    []
+  );
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 h-fit">
@@ -131,7 +127,9 @@ function QuickActionsHubComponent() {
 
       {/* Contextual Suggestions */}
       <div className="mt-4 pt-3 border-t border-gray-100">
-        <h4 className="text-xs font-medium text-gray-500 mb-2">💡 Suggestions</h4>
+        <h4 className="text-xs font-medium text-gray-500 mb-2">
+          💡 Suggestions
+        </h4>
         <div className="space-y-2">
           {suggestions.map((suggestion) => (
             <div

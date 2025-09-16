@@ -7,7 +7,8 @@ import EntertainmentPreferencesSettings from '@/components/entertainment/Enterta
 
 export const metadata = {
   title: 'Entertainment Preferences | Dayboard',
-  description: 'Customize your entertainment recommendations and discovery experience',
+  description:
+    'Customize your entertainment recommendations and discovery experience'
 };
 
 export default function PreferencesPage() {

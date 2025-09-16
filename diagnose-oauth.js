@@ -2,7 +2,7 @@
 
 /**
  * 🔍 OAUTH DIAGNOSIS SCRIPT
- * 
+ *
  * This script helps diagnose OAuth configuration issues
  */
 
@@ -14,11 +14,26 @@ console.log('================================\n');
 // Check environment variables
 console.log('📋 Environment Variables:');
 console.log('- NODE_ENV:', process.env.NODE_ENV || 'undefined');
-console.log('- NEXT_PUBLIC_SUPABASE_URL:', process.env.NEXT_PUBLIC_SUPABASE_URL || 'undefined');
-console.log('- NEXT_PUBLIC_SUPABASE_ANON_KEY:', process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '[SET]' : 'undefined');
-console.log('- NEXT_PUBLIC_GOOGLE_CLIENT_ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'undefined');
-console.log('- GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? '[SET]' : 'undefined');
-console.log('- NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL || 'undefined');
+console.log(
+  '- NEXT_PUBLIC_SUPABASE_URL:',
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'undefined'
+);
+console.log(
+  '- NEXT_PUBLIC_SUPABASE_ANON_KEY:',
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? '[SET]' : 'undefined'
+);
+console.log(
+  '- NEXT_PUBLIC_GOOGLE_CLIENT_ID:',
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'undefined'
+);
+console.log(
+  '- GOOGLE_CLIENT_SECRET:',
+  process.env.GOOGLE_CLIENT_SECRET ? '[SET]' : 'undefined'
+);
+console.log(
+  '- NEXT_PUBLIC_SITE_URL:',
+  process.env.NEXT_PUBLIC_SITE_URL || 'undefined'
+);
 
 console.log('\n🔗 Expected OAuth URLs:');
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -31,7 +46,10 @@ if (supabaseUrl) {
 
 console.log('\n🎯 Google Cloud Console Configuration Required:');
 console.log('1. Go to: https://console.cloud.google.com/apis/credentials');
-console.log('2. Find OAuth 2.0 Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '[NOT SET]');
+console.log(
+  '2. Find OAuth 2.0 Client ID:',
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '[NOT SET]'
+);
 console.log('3. Add these Authorized redirect URIs:');
 if (supabaseUrl) {
   console.log(`   - ${supabaseUrl}/auth/v1/callback`);
@@ -39,22 +57,33 @@ if (supabaseUrl) {
 console.log('   - http://localhost:3000/auth/callback');
 
 console.log('\n🎯 Supabase Dashboard Configuration Required:');
-console.log('1. Go to: https://supabase.com/dashboard/project/[your-project]/auth/providers');
+console.log(
+  '1. Go to: https://supabase.com/dashboard/project/[your-project]/auth/providers'
+);
 console.log('2. Enable Google provider');
-console.log('3. Add Client ID:', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '[NOT SET]');
-console.log('4. Add Client Secret:', process.env.GOOGLE_CLIENT_SECRET ? '[SET]' : '[NOT SET]');
+console.log(
+  '3. Add Client ID:',
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '[NOT SET]'
+);
+console.log(
+  '4. Add Client Secret:',
+  process.env.GOOGLE_CLIENT_SECRET ? '[SET]' : '[NOT SET]'
+);
 
 // Test Supabase connection
 console.log('\n🧪 Testing Supabase Connection...');
 try {
   const { createClient } = require('@supabase/supabase-js');
-  
+
   if (!supabaseUrl || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     console.log('❌ Missing Supabase credentials');
   } else {
-    const supabase = createClient(supabaseUrl, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+    const supabase = createClient(
+      supabaseUrl,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
     console.log('✅ Supabase client created successfully');
-    
+
     // Test the auth endpoint
     console.log('🔗 Testing auth endpoint availability...');
     // Note: We can't actually test the OAuth flow from Node.js, but we can verify the client setup
@@ -64,10 +93,14 @@ try {
 }
 
 console.log('\n💡 Common Issues & Solutions:');
-console.log('1. "invalid_client" = Redirect URI mismatch in Google Cloud Console');
+console.log(
+  '1. "invalid_client" = Redirect URI mismatch in Google Cloud Console'
+);
 console.log('2. "unauthorized_client" = Client ID/Secret mismatch in Supabase');
 console.log('3. "access_denied" = User denied permission or app not verified');
-console.log('4. "redirect_uri_mismatch" = URI not added to Google Cloud Console');
+console.log(
+  '4. "redirect_uri_mismatch" = URI not added to Google Cloud Console'
+);
 
 console.log('\n🚀 Next Steps:');
 console.log('1. Verify Google Cloud Console redirect URIs');

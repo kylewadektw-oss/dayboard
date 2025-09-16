@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -27,7 +27,11 @@ interface WeekPlanningSettingsProps {
 export interface PlanningSettings {
   includedDays: string[];
   includedMealTypes: string[];
-  autoFillSource: 'personal_favorites' | 'community_favorites' | 'highly_rated' | 'dietary_filtered';
+  autoFillSource:
+    | 'personal_favorites'
+    | 'community_favorites'
+    | 'highly_rated'
+    | 'dietary_filtered';
   dietaryFilters: string[];
 }
 
@@ -38,53 +42,60 @@ const DAYS_OF_WEEK = [
   { id: 'thursday', label: 'Thursday', short: 'Thu' },
   { id: 'friday', label: 'Friday', short: 'Fri' },
   { id: 'saturday', label: 'Saturday', short: 'Sat' },
-  { id: 'sunday', label: 'Sunday', short: 'Sun' },
+  { id: 'sunday', label: 'Sunday', short: 'Sun' }
 ];
 
 const MEAL_TYPES = [
   { id: 'breakfast', label: 'Breakfast', emoji: '🌅', color: 'orange' },
   { id: 'lunch', label: 'Lunch', emoji: '☀️', color: 'yellow' },
   { id: 'dinner', label: 'Dinner', emoji: '🌙', color: 'purple' },
-  { id: 'dessert', label: 'Dessert', emoji: '🍰', color: 'pink' },
+  { id: 'dessert', label: 'Dessert', emoji: '🍰', color: 'pink' }
 ];
 
 const AUTO_FILL_OPTIONS = [
-  { 
-    id: 'personal_favorites', 
-    label: 'Personal Favorites', 
+  {
+    id: 'personal_favorites',
+    label: 'Personal Favorites',
     description: 'Your highest-rated meals',
     icon: '❤️'
   },
-  { 
-    id: 'community_favorites', 
-    label: 'Community Favorites', 
+  {
+    id: 'community_favorites',
+    label: 'Community Favorites',
     description: 'Popular meals in your area',
     icon: '👥'
   },
-  { 
-    id: 'highly_rated', 
-    label: 'Highly Rated', 
+  {
+    id: 'highly_rated',
+    label: 'Highly Rated',
     description: '4+ star meals from recipe database',
     icon: '⭐'
   },
-  { 
-    id: 'dietary_filtered', 
-    label: 'Dietary Filtered', 
+  {
+    id: 'dietary_filtered',
+    label: 'Dietary Filtered',
     description: 'Based on your dietary preferences',
     icon: '🥗'
-  },
+  }
 ];
 
 const DIETARY_FILTERS = [
-  'Vegetarian', 'Vegan', 'Keto', 'Paleo', 'Gluten-Free', 
-  'Family-Friendly', 'Quick & Easy', 'Low-Carb', 'High-Protein'
+  'Vegetarian',
+  'Vegan',
+  'Keto',
+  'Paleo',
+  'Gluten-Free',
+  'Family-Friendly',
+  'Quick & Easy',
+  'Low-Carb',
+  'High-Protein'
 ];
 
-export function WeekPlanningSettings({ 
-  isOpen, 
-  onClose, 
-  onSettingsChange, 
-  currentSettings 
+export function WeekPlanningSettings({
+  isOpen,
+  onClose,
+  onSettingsChange,
+  currentSettings
 }: WeekPlanningSettingsProps) {
   const [settings, setSettings] = useState<PlanningSettings>(currentSettings);
 
@@ -98,21 +109,21 @@ export function WeekPlanningSettings({
 
   const toggleDay = (dayId: string) => {
     const newDays = settings.includedDays.includes(dayId)
-      ? settings.includedDays.filter(d => d !== dayId)
+      ? settings.includedDays.filter((d) => d !== dayId)
       : [...settings.includedDays, dayId];
     updateSettings({ includedDays: newDays });
   };
 
   const toggleMealType = (mealType: string) => {
     const newMealTypes = settings.includedMealTypes.includes(mealType)
-      ? settings.includedMealTypes.filter(m => m !== mealType)
+      ? settings.includedMealTypes.filter((m) => m !== mealType)
       : [...settings.includedMealTypes, mealType];
     updateSettings({ includedMealTypes: newMealTypes });
   };
 
   const toggleDietaryFilter = (filter: string) => {
     const newFilters = settings.dietaryFilters.includes(filter)
-      ? settings.dietaryFilters.filter(f => f !== filter)
+      ? settings.dietaryFilters.filter((f) => f !== filter)
       : [...settings.dietaryFilters, filter];
     updateSettings({ dietaryFilters: newFilters });
   };
@@ -121,7 +132,15 @@ export function WeekPlanningSettings({
     const presets = {
       weekdays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
       weekends: ['saturday', 'sunday'],
-      full_week: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+      full_week: [
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+        'sunday'
+      ]
     };
     updateSettings({ includedDays: presets[preset] });
   };
@@ -133,7 +152,9 @@ export function WeekPlanningSettings({
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Settings className="h-6 w-6 text-orange-600 mr-3" />
-              <h2 className="text-xl font-bold text-gray-900">Week Planning Settings</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                Week Planning Settings
+              </h2>
             </div>
             <button
               onClick={onClose}
@@ -149,9 +170,11 @@ export function WeekPlanningSettings({
           <div>
             <div className="flex items-center mb-4">
               <Calendar className="h-5 w-5 text-gray-600 mr-2" />
-              <h3 className="text-lg font-semibold text-gray-900">Days to Include</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Days to Include
+              </h3>
             </div>
-            
+
             {/* Quick Presets */}
             <div className="flex space-x-2 mb-4">
               <button
@@ -195,7 +218,9 @@ export function WeekPlanningSettings({
           <div>
             <div className="flex items-center mb-4">
               <Utensils className="h-5 w-5 text-gray-600 mr-2" />
-              <h3 className="text-lg font-semibold text-gray-900">Meal Types</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Meal Types
+              </h3>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {MEAL_TYPES.map((mealType) => (
@@ -219,13 +244,23 @@ export function WeekPlanningSettings({
           <div>
             <div className="flex items-center mb-4">
               <Wand2 className="h-5 w-5 text-gray-600 mr-2" />
-              <h3 className="text-lg font-semibold text-gray-900">Auto-Fill Source</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                Auto-Fill Source
+              </h3>
             </div>
             <div className="space-y-3">
               {AUTO_FILL_OPTIONS.map((option) => (
                 <button
                   key={option.id}
-                  onClick={() => updateSettings({ autoFillSource: option.id as 'personal_favorites' | 'community_favorites' | 'highly_rated' | 'dietary_filtered' })}
+                  onClick={() =>
+                    updateSettings({
+                      autoFillSource: option.id as
+                        | 'personal_favorites'
+                        | 'community_favorites'
+                        | 'highly_rated'
+                        | 'dietary_filtered'
+                    })
+                  }
                   className={`w-full p-4 rounded-lg text-left transition-all border-2 ${
                     settings.autoFillSource === option.id
                       ? 'bg-blue-100 border-blue-300 text-blue-800'
@@ -236,7 +271,9 @@ export function WeekPlanningSettings({
                     <span className="text-2xl mr-3">{option.icon}</span>
                     <div>
                       <div className="font-medium">{option.label}</div>
-                      <div className="text-sm opacity-75">{option.description}</div>
+                      <div className="text-sm opacity-75">
+                        {option.description}
+                      </div>
                     </div>
                   </div>
                 </button>
@@ -247,7 +284,9 @@ export function WeekPlanningSettings({
           {/* Dietary Filters */}
           {settings.autoFillSource === 'dietary_filtered' && (
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Dietary Preferences</h4>
+              <h4 className="font-medium text-gray-900 mb-3">
+                Dietary Preferences
+              </h4>
               <div className="flex flex-wrap gap-2">
                 {DIETARY_FILTERS.map((filter) => (
                   <button

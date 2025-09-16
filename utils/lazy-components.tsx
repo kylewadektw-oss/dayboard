@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -20,8 +20,8 @@ import { createLazyWrapper } from '@/utils/lazy-loading';
 // 🚀 PERFORMANCE: Lazy load calendar components
 export const LazyHouseholdCalendar = createLazyWrapper(
   () => import('@/components/calendar/HouseholdCalendar'),
-  { 
-    fallbackType: 'page', 
+  {
+    fallbackType: 'page',
     logComponentName: 'HouseholdCalendar',
     retryAttempts: 2
   }
@@ -29,8 +29,8 @@ export const LazyHouseholdCalendar = createLazyWrapper(
 
 export const LazyQuickAddEvent = createLazyWrapper(
   () => import('@/components/calendar/QuickAddEvent'),
-  { 
-    fallbackType: 'widget', 
+  {
+    fallbackType: 'widget',
     logComponentName: 'QuickAddEvent',
     retryAttempts: 2
   }
@@ -39,8 +39,8 @@ export const LazyQuickAddEvent = createLazyWrapper(
 // 🚀 PERFORMANCE: Lazy load major app sections
 export const LazyMealsPage = createLazyWrapper(
   () => import('@/app/(app)/meals/page'),
-  { 
-    fallbackType: 'page', 
+  {
+    fallbackType: 'page',
     logComponentName: 'MealsPage',
     retryAttempts: 2
   }
@@ -48,8 +48,8 @@ export const LazyMealsPage = createLazyWrapper(
 
 export const LazyListsPage = createLazyWrapper(
   () => import('@/app/(app)/lists/page'),
-  { 
-    fallbackType: 'page', 
+  {
+    fallbackType: 'page',
     logComponentName: 'ListsPage',
     retryAttempts: 2
   }
@@ -57,8 +57,8 @@ export const LazyListsPage = createLazyWrapper(
 
 export const LazyFinancialPage = createLazyWrapper(
   () => import('@/app/(app)/financial/page'),
-  { 
-    fallbackType: 'page', 
+  {
+    fallbackType: 'page',
     logComponentName: 'FinancialPage',
     retryAttempts: 2
   }
@@ -66,8 +66,8 @@ export const LazyFinancialPage = createLazyWrapper(
 
 export const LazyWorkPage = createLazyWrapper(
   () => import('@/app/(app)/work/page'),
-  { 
-    fallbackType: 'page', 
+  {
+    fallbackType: 'page',
     logComponentName: 'WorkPage',
     retryAttempts: 2
   }
@@ -75,8 +75,8 @@ export const LazyWorkPage = createLazyWrapper(
 
 export const LazyEntertainmentPage = createLazyWrapper(
   () => import('@/app/(app)/entertainment/page'),
-  { 
-    fallbackType: 'page', 
+  {
+    fallbackType: 'page',
     logComponentName: 'EntertainmentPage',
     retryAttempts: 2
   }
@@ -84,8 +84,8 @@ export const LazyEntertainmentPage = createLazyWrapper(
 
 export const LazySettingsPage = createLazyWrapper(
   () => import('@/app/(app)/settings/page'),
-  { 
-    fallbackType: 'page', 
+  {
+    fallbackType: 'page',
     logComponentName: 'SettingsPage',
     retryAttempts: 2
   }
@@ -94,8 +94,8 @@ export const LazySettingsPage = createLazyWrapper(
 // 🚀 PERFORMANCE: Lazy load dashboard widgets
 export const LazyAnalyticsDashboard = createLazyWrapper(
   () => import('@/components/analytics/EnhancedAnalyticsDashboard'),
-  { 
-    fallbackType: 'widget', 
+  {
+    fallbackType: 'widget',
     logComponentName: 'AnalyticsDashboard',
     retryAttempts: 2
   }
@@ -103,8 +103,8 @@ export const LazyAnalyticsDashboard = createLazyWrapper(
 
 export const LazyBudgetDashboard = createLazyWrapper(
   () => import('@/components/budget/BudgetDashboard'),
-  { 
-    fallbackType: 'widget', 
+  {
+    fallbackType: 'widget',
     logComponentName: 'BudgetDashboard',
     retryAttempts: 2
   }

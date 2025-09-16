@@ -1,31 +1,31 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 'use client';
 
 import { useState } from 'react';
-import { 
-  Calendar, 
-  Heart, 
-  Clock, 
-  Plus, 
-  MoreVertical, 
-  RefreshCw, 
-  Copy, 
-  Trash2, 
+import {
+  Calendar,
+  Heart,
+  Clock,
+  Plus,
+  MoreVertical,
+  RefreshCw,
+  Copy,
+  Trash2,
   Download,
   Settings,
   Sparkles
@@ -42,7 +42,7 @@ const MOCK_KPI_DATA = {
   thisWeek: {
     plannedMeals: 12,
     totalCookTime: 240, // minutes
-    estimatedCost: 87.50,
+    estimatedCost: 87.5,
     completedMeals: 8
   },
   favorites: {
@@ -59,13 +59,13 @@ const MOCK_KPI_DATA = {
   }
 };
 
-export function MealPlanningHeader({ 
-  onTabChange, 
-  enhancedMode = false, 
-  onEnhancedModeToggle 
+export function MealPlanningHeader({
+  onTabChange,
+  enhancedMode = false,
+  onEnhancedModeToggle
 }: MealPlanningHeaderProps) {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  
+
   const handleKpiClick = (type: 'week' | 'favorites' | 'quick') => {
     switch (type) {
       case 'week':
@@ -85,7 +85,7 @@ export function MealPlanningHeader({
 
   const handleDropdownAction = (action: string) => {
     setActiveDropdown(null);
-    
+
     switch (action) {
       case 'auto-fill':
         // TODO: Open auto-fill strategy selector
@@ -122,15 +122,17 @@ export function MealPlanningHeader({
           <h1 className="text-3xl font-bold text-gray-900 flex items-center">
             🍽️ Family Meals
           </h1>
-          <p className="text-gray-600 mt-1">Plan, organize, and enjoy delicious meals together</p>
+          <p className="text-gray-600 mt-1">
+            Plan, organize, and enjoy delicious meals together
+          </p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <button className="bg-gradient-to-r from-emerald-600 to-green-600 text-white px-4 py-2 rounded-lg font-medium flex items-center hover:from-emerald-700 hover:to-green-700 transition-all shadow-sm">
             <Plus className="h-4 w-4 mr-2" />
             Add Recipe
           </button>
-          
+
           <div className="flex items-center gap-2">
             <label className="text-sm text-gray-600">Enhanced Mode</label>
             <button
@@ -139,13 +141,13 @@ export function MealPlanningHeader({
                 enhancedMode ? 'bg-purple-600' : 'bg-gray-300'
               }`}
             >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                enhancedMode ? 'translate-x-6' : 'translate-x-1'
-              }`} />
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  enhancedMode ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
             </button>
-            {enhancedMode && (
-              <Sparkles className="h-4 w-4 text-purple-600" />
-            )}
+            {enhancedMode && <Sparkles className="h-4 w-4 text-purple-600" />}
           </div>
         </div>
       </div>
@@ -154,7 +156,10 @@ export function MealPlanningHeader({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* This Week Card */}
         <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 hover:shadow-md transition-all cursor-pointer relative group">
-          <div onClick={() => handleKpiClick('week')} className="flex items-center justify-between">
+          <div
+            onClick={() => handleKpiClick('week')}
+            className="flex items-center justify-between"
+          >
             <div className="flex items-center space-x-3">
               <div className="p-3 bg-amber-100 rounded-lg">
                 <Calendar className="h-6 w-6 text-amber-600" />
@@ -171,7 +176,7 @@ export function MealPlanningHeader({
               <div className="text-sm text-amber-700">meals planned</div>
             </div>
           </div>
-          
+
           <div className="mt-4 flex items-center justify-between text-sm text-amber-700">
             <span>{MOCK_KPI_DATA.thisWeek.totalCookTime}min cook time</span>
             <span>${MOCK_KPI_DATA.thisWeek.estimatedCost}</span>
@@ -188,7 +193,7 @@ export function MealPlanningHeader({
             >
               <MoreVertical className="h-4 w-4" />
             </button>
-            
+
             {activeDropdown === 'week' && (
               <div className="absolute right-0 top-8 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
                 <button
@@ -213,7 +218,9 @@ export function MealPlanningHeader({
                   Clear Week
                 </button>
                 <hr className="my-2" />
-                <div className="px-4 py-1 text-xs text-gray-500 font-medium">Export Grocery List</div>
+                <div className="px-4 py-1 text-xs text-gray-500 font-medium">
+                  Export Grocery List
+                </div>
                 <button
                   onClick={() => handleDropdownAction('export-csv')}
                   className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center text-sm"
@@ -242,14 +249,19 @@ export function MealPlanningHeader({
 
         {/* Favorites Card */}
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 hover:shadow-md transition-all cursor-pointer relative group">
-          <div onClick={() => handleKpiClick('favorites')} className="flex items-center justify-between">
+          <div
+            onClick={() => handleKpiClick('favorites')}
+            className="flex items-center justify-between"
+          >
             <div className="flex items-center space-x-3">
               <div className="p-3 bg-green-100 rounded-lg">
                 <Heart className="h-6 w-6 text-green-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-green-900">Favorites</h3>
-                <p className="text-sm text-green-700">★ {MOCK_KPI_DATA.favorites.avgRating} avg rating</p>
+                <p className="text-sm text-green-700">
+                  ★ {MOCK_KPI_DATA.favorites.avgRating} avg rating
+                </p>
               </div>
             </div>
             <div className="text-right">
@@ -259,9 +271,11 @@ export function MealPlanningHeader({
               <div className="text-sm text-green-700">saved recipes</div>
             </div>
           </div>
-          
+
           <div className="mt-4 text-sm text-green-700">
-            <span>+{MOCK_KPI_DATA.favorites.recentAdditions} added this week</span>
+            <span>
+              +{MOCK_KPI_DATA.favorites.recentAdditions} added this week
+            </span>
           </div>
 
           {/* Kebab Menu */}
@@ -269,13 +283,15 @@ export function MealPlanningHeader({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setActiveDropdown(activeDropdown === 'favorites' ? null : 'favorites');
+                setActiveDropdown(
+                  activeDropdown === 'favorites' ? null : 'favorites'
+                );
               }}
               className="p-1 text-green-600 hover:bg-green-100 rounded opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <MoreVertical className="h-4 w-4" />
             </button>
-            
+
             {activeDropdown === 'favorites' && (
               <div className="absolute right-0 top-8 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
                 <button className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center text-sm">
@@ -297,7 +313,10 @@ export function MealPlanningHeader({
 
         {/* Quick Meals Card */}
         <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl p-6 hover:shadow-md transition-all cursor-pointer relative group">
-          <div onClick={() => handleKpiClick('quick')} className="flex items-center justify-between">
+          <div
+            onClick={() => handleKpiClick('quick')}
+            className="flex items-center justify-between"
+          >
             <div className="flex items-center space-x-3">
               <div className="p-3 bg-indigo-100 rounded-lg">
                 <Clock className="h-6 w-6 text-indigo-600" />
@@ -314,7 +333,7 @@ export function MealPlanningHeader({
               <div className="text-sm text-indigo-700">recipes ready</div>
             </div>
           </div>
-          
+
           <div className="mt-4 flex items-center justify-between text-sm text-indigo-700">
             <span>{MOCK_KPI_DATA.quickMeals.avgPrepTime}min average</span>
             <span>{MOCK_KPI_DATA.quickMeals.usageFrequency}x/week</span>
@@ -331,7 +350,7 @@ export function MealPlanningHeader({
             >
               <MoreVertical className="h-4 w-4" />
             </button>
-            
+
             {activeDropdown === 'quick' && (
               <div className="absolute right-0 top-8 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
                 <button className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center text-sm">
@@ -361,8 +380,13 @@ export function MealPlanningHeader({
                 <Sparkles className="h-5 w-5 text-purple-600" />
               </div>
               <div>
-                <h4 className="font-semibold text-purple-900">Enhanced Mode Active</h4>
-                <p className="text-sm text-purple-700">Smart suggestions, calendar conflicts, and nutrition insights enabled</p>
+                <h4 className="font-semibold text-purple-900">
+                  Enhanced Mode Active
+                </h4>
+                <p className="text-sm text-purple-700">
+                  Smart suggestions, calendar conflicts, and nutrition insights
+                  enabled
+                </p>
               </div>
             </div>
             <div className="text-sm text-purple-600 space-y-1">

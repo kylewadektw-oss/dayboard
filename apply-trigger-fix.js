@@ -4,12 +4,13 @@ const { createClient } = require('@supabase/supabase-js');
 // Use service role key for admin operations
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 async function updateTriggerFunction() {
   console.log('🔧 Updating profile completion trigger function...');
-  
+
   const functionSQL = `
     CREATE OR REPLACE FUNCTION public.set_profile_completion()
     RETURNS trigger AS $$
@@ -78,7 +79,7 @@ async function updateTriggerFunction() {
 
 async function updateTrigger() {
   console.log('🔧 Updating profile completion trigger...');
-  
+
   const triggerSQL = `
     DROP TRIGGER IF EXISTS trg_set_profile_completion ON profiles;
     CREATE TRIGGER trg_set_profile_completion
@@ -104,40 +105,45 @@ async function updateTrigger() {
 
 async function testTrigger() {
   console.log('🧪 Testing the updated trigger...');
-  
+
   try {
     // Get first profile
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, profile_completion_percentage, name')
       .limit(1);
-    
+
     if (!profiles || profiles.length === 0) {
       console.log('❌ No profiles found to test');
       return;
     }
-    
+
     const profile = profiles[0];
-    console.log(`📊 Before trigger test - Profile ${profile.id}: ${profile.profile_completion_percentage}%`);
-    
+    console.log(
+      `📊 Before trigger test - Profile ${profile.id}: ${profile.profile_completion_percentage}%`
+    );
+
     // Trigger an update that should recalculate the percentage
     const { data: updatedProfile, error } = await supabase
       .from('profiles')
-      .update({ 
+      .update({
         name: profile.name // Update with same value to trigger the function
       })
       .eq('id', profile.id)
       .select('profile_completion_percentage')
       .single();
-    
+
     if (error) {
       console.error('❌ Error in trigger test:', error);
       return;
     }
-    
-    console.log(`📊 After trigger test - Profile ${profile.id}: ${updatedProfile.profile_completion_percentage}%`);
-    console.log('🎉 Trigger is working! Profile completion will now update automatically.');
-    
+
+    console.log(
+      `📊 After trigger test - Profile ${profile.id}: ${updatedProfile.profile_completion_percentage}%`
+    );
+    console.log(
+      '🎉 Trigger is working! Profile completion will now update automatically.'
+    );
   } catch (error) {
     console.error('💥 Error testing trigger:', error);
   }
@@ -145,23 +151,25 @@ async function testTrigger() {
 
 async function main() {
   console.log('🚀 Applying profile completion fixes...\n');
-  
+
   const functionSuccess = await updateTriggerFunction();
   if (!functionSuccess) {
     console.log('❌ Failed to update function, stopping');
     return;
   }
-  
+
   const triggerSuccess = await updateTrigger();
   if (!triggerSuccess) {
     console.log('❌ Failed to update trigger, stopping');
     return;
   }
-  
+
   await testTrigger();
-  
+
   console.log('\n✅ All fixes applied successfully!');
-  console.log('🎯 Profile completion percentage will now update automatically when users edit their profiles.');
+  console.log(
+    '🎯 Profile completion percentage will now update automatically when users edit their profiles.'
+  );
 }
 
 main();

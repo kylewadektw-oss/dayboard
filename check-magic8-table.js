@@ -8,14 +8,14 @@ const supabase = createClient(
 
 async function checkMagic8Table() {
   console.log('🔍 Checking production database schema...');
-  
+
   try {
     // Check profiles table structure
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .limit(1);
-    
+
     if (profileError) {
       console.log('❌ Cannot access profiles table:', profileError.message);
     } else {
@@ -24,13 +24,13 @@ async function checkMagic8Table() {
         console.log('� Profile columns:', Object.keys(profileData[0]));
       }
     }
-    
+
     // Check households table
     const { data: householdData, error: householdError } = await supabase
       .from('households')
       .select('*')
       .limit(1);
-    
+
     if (householdError) {
       console.log('❌ Cannot access households table:', householdError.message);
     } else {

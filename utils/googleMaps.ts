@@ -19,20 +19,37 @@ interface GeocodingResult {
 }
 
 interface GoogleMapsGeocoder {
-  new(): GoogleMapsGeocoder;
-  geocode(request: {address: string}, callback: (results: GeocodingResult[] | null, status: string) => void): void;
+  new (): GoogleMapsGeocoder;
+  geocode(
+    request: { address: string },
+    callback: (results: GeocodingResult[] | null, status: string) => void
+  ): void;
 }
 
 interface GoogleMapsMap {
-  new(element: HTMLElement, options: unknown): GoogleMapsMap;
+  new (element: HTMLElement, options: unknown): GoogleMapsMap;
 }
 
 interface GoogleMapsMarker {
-  new(options: {position: unknown; map: GoogleMapsMap; title?: string; icon?: unknown}): GoogleMapsMarker;
+  new (options: {
+    position: unknown;
+    map: GoogleMapsMap;
+    title?: string;
+    icon?: unknown;
+  }): GoogleMapsMarker;
 }
 
 interface GoogleMapsCircle {
-  new(options: {center: unknown; radius: number; map: GoogleMapsMap; fillColor?: string; fillOpacity?: number; strokeColor?: string; strokeOpacity?: number; strokeWeight?: number}): GoogleMapsCircle;
+  new (options: {
+    center: unknown;
+    radius: number;
+    map: GoogleMapsMap;
+    fillColor?: string;
+    fillOpacity?: number;
+    strokeColor?: string;
+    strokeOpacity?: number;
+    strokeWeight?: number;
+  }): GoogleMapsCircle;
 }
 
 interface GoogleMapsSymbolPath {
@@ -40,12 +57,22 @@ interface GoogleMapsSymbolPath {
 }
 
 interface GoogleMapsPinElement {
-  new(options: {background?: string; borderColor?: string; glyphColor?: string; glyph?: string}): GoogleMapsPinElement;
+  new (options: {
+    background?: string;
+    borderColor?: string;
+    glyphColor?: string;
+    glyph?: string;
+  }): GoogleMapsPinElement;
   element: HTMLElement;
 }
 
 interface GoogleMapsAdvancedMarkerElement {
-  new(options: {position: unknown; map: GoogleMapsMap; content?: HTMLElement; title?: string}): GoogleMapsAdvancedMarkerElement;
+  new (options: {
+    position: unknown;
+    map: GoogleMapsMap;
+    content?: HTMLElement;
+    title?: string;
+  }): GoogleMapsAdvancedMarkerElement;
 }
 
 interface GoogleMapsPlace {
@@ -64,10 +91,17 @@ interface GoogleMapsPlace {
 }
 
 interface GoogleMapsAutocomplete {
-  new(input: HTMLInputElement, options?: {types?: string[]; componentRestrictions?: {country?: string}; fields?: string[]}): GoogleMapsAutocomplete;
+  new (
+    input: HTMLInputElement,
+    options?: {
+      types?: string[];
+      componentRestrictions?: { country?: string };
+      fields?: string[];
+    }
+  ): GoogleMapsAutocomplete;
   addListener(event: string, callback: () => void): void;
   getPlace(): GoogleMapsPlace;
-  setOptions(options: {bounds?: unknown; strictBounds?: boolean}): void;
+  setOptions(options: { bounds?: unknown; strictBounds?: boolean }): void;
 }
 
 declare global {
@@ -116,16 +150,16 @@ class GoogleMapsLoader {
    * Add required libraries for Google Maps
    */
   addLibraries(libraries: string[]): void {
-    libraries.forEach(lib => this.requiredLibraries.add(lib));
+    libraries.forEach((lib) => this.requiredLibraries.add(lib));
   }
 
   /**
    * Check if Google Maps API is already loaded
    */
   isGoogleMapsLoaded(): boolean {
-    return typeof window !== 'undefined' && 
-           !!window.google?.maps && 
-           this.isLoaded;
+    return (
+      typeof window !== 'undefined' && !!window.google?.maps && this.isLoaded
+    );
   }
 
   /**
@@ -148,7 +182,8 @@ class GoogleMapsLoader {
     }
 
     // Get API key
-    const apiKey = options.apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey =
+      options.apiKey || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
       throw new Error('Google Maps API key not configured');
     }
@@ -157,10 +192,14 @@ class GoogleMapsLoader {
     this.loadPromise = new Promise<void>((resolve, reject) => {
       try {
         // Check if script already exists
-        const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+        const existingScript = document.querySelector(
+          'script[src*="maps.googleapis.com"]'
+        );
         if (existingScript) {
-          console.warn('Google Maps script already exists, waiting for load...');
-          
+          console.warn(
+            'Google Maps script already exists, waiting for load...'
+          );
+
           // Wait for existing script to load
           const checkLoaded = () => {
             if (this.isGoogleMapsLoaded()) {
@@ -187,18 +226,18 @@ class GoogleMapsLoader {
         script.type = 'text/javascript';
         script.async = true;
         script.defer = true;
-        
+
         // Build URL with all required libraries and proper async loading
         const libraries = Array.from(this.requiredLibraries).join(',');
         const params = new URLSearchParams({
           key: apiKey,
           callback: callbackName,
-          loading: 'async',  // Explicitly set loading=async for performance
+          loading: 'async', // Explicitly set loading=async for performance
           ...(libraries && { libraries })
         });
-        
+
         script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
-        
+
         script.onerror = () => {
           this.loadPromise = null;
           reject(new Error('Failed to load Google Maps API'));
@@ -207,8 +246,9 @@ class GoogleMapsLoader {
         // Add script to document
         document.head.appendChild(script);
 
-        console.log(`🗺️ Loading Google Maps API with libraries: ${libraries || 'none'}`);
-        
+        console.log(
+          `🗺️ Loading Google Maps API with libraries: ${libraries || 'none'}`
+        );
       } catch (error) {
         this.loadPromise = null;
         reject(error);
@@ -240,11 +280,10 @@ class GoogleMapsLoader {
 export const googleMapsLoader = GoogleMapsLoader.getInstance();
 
 // Convenience functions
-export const loadGoogleMaps = (libraries: string[] = []) => 
+export const loadGoogleMaps = (libraries: string[] = []) =>
   googleMapsLoader.ensureLoaded(libraries);
 
-export const isGoogleMapsLoaded = () => 
-  googleMapsLoader.isGoogleMapsLoaded();
+export const isGoogleMapsLoaded = () => googleMapsLoader.isGoogleMapsLoaded();
 
 // Common library combinations
 export const GOOGLE_MAPS_LIBRARIES = {

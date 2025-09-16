@@ -3,11 +3,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
-import { 
-  ShoppingCart, 
-  Plus, 
-  Minus, 
-  DollarSign, 
+import {
+  ShoppingCart,
+  Plus,
+  Minus,
+  DollarSign,
   MapPin,
   Clock,
   Check,
@@ -52,14 +52,22 @@ const GROCERY_CATEGORIES = [
   { name: 'Household', icon: '🧽', color: 'bg-indigo-100 text-indigo-800' }
 ];
 
-const COMMON_UNITS = ['lbs', 'oz', 'pieces', 'bunches', 'packages', 'bottles', 'cans'];
+const COMMON_UNITS = [
+  'lbs',
+  'oz',
+  'pieces',
+  'bunches',
+  'packages',
+  'bottles',
+  'cans'
+];
 
-export default function GroceryListTemplate({ 
-  items, 
-  onToggleItem, 
-  onAddItem, 
-  onUpdateItem, 
-  onDeleteItem 
+export default function GroceryListTemplate({
+  items,
+  onToggleItem,
+  onAddItem,
+  onUpdateItem,
+  onDeleteItem
 }: GroceryListTemplateProps) {
   const [newItemName, setNewItemName] = React.useState('');
   const [newItemQuantity, setNewItemQuantity] = React.useState('');
@@ -68,20 +76,24 @@ export default function GroceryListTemplate({
   const [showQuickAdd, setShowQuickAdd] = React.useState(false);
 
   // Group items by category
-  const groupedItems = items.reduce((acc, item) => {
-    const category = item.details.category || item.category || 'Uncategorized';
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(item);
-    return acc;
-  }, {} as Record<string, GroceryItem[]>);
+  const groupedItems = items.reduce(
+    (acc, item) => {
+      const category =
+        item.details.category || item.category || 'Uncategorized';
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(item);
+      return acc;
+    },
+    {} as Record<string, GroceryItem[]>
+  );
 
   // Calculate totals
   const totalItems = items.length;
-  const checkedItems = items.filter(item => item.checked).length;
+  const checkedItems = items.filter((item) => item.checked).length;
   const estimatedTotal = items.reduce((sum, item) => {
     const price = item.details.price || 0;
     const quantity = parseFloat(item.details.quantity || '1');
-    return sum + (price * quantity);
+    return sum + price * quantity;
   }, 0);
 
   const addItem = () => {
@@ -108,7 +120,7 @@ export default function GroceryListTemplate({
   const updateQuantity = (item: GroceryItem, change: number) => {
     const currentQuantity = parseFloat(item.details.quantity || '1');
     const newQuantity = Math.max(0, currentQuantity + change);
-    
+
     onUpdateItem(item.id, {
       details: {
         ...item.details,
@@ -132,7 +144,7 @@ export default function GroceryListTemplate({
                 </p>
               </div>
             </div>
-            
+
             <div className="text-right">
               <div className="text-2xl font-bold text-green-600">
                 ${estimatedTotal.toFixed(2)}
@@ -140,17 +152,24 @@ export default function GroceryListTemplate({
               <p className="text-sm text-gray-600">estimated total</p>
             </div>
           </div>
-          
+
           {/* Progress bar */}
           <div className="mt-4">
             <div className="flex justify-between text-sm text-gray-600 mb-2">
               <span>Shopping Progress</span>
-              <span>{totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0}%</span>
+              <span>
+                {totalItems > 0
+                  ? Math.round((checkedItems / totalItems) * 100)
+                  : 0}
+                %
+              </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div
                 className="bg-green-600 h-3 rounded-full transition-all"
-                style={{ width: `${totalItems > 0 ? (checkedItems / totalItems) * 100 : 0}%` }}
+                style={{
+                  width: `${totalItems > 0 ? (checkedItems / totalItems) * 100 : 0}%`
+                }}
               ></div>
             </div>
           </div>
@@ -172,7 +191,7 @@ export default function GroceryListTemplate({
             </Button>
           </div>
         </CardHeader>
-        
+
         {showQuickAdd && (
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -184,7 +203,7 @@ export default function GroceryListTemplate({
                   onKeyPress={(e) => e.key === 'Enter' && addItem()}
                 />
               </div>
-              
+
               <div className="flex space-x-2">
                 <Input
                   placeholder="Qty"
@@ -197,12 +216,14 @@ export default function GroceryListTemplate({
                   onChange={(e) => setNewItemUnit(e.target.value)}
                   className="px-3 py-2 border border-gray-300 rounded-md text-sm"
                 >
-                  {COMMON_UNITS.map(unit => (
-                    <option key={unit} value={unit}>{unit}</option>
+                  {COMMON_UNITS.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
                   ))}
                 </select>
               </div>
-              
+
               <div className="flex space-x-2">
                 <select
                   value={newItemCategory}
@@ -210,7 +231,7 @@ export default function GroceryListTemplate({
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
                 >
                   <option value="">Category</option>
-                  {GROCERY_CATEGORIES.map(category => (
+                  {GROCERY_CATEGORIES.map((category) => (
                     <option key={category.name} value={category.name}>
                       {category.icon} {category.name}
                     </option>
@@ -228,22 +249,27 @@ export default function GroceryListTemplate({
       {/* Category-organized items */}
       <div className="space-y-4">
         {Object.entries(groupedItems).map(([categoryName, categoryItems]) => {
-          const categoryConfig = GROCERY_CATEGORIES.find(c => c.name === categoryName);
-          
+          const categoryConfig = GROCERY_CATEGORIES.find(
+            (c) => c.name === categoryName
+          );
+
           return (
             <Card key={categoryName}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <span className="text-xl">{categoryConfig?.icon || '📦'}</span>
+                    <span className="text-xl">
+                      {categoryConfig?.icon || '📦'}
+                    </span>
                     <div>
                       <h3 className="font-semibold">{categoryName}</h3>
                       <p className="text-sm text-gray-600">
-                        {categoryItems.filter(item => item.checked).length} of {categoryItems.length} collected
+                        {categoryItems.filter((item) => item.checked).length} of{' '}
+                        {categoryItems.length} collected
                       </p>
                     </div>
                   </div>
-                  
+
                   {categoryConfig && (
                     <Badge className={categoryConfig.color}>
                       {categoryName}
@@ -251,11 +277,14 @@ export default function GroceryListTemplate({
                   )}
                 </div>
               </CardHeader>
-              
+
               <CardContent>
                 <div className="space-y-3">
                   {categoryItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
                       <div className="flex items-center space-x-3 flex-1">
                         <Button
                           variant="ghost"
@@ -268,33 +297,35 @@ export default function GroceryListTemplate({
                             <div className="w-5 h-5 border-2 border-gray-300 rounded"></div>
                           )}
                         </Button>
-                        
+
                         <div className="flex-1">
-                          <div className={`font-medium ${item.checked ? 'line-through text-gray-500' : ''}`}>
+                          <div
+                            className={`font-medium ${item.checked ? 'line-through text-gray-500' : ''}`}
+                          >
                             {item.content}
                           </div>
-                          
+
                           <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600">
                             {item.details.quantity && (
                               <span>
                                 {item.details.quantity} {item.details.unit}
                               </span>
                             )}
-                            
+
                             {item.details.price && (
                               <span className="flex items-center">
                                 <DollarSign className="w-3 h-3 mr-1" />
                                 {item.details.price.toFixed(2)}
                               </span>
                             )}
-                            
+
                             {item.details.store && (
                               <span className="flex items-center">
                                 <MapPin className="w-3 h-3 mr-1" />
                                 {item.details.store}
                               </span>
                             )}
-                            
+
                             {item.details.urgent && (
                               <Badge className="bg-red-100 text-red-800">
                                 Urgent
@@ -303,7 +334,7 @@ export default function GroceryListTemplate({
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center space-x-2">
                         <Button
                           variant="outline"
@@ -313,11 +344,11 @@ export default function GroceryListTemplate({
                         >
                           <Minus className="w-3 h-3" />
                         </Button>
-                        
+
                         <span className="w-8 text-center text-sm">
                           {item.details.quantity || '1'}
                         </span>
-                        
+
                         <Button
                           variant="outline"
                           size="sm"
@@ -326,7 +357,7 @@ export default function GroceryListTemplate({
                         >
                           <Plus className="w-3 h-3" />
                         </Button>
-                        
+
                         <Button
                           variant="ghost"
                           size="sm"
@@ -358,7 +389,8 @@ export default function GroceryListTemplate({
             <div>
               <h4 className="font-medium mb-2">Store Layout Optimization</h4>
               <p className="text-gray-600">
-                Items are organized by typical grocery store sections to minimize backtracking.
+                Items are organized by typical grocery store sections to
+                minimize backtracking.
               </p>
             </div>
             <div>

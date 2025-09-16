@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  DollarSign, 
-  TrendingUp, 
-  Target, 
-  Users, 
+import {
+  DollarSign,
+  TrendingUp,
+  Target,
+  Users,
   PieChart,
   BarChart3,
   Coins
@@ -13,7 +13,13 @@ import {
 import BudgetTest from '@/components/budget/BudgetTest';
 import Button from '@/components/ui/Button';
 
-type BudgetView = 'dashboard' | 'categories' | 'transactions' | 'analytics' | 'allowance' | 'goals';
+type BudgetView =
+  | 'dashboard'
+  | 'categories'
+  | 'transactions'
+  | 'analytics'
+  | 'allowance'
+  | 'goals';
 
 const BudgetPage = () => {
   const [activeView, setActiveView] = useState<BudgetView>('dashboard');
@@ -87,8 +93,12 @@ const BudgetPage = () => {
                 <DollarSign className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">Family Budget</h1>
-                <p className="text-sm text-gray-600">Comprehensive financial management</p>
+                <h1 className="text-xl font-semibold text-gray-900">
+                  Family Budget
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Comprehensive financial management
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -108,7 +118,7 @@ const BudgetPage = () => {
                 {navigationItems.map((item) => {
                   const IconComponent = item.icon;
                   const isActive = activeView === item.id;
-                  
+
                   return (
                     <Button
                       key={item.id}
@@ -120,7 +130,9 @@ const BudgetPage = () => {
                       } border`}
                     >
                       <div className="flex items-center space-x-3">
-                        <IconComponent className={`h-5 w-5 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                        <IconComponent
+                          className={`h-5 w-5 ${isActive ? 'text-blue-600' : 'text-gray-400'}`}
+                        />
                         <div>
                           <div className="font-medium">{item.label}</div>
                           <div className="text-xs text-gray-500 hidden lg:block">
@@ -140,11 +152,15 @@ const BudgetPage = () => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">This Month</span>
-                  <span className="text-sm font-medium text-red-600">-$2,847</span>
+                  <span className="text-sm font-medium text-red-600">
+                    -$2,847
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Budget Left</span>
-                  <span className="text-sm font-medium text-green-600">$1,653</span>
+                  <span className="text-sm font-medium text-green-600">
+                    $1,653
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Savings Goal</span>
@@ -152,7 +168,9 @@ const BudgetPage = () => {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Kids Allowance</span>
-                  <span className="text-sm font-medium text-purple-600">$47.50</span>
+                  <span className="text-sm font-medium text-purple-600">
+                    $47.50
+                  </span>
                 </div>
               </div>
             </div>

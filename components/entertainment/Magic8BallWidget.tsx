@@ -1,28 +1,41 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 'use client';
 
 import { useState, useEffect, useCallback, memo, useRef } from 'react';
-import { Volume2, VolumeX, History, BarChart3, RotateCcw, Sparkles } from 'lucide-react';
+import {
+  Volume2,
+  VolumeX,
+  History,
+  BarChart3,
+  RotateCcw,
+  Sparkles
+} from 'lucide-react';
 import { useMagic8Ball } from '@/hooks/useMagic8Ball';
 import { enhancedLogger, LogLevel } from '@/utils/logger';
 
 // Types
-type ThemeType = 'classic' | 'mystic' | 'retro' | 'neon' | 'galaxy' | 'minimalist';
+type ThemeType =
+  | 'classic'
+  | 'mystic'
+  | 'retro'
+  | 'neon'
+  | 'galaxy'
+  | 'minimalist';
 type WidgetState = 'idle' | 'shaking' | 'revealing' | 'result';
 
 interface Magic8BallQuestion {
@@ -53,40 +66,96 @@ interface Stats {
 // Theme-specific answer sets
 const THEME_ANSWERS = {
   classic: [
-    "It is certain", "Reply hazy, try again", "Don't count on it",
-    "It is decidedly so", "Ask again later", "My reply is no",
-    "Without a doubt", "Better not tell you now", "My sources say no",
-    "Yes definitely", "Cannot predict now", "Outlook not so good",
-    "You may rely on it", "Concentrate and ask again", "Very doubtful",
-    "As I see it, yes", "Most likely", "Outlook good", "Yes", "Signs point to yes"
+    'It is certain',
+    'Reply hazy, try again',
+    "Don't count on it",
+    'It is decidedly so',
+    'Ask again later',
+    'My reply is no',
+    'Without a doubt',
+    'Better not tell you now',
+    'My sources say no',
+    'Yes definitely',
+    'Cannot predict now',
+    'Outlook not so good',
+    'You may rely on it',
+    'Concentrate and ask again',
+    'Very doubtful',
+    'As I see it, yes',
+    'Most likely',
+    'Outlook good',
+    'Yes',
+    'Signs point to yes'
   ],
   mystic: [
-    "The stars align in your favor", "The crystal ball is cloudy", "Dark forces say no",
-    "Ancient wisdom says yes", "The spirits are uncertain", "The moon speaks against it",
-    "Mystical energies say absolutely", "Consult the oracle again", "The tarot reveals doubt",
-    "The universe conspires for you", "Magical forces are at work", "The ethereal realm says no"
+    'The stars align in your favor',
+    'The crystal ball is cloudy',
+    'Dark forces say no',
+    'Ancient wisdom says yes',
+    'The spirits are uncertain',
+    'The moon speaks against it',
+    'Mystical energies say absolutely',
+    'Consult the oracle again',
+    'The tarot reveals doubt',
+    'The universe conspires for you',
+    'Magical forces are at work',
+    'The ethereal realm says no'
   ],
   retro: [
-    "Totally rad!", "Like, no way dude", "Far out, yes!",
-    "Not groovy, man", "Right on!", "Bogus idea",
-    "Absolutely tubular!", "That's not cool", "Gnarly outcome ahead",
-    "Radical possibility", "Heavy, man... no", "Righteous vibes say yes"
+    'Totally rad!',
+    'Like, no way dude',
+    'Far out, yes!',
+    'Not groovy, man',
+    'Right on!',
+    'Bogus idea',
+    'Absolutely tubular!',
+    "That's not cool",
+    'Gnarly outcome ahead',
+    'Radical possibility',
+    'Heavy, man... no',
+    'Righteous vibes say yes'
   ],
   neon: [
-    "NEON GREEN YES!", "ELECTRIC BLUE NO", "PLASMA PINK MAYBE",
-    "CYBER YELLOW ABSOLUTELY", "DIGITAL PURPLE NEGATIVE", "HOLOGRAM SAYS YES",
-    "LASER BEAM CONFIRMS", "PIXEL PERFECT NO", "MATRIX SAYS PROCEED",
-    "SYNTHWAVE APPROVED", "RETROWAVE DENIED", "VAPORWAVE UNCERTAIN"
+    'NEON GREEN YES!',
+    'ELECTRIC BLUE NO',
+    'PLASMA PINK MAYBE',
+    'CYBER YELLOW ABSOLUTELY',
+    'DIGITAL PURPLE NEGATIVE',
+    'HOLOGRAM SAYS YES',
+    'LASER BEAM CONFIRMS',
+    'PIXEL PERFECT NO',
+    'MATRIX SAYS PROCEED',
+    'SYNTHWAVE APPROVED',
+    'RETROWAVE DENIED',
+    'VAPORWAVE UNCERTAIN'
   ],
   galaxy: [
-    "The cosmos says yes", "Black hole of doubt", "Supernova of certainty",
-    "Asteroid belt of maybe", "Galactic council approves", "Solar winds say no",
-    "Nebula of possibility", "Meteor shower of doubt", "Planetary alignment says yes",
-    "Starlight confirms", "Dark matter disagrees", "Milky Way says maybe"
+    'The cosmos says yes',
+    'Black hole of doubt',
+    'Supernova of certainty',
+    'Asteroid belt of maybe',
+    'Galactic council approves',
+    'Solar winds say no',
+    'Nebula of possibility',
+    'Meteor shower of doubt',
+    'Planetary alignment says yes',
+    'Starlight confirms',
+    'Dark matter disagrees',
+    'Milky Way says maybe'
   ],
   minimalist: [
-    "Yes", "No", "Maybe", "Certainly", "Unlikely", "Possible",
-    "Definitely", "Doubtful", "Absolutely", "Never", "Perhaps", "Indeed"
+    'Yes',
+    'No',
+    'Maybe',
+    'Certainly',
+    'Unlikely',
+    'Possible',
+    'Definitely',
+    'Doubtful',
+    'Absolutely',
+    'Never',
+    'Perhaps',
+    'Indeed'
   ]
 };
 
@@ -103,10 +172,10 @@ const getThemeClass = (theme: ThemeType): string => {
   return themes[theme] || themes.classic;
 };
 
-const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({ 
-  householdId, 
-  userId, 
-  className = '' 
+const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
+  householdId,
+  userId,
+  className = ''
 }) => {
   // State management
   const [state, setState] = useState<WidgetState>('idle');
@@ -117,7 +186,9 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
   const [isShakeEnabled, setIsShakeEnabled] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [showStats, setShowStats] = useState(false);
-  const [recentQuestions, setRecentQuestions] = useState<Magic8BallQuestion[]>([]);
+  const [recentQuestions, setRecentQuestions] = useState<Magic8BallQuestion[]>(
+    []
+  );
   const [stats, setStats] = useState<Stats>({
     totalQuestions: 0,
     todaysQuestions: 0,
@@ -149,7 +220,11 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
       const deltaY = Math.abs(event.acceleration?.y || 0);
       const deltaZ = Math.abs(event.acceleration?.z || 0);
 
-      if (deltaX + deltaY + deltaZ > shakeThreshold && state === 'idle' && question.trim()) {
+      if (
+        deltaX + deltaY + deltaZ > shakeThreshold &&
+        state === 'idle' &&
+        question.trim()
+      ) {
         handleShake();
       }
 
@@ -158,42 +233,66 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
 
     window.addEventListener('devicemotion', handleDeviceMotion);
     return () => window.removeEventListener('devicemotion', handleDeviceMotion);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isShakeEnabled, state, question]);
 
   // Sound generation
-  const playSound = useCallback((type: 'shake' | 'reveal') => {
-    if (!soundEnabled) return;
+  const playSound = useCallback(
+    (type: 'shake' | 'reveal') => {
+      if (!soundEnabled) return;
 
-    const audioContext = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+      const audioContext = new (window.AudioContext ||
+        (window as Window & { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
 
-    if (type === 'shake') {
-      oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.3);
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.3);
-    } else {
-      oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.2);
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
-    }
-  }, [soundEnabled]);
+      if (type === 'shake') {
+        oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          100,
+          audioContext.currentTime + 0.3
+        );
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + 0.3
+        );
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } else {
+        oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          600,
+          audioContext.currentTime + 0.2
+        );
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioContext.currentTime + 0.2
+        );
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+      }
+    },
+    [soundEnabled]
+  );
 
   // Confetti effect
   const triggerConfetti = useCallback(() => {
     if (!confettiRef.current) return;
 
-    const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'];
+    const colors = [
+      '#FFD700',
+      '#FF6B6B',
+      '#4ECDC4',
+      '#45B7D1',
+      '#96CEB4',
+      '#FFEAA7'
+    ];
     const confettiContainer = confettiRef.current;
 
     for (let i = 0; i < 30; i++) {
@@ -203,7 +302,8 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
       confetti.style.top = '0%';
       confetti.style.width = '6px';
       confetti.style.height = '6px';
-      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.backgroundColor =
+        colors[Math.floor(Math.random() * colors.length)];
       confetti.style.borderRadius = '50%';
       confetti.style.pointerEvents = 'none';
       confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
@@ -247,9 +347,11 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
         setState('result');
 
         // Trigger confetti for positive answers
-        if (answer.toLowerCase().includes('yes') || 
-            answer.toLowerCase().includes('certain') || 
-            answer.toLowerCase().includes('definitely')) {
+        if (
+          answer.toLowerCase().includes('yes') ||
+          answer.toLowerCase().includes('certain') ||
+          answer.toLowerCase().includes('definitely')
+        ) {
           triggerConfetti();
         }
 
@@ -264,8 +366,18 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
         }
       }, 1500);
     }, 1000);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, question, theme, playSound, getRandomAnswer, triggerConfetti, householdId, userId, saveQuestion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    state,
+    question,
+    theme,
+    playSound,
+    getRandomAnswer,
+    triggerConfetti,
+    householdId,
+    userId,
+    saveQuestion
+  ]);
 
   // Reset for new question
   const handleAskAgain = useCallback(() => {
@@ -280,10 +392,18 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
   // Random question generator
   const handleSurpriseQuestion = useCallback(() => {
     const questions = [
-      "Will today be a good day?", "Should I try something new?", "Will my dreams come true?",
-      "Is it time for a change?", "Will I be successful?", "Should I take a risk?",
-      "Will I find what I'm looking for?", "Is now the right time?", "Will things work out?",
-      "Should I follow my heart?", "Will I be happy?", "Is this the right choice?"
+      'Will today be a good day?',
+      'Should I try something new?',
+      'Will my dreams come true?',
+      'Is it time for a change?',
+      'Will I be successful?',
+      'Should I take a risk?',
+      "Will I find what I'm looking for?",
+      'Is now the right time?',
+      'Will things work out?',
+      'Should I follow my heart?',
+      'Will I be happy?',
+      'Is this the right choice?'
     ];
     setQuestion(questions[Math.floor(Math.random() * questions.length)]);
   }, []);
@@ -291,19 +411,26 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
   // Fetch recent questions
   const fetchRecentQuestions = useCallback(async () => {
     if (!householdId) return;
-    
+
     try {
-      const response = await fetch(`/api/magic8ball?household_id=${householdId}&limit=10`);
+      const response = await fetch(
+        `/api/magic8ball?household_id=${householdId}&limit=10`
+      );
       const data = await response.json();
-      
+
       if (data.success) {
         setRecentQuestions(data.questions || []);
       }
     } catch (error) {
-      await enhancedLogger.logWithFullContext(LogLevel.ERROR, "Failed to fetch Magic 8-Ball history", "Magic8BallWidget", {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        householdId
-      });
+      await enhancedLogger.logWithFullContext(
+        LogLevel.ERROR,
+        'Failed to fetch Magic 8-Ball history',
+        'Magic8BallWidget',
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          householdId
+        }
+      );
     }
   }, [householdId]);
 
@@ -312,9 +439,11 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
     if (!householdId) return;
 
     try {
-      const response = await fetch(`/api/magic8ball?household_id=${householdId}&stats=true`);
+      const response = await fetch(
+        `/api/magic8ball?household_id=${householdId}&stats=true`
+      );
       const data = await response.json();
-      
+
       if (data.success && data.stats) {
         setStats(data.stats);
       }
@@ -332,25 +461,33 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
   }, [householdId, fetchRecentQuestions, fetchStats]);
 
   return (
-    <div className={`bg-white rounded-2xl shadow-lg p-4 relative overflow-hidden h-full flex flex-col ${className}`}>
+    <div
+      className={`bg-white rounded-2xl shadow-lg p-4 relative overflow-hidden h-full flex flex-col ${className}`}
+    >
       {/* Header - matches other dashboard widgets */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="text-xl">🎱</div>
           <h3 className="text-sm font-medium text-gray-600">Magic 8-Ball</h3>
           {isShakeEnabled && (
-            <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">Shake enabled</span>
+            <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+              Shake enabled
+            </span>
           )}
         </div>
-        
+
         <div className="flex items-center gap-2">
           {/* Sound toggle */}
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
             className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-            title={soundEnabled ? "Disable sound" : "Enable sound"}
+            title={soundEnabled ? 'Disable sound' : 'Enable sound'}
           >
-            {soundEnabled ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
+            {soundEnabled ? (
+              <Volume2 className="w-3 h-3" />
+            ) : (
+              <VolumeX className="w-3 h-3" />
+            )}
           </button>
 
           {/* Theme selector */}
@@ -387,14 +524,19 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
       </div>
 
       {/* Confetti container */}
-      <div ref={confettiRef} className="absolute inset-0 pointer-events-none z-50"></div>
+      <div
+        ref={confettiRef}
+        className="absolute inset-0 pointer-events-none z-50"
+      ></div>
 
       {/* Main 8-Ball Container - This is where the magic happens! */}
-      <div className={`${getThemeClass(theme)} rounded-xl p-4 mb-4 relative overflow-hidden`}>
+      <div
+        className={`${getThemeClass(theme)} rounded-xl p-4 mb-4 relative overflow-hidden`}
+      >
         {/* Theme-specific background effects for the 8-ball container */}
         <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-blue-500/10 animate-pulse"></div>
         <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-yellow-400/20 to-transparent rounded-full blur-3xl"></div>
-        
+
         <div className="relative z-10 text-white">
           {/* Main 8-Ball Interface */}
           <div className="text-center mb-6">
@@ -402,7 +544,7 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
               <div className="space-y-4 fade-in-up">
                 {/* 8-Ball Visual */}
                 <div className="relative mx-auto w-32 h-32 mb-4">
-                  <div 
+                  <div
                     ref={ballRef}
                     className="w-full h-full bg-gradient-to-b from-gray-800 to-black rounded-full shadow-2xl flex items-center justify-center border-4 border-gray-600 cursor-pointer hover:scale-105 transition-transform"
                     onClick={() => question.trim() && handleShake()}
@@ -421,7 +563,9 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     className="w-full p-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30"
-                    onKeyPress={(e) => e.key === 'Enter' && question.trim() && handleShake()}
+                    onKeyPress={(e) =>
+                      e.key === 'Enter' && question.trim() && handleShake()
+                    }
                     maxLength={200}
                   />
                   <div className="flex gap-2 justify-center">
@@ -441,7 +585,7 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
                     </button>
                   </div>
                 </div>
-                
+
                 {isShakeEnabled && (
                   <div className="text-xs text-white/60 mt-2">
                     💡 Tip: On mobile, physically shake your device to activate!
@@ -455,7 +599,9 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
                 <div className="relative mx-auto w-32 h-32">
                   <div className="w-full h-full bg-gradient-to-b from-gray-800 to-black rounded-full shadow-2xl flex items-center justify-center border-4 border-gray-600 animate-bounce">
                     <div className="w-16 h-16 bg-gradient-to-b from-blue-900 to-purple-900 rounded-full flex items-center justify-center">
-                      <div className="text-white text-xs font-bold animate-spin">8</div>
+                      <div className="text-white text-xs font-bold animate-spin">
+                        8
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -492,12 +638,12 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
                   {/* Enhanced glowing effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 to-blue-500/30 rounded-full blur-xl animate-pulse"></div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div className="text-lg font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
                     {currentAnswer}
                   </div>
-                  
+
                   <button
                     onClick={handleAskAgain}
                     className="px-6 py-2 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 transition-colors"
@@ -511,33 +657,46 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Stats and History panels - outside the themed container, using page styling */}
       {showStats && (
         <div className="bg-gray-50 rounded-lg p-4 mb-4 border border-gray-200">
-          <h4 className="font-semibold mb-3 text-center text-gray-700">Family Magic Stats ✨</h4>
+          <h4 className="font-semibold mb-3 text-center text-gray-700">
+            Family Magic Stats ✨
+          </h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div className="bg-white rounded-lg p-3 border border-gray-100">
-              <div className="text-2xl font-bold text-blue-600">{stats.totalQuestions}</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {stats.totalQuestions}
+              </div>
               <div className="text-sm text-gray-500">Total Questions</div>
             </div>
             <div className="bg-white rounded-lg p-3 border border-gray-100">
-              <div className="text-2xl font-bold text-green-600">{stats.todaysQuestions}</div>
+              <div className="text-2xl font-bold text-green-600">
+                {stats.todaysQuestions}
+              </div>
               <div className="text-sm text-gray-500">Asked Today</div>
             </div>
             <div className="bg-white rounded-lg p-3 border border-gray-100">
-              <div className="text-2xl font-bold text-purple-600">{stats.weeklyQuestions}</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {stats.weeklyQuestions}
+              </div>
               <div className="text-sm text-gray-500">This Week</div>
             </div>
             <div className="bg-white rounded-lg p-3 border border-gray-100">
-              <div className="text-lg font-bold text-orange-600">{stats.mostPopularTheme}</div>
+              <div className="text-lg font-bold text-orange-600">
+                {stats.mostPopularTheme}
+              </div>
               <div className="text-sm text-gray-500">Popular Theme</div>
             </div>
           </div>
           {stats.mostActiveUser && (
             <div className="mt-3 text-center">
               <div className="text-sm text-gray-600">
-                🏆 Most Curious: <span className="font-semibold text-yellow-600">{stats.mostActiveUser}</span>
+                🏆 Most Curious:{' '}
+                <span className="font-semibold text-yellow-600">
+                  {stats.mostActiveUser}
+                </span>
               </div>
             </div>
           )}
@@ -546,16 +705,22 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
 
       {showHistory && recentQuestions.length > 0 && (
         <div className="bg-gray-50 rounded-lg p-4 max-h-48 overflow-y-auto border border-gray-200">
-          <h4 className="font-semibold mb-3 text-gray-700">Recent Questions 📚</h4>
+          <h4 className="font-semibold mb-3 text-gray-700">
+            Recent Questions 📚
+          </h4>
           <div className="space-y-3">
             {recentQuestions.slice(0, 5).map((q, index) => (
-              <div 
-                key={q.id} 
+              <div
+                key={q.id}
                 className="bg-white rounded-lg p-3 hover:bg-gray-50 transition-colors border border-gray-100"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="text-gray-700 font-medium text-sm">&quot;{q.question}&quot;</div>
-                <div className="text-blue-600 italic text-sm mt-1">→ {q.answer}</div>
+                <div className="text-gray-700 font-medium text-sm">
+                  &quot;{q.question}&quot;
+                </div>
+                <div className="text-blue-600 italic text-sm mt-1">
+                  → {q.answer}
+                </div>
                 <div className="flex justify-between items-center mt-2">
                   <div className="text-gray-400 text-xs">
                     {new Date(q.created_at).toLocaleDateString()}
@@ -569,7 +734,9 @@ const Magic8BallWidgetComponent: React.FC<Magic8BallWidgetProps> = ({
           </div>
           {recentQuestions.length > 5 && (
             <div className="text-center mt-3">
-              <div className="text-xs text-gray-500">... and {recentQuestions.length - 5} more</div>
+              <div className="text-xs text-gray-500">
+                ... and {recentQuestions.length - 5} more
+              </div>
             </div>
           )}
         </div>

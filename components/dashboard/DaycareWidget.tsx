@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 import { Baby, Camera, Mail, Eye, Clock, Heart } from 'lucide-react';
 
@@ -32,8 +31,9 @@ const mockDaycareUpdates: DaycareUpdate[] = [
   {
     id: '1',
     type: 'photo',
-    title: 'Harper\'s Art Creation!',
-    content: 'Harper made a beautiful finger painting of our family today. She was so proud to show everyone!',
+    title: "Harper's Art Creation!",
+    content:
+      'Harper made a beautiful finger painting of our family today. She was so proud to show everyone!',
     time: '2:30 PM',
     teacher: 'Ms. Sarah',
     isNew: true
@@ -42,7 +42,8 @@ const mockDaycareUpdates: DaycareUpdate[] = [
     id: '2',
     type: 'milestone',
     title: 'New Word Alert! 🎉',
-    content: 'Harper said "butterfly" perfectly when we saw one in the garden during outdoor play.',
+    content:
+      'Harper said "butterfly" perfectly when we saw one in the garden during outdoor play.',
     time: '11:45 AM',
     teacher: 'Mr. James',
     isNew: true
@@ -51,7 +52,8 @@ const mockDaycareUpdates: DaycareUpdate[] = [
     id: '3',
     type: 'activity',
     title: 'Story Time Favorite',
-    content: 'Harper loved "The Very Hungry Caterpillar" and asked us to read it three times!',
+    content:
+      'Harper loved "The Very Hungry Caterpillar" and asked us to read it three times!',
     time: '10:15 AM',
     teacher: 'Ms. Sarah',
     isNew: false
@@ -89,14 +91,18 @@ const getUpdateColor = (type: DaycareUpdate['type']) => {
 };
 
 export function DaycareWidget() {
-  const newUpdatesCount = mockDaycareUpdates.filter(update => update.isNew).length;
+  const newUpdatesCount = mockDaycareUpdates.filter(
+    (update) => update.isNew
+  ).length;
   const latestUpdate = mockDaycareUpdates[0];
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center">
-          <h3 className="text-sm font-bold text-white bg-gradient-to-r from-pink-500 to-rose-600 px-3 py-1 rounded-lg tracking-wide">DAYCARE UPDATES</h3>
+          <h3 className="text-sm font-bold text-white bg-gradient-to-r from-pink-500 to-rose-600 px-3 py-1 rounded-lg tracking-wide">
+            DAYCARE UPDATES
+          </h3>
           {newUpdatesCount > 0 && (
             <span className="ml-2 px-2 py-1 bg-pink-100 text-pink-800 text-xs font-medium rounded-full">
               {newUpdatesCount} new
@@ -108,7 +114,9 @@ export function DaycareWidget() {
 
       {/* Latest Update Featured */}
       {latestUpdate && (
-        <div className={`border rounded-lg p-3 mb-3 ${getUpdateColor(latestUpdate.type)}`}>
+        <div
+          className={`border rounded-lg p-3 mb-3 ${getUpdateColor(latestUpdate.type)}`}
+        >
           <div className="flex items-start justify-between mb-2">
             <div className="flex items-center">
               {getUpdateIcon(latestUpdate.type)}
@@ -120,29 +128,32 @@ export function DaycareWidget() {
               )}
             </div>
           </div>
-          
+
           <p className="text-sm text-gray-700 mb-2 leading-relaxed">
             {latestUpdate.content}
           </p>
-          
+
           <div className="flex items-center justify-between text-xs text-gray-500">
             <div className="flex items-center">
               <Clock className="h-3 w-3 mr-1" />
               {latestUpdate.time}
             </div>
-            <div>
-              by {latestUpdate.teacher}
-            </div>
+            <div>by {latestUpdate.teacher}</div>
           </div>
         </div>
       )}
 
       {/* Timeline Summary */}
       <div className="space-y-2 mb-4">
-        <h4 className="text-xs font-medium text-gray-500">Today&apos;s Timeline</h4>
+        <h4 className="text-xs font-medium text-gray-500">
+          Today&apos;s Timeline
+        </h4>
         <div className="space-y-1">
           {mockDaycareUpdates.slice(1, 3).map((update) => (
-            <div key={update.id} className="flex items-center justify-between text-xs">
+            <div
+              key={update.id}
+              className="flex items-center justify-between text-xs"
+            >
               <div className="flex items-center">
                 {getUpdateIcon(update.type)}
                 <span className="ml-2 text-gray-700 truncate flex-1">
@@ -164,7 +175,7 @@ export function DaycareWidget() {
           <Camera className="h-3 w-3 mr-1" />
           View All Photos
         </button>
-        
+
         <button className="w-full py-2 px-3 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-xs font-medium transition-colors flex items-center justify-center">
           <Eye className="h-3 w-3 mr-1" />
           Full Daycare Archive
@@ -188,7 +199,9 @@ export function DaycareWidget() {
               Auto-sync with daycare emails
             </span>
           </div>
-          <span className="text-xs text-green-600 font-medium">✓ Connected</span>
+          <span className="text-xs text-green-600 font-medium">
+            ✓ Connected
+          </span>
         </div>
       </div>
     </div>

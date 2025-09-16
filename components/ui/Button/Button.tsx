@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 'use client';
 
@@ -26,7 +25,14 @@ import LoadingDots from '@/components/ui/LoadingDots';
 import styles from './Button.module.css';
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'slim' | 'flat' | 'outline' | 'ghost' | 'primary' | 'secondary' | 'destructive';
+  variant?:
+    | 'slim'
+    | 'flat'
+    | 'outline'
+    | 'ghost'
+    | 'primary'
+    | 'secondary'
+    | 'destructive';
   active?: boolean;
   width?: number;
   loading?: boolean;
@@ -49,7 +55,7 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, buttonRef) => {
     ...rest
   } = props;
   const ref = useRef(null);
-  
+
   // Handle new variants with Tailwind classes
   const getVariantClasses = () => {
     switch (variant) {
@@ -90,8 +96,12 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, buttonRef) => {
       [styles.disabled]: disabled
     },
     // Add new variant styles
-    variant === 'outline' || variant === 'ghost' || variant === 'primary' || variant === 'secondary' || variant === 'destructive' 
-      ? `rounded-md transition-colors ${getVariantClasses()} ${getSizeClasses()}` 
+    variant === 'outline' ||
+      variant === 'ghost' ||
+      variant === 'primary' ||
+      variant === 'secondary' ||
+      variant === 'destructive'
+      ? `rounded-md transition-colors ${getVariantClasses()} ${getSizeClasses()}`
       : '',
     className
   );

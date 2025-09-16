@@ -1,6 +1,6 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Migration Runner: Auto Household Roles & Backfill
  * Applies migration 20250909000001_auto_household_roles.sql then performs safe backfill
  * for existing data (assign admin_id and profile roles where missing).
@@ -18,7 +18,9 @@ const fs = require('fs');
 const path = require('path');
 
 const supabaseUrl = 'https://csbwewirwzeitavhvykr.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzYndld2lyd3plaXRhdmh2eWtyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjM1ODc2MiwiZXhwIjoyMDcxOTM0NzYyfQ.9cYI_QLZEqI6HmTmhUKKmI0xeP37Xe1Jt5CJhQgOfF8';
+const supabaseServiceKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzYndld2lyd3plaXRhdmh2eWtyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjM1ODc2MiwiZXhwIjoyMDcxOTM0NzYyfQ.9cYI_QLZEqI6HmTmhUKKmI0xeP37Xe1Jt5CJhQgOfF8';
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -26,7 +28,10 @@ async function runStatement(sql, idxLabel) {
   try {
     const { error } = await supabase.rpc('exec', { sql });
     if (error) {
-      const benign = /already exists|duplicate|does not exist|exists, skipping/i.test(error.message);
+      const benign =
+        /already exists|duplicate|does not exist|exists, skipping/i.test(
+          error.message
+        );
       if (benign) {
         console.log(`⚠️  ${idxLabel}: ${error.message}`);
       } else {
@@ -41,7 +46,12 @@ async function runStatement(sql, idxLabel) {
 }
 
 async function applyMigration() {
-  const filePath = path.join(__dirname, 'supabase', 'migrations', '20250909000001_auto_household_roles.sql');
+  const filePath = path.join(
+    __dirname,
+    'supabase',
+    'migrations',
+    '20250909000001_auto_household_roles.sql'
+  );
   console.log('📄 Loading migration:', filePath);
   const raw = fs.readFileSync(filePath, 'utf8');
 
@@ -49,13 +59,13 @@ async function applyMigration() {
   const statements = [];
   let buffer = '';
   let inDollar = false;
-  raw.split('\n').forEach(line => {
+  raw.split('\n').forEach((line) => {
     const trimmed = line.trim();
     // Track entry/exit of $$ blocks
     if (/\$\$/g.test(line)) {
       // Toggle for each occurrence (works for well-formed plpgsql bodies)
       const occurrences = (line.match(/\$\$/g) || []).length;
-      for (let i=0;i<occurrences;i++) inDollar = !inDollar;
+      for (let i = 0; i < occurrences; i++) inDollar = !inDollar;
     }
     buffer += line + '\n';
     if (!inDollar && /;\s*$/.test(line)) {
@@ -68,8 +78,11 @@ async function applyMigration() {
   if (trimmedLast) statements.push(trimmedLast);
 
   console.log(`🚀 Executing ${statements.length} migration statements`);
-  for (let i=0;i<statements.length;i++) {
-    await runStatement(statements[i], `Statement ${i+1}/${statements.length}`);
+  for (let i = 0; i < statements.length; i++) {
+    await runStatement(
+      statements[i],
+      `Statement ${i + 1}/${statements.length}`
+    );
   }
 }
 
@@ -99,17 +112,29 @@ async function runBackfill() {
     `DO $$ BEGIN RAISE NOTICE 'Backfill complete (admin_id + profile.role normalization)'; END $$;`
   ];
 
-  for (let i=0;i<backfillStatements.length;i++) {
-    await runStatement(backfillStatements[i], `Backfill ${i+1}/${backfillStatements.length}`);
+  for (let i = 0; i < backfillStatements.length; i++) {
+    await runStatement(
+      backfillStatements[i],
+      `Backfill ${i + 1}/${backfillStatements.length}`
+    );
   }
 }
 
 async function verify() {
   console.log('\n🔍 Verification checks');
   const checks = [
-    { label: 'Households with admin_id NULL (should be 0 if profiles exist)', sql: `SELECT COUNT(*) AS cnt FROM households h WHERE admin_id IS NULL AND EXISTS (SELECT 1 FROM profiles p WHERE p.household_id = h.id);` },
-    { label: 'Profiles with NULL role but household_id set (should be 0)', sql: `SELECT COUNT(*) AS cnt FROM profiles WHERE household_id IS NOT NULL AND role IS NULL;` },
-    { label: 'Profiles with invalid role', sql: `SELECT COUNT(*) AS cnt FROM profiles WHERE role IS NOT NULL AND role NOT IN ('super_admin','admin','member');` }
+    {
+      label: 'Households with admin_id NULL (should be 0 if profiles exist)',
+      sql: `SELECT COUNT(*) AS cnt FROM households h WHERE admin_id IS NULL AND EXISTS (SELECT 1 FROM profiles p WHERE p.household_id = h.id);`
+    },
+    {
+      label: 'Profiles with NULL role but household_id set (should be 0)',
+      sql: `SELECT COUNT(*) AS cnt FROM profiles WHERE household_id IS NOT NULL AND role IS NULL;`
+    },
+    {
+      label: 'Profiles with invalid role',
+      sql: `SELECT COUNT(*) AS cnt FROM profiles WHERE role IS NOT NULL AND role NOT IN ('super_admin','admin','member');`
+    }
   ];
 
   for (const c of checks) {
@@ -125,7 +150,9 @@ async function verify() {
     }
   }
 
-  console.log('\nℹ️  If exec_select is not defined create it with:\nCREATE OR REPLACE FUNCTION exec_select(sql text) RETURNS json AS $$ DECLARE r json; BEGIN EXECUTE sql INTO r; RETURN r; END; $$ LANGUAGE plpgsql SECURITY DEFINER;');
+  console.log(
+    '\nℹ️  If exec_select is not defined create it with:\nCREATE OR REPLACE FUNCTION exec_select(sql text) RETURNS json AS $$ DECLARE r json; BEGIN EXECUTE sql INTO r; RETURN r; END; $$ LANGUAGE plpgsql SECURITY DEFINER;'
+  );
 }
 
 (async () => {

@@ -12,12 +12,25 @@ export // Type definitions
 type SettingValue = Json;
 
 interface SettingsManager {
-  getUserSetting: (settingKey: string, defaultValue?: SettingValue) => Promise<SettingValue>;
+  getUserSetting: (
+    settingKey: string,
+    defaultValue?: SettingValue
+  ) => Promise<SettingValue>;
   setUserSetting: (settingKey: string, value: SettingValue) => Promise<void>;
-  getHouseholdSetting: (settingKey: string, defaultValue?: SettingValue) => Promise<SettingValue>;
-  setHouseholdSetting: (settingKey: string, value: SettingValue) => Promise<void>;
-  getUserSettings: (settingKeys?: string[]) => Promise<Record<string, SettingValue>>;
-  getHouseholdSettings: (settingKeys?: string[]) => Promise<Record<string, SettingValue>>;
+  getHouseholdSetting: (
+    settingKey: string,
+    defaultValue?: SettingValue
+  ) => Promise<SettingValue>;
+  setHouseholdSetting: (
+    settingKey: string,
+    value: SettingValue
+  ) => Promise<void>;
+  getUserSettings: (
+    settingKeys?: string[]
+  ) => Promise<Record<string, SettingValue>>;
+  getHouseholdSettings: (
+    settingKeys?: string[]
+  ) => Promise<Record<string, SettingValue>>;
   getSettingDefinition: (settingKey: string) => Promise<SettingValue>;
   getAllUserSettings: () => Promise<Record<string, SettingValue>>;
   getAllHouseholdSettings: () => Promise<Record<string, SettingValue>>;
@@ -41,7 +54,10 @@ class SettingsService implements SettingsManager {
     this.settingsCache = {}; // Clear cache when context changes
   }
 
-  async getUserSetting(settingKey: string, defaultValue: SettingValue = null): Promise<SettingValue> {
+  async getUserSetting(
+    settingKey: string,
+    defaultValue: SettingValue = null
+  ): Promise<SettingValue> {
     if (!this.userId) {
       throw new Error('User ID not set. Call setContext() first.');
     }
@@ -77,13 +93,11 @@ class SettingsService implements SettingsManager {
     }
 
     try {
-      const { error } = await this.supabase
-        .from('user_settings')
-        .upsert({
-          user_id: this.userId,
-          setting_key: settingKey,
-          setting_value: value as Json
-        })
+      const { error } = await this.supabase.from('user_settings').upsert({
+        user_id: this.userId,
+        setting_key: settingKey,
+        setting_value: value as Json
+      });
 
       if (error) throw error;
 
@@ -96,7 +110,10 @@ class SettingsService implements SettingsManager {
     }
   }
 
-  async getHouseholdSetting(settingKey: string, defaultValue: SettingValue = null): Promise<SettingValue> {
+  async getHouseholdSetting(
+    settingKey: string,
+    defaultValue: SettingValue = null
+  ): Promise<SettingValue> {
     if (!this.householdId) {
       throw new Error('Household ID not set. Call setContext() first.');
     }
@@ -127,22 +144,26 @@ class SettingsService implements SettingsManager {
     }
   }
 
-  async setHouseholdSetting(settingKey: string, value: SettingValue): Promise<void> {
+  async setHouseholdSetting(
+    settingKey: string,
+    value: SettingValue
+  ): Promise<void> {
     if (!this.householdId) {
       throw new Error('Household ID not set. Call setContext() first.');
     }
 
     try {
-      const { error } = await this.supabase
-        .from('user_settings')
-        .upsert({
+      const { error } = await this.supabase.from('user_settings').upsert(
+        {
           user_id: this.householdId, // Using household_id as user_id for now
           setting_key: settingKey,
           setting_value: value as Json,
           updated_at: new Date().toISOString()
-        }, {
+        },
+        {
           onConflict: 'user_id,setting_key'
-        });
+        }
+      );
 
       if (error) throw error;
 
@@ -155,7 +176,9 @@ class SettingsService implements SettingsManager {
     }
   }
 
-  async getUserSettings(settingKeys?: string[]): Promise<Record<string, SettingValue>> {
+  async getUserSettings(
+    settingKeys?: string[]
+  ): Promise<Record<string, SettingValue>> {
     if (!this.userId) {
       throw new Error('User ID not set. Call setContext() first.');
     }
@@ -173,13 +196,16 @@ class SettingsService implements SettingsManager {
       const { data, error } = await query;
       if (error) throw error;
 
-      const settings = (data || []).reduce((acc, setting) => {
-        acc[setting.setting_key] = setting.setting_value;
-        // Update cache
-        const cacheKey = `user:${this.userId}:${setting.setting_key}`;
-        this.settingsCache[cacheKey] = setting.setting_value;
-        return acc;
-      }, {} as Record<string, SettingValue>);
+      const settings = (data || []).reduce(
+        (acc, setting) => {
+          acc[setting.setting_key] = setting.setting_value;
+          // Update cache
+          const cacheKey = `user:${this.userId}:${setting.setting_key}`;
+          this.settingsCache[cacheKey] = setting.setting_value;
+          return acc;
+        },
+        {} as Record<string, SettingValue>
+      );
 
       return settings;
     } catch (error) {
@@ -188,7 +214,9 @@ class SettingsService implements SettingsManager {
     }
   }
 
-  async getHouseholdSettings(settingKeys?: string[]): Promise<Record<string, SettingValue>> {
+  async getHouseholdSettings(
+    settingKeys?: string[]
+  ): Promise<Record<string, SettingValue>> {
     if (!this.householdId) {
       throw new Error('Household ID not set. Call setContext() first.');
     }
@@ -206,13 +234,16 @@ class SettingsService implements SettingsManager {
       const { data, error } = await query;
       if (error) throw error;
 
-      const settings = (data || []).reduce((acc, setting) => {
-        acc[setting.setting_key] = setting.setting_value;
-        // Update cache
-        const cacheKey = `household:${this.householdId}:${setting.setting_key}`;
-        this.settingsCache[cacheKey] = setting.setting_value;
-        return acc;
-      }, {} as Record<string, SettingValue>);
+      const settings = (data || []).reduce(
+        (acc, setting) => {
+          acc[setting.setting_key] = setting.setting_value;
+          // Update cache
+          const cacheKey = `household:${this.householdId}:${setting.setting_key}`;
+          this.settingsCache[cacheKey] = setting.setting_value;
+          return acc;
+        },
+        {} as Record<string, SettingValue>
+      );
 
       return settings;
     } catch (error) {
@@ -232,7 +263,10 @@ class SettingsService implements SettingsManager {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error(`Error getting setting definition for ${settingKey}:`, error);
+      console.error(
+        `Error getting setting definition for ${settingKey}:`,
+        error
+      );
       return null;
     }
   }
@@ -250,7 +284,10 @@ class SettingsService implements SettingsManager {
     this.settingsCache = {};
   }
 
-  async getSettingWithFallback(settingKey: string, defaultValue: SettingValue = null): Promise<SettingValue> {
+  async getSettingWithFallback(
+    settingKey: string,
+    defaultValue: SettingValue = null
+  ): Promise<SettingValue> {
     // Try user setting first, then household setting, then default
     try {
       if (this.userId) {
@@ -261,7 +298,10 @@ class SettingsService implements SettingsManager {
       }
 
       if (this.householdId) {
-        const householdValue = await this.getHouseholdSetting(settingKey, undefined);
+        const householdValue = await this.getHouseholdSetting(
+          settingKey,
+          undefined
+        );
         if (householdValue !== undefined && householdValue !== null) {
           return householdValue;
         }
@@ -269,7 +309,10 @@ class SettingsService implements SettingsManager {
 
       return defaultValue;
     } catch (error) {
-      console.error(`Error getting setting with fallback ${settingKey}:`, error);
+      console.error(
+        `Error getting setting with fallback ${settingKey}:`,
+        error
+      );
       return defaultValue;
     }
   }
@@ -281,11 +324,15 @@ import { useEffect, useState } from 'react';
 
 export function useSettings() {
   const { profile } = useAuth();
-  const [settingsService, setSettingsService] = useState<SettingsService | null>(null);
+  const [settingsService, setSettingsService] =
+    useState<SettingsService | null>(null);
 
   useEffect(() => {
     if (profile?.id) {
-      const service = new SettingsService(profile.id, profile.household_id || undefined);
+      const service = new SettingsService(
+        profile.id,
+        profile.household_id || undefined
+      );
       setSettingsService(service);
     }
   }, [profile?.id, profile?.household_id]);
@@ -297,10 +344,16 @@ export function useSettings() {
 export const SettingsUtils = {
   // Theme settings
   async isDarkMode(settingsService: SettingsService): Promise<boolean> {
-    return (await settingsService.getUserSetting('dark_mode', false)) as boolean;
+    return (await settingsService.getUserSetting(
+      'dark_mode',
+      false
+    )) as boolean;
   },
 
-  async setDarkMode(settingsService: SettingsService, enabled: boolean): Promise<void> {
+  async setDarkMode(
+    settingsService: SettingsService,
+    enabled: boolean
+  ): Promise<void> {
     await settingsService.setUserSetting('dark_mode', enabled);
   },
 
@@ -309,7 +362,10 @@ export const SettingsUtils = {
     return {
       email: await settingsService.getUserSetting('email_notifications', true),
       push: await settingsService.getUserSetting('push_notifications', true),
-      frequency: await settingsService.getUserSetting('notification_frequency', 'daily')
+      frequency: await settingsService.getUserSetting(
+        'notification_frequency',
+        'daily'
+      )
     };
   },
 
@@ -323,25 +379,44 @@ export const SettingsUtils = {
   },
 
   async getDateFormat(settingsService: SettingsService): Promise<string> {
-    return (await settingsService.getUserSetting('date_format', 'MM/DD/YYYY')) as string;
+    return (await settingsService.getUserSetting(
+      'date_format',
+      'MM/DD/YYYY'
+    )) as string;
   },
 
   // Household settings
   async getHouseholdName(settingsService: SettingsService): Promise<string> {
-    return (await settingsService.getHouseholdSetting('household_name', '')) as string;
+    return (await settingsService.getHouseholdSetting(
+      'household_name',
+      ''
+    )) as string;
   },
 
-  async isAutoAssignChoresEnabled(settingsService: SettingsService): Promise<boolean> {
-    return (await settingsService.getHouseholdSetting('auto_assign_chores', false)) as boolean;
+  async isAutoAssignChoresEnabled(
+    settingsService: SettingsService
+  ): Promise<boolean> {
+    return (await settingsService.getHouseholdSetting(
+      'auto_assign_chores',
+      false
+    )) as boolean;
   },
 
   // System settings
   async isMaintenanceMode(settingsService: SettingsService): Promise<boolean> {
-    return (await settingsService.getHouseholdSetting('maintenance_mode', false)) as boolean;
+    return (await settingsService.getHouseholdSetting(
+      'maintenance_mode',
+      false
+    )) as boolean;
   },
 
-  async isRegistrationEnabled(settingsService: SettingsService): Promise<boolean> {
-    return (await settingsService.getHouseholdSetting('registration_enabled', true)) as boolean;
+  async isRegistrationEnabled(
+    settingsService: SettingsService
+  ): Promise<boolean> {
+    return (await settingsService.getHouseholdSetting(
+      'registration_enabled',
+      true
+    )) as boolean;
   }
 };
 

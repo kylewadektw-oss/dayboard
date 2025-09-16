@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import { memo, useMemo } from 'react';
@@ -36,7 +35,7 @@ const mockEvents: CalendarEvent[] = [
     location: 'Presbyterian Hospital'
   },
   {
-    id: '2', 
+    id: '2',
     title: 'Harper Soccer Practice',
     time: '4:30 PM',
     type: 'family',
@@ -74,32 +73,42 @@ const getEventColor = (type: CalendarEvent['type']) => {
 
 function CalendarWidgetComponent() {
   // Memoize processed events data
-  const eventColorMapping = useMemo(() => 
-    mockEvents.map(event => ({
-      ...event,
-      colorClass: getEventColor(event.type)
-    })),
+  const eventColorMapping = useMemo(
+    () =>
+      mockEvents.map((event) => ({
+        ...event,
+        colorClass: getEventColor(event.type)
+      })),
     [] // Empty dependency array since mockEvents is static
   );
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-green-500 to-teal-600 px-3 py-1 rounded-lg tracking-wide">TODAY&apos;S SCHEDULE</h3>
+        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-green-500 to-teal-600 px-3 py-1 rounded-lg tracking-wide">
+          TODAY&apos;S SCHEDULE
+        </h3>
         <Calendar className="h-4 w-4 text-gray-400" />
       </div>
 
       {/* Today's Events */}
       <div className="space-y-2 mb-4">
         {eventColorMapping.map((event) => (
-          <div key={event.id} className={`p-2 rounded-lg border ${event.colorClass}`}>
+          <div
+            key={event.id}
+            className={`p-2 rounded-lg border ${event.colorClass}`}
+          >
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate">{event.title}</div>
+                <div className="text-sm font-medium truncate">
+                  {event.title}
+                </div>
                 {event.location && (
                   <div className="flex items-center mt-1">
                     <MapPin className="h-3 w-3 mr-1 opacity-60" />
-                    <span className="text-xs opacity-75 truncate">{event.location}</span>
+                    <span className="text-xs opacity-75 truncate">
+                      {event.location}
+                    </span>
                   </div>
                 )}
               </div>
@@ -117,9 +126,14 @@ function CalendarWidgetComponent() {
         <h4 className="text-xs font-medium text-gray-500 mb-2">Coming Up</h4>
         <div className="space-y-1">
           {nextDaysEvents.map((day, index) => (
-            <div key={index} className="flex items-center justify-between text-xs">
+            <div
+              key={index}
+              className="flex items-center justify-between text-xs"
+            >
               <span className="text-gray-600">{day.day}</span>
-              <span className="text-gray-800 font-medium">{day.count} events</span>
+              <span className="text-gray-800 font-medium">
+                {day.count} events
+              </span>
             </div>
           ))}
         </div>

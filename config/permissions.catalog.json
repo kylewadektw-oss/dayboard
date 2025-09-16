@@ -7,34 +7,67 @@
       "key": "core",
       "title": "Core Features",
       "permissions": [
-        {"key": "dashboard", "description": "Access household dashboard overview"},
-        {"key": "lists", "description": "Create & manage shared lists"},
-        {"key": "meals", "description": "Meal planning & recipe features"},
-        {"key": "projects", "description": "Family / home project tracking"},
-        {"key": "work", "description": "Work / productivity modules"},
-        {"key": "profile", "description": "View & edit user profile"},
-        {"key": "sports_ticker", "description": "Sports ticker / scores module"}
+        {
+          "key": "dashboard",
+          "description": "Access household dashboard overview"
+        },
+        { "key": "lists", "description": "Create & manage shared lists" },
+        { "key": "meals", "description": "Meal planning & recipe features" },
+        { "key": "projects", "description": "Family / home project tracking" },
+        { "key": "work", "description": "Work / productivity modules" },
+        { "key": "profile", "description": "View & edit user profile" },
+        {
+          "key": "sports_ticker",
+          "description": "Sports ticker / scores module"
+        }
       ]
     },
     {
       "key": "management",
       "title": "Management",
       "permissions": [
-        {"key": "household_management", "description": "Edit household information & members"},
-        {"key": "user_management", "description": "Invite / manage users, assign roles"},
-        {"key": "feature_management", "description": "Toggle feature flags for household"},
-        {"key": "billing_management", "description": "Subscription & billing controls"}
+        {
+          "key": "household_management",
+          "description": "Edit household information & members"
+        },
+        {
+          "key": "user_management",
+          "description": "Invite / manage users, assign roles"
+        },
+        {
+          "key": "feature_management",
+          "description": "Toggle feature flags for household"
+        },
+        {
+          "key": "billing_management",
+          "description": "Subscription & billing controls"
+        }
       ]
     },
     {
       "key": "advanced",
       "title": "Advanced / Admin",
       "permissions": [
-        {"key": "financial_tracking", "description": "Budgeting & finance modules"},
-        {"key": "ai_features", "description": "Access AI-assisted capabilities"},
-        {"key": "analytics_dashboard", "description": "Advanced analytics & insights"},
-        {"key": "global_feature_control", "description": "Override global feature availability"},
-        {"key": "system_admin", "description": "Full system administration powers"}
+        {
+          "key": "financial_tracking",
+          "description": "Budgeting & finance modules"
+        },
+        {
+          "key": "ai_features",
+          "description": "Access AI-assisted capabilities"
+        },
+        {
+          "key": "analytics_dashboard",
+          "description": "Advanced analytics & insights"
+        },
+        {
+          "key": "global_feature_control",
+          "description": "Override global feature availability"
+        },
+        {
+          "key": "system_admin",
+          "description": "Full system administration powers"
+        }
       ]
     }
   ]

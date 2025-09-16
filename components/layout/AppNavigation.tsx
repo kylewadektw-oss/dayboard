@@ -24,14 +24,29 @@
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useMemo, useCallback, memo } from 'react';
-import { Home, UtensilsCrossed, ClipboardList, Briefcase, User, Settings, ChevronLeft, ChevronRight, LogOut, FileText, UserCheck, DollarSign, Lock, Gamepad2, Calendar } from 'lucide-react';
+import {
+  Home,
+  UtensilsCrossed,
+  ClipboardList,
+  Briefcase,
+  User,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  FileText,
+  UserCheck,
+  DollarSign,
+  Lock,
+  Gamepad2,
+  Calendar
+} from 'lucide-react';
 import Logo from '@/components/icons/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import SidebarWeather from '@/components/layout/SidebarWeather';
@@ -39,44 +54,136 @@ import SidebarWeather from '@/components/layout/SidebarWeather';
 function AppNavigationComponent() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, loading, signOut } = useAuth();
   const [hasHydrated, setHasHydrated] = useState(false);
-  
-  useEffect(() => { setHasHydrated(true); }, []);
 
-    // Get user's role for permission checking
-  const userRole = (profile?.role as string) || 'member';
+  // Stable auth state management to prevent loading oscillation
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [stableAuthState, setStableAuthState] = useState({
+    user: null as typeof user,
+    profile: null as typeof profile,
+    loading: true
+  });
+
+  // Update stable auth state when auth values change
+  useEffect(() => {
+    if (!loading && !initialLoadComplete) {
+      setInitialLoadComplete(true);
+      setStableAuthState({ user, profile, loading });
+    } else if (initialLoadComplete) {
+      setStableAuthState({ user, profile, loading });
+    }
+  }, [user, profile, loading, initialLoadComplete]);
+
+  // Use stable state for all auth-dependent operations
+  const currentUser = stableAuthState.user;
+  const currentProfile = stableAuthState.profile;
+
+  useEffect(() => {
+    setHasHydrated(true);
+  }, []);
+
+  // Get user's role for permission checking using stable state
+  const userRole = (currentProfile?.role as string) || 'member';
   const isAdmin = userRole === 'admin' || userRole === 'super_admin';
 
   // Define navigation items with basic access control
-  const navigationItems = useMemo(() => [
-    { name: 'Dashboard', href: '/dashboard', icon: Home, current: pathname === '/dashboard', disabled: false },
-    { name: 'Calendar', href: '/calendar', icon: Calendar, current: pathname?.startsWith('/calendar'), disabled: false },
-    { name: 'Meals', href: '/meals', icon: UtensilsCrossed, current: pathname?.startsWith('/meals'), disabled: false },
-    { name: 'Lists', href: '/lists', icon: ClipboardList, current: pathname?.startsWith('/lists'), disabled: false },
-    { name: 'Entertainment', href: '/entertainment', icon: Gamepad2, current: pathname?.startsWith('/entertainment'), disabled: false },
-    { name: 'Financial', href: '/financial', icon: DollarSign, current: pathname?.startsWith('/financial'), disabled: !isAdmin }, // Admin feature
-    { name: 'Work', href: '/work', icon: Briefcase, current: pathname?.startsWith('/work'), disabled: false },
-    { name: 'Settings', href: '/settings', icon: Settings, current: pathname?.startsWith('/settings'), disabled: false },
-  ], [pathname, isAdmin]);
-
-  // Memoize dev navigation items
-  const devNavigation = useMemo(() => [
-    { name: 'Logs Dashboard', href: '/logs-dashboard', icon: FileText, current: pathname === '/logs-dashboard' },
-    { name: 'Customer Review', href: '/customer-review', icon: UserCheck, current: pathname === '/customer-review' },
-    { name: 'Logout', href: '/api/logout', icon: LogOut, current: false },
-  ], [pathname]);
-
-  // Memoize user display name
-  const displayName = useMemo(() => 
-    profile?.preferred_name || profile?.name || user?.email || 'Guest',
-    [profile?.preferred_name, profile?.name, user?.email]
+  const navigationItems = useMemo(
+    () => [
+      {
+        name: 'Dashboard',
+        href: '/dashboard',
+        icon: Home,
+        current: pathname === '/dashboard',
+        disabled: false
+      },
+      {
+        name: 'Calendar',
+        href: '/calendar',
+        icon: Calendar,
+        current: pathname?.startsWith('/calendar'),
+        disabled: false
+      },
+      {
+        name: 'Meals',
+        href: '/meals',
+        icon: UtensilsCrossed,
+        current: pathname?.startsWith('/meals'),
+        disabled: false
+      },
+      {
+        name: 'Lists',
+        href: '/lists',
+        icon: ClipboardList,
+        current: pathname?.startsWith('/lists'),
+        disabled: false
+      },
+      {
+        name: 'Entertainment',
+        href: '/entertainment',
+        icon: Gamepad2,
+        current: pathname?.startsWith('/entertainment'),
+        disabled: false
+      },
+      {
+        name: 'Financial',
+        href: '/financial',
+        icon: DollarSign,
+        current: pathname?.startsWith('/financial'),
+        disabled: !isAdmin
+      }, // Admin feature
+      {
+        name: 'Work',
+        href: '/work',
+        icon: Briefcase,
+        current: pathname?.startsWith('/work'),
+        disabled: false
+      },
+      {
+        name: 'Settings',
+        href: '/settings',
+        icon: Settings,
+        current: pathname?.startsWith('/settings'),
+        disabled: false
+      }
+    ],
+    [pathname, isAdmin]
   );
 
-  // Get user role for display
-  const displayRole = useMemo(() => 
-    profile?.role?.replace('_', ' ').toUpperCase() || 'Member',
-    [profile?.role]
+  // Memoize dev navigation items
+  const devNavigation = useMemo(
+    () => [
+      {
+        name: 'Logs Dashboard',
+        href: '/logs-dashboard',
+        icon: FileText,
+        current: pathname === '/logs-dashboard'
+      },
+      {
+        name: 'Customer Review',
+        href: '/customer-review',
+        icon: UserCheck,
+        current: pathname === '/customer-review'
+      },
+      { name: 'Logout', href: '/api/logout', icon: LogOut, current: false }
+    ],
+    [pathname]
+  );
+
+  // Memoize user display name using stable state
+  const displayName = useMemo(
+    () =>
+      currentProfile?.preferred_name ||
+      currentProfile?.name ||
+      currentUser?.email ||
+      'Guest',
+    [currentProfile?.preferred_name, currentProfile?.name, currentUser?.email]
+  );
+
+  // Get user role for display using stable state
+  const displayRole = useMemo(
+    () => currentProfile?.role?.replace('_', ' ').toUpperCase() || 'Member',
+    [currentProfile?.role]
   );
 
   // Add class to body to adjust main content
@@ -89,7 +196,7 @@ function AppNavigationComponent() {
       body.classList.add('sidebar-expanded');
       body.classList.remove('sidebar-collapsed');
     }
-    
+
     // Cleanup on unmount
     return () => {
       body.classList.remove('sidebar-collapsed', 'sidebar-expanded');
@@ -102,7 +209,7 @@ function AppNavigationComponent() {
       console.log('🚪 Starting sign out process...');
       await signOut();
       console.log('✅ Sign out completed, redirecting to landing page...');
-      
+
       // Redirect to root path after successful sign out
       // The middleware should allow this since auth cookies are now cleared
       window.location.href = '/';
@@ -116,9 +223,11 @@ function AppNavigationComponent() {
   return (
     <>
       {/* Left Sidebar Navigation - Desktop */}
-      <div className={`hidden md:flex md:fixed md:inset-y-0 md:left-0 md:z-50 flex-col bg-gradient-to-b from-gray-900 to-black border-r border-gray-700 shadow-xl transition-all duration-300 ${
-        isCollapsed ? 'w-16' : 'w-64'
-      }`}>
+      <div
+        className={`hidden md:flex md:fixed md:inset-y-0 md:left-0 md:z-50 flex-col bg-gradient-to-b from-gray-900 to-black border-r border-gray-700 shadow-xl transition-all duration-300 ${
+          isCollapsed ? 'w-16' : 'w-64'
+        }`}
+      >
         {/* Logo and Toggle - Black Background with White Text */}
         <div className="bg-gradient-to-r from-gray-900 to-black p-4 border-b border-gray-700 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -127,15 +236,20 @@ function AppNavigationComponent() {
                 <Logo className="scale-75" />
               </Link>
             ) : (
-              <Link href="/dashboard" className="flex items-center justify-center w-full">
+              <Link
+                href="/dashboard"
+                className="flex items-center justify-center w-full"
+              >
                 <Logo iconOnly className="w-8 h-8 text-white" />
               </Link>
             )}
-            
+
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
               className="p-1.5 rounded-md text-gray-300 hover:text-white hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
-              aria-label={isCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+              aria-label={
+                isCollapsed ? 'Expand navigation' : 'Collapse navigation'
+              }
             >
               {isCollapsed ? (
                 <ChevronRight className="h-4 w-4" />
@@ -148,10 +262,19 @@ function AppNavigationComponent() {
 
         {/* User Info (deferred until after hydration to avoid SSR mismatch) */}
         {!isCollapsed && hasHydrated && user && (
-          <Link href="/profile" className="block px-4 py-3 border-b border-gray-700 bg-gray-800/50 hover:bg-gray-700/50 transition-colors">
+          <Link
+            href="/profile"
+            className="block px-4 py-3 border-b border-gray-700 bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
+          >
             <div className="flex items-center">
               {profile?.avatar_url ? (
-                <Image src={profile.avatar_url} alt="" width={32} height={32} className="h-8 w-8 rounded-full border-2 border-gray-600" />
+                <Image
+                  src={profile.avatar_url}
+                  alt=""
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full border-2 border-gray-600"
+                />
               ) : (
                 <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center border-2 border-gray-600">
                   <User className="h-4 w-4 text-gray-300" />
@@ -161,18 +284,14 @@ function AppNavigationComponent() {
                 <p className="text-sm font-medium text-white truncate">
                   {displayName}
                 </p>
-                <p className="text-xs text-gray-300 truncate">
-                  {displayRole}
-                </p>
+                <p className="text-xs text-gray-300 truncate">{displayRole}</p>
               </div>
             </div>
           </Link>
         )}
 
         {/* Simple Weather Display */}
-        {!isCollapsed && hasHydrated && (
-          <SidebarWeather />
-        )}
+        {!isCollapsed && hasHydrated && <SidebarWeather />}
 
         {/* Navigation Links */}
         <nav className="flex-1 p-2">
@@ -180,7 +299,7 @@ function AppNavigationComponent() {
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isDisabled = item.disabled;
-              
+
               if (isDisabled) {
                 // Render as disabled div instead of link
                 return (
@@ -200,7 +319,7 @@ function AppNavigationComponent() {
                         <Lock className="ml-auto h-4 w-4 text-gray-600" />
                       </>
                     )}
-                    
+
                     {/* Tooltip for collapsed state */}
                     {isCollapsed && (
                       <div className="absolute left-full ml-2 bg-red-100 text-red-800 text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
@@ -210,7 +329,7 @@ function AppNavigationComponent() {
                   </div>
                 );
               }
-              
+
               // Render as normal link for accessible items
               return (
                 <Link
@@ -222,13 +341,17 @@ function AppNavigationComponent() {
                       : 'text-gray-300 hover:text-white hover:bg-gray-800'
                   }`}
                 >
-                  <Icon className={`h-5 w-5 flex-shrink-0 ${
-                    item.current ? 'text-white' : 'text-gray-400 group-hover:text-white'
-                  }`} />
+                  <Icon
+                    className={`h-5 w-5 flex-shrink-0 ${
+                      item.current
+                        ? 'text-white'
+                        : 'text-gray-400 group-hover:text-white'
+                    }`}
+                  />
                   {!isCollapsed && (
                     <span className="ml-3 truncate">{item.name}</span>
                   )}
-                  
+
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && (
                     <div className="absolute left-full ml-2 bg-white text-black text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
@@ -248,7 +371,7 @@ function AppNavigationComponent() {
               </h3>
             </div>
           )}
-          
+
           <div className="space-y-1 mt-2">
             {devNavigation.map((item) => {
               const Icon = item.icon;
@@ -262,13 +385,17 @@ function AppNavigationComponent() {
                       : 'text-gray-300 hover:text-white hover:bg-gray-800'
                   }`}
                 >
-                  <Icon className={`h-5 w-5 flex-shrink-0 ${
-                    item.current ? 'text-white' : 'text-gray-400 group-hover:text-white'
-                  }`} />
+                  <Icon
+                    className={`h-5 w-5 flex-shrink-0 ${
+                      item.current
+                        ? 'text-white'
+                        : 'text-gray-400 group-hover:text-white'
+                    }`}
+                  />
                   {!isCollapsed && (
                     <span className="ml-3 truncate">{item.name}</span>
                   )}
-                  
+
                   {/* Tooltip for collapsed state */}
                   {isCollapsed && (
                     <div className="absolute left-full ml-2 bg-white text-black text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
@@ -292,13 +419,15 @@ function AppNavigationComponent() {
                 : 'text-gray-300 hover:text-white hover:bg-gray-800'
             } ${isCollapsed ? 'justify-center' : ''}`}
           >
-            <User className={`h-5 w-5 flex-shrink-0 ${
-              pathname?.startsWith('/profile') ? 'text-white' : 'text-gray-400 group-hover:text-white'
-            }`} />
-            {!isCollapsed && (
-              <span className="ml-3 truncate">Profile</span>
-            )}
-            
+            <User
+              className={`h-5 w-5 flex-shrink-0 ${
+                pathname?.startsWith('/profile')
+                  ? 'text-white'
+                  : 'text-gray-400 group-hover:text-white'
+              }`}
+            />
+            {!isCollapsed && <span className="ml-3 truncate">Profile</span>}
+
             {/* Tooltip for collapsed state */}
             {isCollapsed && (
               <div className="absolute left-full ml-2 bg-white text-black text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
@@ -319,10 +448,8 @@ function AppNavigationComponent() {
               }`}
             >
               <LogOut className="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-red-400" />
-              {!isCollapsed && (
-                <span className="ml-3 truncate">Sign Out</span>
-              )}
-              
+              {!isCollapsed && <span className="ml-3 truncate">Sign Out</span>}
+
               {/* Tooltip for collapsed state */}
               {isCollapsed && (
                 <div className="absolute left-full ml-2 bg-white text-black text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg">
@@ -341,7 +468,7 @@ function AppNavigationComponent() {
           <Link href="/dashboard" className="flex items-center">
             <Logo className="scale-75" />
           </Link>
-          
+
           {user && (
             <div className="flex items-center space-x-2">
               <Link
@@ -372,7 +499,7 @@ function AppNavigationComponent() {
             {navigationItems.map((item) => {
               const Icon = item.icon;
               const isDisabled = item.disabled;
-              
+
               if (isDisabled) {
                 // Render as disabled div for mobile
                 return (
@@ -389,7 +516,7 @@ function AppNavigationComponent() {
                   </div>
                 );
               }
-              
+
               // Render as normal link for accessible items
               return (
                 <Link

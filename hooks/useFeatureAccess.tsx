@@ -15,7 +15,10 @@ export function useUserRole() {
     return (profile?.role as UserRole) || 'member';
   }, [profile?.role]);
 
-  const isAdmin = useMemo(() => role === 'admin' || role === 'super_admin', [role]);
+  const isAdmin = useMemo(
+    () => role === 'admin' || role === 'super_admin',
+    [role]
+  );
   const isSuperAdmin = useMemo(() => role === 'super_admin', [role]);
 
   return { role, isAdmin, isSuperAdmin };
@@ -79,7 +82,11 @@ export function FeatureGate({
   const { hasAccess, loading } = useFeatureAccess(featureName);
 
   if (loading) {
-    return loadingComponent || <div className="animate-pulse bg-gray-200 rounded h-8 w-24"></div>;
+    return (
+      loadingComponent || (
+        <div className="animate-pulse bg-gray-200 rounded h-8 w-24"></div>
+      )
+    );
   }
 
   if (!hasAccess) {
@@ -99,7 +106,10 @@ export function FeatureGate({
 /**
  * Utility functions for direct access checks (non-reactive)
  */
-export const getFeatureAccess = (_userRole: UserRole, _featureName: string): boolean => {
+export const getFeatureAccess = (
+  _userRole: UserRole,
+  _featureName: string
+): boolean => {
   // For now, just return true for basic access
   return true;
 };

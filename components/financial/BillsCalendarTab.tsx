@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -20,8 +20,8 @@ import { memo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Calendar, 
+import {
+  Calendar,
   Plus,
   ChevronLeft,
   ChevronRight,
@@ -43,7 +43,13 @@ interface Bill {
   name: string;
   amount: number;
   dueDate: string;
-  category: 'utilities' | 'housing' | 'transportation' | 'communication' | 'subscription' | 'insurance';
+  category:
+    | 'utilities'
+    | 'housing'
+    | 'transportation'
+    | 'communication'
+    | 'subscription'
+    | 'insurance';
   status: 'upcoming' | 'due' | 'overdue' | 'paid';
   autopay: boolean;
   recurring: 'monthly' | 'quarterly' | 'annually';
@@ -62,7 +68,7 @@ const mockBills: Bill[] = [
     recurring: 'monthly'
   },
   {
-    id: '2', 
+    id: '2',
     name: 'Electric Bill',
     amount: 125,
     dueDate: '2025-09-18',
@@ -123,40 +129,50 @@ export const BillsCalendarTab = memo(() => {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(amount);
   };
 
   const getCategoryIcon = (category: string) => {
     const iconMap: Record<string, LucideIcon> = {
-      'utilities': Zap,
-      'housing': Home,
-      'transportation': Car,
-      'communication': Phone,
-      'subscription': Wifi,
-      'insurance': CreditCard,
-      'default': DollarSign
+      utilities: Zap,
+      housing: Home,
+      transportation: Car,
+      communication: Phone,
+      subscription: Wifi,
+      insurance: CreditCard,
+      default: DollarSign
     };
     return iconMap[category] || iconMap.default;
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'paid': return 'bg-green-100 text-green-800';
-      case 'upcoming': return 'bg-blue-100 text-blue-800';
-      case 'due': return 'bg-yellow-100 text-yellow-800';
-      case 'overdue': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'paid':
+        return 'bg-green-100 text-green-800';
+      case 'upcoming':
+        return 'bg-blue-100 text-blue-800';
+      case 'due':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'overdue':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'paid': return CheckCircle;
-      case 'upcoming': return Clock;
-      case 'due': return AlertTriangle;
-      case 'overdue': return AlertTriangle;
-      default: return Clock;
+      case 'paid':
+        return CheckCircle;
+      case 'upcoming':
+        return Clock;
+      case 'due':
+        return AlertTriangle;
+      case 'overdue':
+        return AlertTriangle;
+      default:
+        return Clock;
     }
   };
 
@@ -180,12 +196,22 @@ export const BillsCalendarTab = memo(() => {
 
   const getBillsForDay = (day: number) => {
     const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-    return bills.filter(bill => bill.dueDate === dateStr);
+    return bills.filter((bill) => bill.dueDate === dateStr);
   };
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
   ];
 
   const previousMonth = () => {
@@ -198,12 +224,12 @@ export const BillsCalendarTab = memo(() => {
 
   // Summary stats
   const totalMonthlyBills = bills.reduce((sum, bill) => sum + bill.amount, 0);
-  const overdueBills = bills.filter(bill => bill.status === 'overdue');
-  const dueTodayBills = bills.filter(bill => {
+  const overdueBills = bills.filter((bill) => bill.status === 'overdue');
+  const dueTodayBills = bills.filter((bill) => {
     const today = new Date().toISOString().split('T')[0];
     return bill.dueDate === today && bill.status !== 'paid';
   });
-  const autopayBills = bills.filter(bill => bill.autopay);
+  const autopayBills = bills.filter((bill) => bill.autopay);
 
   return (
     <div className="space-y-6">
@@ -211,7 +237,9 @@ export const BillsCalendarTab = memo(() => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Bills & Payments</h2>
-          <p className="text-gray-600">Track due dates and manage recurring payments</p>
+          <p className="text-gray-600">
+            Track due dates and manage recurring payments
+          </p>
         </div>
         <div className="flex gap-2">
           <div className="flex border border-gray-300 rounded-lg overflow-hidden">
@@ -245,12 +273,14 @@ export const BillsCalendarTab = memo(() => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Monthly Total</p>
-                <p className="text-lg font-bold text-blue-600">{formatCurrency(totalMonthlyBills)}</p>
+                <p className="text-lg font-bold text-blue-600">
+                  {formatCurrency(totalMonthlyBills)}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -259,12 +289,14 @@ export const BillsCalendarTab = memo(() => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Overdue</p>
-                <p className="text-lg font-bold text-red-600">{overdueBills.length}</p>
+                <p className="text-lg font-bold text-red-600">
+                  {overdueBills.length}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -273,12 +305,14 @@ export const BillsCalendarTab = memo(() => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Due Today</p>
-                <p className="text-lg font-bold text-yellow-600">{dueTodayBills.length}</p>
+                <p className="text-lg font-bold text-yellow-600">
+                  {dueTodayBills.length}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -287,7 +321,9 @@ export const BillsCalendarTab = memo(() => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Autopay</p>
-                <p className="text-lg font-bold text-green-600">{autopayBills.length}</p>
+                <p className="text-lg font-bold text-green-600">
+                  {autopayBills.length}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -315,32 +351,46 @@ export const BillsCalendarTab = memo(() => {
             {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-2">
               {/* Day headers */}
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                <div key={day} className="text-center text-sm font-medium text-gray-500 p-2">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <div
+                  key={day}
+                  className="text-center text-sm font-medium text-gray-500 p-2"
+                >
                   {day}
                 </div>
               ))}
-              
+
               {/* Calendar days */}
               {calendarDays.map((day, index) => {
                 if (day === null) {
                   return <div key={index} className="p-2 h-20"></div>;
                 }
-                
+
                 const dayBills = getBillsForDay(day);
                 const today = new Date();
-                const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-                
+                const isToday =
+                  day === today.getDate() &&
+                  month === today.getMonth() &&
+                  year === today.getFullYear();
+
                 return (
-                  <div key={day} className={`p-2 h-20 border rounded-lg ${isToday ? 'bg-blue-50 border-blue-200' : 'border-gray-200'}`}>
-                    <div className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}>
+                  <div
+                    key={day}
+                    className={`p-2 h-20 border rounded-lg ${isToday ? 'bg-blue-50 border-blue-200' : 'border-gray-200'}`}
+                  >
+                    <div
+                      className={`text-sm font-medium mb-1 ${isToday ? 'text-blue-600' : 'text-gray-900'}`}
+                    >
                       {day}
                     </div>
                     <div className="space-y-1">
-                      {dayBills.slice(0, 2).map(bill => {
+                      {dayBills.slice(0, 2).map((bill) => {
                         const Icon = getCategoryIcon(bill.category);
                         return (
-                          <div key={bill.id} className={`text-xs p-1 rounded flex items-center gap-1 ${getStatusColor(bill.status)}`}>
+                          <div
+                            key={bill.id}
+                            className={`text-xs p-1 rounded flex items-center gap-1 ${getStatusColor(bill.status)}`}
+                          >
                             <Icon className="w-3 h-3" />
                             <span className="truncate">{bill.name}</span>
                           </div>
@@ -361,14 +411,19 @@ export const BillsCalendarTab = memo(() => {
       ) : (
         /* List View */
         <div className="space-y-4">
-          {bills.map(bill => {
+          {bills.map((bill) => {
             const Icon = getCategoryIcon(bill.category);
             const StatusIcon = getStatusIcon(bill.status);
             const isOverdue = bill.status === 'overdue';
-            const isDueToday = bill.dueDate === new Date().toISOString().split('T')[0] && bill.status !== 'paid';
-            
+            const isDueToday =
+              bill.dueDate === new Date().toISOString().split('T')[0] &&
+              bill.status !== 'paid';
+
             return (
-              <Card key={bill.id} className={`hover:shadow-md transition-shadow ${isOverdue ? 'border-red-200' : isDueToday ? 'border-yellow-200' : ''}`}>
+              <Card
+                key={bill.id}
+                className={`hover:shadow-md transition-shadow ${isOverdue ? 'border-red-200' : isDueToday ? 'border-yellow-200' : ''}`}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -383,13 +438,18 @@ export const BillsCalendarTab = memo(() => {
                             {bill.status}
                           </Badge>
                           {bill.autopay && (
-                            <Badge variant="outline" className="text-green-600 border-green-200">
+                            <Badge
+                              variant="outline"
+                              className="text-green-600 border-green-200"
+                            >
                               AutoPay
                             </Badge>
                           )}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>Due: {new Date(bill.dueDate).toLocaleDateString()}</span>
+                          <span>
+                            Due: {new Date(bill.dueDate).toLocaleDateString()}
+                          </span>
                           <span>•</span>
                           <span className="capitalize">{bill.category}</span>
                           <span>•</span>
@@ -399,11 +459,16 @@ export const BillsCalendarTab = memo(() => {
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-xl font-bold text-gray-900">{formatCurrency(bill.amount)}</p>
+                        <p className="text-xl font-bold text-gray-900">
+                          {formatCurrency(bill.amount)}
+                        </p>
                       </div>
                       <div className="flex gap-2">
                         {bill.status !== 'paid' && (
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                          <Button
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700"
+                          >
                             Mark Paid
                           </Button>
                         )}

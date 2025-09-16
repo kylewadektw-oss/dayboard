@@ -2,8 +2,24 @@
 // Auto-generated types for recipes table and related functionality
 
 export type RecipeDifficulty = 'easy' | 'medium' | 'hard';
-export type RecipeMealType = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'dessert' | 'appetizer' | 'beverage';
-export type RecipeDietType = 'none' | 'vegetarian' | 'vegan' | 'gluten_free' | 'dairy_free' | 'keto' | 'paleo' | 'low_carb' | 'mediterranean';
+export type RecipeMealType =
+  | 'breakfast'
+  | 'lunch'
+  | 'dinner'
+  | 'snack'
+  | 'dessert'
+  | 'appetizer'
+  | 'beverage';
+export type RecipeDietType =
+  | 'none'
+  | 'vegetarian'
+  | 'vegan'
+  | 'gluten_free'
+  | 'dairy_free'
+  | 'keto'
+  | 'paleo'
+  | 'low_carb'
+  | 'mediterranean';
 
 export interface RecipeIngredient {
   name: string;
@@ -214,7 +230,11 @@ export interface RecipeCardProps {
   recipe: RecipeWithDetails;
   onFavorite?: (recipeId: string, isFavorite: boolean) => void;
   onRate?: (recipeId: string, rating: number) => void;
-  onAddToMealPlan?: (recipeId: string, date: string, mealType: RecipeMealType) => void;
+  onAddToMealPlan?: (
+    recipeId: string,
+    date: string,
+    mealType: RecipeMealType
+  ) => void;
   onViewDetails?: (recipeId: string) => void;
   showQuickActions?: boolean;
   compact?: boolean;
@@ -222,7 +242,9 @@ export interface RecipeCardProps {
 
 export interface RecipeFormProps {
   recipe?: Recipe;
-  onSubmit: (recipe: CreateRecipePayload | UpdateRecipePayload) => Promise<void>;
+  onSubmit: (
+    recipe: CreateRecipePayload | UpdateRecipePayload
+  ) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -235,22 +257,35 @@ export interface MealPlannerProps {
 }
 
 // Utility types for recipe operations
-export type RecipeAction = 
+export type RecipeAction =
   | { type: 'FAVORITE'; recipeId: string; isFavorite: boolean }
   | { type: 'RATE'; recipeId: string; rating: number; review?: string }
   | { type: 'COOK'; recipeId: string; servings?: number; notes?: string }
   | { type: 'ADD_TO_COLLECTION'; recipeId: string; collectionId: string }
   | { type: 'REMOVE_FROM_COLLECTION'; recipeId: string; collectionId: string }
-  | { type: 'SCHEDULE'; recipeId: string; date: string; mealType: RecipeMealType };
+  | {
+      type: 'SCHEDULE';
+      recipeId: string;
+      date: string;
+      mealType: RecipeMealType;
+    };
 
 // Constants for UI
-export const RECIPE_DIFFICULTIES: { value: RecipeDifficulty; label: string; color: string }[] = [
+export const RECIPE_DIFFICULTIES: {
+  value: RecipeDifficulty;
+  label: string;
+  color: string;
+}[] = [
   { value: 'easy', label: 'Easy', color: 'text-green-600 bg-green-100' },
   { value: 'medium', label: 'Medium', color: 'text-yellow-600 bg-yellow-100' },
   { value: 'hard', label: 'Hard', color: 'text-red-600 bg-red-100' }
 ];
 
-export const MEAL_TYPES: { value: RecipeMealType; label: string; emoji: string }[] = [
+export const MEAL_TYPES: {
+  value: RecipeMealType;
+  label: string;
+  emoji: string;
+}[] = [
   { value: 'breakfast', label: 'Breakfast', emoji: '🌅' },
   { value: 'lunch', label: 'Lunch', emoji: '🌞' },
   { value: 'dinner', label: 'Dinner', emoji: '🌙' },
@@ -260,7 +295,11 @@ export const MEAL_TYPES: { value: RecipeMealType; label: string; emoji: string }
   { value: 'beverage', label: 'Beverage', emoji: '🥤' }
 ];
 
-export const DIET_TYPES: { value: RecipeDietType; label: string; emoji: string }[] = [
+export const DIET_TYPES: {
+  value: RecipeDietType;
+  label: string;
+  emoji: string;
+}[] = [
   { value: 'none', label: 'No Restrictions', emoji: '🍽️' },
   { value: 'vegetarian', label: 'Vegetarian', emoji: '🥬' },
   { value: 'vegan', label: 'Vegan', emoji: '🌱' },
@@ -273,14 +312,48 @@ export const DIET_TYPES: { value: RecipeDietType; label: string; emoji: string }
 ];
 
 export const COMMON_CUISINES = [
-  'American', 'Italian', 'Mexican', 'Chinese', 'Japanese', 'Thai', 'Indian', 
-  'French', 'Greek', 'Mediterranean', 'Korean', 'Vietnamese', 'Spanish', 
-  'German', 'British', 'Middle Eastern', 'Brazilian', 'Moroccan'
+  'American',
+  'Italian',
+  'Mexican',
+  'Chinese',
+  'Japanese',
+  'Thai',
+  'Indian',
+  'French',
+  'Greek',
+  'Mediterranean',
+  'Korean',
+  'Vietnamese',
+  'Spanish',
+  'German',
+  'British',
+  'Middle Eastern',
+  'Brazilian',
+  'Moroccan'
 ];
 
 export const COMMON_TAGS = [
-  'quick', 'easy', 'healthy', 'comfort food', 'one pot', 'slow cooker', 
-  'grilled', 'baked', 'fried', 'roasted', 'spicy', 'sweet', 'savory',
-  'kid-friendly', 'date night', 'holiday', 'meal prep', 'budget friendly',
-  'high protein', 'low fat', 'low sodium', 'make ahead', 'freezer friendly'
+  'quick',
+  'easy',
+  'healthy',
+  'comfort food',
+  'one pot',
+  'slow cooker',
+  'grilled',
+  'baked',
+  'fried',
+  'roasted',
+  'spicy',
+  'sweet',
+  'savory',
+  'kid-friendly',
+  'date night',
+  'holiday',
+  'meal prep',
+  'budget friendly',
+  'high protein',
+  'low fat',
+  'low sodium',
+  'make ahead',
+  'freezer friendly'
 ];

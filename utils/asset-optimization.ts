@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -18,13 +18,13 @@ import { enhancedLogger, LogLevel } from '@/utils/logger';
 
 // 🚀 PERFORMANCE: Asset loading priorities
 export const AssetPriority = {
-  CRITICAL: 'high',     // Above-the-fold content
-  IMPORTANT: 'medium',  // Important but not critical
-  LOW: 'low',          // Below-the-fold content
-  LAZY: 'lazy'         // Load when needed
+  CRITICAL: 'high', // Above-the-fold content
+  IMPORTANT: 'medium', // Important but not critical
+  LOW: 'low', // Below-the-fold content
+  LAZY: 'lazy' // Load when needed
 } as const;
 
-type AssetPriorityType = typeof AssetPriority[keyof typeof AssetPriority];
+type AssetPriorityType = (typeof AssetPriority)[keyof typeof AssetPriority];
 
 // 🚀 PERFORMANCE: Image optimization utilities
 interface OptimizedImageProps {
@@ -73,7 +73,7 @@ class AssetOptimizer {
           if (entry.isIntersecting) {
             const target = entry.target as HTMLElement;
             const src = target.dataset.src;
-            
+
             if (src) {
               this.loadImage(src, target as HTMLImageElement);
               this.intersectionObserver?.unobserve(target);
@@ -100,7 +100,10 @@ class AssetOptimizer {
 
   // 🚀 PERFORMANCE: Preload critical resources
   preloadResource(resource: PreloadResource): void {
-    if (typeof window === 'undefined' || this.preloadedResources.has(resource.href)) {
+    if (
+      typeof window === 'undefined' ||
+      this.preloadedResources.has(resource.href)
+    ) {
       return;
     }
 
@@ -108,7 +111,7 @@ class AssetOptimizer {
     link.rel = 'preload';
     link.href = resource.href;
     link.as = resource.as;
-    
+
     if (resource.type) link.type = resource.type;
     if (resource.crossOrigin) link.crossOrigin = resource.crossOrigin;
     if (resource.media) link.media = resource.media;
@@ -126,13 +129,13 @@ class AssetOptimizer {
 
   // 🚀 PERFORMANCE: Preload multiple resources
   preloadResources(resources: PreloadResource[]): void {
-    resources.forEach(resource => this.preloadResource(resource));
+    resources.forEach((resource) => this.preloadResource(resource));
   }
 
   // 🚀 PERFORMANCE: Font loading optimization
   async preloadFont(
-    href: string, 
-    fontFamily: string, 
+    href: string,
+    fontFamily: string,
     fontDisplay: 'auto' | 'block' | 'swap' | 'fallback' | 'optional' = 'swap'
   ): Promise<void> {
     if (typeof window === 'undefined' || this.loadedFonts.has(href)) {
@@ -156,7 +159,7 @@ class AssetOptimizer {
 
         await font.load();
         document.fonts.add(font);
-        
+
         this.loadedFonts.add(href);
 
         enhancedLogger.logWithFullContext(
@@ -171,17 +174,20 @@ class AssetOptimizer {
         LogLevel.WARN,
         'Font loading failed',
         'AssetOptimizer',
-        { 
-          fontFamily, 
-          href, 
-          error: error instanceof Error ? error.message : 'Unknown error' 
+        {
+          fontFamily,
+          href,
+          error: error instanceof Error ? error.message : 'Unknown error'
         }
       );
     }
   }
 
   // 🚀 PERFORMANCE: Optimized image loading
-  loadImage(src: string, imgElement?: HTMLImageElement): Promise<HTMLImageElement> {
+  loadImage(
+    src: string,
+    imgElement?: HTMLImageElement
+  ): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       // Check cache first
       const cachedImage = this.imageCache.get(src);
@@ -196,16 +202,16 @@ class AssetOptimizer {
       }
 
       const img = new Image();
-      
+
       img.onload = () => {
         this.imageCache.set(src, img);
-        
+
         if (imgElement) {
           imgElement.src = src;
           imgElement.classList.remove('loading');
           imgElement.classList.add('loaded');
         }
-        
+
         resolve(img);
       };
 
@@ -237,10 +243,10 @@ class AssetOptimizer {
   // 🚀 PERFORMANCE: Optimized image component factory
   createOptimizedImage(props: OptimizedImageProps): HTMLImageElement {
     const img = document.createElement('img');
-    
+
     img.alt = props.alt;
     img.className = `optimized-image ${props.className || ''}`;
-    
+
     // Set dimensions if provided
     if (props.width) img.width = props.width;
     if (props.height) img.height = props.height;
@@ -267,7 +273,7 @@ class AssetOptimizer {
 
   // 🚀 PERFORMANCE: Preload critical images
   preloadCriticalImages(imageSrcs: string[]): void {
-    imageSrcs.forEach(src => {
+    imageSrcs.forEach((src) => {
       this.preloadResource({
         href: src,
         as: 'image'
@@ -277,9 +283,7 @@ class AssetOptimizer {
 
   // 🚀 PERFORMANCE: Generate responsive image srcSet
   generateSrcSet(basePath: string, sizes: number[]): string {
-    return sizes
-      .map(size => `${basePath}?w=${size} ${size}w`)
-      .join(', ');
+    return sizes.map((size) => `${basePath}?w=${size} ${size}w`).join(', ');
   }
 
   // 🚀 PERFORMANCE: Generate sizes attribute for responsive images
@@ -316,7 +320,7 @@ class AssetOptimizer {
   // 🚀 PERFORMANCE: Service worker registration for caching
   async registerServiceWorker(swPath: string = '/sw.js'): Promise<void> {
     if (
-      typeof window === 'undefined' || 
+      typeof window === 'undefined' ||
       !('serviceWorker' in navigator) ||
       process.env.NODE_ENV !== 'production'
     ) {
@@ -325,7 +329,7 @@ class AssetOptimizer {
 
     try {
       const registration = await navigator.serviceWorker.register(swPath);
-      
+
       enhancedLogger.logWithFullContext(
         LogLevel.INFO,
         'Service worker registered successfully',
@@ -383,7 +387,10 @@ export const OptimizedImage = (props: OptimizedImageProps) => {
     width,
     height,
     className: `transition-opacity duration-300 ${className}`,
-    loading: priority === AssetPriority.CRITICAL ? 'eager' as const : 'lazy' as const,
+    loading:
+      priority === AssetPriority.CRITICAL
+        ? ('eager' as const)
+        : ('lazy' as const),
     decoding: 'async' as const,
     ...(sizes && { sizes }),
     ...rest
@@ -398,10 +405,7 @@ export const preloadCriticalResources = () => {
   assetOptimizer.preloadFont('/fonts/inter-var.woff2', 'Inter', 'swap');
 
   // Preload critical images
-  assetOptimizer.preloadCriticalImages([
-    '/logo.svg',
-    '/favicon.ico'
-  ]);
+  assetOptimizer.preloadCriticalImages(['/logo.svg', '/favicon.ico']);
 
   // Preload critical CSS
   assetOptimizer.preloadResource({
@@ -425,12 +429,8 @@ export const initializeAssetOptimization = () => {
 };
 
 // 🚀 PERFORMANCE: Export utilities
-export {
-  AssetOptimizer
-};
+export { AssetOptimizer };
 
-export type {
-  OptimizedImageProps
-};
+export type { OptimizedImageProps };
 
 export default assetOptimizer;

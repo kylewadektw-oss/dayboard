@@ -38,22 +38,33 @@ export async function POST(request: Request) {
       );
     }
 
-    if (SPOONACULAR_API_KEY === 'your_spoonacular_api_key_here' || SPOONACULAR_API_KEY === 'your_api_key_here') {
+    if (
+      SPOONACULAR_API_KEY === 'your_spoonacular_api_key_here' ||
+      SPOONACULAR_API_KEY === 'your_api_key_here'
+    ) {
       return NextResponse.json(
-        { error: 'Please replace the placeholder Spoonacular API key with your actual API key in .env.local' },
+        {
+          error:
+            'Please replace the placeholder Spoonacular API key with your actual API key in .env.local'
+        },
         { status: 500 }
       );
     }
 
-    const { searchQuery = 'popular', numberOfRecipes = 10 } = await request.json();
-    
+    const { searchQuery = 'popular', numberOfRecipes = 10 } =
+      await request.json();
+
     // Fetch recipes from Spoonacular API
     const spoonacularUrl = `https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(searchQuery)}&number=${numberOfRecipes}&apiKey=${SPOONACULAR_API_KEY}&addRecipeInformation=true&fillIngredients=true`;
-    
-    console.log('Fetching from Spoonacular:', { searchQuery, numberOfRecipes, hasApiKey: !!SPOONACULAR_API_KEY });
-    
+
+    console.log('Fetching from Spoonacular:', {
+      searchQuery,
+      numberOfRecipes,
+      hasApiKey: !!SPOONACULAR_API_KEY
+    });
+
     const response = await fetch(spoonacularUrl);
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Spoonacular API error:', {
@@ -61,26 +72,34 @@ export async function POST(request: Request) {
         statusText: response.statusText,
         errorText
       });
-      
+
       if (response.status === 401) {
         return NextResponse.json(
-          { error: 'Invalid Spoonacular API key. Please check your API key in .env.local' },
+          {
+            error:
+              'Invalid Spoonacular API key. Please check your API key in .env.local'
+          },
           { status: 401 }
         );
       }
-      
+
       if (response.status === 402) {
         return NextResponse.json(
-          { error: 'Spoonacular API quota exceeded. Please check your plan limits.' },
+          {
+            error:
+              'Spoonacular API quota exceeded. Please check your plan limits.'
+          },
           { status: 402 }
         );
       }
-      
-      throw new Error(`Spoonacular API error: ${response.status} - ${response.statusText}`);
+
+      throw new Error(
+        `Spoonacular API error: ${response.status} - ${response.statusText}`
+      );
     }
-    
+
     const data = await response.json();
-    
+
     if (!data.results || data.results.length === 0) {
       return NextResponse.json(
         { message: 'No recipes found', count: 0 },
@@ -89,10 +108,13 @@ export async function POST(request: Request) {
     }
 
     const supabase = await createClient();
-    
+
     // Get the current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
       return NextResponse.json(
         { error: 'Authentication required' },
@@ -123,7 +145,7 @@ export async function POST(request: Request) {
         // TODO: Replace with proper recipes table when it exists
         // For now, just log and continue without database operations
         console.log('Would check for existing recipe:', recipe.title);
-        
+
         // Skip database operations for now
         insertedCount++;
 
@@ -132,13 +154,19 @@ export async function POST(request: Request) {
           user_id: user.id,
           household_id: profile.household_id,
           title: recipe.title,
-          description: recipe.summary ? 
-            recipe.summary.replace(/<[^>]*>/g, '').substring(0, 500) : 
-            `Delicious ${recipe.title} recipe`,
+          description: recipe.summary
+            ? recipe.summary.replace(/<[^>]*>/g, '').substring(0, 500)
+            : `Delicious ${recipe.title} recipe`,
           ingredients: transformIngredients(recipe.extendedIngredients || []),
-          instructions: transformInstructions(recipe.analyzedInstructions || []).join('\n'),
-          prep_time: recipe.preparationMinutes || Math.floor((recipe.readyInMinutes || 30) * 0.3),
-          cook_time: recipe.cookingMinutes || Math.floor((recipe.readyInMinutes || 30) * 0.7),
+          instructions: transformInstructions(
+            recipe.analyzedInstructions || []
+          ).join('\n'),
+          prep_time:
+            recipe.preparationMinutes ||
+            Math.floor((recipe.readyInMinutes || 30) * 0.3),
+          cook_time:
+            recipe.cookingMinutes ||
+            Math.floor((recipe.readyInMinutes || 30) * 0.7),
           servings: recipe.servings || 4,
           difficulty: getDifficulty(recipe),
           cuisine: recipe.cuisines?.[0] || 'International',
@@ -171,23 +199,24 @@ export async function POST(request: Request) {
       skipped: skippedCount,
       searchQuery
     });
-
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch recipes';
+    const message =
+      error instanceof Error ? error.message : 'Failed to fetch recipes';
     console.error('Error in fetch recipes API:', error);
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
 // Helper functions
-function getDifficulty(recipe: Record<string, unknown>): 'easy' | 'medium' | 'hard' {
+function getDifficulty(
+  recipe: Record<string, unknown>
+): 'easy' | 'medium' | 'hard' {
   const readyTime = Number(recipe.readyInMinutes) || 30;
-  const extendedIngredients = Array.isArray(recipe.extendedIngredients) ? recipe.extendedIngredients : [];
+  const extendedIngredients = Array.isArray(recipe.extendedIngredients)
+    ? recipe.extendedIngredients
+    : [];
   const ingredientCount = extendedIngredients.length;
-  
+
   if (readyTime <= 20 && ingredientCount <= 5) return 'easy';
   if (readyTime <= 45 && ingredientCount <= 10) return 'medium';
   return 'hard';
@@ -196,7 +225,7 @@ function getDifficulty(recipe: Record<string, unknown>): 'easy' | 'medium' | 'ha
 function getDietTypes(recipe: Record<string, unknown>): string[] {
   const diets = Array.isArray(recipe.diets) ? recipe.diets : [];
   const dietTypes: string[] = [];
-  
+
   for (const diet of diets) {
     const dietStr = String(diet).toLowerCase();
     switch (dietStr) {
@@ -220,12 +249,14 @@ function getDietTypes(recipe: Record<string, unknown>): string[] {
         break;
     }
   }
-  
+
   return dietTypes;
 }
 
-function transformIngredients(spoonacularIngredients: unknown[]): Array<{name: string; amount: string; unit: string; notes?: string}> {
-  return spoonacularIngredients.map(ingredient => {
+function transformIngredients(
+  spoonacularIngredients: unknown[]
+): Array<{ name: string; amount: string; unit: string; notes?: string }> {
+  return spoonacularIngredients.map((ingredient) => {
     const ing = ingredient as Record<string, unknown>;
     return {
       name: String(ing.name || ing.originalName || 'Unknown ingredient'),
@@ -240,9 +271,9 @@ function transformInstructions(analyzedInstructions: unknown[]): string[] {
   if (!analyzedInstructions || analyzedInstructions.length === 0) {
     return ['Instructions not available'];
   }
-  
+
   const instructions: string[] = [];
-  
+
   for (const instructionGroup of analyzedInstructions) {
     const group = instructionGroup as Record<string, unknown>;
     if (Array.isArray(group.steps)) {
@@ -254,8 +285,8 @@ function transformInstructions(analyzedInstructions: unknown[]): string[] {
       }
     }
   }
-  
-  return instructions.length > 0 ? instructions : ['Instructions not available'];
+
+  return instructions.length > 0
+    ? instructions
+    : ['Instructions not available'];
 }
-
-

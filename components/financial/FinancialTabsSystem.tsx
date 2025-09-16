@@ -1,29 +1,29 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 'use client';
 
 import { useState, memo } from 'react';
-import { 
-  DollarSign, 
-  PieChart, 
-  Target, 
-  TrendingUp, 
-  CreditCard, 
-  Users, 
+import {
+  DollarSign,
+  PieChart,
+  Target,
+  TrendingUp,
+  CreditCard,
+  Users,
   Calendar,
   Calculator,
   type LucideIcon
@@ -37,7 +37,15 @@ import { AllowanceTab } from './AllowanceTab';
 import { FinancialPlanningTab } from './FinancialPlanningTab';
 import { CalculatorsTab } from './CalculatorsTab';
 
-type TabType = 'overview' | 'expenses' | 'savings' | 'analytics' | 'bills' | 'allowance' | 'planning' | 'calculators';
+type TabType =
+  | 'overview'
+  | 'expenses'
+  | 'savings'
+  | 'analytics'
+  | 'bills'
+  | 'allowance'
+  | 'planning'
+  | 'calculators';
 
 interface Tab {
   id: TabType;
@@ -109,7 +117,8 @@ const tabs: Tab[] = [
 export const FinancialTabs = memo(() => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
-  const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || BudgetOverviewTab;
+  const ActiveComponent =
+    tabs.find((tab) => tab.id === activeTab)?.component || BudgetOverviewTab;
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
@@ -120,7 +129,7 @@ export const FinancialTabs = memo(() => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             const isAvailable = tab.available;
-            
+
             return (
               <button
                 key={tab.id}
@@ -128,11 +137,12 @@ export const FinancialTabs = memo(() => {
                 disabled={!isAvailable}
                 className={`
                   flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap
-                  ${isActive && isAvailable
-                    ? 'border-green-500 text-green-600 bg-green-50' 
-                    : isAvailable
-                    ? 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    : 'border-transparent text-gray-300 cursor-not-allowed opacity-50'
+                  ${
+                    isActive && isAvailable
+                      ? 'border-green-500 text-green-600 bg-green-50'
+                      : isAvailable
+                        ? 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        : 'border-transparent text-gray-300 cursor-not-allowed opacity-50'
                   }
                 `}
                 title={!isAvailable ? 'Coming soon!' : ''}

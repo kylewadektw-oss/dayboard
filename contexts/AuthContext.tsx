@@ -1,13 +1,13 @@
 /**
  * Dayboard - Family Management Platform
- * 
+ *
  * © 2025 BentLo Labs LLC. All Rights Reserved.
- * 
+ *
  * PROPRIETARY AND CONFIDENTIAL
- * 
+ *
  * This source code is the proprietary and confidential property of BentLo Labs LLC.
  * Unauthorized copying, distribution, or use is strictly prohibited.
- * 
+ *
  * @company BentLo Labs LLC
  * @product Dayboard
  * @license Proprietary
@@ -15,7 +15,13 @@
 
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback
+} from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { Database } from '@/src/lib/types_db';
@@ -41,206 +47,379 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [permissions, setPermissions] = useState<UserPermissions | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const supabase = createClient();
-  const envValid = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-  const FAST_AUTH_LOG = process.env.NEXT_PUBLIC_FAST_AUTH_LOG === '1' || process.env.NEXT_PUBLIC_FAST_AUTH_LOG === 'true';
+  const envValid = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
+  const FAST_AUTH_LOG =
+    process.env.NEXT_PUBLIC_FAST_AUTH_LOG === '1' ||
+    process.env.NEXT_PUBLIC_FAST_AUTH_LOG === 'true';
 
   // Lightweight no-wait wrappers
-  const fireInfo = useCallback((msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.info(msg, data); } catch {} }, [FAST_AUTH_LOG]);
-  const fireWarn = useCallback((msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.warn(msg, data); } catch {} }, [FAST_AUTH_LOG]);
-  const fireError = useCallback((msg: string, data?: Record<string, unknown>) => { try { if (!FAST_AUTH_LOG) authLogger.error(msg, data); } catch {} }, [FAST_AUTH_LOG]);
+  const fireInfo = useCallback(
+    (msg: string, data?: Record<string, unknown>) => {
+      try {
+        if (!FAST_AUTH_LOG) authLogger.info(msg, data);
+      } catch {}
+    },
+    [FAST_AUTH_LOG]
+  );
+  const fireWarn = useCallback(
+    (msg: string, data?: Record<string, unknown>) => {
+      try {
+        if (!FAST_AUTH_LOG) authLogger.warn(msg, data);
+      } catch {}
+    },
+    [FAST_AUTH_LOG]
+  );
+  const fireError = useCallback(
+    (msg: string, data?: Record<string, unknown>) => {
+      try {
+        if (!FAST_AUTH_LOG) authLogger.error(msg, data);
+      } catch {}
+    },
+    [FAST_AUTH_LOG]
+  );
+
+  // Stable loading state management to prevent oscillation
+  const setLoadingStable = useCallback(
+    (newLoading: boolean) => {
+      if (newLoading && initialLoadComplete) {
+        // Once initial load is complete, don't go back to loading unless explicitly needed
+        return;
+      }
+      if (!newLoading && !initialLoadComplete) {
+        setInitialLoadComplete(true);
+      }
+      setLoading(newLoading);
+    },
+    [initialLoadComplete]
+  );
 
   // Validate env early
   useEffect(() => {
     if (!envValid) {
-      fireError('❌ [AUTH] Missing Supabase env vars (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY)');
-      setLoading(false);
+      fireError(
+        '❌ [AUTH] Missing Supabase env vars (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY)'
+      );
+      setLoadingStable(false);
     }
-  }, [envValid, fireError]);
+  }, [envValid, fireError, setLoadingStable]);
 
   // Fallback timeout to prevent infinite loading spinner
   useEffect(() => {
     if (!loading) return;
-    const t = setTimeout(() => { if (loading) { fireWarn('⚠️ [AUTH] Loading timeout fallback (5s) – forcing UI continuation', { envValid }); setLoading(false); } }, 5000);
-    const safety = setTimeout(() => { if (loading) { fireWarn('⚠️ [AUTH] Secondary safety timeout (12s)', { envValid }); setLoading(false); } }, 12000);
-    return () => { clearTimeout(t); clearTimeout(safety); };
-  }, [loading, envValid, fireWarn]);
+    const t = setTimeout(() => {
+      if (loading) {
+        fireWarn(
+          '⚠️ [AUTH] Loading timeout fallback (5s) – forcing UI continuation',
+          { envValid }
+        );
+        setLoadingStable(false);
+      }
+    }, 5000);
+    const safety = setTimeout(() => {
+      if (loading) {
+        fireWarn('⚠️ [AUTH] Secondary safety timeout (12s)', { envValid });
+        setLoadingStable(false);
+      }
+    }, 12000);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(safety);
+    };
+  }, [loading, envValid, fireWarn, setLoadingStable]);
 
-  const fetchUserData = useCallback(async (currentUser: User) => {
-    try {
-      fireInfo('🔍 [AUTH] Fetching profile', { userId: currentUser.id });
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', currentUser.id)
-        .maybeSingle();
-
-      if (profileError) fireError('❌ [AUTH] Profile fetch error', { userId: currentUser.id, error: profileError });
-      console.log('🔍 [DEBUG] Profile data fetched:', profileData);
-      setProfile(profileData ?? null);
-
+  const fetchUserData = useCallback(
+    async (currentUser: User) => {
       try {
-        const { data: permissionsData, error: permissionsError } = await supabase
-          .from('user_permissions')
-          .select('*')
-          .eq('user_id', currentUser.id)
-          .maybeSingle();
+        fireInfo('🔍 [AUTH] Fetching profile', { userId: currentUser.id });
 
-        if (permissionsError) {
-          if (permissionsError.message.includes('Could not find the table')) fireWarn('⚠️ [AUTH] user_permissions table missing – using defaults', { userId: currentUser.id });
-          else fireError('❌ [AUTH] Permissions fetch error', { userId: currentUser.id, error: permissionsError });
+        // Add retry logic for profile fetching
+        let profileData = null;
+        let profileError = null;
+
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .maybeSingle();
+
+          profileData = data;
+          profileError = error;
+
+          fireInfo(`🔍 [AUTH] Profile fetch attempt ${attempt}`, {
+            userId: currentUser.id,
+            hasProfile: !!profileData,
+            hasError: !!profileError,
+            profileId: profileData?.id,
+            errorMessage: profileError?.message
+          });
+
+          if (profileData || !profileError) break;
+
+          // Wait between retries
+          if (attempt < 3) {
+            fireInfo(
+              `⏱️ [AUTH] Retrying profile fetch in 1s (attempt ${attempt + 1}/3)`
+            );
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        }
+
+        if (profileError) {
+          fireError(
+            '❌ [AUTH] Profile fetch error after retries: ' +
+              profileError.message
+          );
+        }
+
+        console.log('🔍 [DEBUG] Final profile data:', profileData);
+        setProfile(profileData ?? null);
+
+        // Fetch permissions
+        try {
+          const { data: permissionsData, error: permissionsError } =
+            await supabase
+              .from('user_permissions')
+              .select('*')
+              .eq('user_id', currentUser.id)
+              .maybeSingle();
+
+          if (permissionsError) {
+            if (permissionsError.message.includes('Could not find the table'))
+              fireWarn(
+                '⚠️ [AUTH] user_permissions table missing – using defaults',
+                { userId: currentUser.id }
+              );
+            else
+              fireError(
+                '❌ [AUTH] Permissions fetch error: ' + permissionsError.message
+              );
+            setPermissions(null);
+          } else {
+            console.log('🔍 [DEBUG] Permissions data:', permissionsData);
+            setPermissions(permissionsData ?? null);
+          }
+        } catch (permErr) {
+          const errorMsg =
+            permErr instanceof Error ? permErr.message : 'Unknown error';
+          fireWarn(
+            '⚠️ [AUTH] Permissions fetch exception – defaults: ' + errorMsg
+          );
           setPermissions(null);
-        } else setPermissions(permissionsData ?? null);
-      } catch (permErr) { fireWarn('⚠️ [AUTH] Permissions fetch exception – defaults', { userId: currentUser.id, error: permErr }); setPermissions(null); }
-    } catch (err) { fireError('❌ [AUTH] fetchUserData critical error', { userId: currentUser.id, error: err }); }
-  }, [supabase, fireInfo, fireError, fireWarn]);
+        }
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+        fireError('❌ [AUTH] fetchUserData critical error: ' + errorMsg);
+      }
+    },
+    [supabase, fireInfo, fireError, fireWarn]
+  );
 
   const refreshUser = useCallback(async () => {
     try {
-      fireInfo('🔄 [AUTH] Refreshing session');
-      
-      // First try to get the current session from storage/cookies
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        fireWarn('⚠️ [AUTH] Session error during refresh', { error: sessionError.message });
-      }
-      
-      // If we have a valid session, use it
-      if (session?.user && session?.access_token) {
-        fireInfo('✅ [AUTH] Valid session found during refresh', { userId: session.user.id });
-        setUser(session.user);
-        await fetchUserData(session.user);
-        return;
-      }
-      
-      // If no session or session is invalid, try to get user directly
-      // This will attempt to refresh the token if needed
-      fireInfo('🔄 [AUTH] No valid session found, attempting token refresh');
-      const { data: { user: currentUser }, error } = await supabase.auth.getUser();
-      
-      if (error) {
-        if (error.message?.includes('refresh_token_not_found') || 
-            error.message?.includes('Invalid Refresh Token') ||
-            error.message?.includes('Refresh Token Not Found')) {
-          fireWarn('🔄 [AUTH] Refresh token invalid - user needs to sign in again', { error: error.message });
-          setUser(null); 
-          setProfile(null); 
-          setPermissions(null);
-          return;
-        }
-        throw error;
-      }
-      
-      setUser(currentUser);
-      if (currentUser) {
-        fireInfo('✅ [AUTH] User refreshed successfully', { userId: currentUser.id });
-        await fetchUserData(currentUser);
-      } else { 
-        fireInfo('ℹ️ [AUTH] No user found after refresh');
-        setProfile(null); 
-        setPermissions(null); 
-      }
-    } catch (err) { 
-      fireError('❌ [AUTH] refreshUser error', { error: err }); 
-      setUser(null); 
-      setProfile(null); 
-      setPermissions(null); 
-    }
-    finally { 
-      setLoading(false); 
-    }
-  }, [supabase, fireInfo, fireWarn, fireError, fetchUserData]);
+      fireInfo('🔄 [AUTH] Starting session check', { FAST_AUTH_LOG });
+      setLoadingStable(true);
 
-  const signOut = async () => { 
-    try { 
-      fireInfo('🚪 [AUTH] Signing out', { userId: user?.id }); 
+      // Try multiple session retrieval methods for better reliability
+      let session = null;
+      let user = null;
+
+      // Method 1: Get session from client
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
+      if (sessionData?.session && !sessionError) {
+        session = sessionData.session;
+        user = session.user;
+        fireInfo('✅ [AUTH] Session found via getSession', {
+          userId: user?.id,
+          method: 'getSession',
+          hasTokens: !!(session.access_token && session.refresh_token)
+        });
+      } else if (sessionError) {
+        fireError('❌ [AUTH] Session error: ' + sessionError.message);
+      }
+
+      // Method 2: If no session, try getUser as fallback
+      if (!user) {
+        fireInfo('🔄 [AUTH] Trying getUser as fallback');
+        const { data: userData, error: userError } =
+          await supabase.auth.getUser();
+        if (userData?.user && !userError) {
+          user = userData.user;
+          fireInfo('✅ [AUTH] User found via getUser', {
+            userId: user.id,
+            method: 'getUser'
+          });
+        } else if (userError) {
+          fireError('❌ [AUTH] User retrieval error: ' + userError.message);
+        }
+      }
+
+      if (user) {
+        fireInfo('👤 [AUTH] User authenticated', {
+          userId: user.id,
+          email: user.email
+        });
+        setUser(user);
+        setLoadingStable(false); // Set loading to false immediately for faster UI
+
+        // Fetch profile in background for better performance
+        fetchUserData(user).catch((err) =>
+          fireError(
+            '❌ [AUTH] Background profile fetch failed: ' +
+              (err?.message || 'Unknown error')
+          )
+        );
+      } else {
+        fireInfo('👤 [AUTH] No authenticated user found');
+        setUser(null);
+        setProfile(null);
+        setPermissions(null);
+        setLoadingStable(false);
+      }
+    } catch (error) {
+      fireError(
+        '💥 [AUTH] Critical refresh error: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      );
+      setUser(null);
+      setProfile(null);
+      setPermissions(null);
+      setLoadingStable(false);
+    }
+  }, [
+    supabase.auth,
+    fetchUserData,
+    fireInfo,
+    fireError,
+    FAST_AUTH_LOG,
+    setLoadingStable
+  ]);
+
+  const signOut = async () => {
+    try {
+      fireInfo('🚪 [AUTH] Signing out', { userId: user?.id });
       // Clear auth state immediately
-      setUser(null); 
-      setProfile(null); 
+      setUser(null);
+      setProfile(null);
       setPermissions(null);
       // Sign out from Supabase (this clears cookies)
-      await supabase.auth.signOut(); 
-      fireInfo('✅ [AUTH] Sign out complete'); 
-    } catch (err) { 
-      fireError('❌ [AUTH] signOut error', { error: err }); 
+      await supabase.auth.signOut();
+      fireInfo('✅ [AUTH] Sign out complete');
+    } catch (err) {
+      fireError('❌ [AUTH] signOut error', { error: err });
       // Even if signOut fails, clear local state
-      setUser(null); 
-      setProfile(null); 
+      setUser(null);
+      setProfile(null);
       setPermissions(null);
-    } 
+    }
   };
 
   useEffect(() => {
     if (!envValid) return;
-    fireInfo('🚀 [AUTH] AuthContext init',{ FAST_AUTH_LOG });
-    
-    // Check if we're in an OAuth callback or have OAuth tokens in URL
-    const isOAuthCallback = typeof window !== 'undefined' && 
-      (window.location.hash.includes('access_token') || 
-       window.location.hash.includes('refresh_token') ||
-       window.location.pathname.includes('/auth/callback') ||
-       new URLSearchParams(window.location.search).has('code'));
-    
+    fireInfo('🚀 [AUTH] AuthContext init', { FAST_AUTH_LOG });
+
+    // Check if we're in an OAuth callback
+    const isOAuthCallback =
+      typeof window !== 'undefined' &&
+      (window.location.hash.includes('access_token') ||
+        window.location.hash.includes('refresh_token') ||
+        window.location.pathname.includes('/auth/callback') ||
+        new URLSearchParams(window.location.search).has('code'));
+
     if (!isOAuthCallback) {
       // Normal initialization - check for existing session
       refreshUser();
     } else {
-      fireInfo('🔄 [AUTH] OAuth callback detected - waiting for Supabase to handle tokens');
-      // For OAuth callbacks, wait a moment for Supabase to process the tokens
-      // then set loading to false since the auth state change handler will take over
+      fireInfo('🔄 [AUTH] OAuth callback detected - enhanced processing');
+      // For OAuth callbacks, wait a bit longer and try multiple times
       setTimeout(() => {
-        setLoading(false);
-      }, 1000);
+        fireInfo('🔄 [AUTH] First OAuth session check attempt');
+        refreshUser().then(() => {
+          // If still no user after first attempt, try again
+          if (!user) {
+            fireInfo('🔄 [AUTH] No user found, retrying in 500ms');
+            setTimeout(() => {
+              fireInfo('🔄 [AUTH] Second OAuth session check attempt');
+              refreshUser();
+            }, 500);
+          }
+        });
+      }, 500); // Increased wait time for OAuth processing
     }
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      fireInfo('🔄 [AUTH] Auth state change', { 
-        event, 
-        hasSession: !!session, 
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      fireInfo('🔄 [AUTH] Auth state change', {
+        event,
+        hasSession: !!session,
         userId: session?.user?.id,
         hasAccessToken: !!session?.access_token,
-        hasRefreshToken: !!session?.refresh_token 
+        hasRefreshToken: !!session?.refresh_token
       });
-      
+
       if (event === 'SIGNED_OUT' || !session) {
         fireInfo('👋 [AUTH] User signed out or session lost');
         setUser(null);
         setProfile(null);
         setPermissions(null);
-        setLoading(false);
-        
+        setLoadingStable(false);
+
         // Clear any stale data and redirect to home if needed
-        if (typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard')) {
+        if (
+          typeof window !== 'undefined' &&
+          window.location.pathname.startsWith('/dashboard')
+        ) {
           window.location.href = '/';
         }
         return;
       }
-      
+
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        fireInfo('✅ [AUTH] User authenticated', { 
-          event, 
+        fireInfo('✅ [AUTH] User authenticated', {
+          event,
           userId: session?.user?.id,
           hasValidTokens: !!(session?.access_token && session?.refresh_token)
         });
         const currentUser = session?.user ?? null;
         setUser(currentUser);
-        
+        setLoadingStable(false); // Set loading to false immediately for faster UI
+
         if (currentUser) {
-          await fetchUserData(currentUser);
+          // Fetch profile in background for better performance
+          fetchUserData(currentUser).catch((err) =>
+            fireError('❌ [AUTH] Background profile fetch failed', {
+              error: err
+            })
+          );
         } else {
           setProfile(null);
           setPermissions(null);
         }
-        setLoading(false);
       }
     });
-    
-    return () => { 
-      fireInfo('🧹 [AUTH] Cleanup'); 
-      subscription.unsubscribe(); 
+
+    return () => {
+      fireInfo('🧹 [AUTH] Cleanup');
+      subscription.unsubscribe();
     };
-  }, [envValid, FAST_AUTH_LOG, fetchUserData, fireInfo, refreshUser, supabase.auth]);
+  }, [
+    envValid,
+    FAST_AUTH_LOG,
+    fetchUserData,
+    fireInfo,
+    fireError,
+    refreshUser,
+    supabase.auth,
+    user,
+    setLoadingStable
+  ]);
 
   const value = { user, profile, permissions, loading, signOut, refreshUser };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

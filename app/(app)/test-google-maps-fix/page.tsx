@@ -28,8 +28,9 @@ export default function GoogleMapsTest() {
           Google Maps API Integration Test
         </h1>
         <p className="text-gray-600">
-          Testing both GoogleAddressInput and HouseholdMapWidget on the same page.
-          Check browser console - there should be NO &ldquo;multiple API includes&rdquo; errors.
+          Testing both GoogleAddressInput and HouseholdMapWidget on the same
+          page. Check browser console - there should be NO &ldquo;multiple API
+          includes&rdquo; errors.
         </p>
       </div>
 
@@ -75,7 +76,10 @@ export default function GoogleMapsTest() {
           <li>1. Open browser Developer Tools (F12)</li>
           <li>2. Go to the Console tab</li>
           <li>3. Look for Google Maps loading messages</li>
-          <li>4. Verify NO &ldquo;You have included the Google Maps JavaScript API multiple times&rdquo; errors</li>
+          <li>
+            4. Verify NO &ldquo;You have included the Google Maps JavaScript API
+            multiple times&rdquo; errors
+          </li>
           <li>5. Both components should work without API conflicts</li>
         </ul>
       </div>

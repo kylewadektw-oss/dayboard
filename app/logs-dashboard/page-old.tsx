@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 'use client';
 
@@ -29,7 +28,9 @@ export default function LogsDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [maxLogs, setMaxLogs] = useState(500);
   const [isPaused, setIsPaused] = useState(false);
-  const [selectedTimeRange, setSelectedTimeRange] = useState<'1h' | '6h' | '24h' | 'all'>('24h'); // Changed default to 24h
+  const [selectedTimeRange, setSelectedTimeRange] = useState<
+    '1h' | '6h' | '24h' | 'all'
+  >('24h'); // Changed default to 24h
   const [showStackTrace, setShowStackTrace] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
@@ -50,7 +51,7 @@ export default function LogsDashboard() {
 
   const refreshLogs = useCallback(async () => {
     if (isPaused) return;
-    
+
     // Try to get logs from database + memory, fallback to memory only
     let allLogs: LogEntry[] = [];
     try {
@@ -59,62 +60,86 @@ export default function LogsDashboard() {
       // Fallback to memory logs only
       allLogs = logger.getAllLogs();
     }
-    
+
     let filteredLogs = [...allLogs];
-    
+
     // Time range filtering
     if (selectedTimeRange !== 'all') {
       const now = Date.now();
       const timeMap = { '1h': 3600000, '6h': 21600000, '24h': 86400000 };
       const cutoff = now - timeMap[selectedTimeRange];
-      filteredLogs = filteredLogs.filter(log => new Date(log.timestamp).getTime() > cutoff);
+      filteredLogs = filteredLogs.filter(
+        (log) => new Date(log.timestamp).getTime() > cutoff
+      );
     }
-    
+
     // Level filtering
     if (selectedLevel !== 'all') {
-      filteredLogs = filteredLogs.filter(log => log.level === selectedLevel);
+      filteredLogs = filteredLogs.filter((log) => log.level === selectedLevel);
     }
-    
+
     // Component filtering
     if (selectedComponent !== 'all') {
-      filteredLogs = filteredLogs.filter(log => log.component === selectedComponent);
+      filteredLogs = filteredLogs.filter(
+        (log) => log.component === selectedComponent
+      );
     }
-    
+
     // Search filtering
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filteredLogs = filteredLogs.filter(log => 
-        log.message.toLowerCase().includes(query) ||
-        (log.data && JSON.stringify(log.data).toLowerCase().includes(query)) ||
-        (log.component && log.component.toLowerCase().includes(query)) ||
-        (log.stack && log.stack.toLowerCase().includes(query))
+      filteredLogs = filteredLogs.filter(
+        (log) =>
+          log.message.toLowerCase().includes(query) ||
+          (log.data &&
+            JSON.stringify(log.data).toLowerCase().includes(query)) ||
+          (log.component && log.component.toLowerCase().includes(query)) ||
+          (log.stack && log.stack.toLowerCase().includes(query))
       );
     }
-    
+
     // Sort by timestamp
     filteredLogs.sort((a, b) => {
       const timeA = new Date(a.timestamp).getTime();
       const timeB = new Date(b.timestamp).getTime();
       return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
     });
-    
+
     setLogs(filteredLogs.slice(0, maxLogs));
-  }, [isPaused, selectedTimeRange, selectedLevel, selectedComponent, searchQuery, sortOrder, maxLogs]);
+  }, [
+    isPaused,
+    selectedTimeRange,
+    selectedLevel,
+    selectedComponent,
+    searchQuery,
+    sortOrder,
+    maxLogs
+  ]);
 
   useEffect(() => {
     // Setup console interception when component mounts
     logger.setupConsoleInterception();
-    
+
     // Initial load
     refreshLogs();
-    
+
     if (autoRefresh && !isPaused) {
       const interval = setInterval(() => {
         refreshLogs();
       }, 2000); // Refresh every 2 seconds instead of 1 for smoother experience
       return () => clearInterval(interval);
     }
-  }, [selectedLevel, selectedComponent, autoRefresh, searchQuery, maxLogs, isPaused, selectedTimeRange, sortOrder, refreshLogs]);
+  }, [
+    selectedLevel,
+    selectedComponent,
+    autoRefresh,
+    searchQuery,
+    maxLogs,
+    isPaused,
+    selectedTimeRange,
+    sortOrder,
+    refreshLogs
+  ]);
 
   // Auto-scroll to bottom when new logs arrive (only if count actually increased)
   useEffect(() => {
@@ -130,16 +155,19 @@ export default function LogsDashboard() {
   // Computed statistics
   const logStats = useMemo(() => {
     const total = logs.length;
-    const errors = logs.filter(log => log.level === LogLevel.ERROR).length;
-    const warnings = logs.filter(log => log.level === LogLevel.WARN).length;
-    const info = logs.filter(log => log.level === LogLevel.INFO).length;
-    const debug = logs.filter(log => log.level === LogLevel.DEBUG).length;
-    
+    const errors = logs.filter((log) => log.level === LogLevel.ERROR).length;
+    const warnings = logs.filter((log) => log.level === LogLevel.WARN).length;
+    const info = logs.filter((log) => log.level === LogLevel.INFO).length;
+    const debug = logs.filter((log) => log.level === LogLevel.DEBUG).length;
+
     return { total, errors, warnings, info, debug };
   }, [logs]);
 
   const components = useMemo(() => {
-    return ['all', ...Array.from(new Set(logs.map(log => log.component).filter(Boolean)))];
+    return [
+      'all',
+      ...Array.from(new Set(logs.map((log) => log.component).filter(Boolean)))
+    ];
   }, [logs]);
 
   const clearLogs = () => {
@@ -149,14 +177,14 @@ export default function LogsDashboard() {
 
   const testConsoleLogging = () => {
     console.log('✅ Test console.log message');
-    console.error('❌ Test console.error message'); 
+    console.error('❌ Test console.error message');
     console.warn('⚠️ Test console.warn message');
     console.info('ℹ️ Test console.info message');
     console.debug('🐛 Test console.debug message');
-    
+
     // Test with objects
     console.log('Object test:', { test: 'data', timestamp: new Date() });
-    
+
     // Test with error
     try {
       throw new Error('Test error for logging');
@@ -187,7 +215,7 @@ export default function LogsDashboard() {
 
   const copyLogEntry = async (log: LogEntry) => {
     const logText = `[${new Date(log.timestamp).toLocaleString()}] ${log.level.toUpperCase()}: ${log.message}${log.component ? ` (${log.component})` : ''}${log.data ? `\nData: ${JSON.stringify(log.data, null, 2)}` : ''}${log.stack ? `\nStack: ${log.stack}` : ''}`;
-    
+
     try {
       await navigator.clipboard.writeText(logText);
       // Show temporary feedback
@@ -205,10 +233,13 @@ export default function LogsDashboard() {
   };
 
   const copyAllVisibleLogs = async () => {
-    const allLogsText = logs.map(log => 
-      `[${new Date(log.timestamp).toLocaleString()}] ${log.level.toUpperCase()}: ${log.message}${log.component ? ` (${log.component})` : ''}${log.data ? `\nData: ${JSON.stringify(log.data, null, 2)}` : ''}${log.stack ? `\nStack: ${log.stack}` : ''}`
-    ).join('\n\n---\n\n');
-    
+    const allLogsText = logs
+      .map(
+        (log) =>
+          `[${new Date(log.timestamp).toLocaleString()}] ${log.level.toUpperCase()}: ${log.message}${log.component ? ` (${log.component})` : ''}${log.data ? `\nData: ${JSON.stringify(log.data, null, 2)}` : ''}${log.stack ? `\nStack: ${log.stack}` : ''}`
+      )
+      .join('\n\n---\n\n');
+
     try {
       await navigator.clipboard.writeText(allLogsText);
       // Show temporary feedback
@@ -226,10 +257,13 @@ export default function LogsDashboard() {
   };
 
   const copyMessagesOnly = async () => {
-    const messagesText = logs.map(log => 
-      `[${formatTimestamp(log.timestamp)}] ${log.level}: ${log.message}`
-    ).join('\n');
-    
+    const messagesText = logs
+      .map(
+        (log) =>
+          `[${formatTimestamp(log.timestamp)}] ${log.level}: ${log.message}`
+      )
+      .join('\n');
+
     try {
       await navigator.clipboard.writeText(messagesText);
       // Show temporary feedback
@@ -248,21 +282,31 @@ export default function LogsDashboard() {
 
   const getLevelColor = (level: LogLevel) => {
     switch (level) {
-      case LogLevel.ERROR: return 'text-red-600 bg-red-50 border-red-200';
-      case LogLevel.WARN: return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case LogLevel.INFO: return 'text-blue-600 bg-blue-50 border-blue-200';
-      case LogLevel.DEBUG: return 'text-gray-600 bg-gray-50 border-gray-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case LogLevel.ERROR:
+        return 'text-red-600 bg-red-50 border-red-200';
+      case LogLevel.WARN:
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case LogLevel.INFO:
+        return 'text-blue-600 bg-blue-50 border-blue-200';
+      case LogLevel.DEBUG:
+        return 'text-gray-600 bg-gray-50 border-gray-200';
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
   const getLevelEmoji = (level: LogLevel) => {
     switch (level) {
-      case LogLevel.ERROR: return '❌';
-      case LogLevel.WARN: return '⚠️';
-      case LogLevel.INFO: return 'ℹ️';
-      case LogLevel.DEBUG: return '🐛';
-      default: return '📝';
+      case LogLevel.ERROR:
+        return '❌';
+      case LogLevel.WARN:
+        return '⚠️';
+      case LogLevel.INFO:
+        return 'ℹ️';
+      case LogLevel.DEBUG:
+        return '🐛';
+      default:
+        return '📝';
     }
   };
 
@@ -270,11 +314,11 @@ export default function LogsDashboard() {
     const date = new Date(timestamp);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
-    
+
     if (diff < 60000) return `${Math.floor(diff / 1000)}s ago`;
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
     if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-    
+
     return date.toLocaleString();
   };
 
@@ -283,11 +327,17 @@ export default function LogsDashboard() {
       <LoggingNav />
       <div className="p-4 max-w-full mx-auto bg-gray-50 min-h-screen">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold text-gray-800">📊 Enhanced Logs Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            📊 Enhanced Logs Dashboard
+          </h1>
           <div className="flex items-center gap-2">
-            <div className={`px-2 py-1 rounded text-xs font-medium ${
-              isPaused ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
-            }`}>
+            <div
+              className={`px-2 py-1 rounded text-xs font-medium ${
+                isPaused
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : 'bg-green-100 text-green-800'
+              }`}
+            >
               {isPaused ? '⏸️ Paused' : '🔄 Live'}
             </div>
             <button
@@ -299,64 +349,100 @@ export default function LogsDashboard() {
             <button
               onClick={() => setIsPaused(!isPaused)}
               className={`px-3 py-1 text-sm rounded transition-colors ${
-                isPaused ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-red-500 hover:bg-red-600 text-white'
+                isPaused
+                  ? 'bg-green-500 hover:bg-green-600 text-white'
+                  : 'bg-red-500 hover:bg-red-600 text-white'
               }`}
             >
               {isPaused ? '▶️ Resume' : '⏸️ Pause'}
             </button>
           </div>
         </div>
-        
+
         {/* Statistics Panel */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-          <button 
+          <button
             onClick={() => toggleLevelFilter('all')}
             title="Click to show all logs"
             className={`p-4 bg-white rounded-lg shadow-sm border text-center hover:bg-gray-50 transition-colors cursor-pointer ${
               selectedLevel === 'all' ? 'ring-2 ring-blue-500 bg-blue-50' : ''
             }`}
           >
-            <div className="text-2xl font-bold text-gray-700">{logStats.total}</div>
+            <div className="text-2xl font-bold text-gray-700">
+              {logStats.total}
+            </div>
             <div className="text-sm text-gray-500">Total Logs</div>
           </button>
-          <button 
+          <button
             onClick={() => toggleLevelFilter(LogLevel.ERROR)}
-            title={selectedLevel === LogLevel.ERROR ? "Click to clear error filter" : "Click to filter errors only"}
+            title={
+              selectedLevel === LogLevel.ERROR
+                ? 'Click to clear error filter'
+                : 'Click to filter errors only'
+            }
             className={`p-4 bg-white rounded-lg shadow-sm border text-center hover:bg-red-50 transition-colors cursor-pointer ${
-              selectedLevel === LogLevel.ERROR ? 'ring-2 ring-red-500 bg-red-50' : ''
+              selectedLevel === LogLevel.ERROR
+                ? 'ring-2 ring-red-500 bg-red-50'
+                : ''
             }`}
           >
-            <div className="text-2xl font-bold text-red-600">{logStats.errors}</div>
+            <div className="text-2xl font-bold text-red-600">
+              {logStats.errors}
+            </div>
             <div className="text-sm text-red-500">❌ Errors</div>
           </button>
-          <button 
+          <button
             onClick={() => toggleLevelFilter(LogLevel.WARN)}
-            title={selectedLevel === LogLevel.WARN ? "Click to clear warning filter" : "Click to filter warnings only"}
+            title={
+              selectedLevel === LogLevel.WARN
+                ? 'Click to clear warning filter'
+                : 'Click to filter warnings only'
+            }
             className={`p-4 bg-white rounded-lg shadow-sm border text-center hover:bg-yellow-50 transition-colors cursor-pointer ${
-              selectedLevel === LogLevel.WARN ? 'ring-2 ring-yellow-500 bg-yellow-50' : ''
+              selectedLevel === LogLevel.WARN
+                ? 'ring-2 ring-yellow-500 bg-yellow-50'
+                : ''
             }`}
           >
-            <div className="text-2xl font-bold text-yellow-600">{logStats.warnings}</div>
+            <div className="text-2xl font-bold text-yellow-600">
+              {logStats.warnings}
+            </div>
             <div className="text-sm text-yellow-500">⚠️ Warnings</div>
           </button>
-          <button 
+          <button
             onClick={() => toggleLevelFilter(LogLevel.INFO)}
-            title={selectedLevel === LogLevel.INFO ? "Click to clear info filter" : "Click to filter info logs only"}
+            title={
+              selectedLevel === LogLevel.INFO
+                ? 'Click to clear info filter'
+                : 'Click to filter info logs only'
+            }
             className={`p-4 bg-white rounded-lg shadow-sm border text-center hover:bg-blue-50 transition-colors cursor-pointer ${
-              selectedLevel === LogLevel.INFO ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+              selectedLevel === LogLevel.INFO
+                ? 'ring-2 ring-blue-500 bg-blue-50'
+                : ''
             }`}
           >
-            <div className="text-2xl font-bold text-blue-600">{logStats.info}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {logStats.info}
+            </div>
             <div className="text-sm text-blue-500">ℹ️ Info</div>
           </button>
-          <button 
+          <button
             onClick={() => toggleLevelFilter(LogLevel.DEBUG)}
-            title={selectedLevel === LogLevel.DEBUG ? "Click to clear debug filter" : "Click to filter debug logs only"}
+            title={
+              selectedLevel === LogLevel.DEBUG
+                ? 'Click to clear debug filter'
+                : 'Click to filter debug logs only'
+            }
             className={`p-4 bg-white rounded-lg shadow-sm border text-center hover:bg-gray-50 transition-colors cursor-pointer ${
-              selectedLevel === LogLevel.DEBUG ? 'ring-2 ring-gray-500 bg-gray-50' : ''
+              selectedLevel === LogLevel.DEBUG
+                ? 'ring-2 ring-gray-500 bg-gray-50'
+                : ''
             }`}
           >
-            <div className="text-2xl font-bold text-gray-600">{logStats.debug}</div>
+            <div className="text-2xl font-bold text-gray-600">
+              {logStats.debug}
+            </div>
             <div className="text-sm text-gray-500">🐛 Debug</div>
           </button>
         </div>
@@ -365,16 +451,26 @@ export default function LogsDashboard() {
         <div className="bg-white border rounded-lg shadow-sm p-4 mb-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <h3 className="text-sm font-semibold text-gray-700">🔧 Quick Filters:</h3>
-              
+              <h3 className="text-sm font-semibold text-gray-700">
+                🔧 Quick Filters:
+              </h3>
+
               {/* Date Range Filter */}
               <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-600">📅 Time:</label>
-                <select 
-                  value={selectedTimeRange} 
-                  onChange={(e) => setSelectedTimeRange(e.target.value as '1h' | '6h' | '24h' | 'all')}
+                <label className="text-sm font-medium text-gray-600">
+                  📅 Time:
+                </label>
+                <select
+                  value={selectedTimeRange}
+                  onChange={(e) =>
+                    setSelectedTimeRange(
+                      e.target.value as '1h' | '6h' | '24h' | 'all'
+                    )
+                  }
                   className={`px-3 py-1 border rounded-md text-sm focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    selectedTimeRange !== 'all' ? 'bg-blue-50 border-blue-300 text-blue-700' : 'border-gray-300'
+                    selectedTimeRange !== 'all'
+                      ? 'bg-blue-50 border-blue-300 text-blue-700'
+                      : 'border-gray-300'
                   }`}
                 >
                   <option value="1h">Last Hour</option>
@@ -385,7 +481,9 @@ export default function LogsDashboard() {
               </div>
 
               {/* Active Filters Display */}
-              {(selectedLevel !== 'all' || selectedTimeRange !== 'all' || searchQuery.trim()) && (
+              {(selectedLevel !== 'all' ||
+                selectedTimeRange !== 'all' ||
+                searchQuery.trim()) && (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500">Active:</span>
                   {selectedLevel !== 'all' && (
@@ -400,7 +498,8 @@ export default function LogsDashboard() {
                   )}
                   {searchQuery.trim() && (
                     <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">
-                      Search: &quot;{searchQuery.slice(0, 15)}{searchQuery.length > 15 ? '...' : ''}&quot;
+                      Search: &quot;{searchQuery.slice(0, 15)}
+                      {searchQuery.length > 15 ? '...' : ''}&quot;
                     </span>
                   )}
                 </div>
@@ -408,7 +507,9 @@ export default function LogsDashboard() {
             </div>
 
             {/* Clear All Filters */}
-            {(selectedLevel !== 'all' || selectedTimeRange !== 'all' || searchQuery.trim()) && (
+            {(selectedLevel !== 'all' ||
+              selectedTimeRange !== 'all' ||
+              searchQuery.trim()) && (
               <button
                 onClick={() => {
                   setSelectedLevel('all');
@@ -428,13 +529,17 @@ export default function LogsDashboard() {
 
         {!isCollapsed && (
           <div className="bg-white border rounded-lg shadow-sm p-4 mb-4">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">🎛️ Controls & Filters</h3>
-            
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+              🎛️ Controls & Filters
+            </h3>
+
             {/* Primary Controls Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               {/* Search */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">🔍 Search Logs</label>
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  🔍 Search Logs
+                </label>
                 <input
                   type="text"
                   value={searchQuery}
@@ -446,10 +551,14 @@ export default function LogsDashboard() {
 
               {/* Level Filter */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">📊 Log Level</label>
-                <select 
-                  value={selectedLevel} 
-                  onChange={(e) => setSelectedLevel(e.target.value as LogLevel | 'all')}
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  📊 Log Level
+                </label>
+                <select
+                  value={selectedLevel}
+                  onChange={(e) =>
+                    setSelectedLevel(e.target.value as LogLevel | 'all')
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 transition-colors"
                 >
                   <option value="all">All Levels</option>
@@ -462,13 +571,15 @@ export default function LogsDashboard() {
 
               {/* Component Filter */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">🧩 Component</label>
-                <select 
-                  value={selectedComponent} 
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  🧩 Component
+                </label>
+                <select
+                  value={selectedComponent}
                   onChange={(e) => setSelectedComponent(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 transition-colors"
                 >
-                  {components.map(comp => (
+                  {components.map((comp) => (
                     <option key={comp} value={comp}>
                       {comp === 'all' ? 'All Components' : comp}
                     </option>
@@ -478,10 +589,16 @@ export default function LogsDashboard() {
 
               {/* Time Range */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">⏰ Time Range</label>
-                <select 
-                  value={selectedTimeRange} 
-                  onChange={(e) => setSelectedTimeRange(e.target.value as '1h' | '6h' | '24h' | 'all')}
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  ⏰ Time Range
+                </label>
+                <select
+                  value={selectedTimeRange}
+                  onChange={(e) =>
+                    setSelectedTimeRange(
+                      e.target.value as '1h' | '6h' | '24h' | 'all'
+                    )
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 transition-colors"
                 >
                   <option value="1h">Last Hour</option>
@@ -496,9 +613,11 @@ export default function LogsDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-4">
               {/* Max Logs */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">📈 Max Logs</label>
-                <select 
-                  value={maxLogs} 
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  📈 Max Logs
+                </label>
+                <select
+                  value={maxLogs}
                   onChange={(e) => setMaxLogs(parseInt(e.target.value))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 transition-colors"
                 >
@@ -511,10 +630,14 @@ export default function LogsDashboard() {
 
               {/* Sort Order */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">🔄 Sort</label>
-                <select 
-                  value={sortOrder} 
-                  onChange={(e) => setSortOrder(e.target.value as 'desc' | 'asc')}
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  🔄 Sort
+                </label>
+                <select
+                  value={sortOrder}
+                  onChange={(e) =>
+                    setSortOrder(e.target.value as 'desc' | 'asc')
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 transition-colors"
                 >
                   <option value="desc">Newest First</option>
@@ -524,8 +647,10 @@ export default function LogsDashboard() {
 
               {/* Action Buttons */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">🔄 Actions</label>
-                <button 
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  🔄 Actions
+                </label>
+                <button
                   onClick={refreshLogs}
                   disabled={isPaused}
                   className="w-full px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm disabled:bg-gray-400 transition-colors"
@@ -535,8 +660,10 @@ export default function LogsDashboard() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">🗑️ Clear</label>
-                <button 
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  🗑️ Clear
+                </label>
+                <button
                   onClick={clearLogs}
                   className="w-full px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 text-sm transition-colors"
                 >
@@ -545,8 +672,10 @@ export default function LogsDashboard() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">📁 Export</label>
-                <button 
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  📁 Export
+                </label>
+                <button
                   onClick={exportLogs}
                   className="w-full px-3 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm transition-colors"
                 >
@@ -555,8 +684,10 @@ export default function LogsDashboard() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">🧪 Test</label>
-                <button 
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  🧪 Test
+                </label>
+                <button
                   onClick={testConsoleLogging}
                   className="w-full px-3 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 text-sm transition-colors"
                 >
@@ -568,8 +699,8 @@ export default function LogsDashboard() {
             {/* Options Row */}
             <div className="flex flex-wrap gap-6 pt-4 border-t border-gray-200">
               <label className="flex items-center gap-2 text-sm text-gray-700">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={autoRefresh}
                   onChange={(e) => setAutoRefresh(e.target.checked)}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -577,8 +708,8 @@ export default function LogsDashboard() {
                 🔄 Auto Refresh (2s)
               </label>
               <label className="flex items-center gap-2 text-sm text-gray-700">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={autoScroll}
                   onChange={(e) => setAutoScroll(e.target.checked)}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -586,8 +717,8 @@ export default function LogsDashboard() {
                 📜 Auto Scroll (only on new logs)
               </label>
               <label className="flex items-center gap-2 text-sm text-gray-700">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={showStackTrace}
                   onChange={(e) => setShowStackTrace(e.target.checked)}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -602,7 +733,11 @@ export default function LogsDashboard() {
         <div className="bg-white border rounded-lg shadow-sm">
           <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
             <h2 className="font-semibold text-gray-800">
-              📋 Recent Logs ({logs.length} shown{selectedLevel !== 'all' ? ` - ${selectedLevel} filter active` : ''})
+              📋 Recent Logs ({logs.length} shown
+              {selectedLevel !== 'all'
+                ? ` - ${selectedLevel} filter active`
+                : ''}
+              )
             </h2>
             <div className="flex items-center gap-2">
               <button
@@ -639,20 +774,27 @@ export default function LogsDashboard() {
               </div>
             </div>
           </div>
-          
+
           <div className="max-h-96 overflow-y-auto">
             {logs.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 <div className="text-4xl mb-2">📝</div>
                 <div className="text-lg font-medium mb-1">No logs found</div>
-                <div className="text-sm">Try adjusting your filters or generate some test logs</div>
+                <div className="text-sm">
+                  Try adjusting your filters or generate some test logs
+                </div>
               </div>
             ) : (
               logs.map((log, index) => (
-                <div key={`${log.timestamp}-${index}`} className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${getLevelColor(log.level)} group relative`}>
+                <div
+                  key={`${log.timestamp}-${index}`}
+                  className={`p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${getLevelColor(log.level)} group relative`}
+                >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">{getLevelEmoji(log.level)}</span>
+                      <span className="text-lg">
+                        {getLevelEmoji(log.level)}
+                      </span>
                       <span className="font-medium text-sm uppercase tracking-wide">
                         {log.level}
                       </span>
@@ -675,11 +817,11 @@ export default function LogsDashboard() {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="text-sm font-medium mb-2 text-gray-800">
                     {log.message}
                   </div>
-                  
+
                   {!!log.data && (
                     <details className="mb-2">
                       <summary className="cursor-pointer text-xs text-gray-600 hover:text-gray-800 font-medium">
@@ -690,7 +832,7 @@ export default function LogsDashboard() {
                       </pre>
                     </details>
                   )}
-                  
+
                   {log.stack && (
                     <details className={showStackTrace ? 'open' : ''}>
                       <summary className="cursor-pointer text-xs text-red-600 hover:text-red-800 font-medium">
@@ -710,13 +852,13 @@ export default function LogsDashboard() {
 
         {/* Quick Actions Footer */}
         <div className="mt-4 text-center">
-          <a 
+          <a
             href="/test-console-logging"
             className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-lg font-semibold transition-colors mr-4"
           >
             🧪 Test Console Logging
           </a>
-          <a 
+          <a
             href="/auto-log-review"
             className="inline-block px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-lg font-semibold transition-colors"
           >

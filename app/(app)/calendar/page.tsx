@@ -1,25 +1,39 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-"use client";
+'use client';
 
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { Calendar as CalendarIcon, Plus, Download, Settings, List, Clock } from "lucide-react";
-import { HouseholdCalendar, QuickAddEvent, EventModal } from "@/components/calendar";
-import { PageErrorBoundary, ComponentErrorBoundary } from "@/components/ErrorBoundary";
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import {
+  Calendar as CalendarIcon,
+  Plus,
+  Download,
+  Settings,
+  List,
+  Clock
+} from 'lucide-react';
+import {
+  HouseholdCalendar,
+  QuickAddEvent,
+  EventModal
+} from '@/components/calendar';
+import {
+  PageErrorBoundary,
+  ComponentErrorBoundary
+} from '@/components/ErrorBoundary';
 
 // Calendar Event Interface
 interface CalendarEvent {
@@ -45,7 +59,7 @@ const CALENDAR_TABS = [
   { id: 'settings', label: 'Settings', icon: Settings }
 ] as const;
 
-type CalendarTab = typeof CALENDAR_TABS[number]['id'];
+type CalendarTab = (typeof CALENDAR_TABS)[number]['id'];
 
 // Event List View Component
 function EventListView() {
@@ -57,23 +71,25 @@ function EventListView() {
   // Fetch events for the next 6 months
   const fetchEvents = useCallback(async () => {
     const controller = new AbortController();
-    
+
     try {
       setLoading(true);
       const now = new Date();
-      const sixMonthsLater = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000);
-      
+      const sixMonthsLater = new Date(
+        now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000
+      );
+
       const response = await fetch(
         `/api/calendar?from=${now.toISOString()}&to=${sixMonthsLater.toISOString()}`,
         { signal: controller.signal }
       );
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
-      
+
       // Only update state if component is still mounted
       if (!controller.signal.aborted) {
         setEvents(data.events || []);
@@ -91,41 +107,45 @@ function EventListView() {
         setLoading(false);
       }
     }
-    
+
     return () => controller.abort();
   }, []);
 
   useEffect(() => {
     let cleanup: (() => void) | undefined;
-    
+
     const initFetch = async () => {
       cleanup = await fetchEvents();
     };
-    
+
     initFetch();
-    
+
     return () => {
       if (cleanup) cleanup();
     };
   }, [fetchEvents]);
 
   const filteredEvents = useMemo(() => {
-    return events.filter(event => {
+    return events.filter((event) => {
       const matchesFilter = filter === 'all' || event.kind === filter;
-      const matchesSearch = searchTerm === '' || 
+      const matchesSearch =
+        searchTerm === '' ||
         event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         event.description?.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesFilter && matchesSearch;
     });
   }, [events, filter, searchTerm]);
 
-  const eventTypes = useMemo(() => [
-    { value: 'all', label: 'All Events' },
-    { value: 'manual', label: 'Manual Events' },
-    { value: 'meal', label: 'Meals' },
-    { value: 'list_item', label: 'Tasks' },
-    { value: 'project_task', label: 'Projects' }
-  ], []);
+  const eventTypes = useMemo(
+    () => [
+      { value: 'all', label: 'All Events' },
+      { value: 'manual', label: 'Manual Events' },
+      { value: 'meal', label: 'Meals' },
+      { value: 'list_item', label: 'Tasks' },
+      { value: 'project_task', label: 'Projects' }
+    ],
+    []
+  );
 
   if (loading) {
     return (
@@ -165,7 +185,7 @@ function EventListView() {
               onChange={(e) => setFilter(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
-              {eventTypes.map(type => (
+              {eventTypes.map((type) => (
                 <option key={type.value} value={type.value}>
                   {type.label}
                 </option>
@@ -189,9 +209,12 @@ function EventListView() {
             </div>
           ) : (
             filteredEvents.map((event, index) => (
-              <div key={event.event_id || index} className="p-4 hover:bg-gray-50">
+              <div
+                key={event.event_id || index}
+                className="p-4 hover:bg-gray-50"
+              >
                 <div className="flex items-start gap-4">
-                  <div 
+                  <div
                     className="w-4 h-4 rounded-full flex-shrink-0 mt-1"
                     style={{ backgroundColor: event.color }}
                   ></div>
@@ -220,9 +243,7 @@ function EventListView() {
                         })}
                       </span>
                       <span className="capitalize">{event.kind}</span>
-                      {event.location && (
-                        <span>📍 {event.location}</span>
-                      )}
+                      {event.location && <span>📍 {event.location}</span>}
                     </div>
                   </div>
                   {event.link_href && (
@@ -250,23 +271,25 @@ function UpcomingEventsView() {
 
   const fetchUpcomingEvents = useCallback(async () => {
     const controller = new AbortController();
-    
+
     try {
       setLoading(true);
       const now = new Date();
-      const thirtyDaysLater = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-      
+      const thirtyDaysLater = new Date(
+        now.getTime() + 30 * 24 * 60 * 60 * 1000
+      );
+
       const response = await fetch(
         `/api/calendar?from=${now.toISOString()}&to=${thirtyDaysLater.toISOString()}`,
         { signal: controller.signal }
       );
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
-      
+
       // Only update state if component is still mounted
       if (!controller.signal.aborted) {
         setEvents(data.events || []);
@@ -284,19 +307,19 @@ function UpcomingEventsView() {
         setLoading(false);
       }
     }
-    
+
     return () => controller.abort();
   }, []);
 
   useEffect(() => {
     let cleanup: (() => void) | undefined;
-    
+
     const initFetch = async () => {
       cleanup = await fetchUpcomingEvents();
     };
-    
+
     initFetch();
-    
+
     return () => {
       if (cleanup) cleanup();
     };
@@ -315,9 +338,13 @@ function UpcomingEventsView() {
       later: [] as CalendarEvent[]
     };
 
-    events.forEach(event => {
+    events.forEach((event) => {
       const eventDate = new Date(event.start_ts);
-      const eventDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+      const eventDay = new Date(
+        eventDate.getFullYear(),
+        eventDate.getMonth(),
+        eventDate.getDate()
+      );
 
       if (eventDay.getTime() === today.getTime()) {
         groups.today.push(event);
@@ -333,7 +360,11 @@ function UpcomingEventsView() {
     return groups;
   }, [events]);
 
-  const renderEventGroup = (title: string, events: CalendarEvent[], emptyMessage: string) => (
+  const renderEventGroup = (
+    title: string,
+    events: CalendarEvent[],
+    emptyMessage: string
+  ) => (
     <div className="bg-white rounded-lg border border-gray-200">
       <div className="p-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900">
@@ -349,7 +380,7 @@ function UpcomingEventsView() {
           events.map((event, index) => (
             <div key={event.event_id || index} className="p-4 hover:bg-gray-50">
               <div className="flex items-center gap-3">
-                <div 
+                <div
                   className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: event.color }}
                 ></div>
@@ -391,7 +422,10 @@ function UpcomingEventsView() {
     return (
       <div className="space-y-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg border border-gray-200 p-8">
+          <div
+            key={i}
+            className="bg-white rounded-lg border border-gray-200 p-8"
+          >
             <div className="animate-pulse">
               <div className="h-6 bg-gray-200 rounded w-32 mb-4"></div>
               <div className="space-y-3">
@@ -408,10 +442,26 @@ function UpcomingEventsView() {
 
   return (
     <div className="space-y-6">
-      {renderEventGroup("Today", groupedEvents.today, "No events scheduled for today")}
-      {renderEventGroup("Tomorrow", groupedEvents.tomorrow, "No events scheduled for tomorrow")}
-      {renderEventGroup("This Week", groupedEvents.thisWeek, "No events scheduled for this week")}
-      {renderEventGroup("Later This Month", groupedEvents.later, "No events scheduled later this month")}
+      {renderEventGroup(
+        'Today',
+        groupedEvents.today,
+        'No events scheduled for today'
+      )}
+      {renderEventGroup(
+        'Tomorrow',
+        groupedEvents.tomorrow,
+        'No events scheduled for tomorrow'
+      )}
+      {renderEventGroup(
+        'This Week',
+        groupedEvents.thisWeek,
+        'No events scheduled for this week'
+      )}
+      {renderEventGroup(
+        'Later This Month',
+        groupedEvents.later,
+        'No events scheduled later this month'
+      )}
     </div>
   );
 }
@@ -428,15 +478,20 @@ function CalendarSettingsView() {
     autoSync: true
   });
 
-  const handleSettingChange = (key: string, value: string | boolean | number) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
+  const handleSettingChange = (
+    key: string,
+    value: string | boolean | number
+  ) => {
+    setSettings((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
     <div className="space-y-6">
       {/* Display Settings */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Display Settings</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Display Settings
+        </h3>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -444,7 +499,9 @@ function CalendarSettingsView() {
             </label>
             <select
               value={settings.defaultView}
-              onChange={(e) => handleSettingChange('defaultView', e.target.value)}
+              onChange={(e) =>
+                handleSettingChange('defaultView', e.target.value)
+              }
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="month">Month View</option>
@@ -473,7 +530,9 @@ function CalendarSettingsView() {
             </label>
             <select
               value={settings.timeFormat}
-              onChange={(e) => handleSettingChange('timeFormat', e.target.value)}
+              onChange={(e) =>
+                handleSettingChange('timeFormat', e.target.value)
+              }
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="12hour">12-hour (1:00 PM)</option>
@@ -486,10 +545,15 @@ function CalendarSettingsView() {
               id="showWeekends"
               type="checkbox"
               checked={settings.showWeekends}
-              onChange={(e) => handleSettingChange('showWeekends', e.target.checked)}
+              onChange={(e) =>
+                handleSettingChange('showWeekends', e.target.checked)
+              }
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
             />
-            <label htmlFor="showWeekends" className="ml-2 block text-sm text-gray-900">
+            <label
+              htmlFor="showWeekends"
+              className="ml-2 block text-sm text-gray-900"
+            >
               Show weekends
             </label>
           </div>
@@ -498,17 +562,24 @@ function CalendarSettingsView() {
 
       {/* Notification Settings */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Notifications</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Notifications
+        </h3>
         <div className="space-y-4">
           <div className="flex items-center">
             <input
               id="notifications"
               type="checkbox"
               checked={settings.notifications}
-              onChange={(e) => handleSettingChange('notifications', e.target.checked)}
+              onChange={(e) =>
+                handleSettingChange('notifications', e.target.checked)
+              }
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
             />
-            <label htmlFor="notifications" className="ml-2 block text-sm text-gray-900">
+            <label
+              htmlFor="notifications"
+              className="ml-2 block text-sm text-gray-900"
+            >
               Enable browser notifications
             </label>
           </div>
@@ -518,10 +589,15 @@ function CalendarSettingsView() {
               id="emailReminders"
               type="checkbox"
               checked={settings.emailReminders}
-              onChange={(e) => handleSettingChange('emailReminders', e.target.checked)}
+              onChange={(e) =>
+                handleSettingChange('emailReminders', e.target.checked)
+              }
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
             />
-            <label htmlFor="emailReminders" className="ml-2 block text-sm text-gray-900">
+            <label
+              htmlFor="emailReminders"
+              className="ml-2 block text-sm text-gray-900"
+            >
               Send email reminders
             </label>
           </div>
@@ -530,23 +606,32 @@ function CalendarSettingsView() {
 
       {/* Sync Settings */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Calendar Sync</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Calendar Sync
+        </h3>
         <div className="space-y-4">
           <div className="flex items-center">
             <input
               id="autoSync"
               type="checkbox"
               checked={settings.autoSync}
-              onChange={(e) => handleSettingChange('autoSync', e.target.checked)}
+              onChange={(e) =>
+                handleSettingChange('autoSync', e.target.checked)
+              }
               className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
             />
-            <label htmlFor="autoSync" className="ml-2 block text-sm text-gray-900">
+            <label
+              htmlFor="autoSync"
+              className="ml-2 block text-sm text-gray-900"
+            >
               Auto-sync with external calendars
             </label>
           </div>
 
           <div className="pt-4">
-            <h4 className="text-sm font-medium text-gray-900 mb-2">Export Options</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-2">
+              Export Options
+            </h4>
             <div className="space-y-2">
               <a
                 href="/api/calendar/ics"
@@ -556,7 +641,8 @@ function CalendarSettingsView() {
                 Download ICS File
               </a>
               <p className="text-xs text-gray-500">
-                Import this file into your device&apos;s calendar app to sync events
+                Import this file into your device&apos;s calendar app to sync
+                events
               </p>
             </div>
           </div>
@@ -569,7 +655,9 @@ function CalendarSettingsView() {
           className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           onClick={() => {
             // TODO: Save settings to backend
-            alert('Settings saved! (This would save to your profile in the real app)');
+            alert(
+              'Settings saved! (This would save to your profile in the real app)'
+            );
           }}
         >
           Save Settings
@@ -584,15 +672,17 @@ export default function CalendarPage() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [calendarKey, setCalendarKey] = useState(0); // For forcing calendar refresh
-  
+
   // Event Modal State
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
+    null
+  );
   const [showEventModal, setShowEventModal] = useState(false);
 
   const handleEventCreated = useCallback(() => {
     // Refresh the calendar by changing its key
-    setCalendarKey(prev => prev + 1);
-    
+    setCalendarKey((prev) => prev + 1);
+
     // Close quick add if it was a popup
     setShowQuickAdd(false);
     setSelectedDate(null);
@@ -606,38 +696,44 @@ export default function CalendarPage() {
   }, []);
 
   // Event CRUD Operations
-  const handleEventSave = useCallback(async (updatedEvent: Partial<CalendarEvent>) => {
-    try {
-      // Call API to update event
-      const response = await fetch(`/api/calendar/events/${updatedEvent.event_id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedEvent),
-      });
+  const handleEventSave = useCallback(
+    async (updatedEvent: Partial<CalendarEvent>) => {
+      try {
+        // Call API to update event
+        const response = await fetch(
+          `/api/calendar/events/${updatedEvent.event_id}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedEvent)
+          }
+        );
 
-      if (!response.ok) {
-        throw new Error(`Failed to update event: ${response.statusText}`);
+        if (!response.ok) {
+          throw new Error(`Failed to update event: ${response.statusText}`);
+        }
+
+        // Refresh calendar
+        setCalendarKey((prev) => prev + 1);
+
+        // Update the selected event for the modal
+        setSelectedEvent(updatedEvent as CalendarEvent);
+
+        console.log('✅ Event updated successfully');
+      } catch (error) {
+        console.error('❌ Failed to update event:', error);
+        throw error; // Re-throw so modal can handle error display
       }
-
-      // Refresh calendar
-      setCalendarKey(prev => prev + 1);
-      
-      // Update the selected event for the modal
-      setSelectedEvent(updatedEvent as CalendarEvent);
-      
-      console.log('✅ Event updated successfully');
-    } catch (error) {
-      console.error('❌ Failed to update event:', error);
-      throw error; // Re-throw so modal can handle error display
-    }
-  }, []);
+    },
+    []
+  );
 
   const handleEventDelete = useCallback(async (eventId: string) => {
     try {
       const response = await fetch(`/api/calendar/events/${eventId}`, {
-        method: 'DELETE',
+        method: 'DELETE'
       });
 
       if (!response.ok) {
@@ -645,8 +741,8 @@ export default function CalendarPage() {
       }
 
       // Refresh calendar
-      setCalendarKey(prev => prev + 1);
-      
+      setCalendarKey((prev) => prev + 1);
+
       console.log('✅ Event deleted successfully');
     } catch (error) {
       console.error('❌ Failed to delete event:', error);
@@ -654,29 +750,34 @@ export default function CalendarPage() {
     }
   }, []);
 
-  const handleEventDuplicate = useCallback(async (duplicatedEvent: Partial<CalendarEvent>) => {
-    try {
-      const response = await fetch('/api/calendar/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(duplicatedEvent),
-      });
+  const handleEventDuplicate = useCallback(
+    async (duplicatedEvent: Partial<CalendarEvent>) => {
+      try {
+        const response = await fetch('/api/calendar/events', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(duplicatedEvent)
+        });
 
-      if (!response.ok) {
-        throw new Error(`Failed to create duplicate event: ${response.statusText}`);
+        if (!response.ok) {
+          throw new Error(
+            `Failed to create duplicate event: ${response.statusText}`
+          );
+        }
+
+        // Refresh calendar
+        setCalendarKey((prev) => prev + 1);
+
+        console.log('✅ Event duplicated successfully');
+      } catch (error) {
+        console.error('❌ Failed to duplicate event:', error);
+        throw error;
       }
-
-      // Refresh calendar
-      setCalendarKey(prev => prev + 1);
-      
-      console.log('✅ Event duplicated successfully');
-    } catch (error) {
-      console.error('❌ Failed to duplicate event:', error);
-      throw error;
-    }
-  }, []);
+    },
+    []
+  );
 
   const closeEventModal = useCallback(() => {
     setShowEventModal(false);
@@ -684,20 +785,26 @@ export default function CalendarPage() {
   }, []);
 
   // 🚀 PERFORMANCE: Memoize calendar types data
-  const calendarTypes = useMemo(() => [
-    { color: 'bg-blue-500', label: 'Manual Events' },
-    { color: 'bg-green-500', label: 'Meal Plans' },
-    { color: 'bg-blue-400', label: 'Tasks & Lists' },
-    { color: 'bg-purple-500', label: 'Project Tasks' },
-  ], []);
+  const calendarTypes = useMemo(
+    () => [
+      { color: 'bg-blue-500', label: 'Manual Events' },
+      { color: 'bg-green-500', label: 'Meal Plans' },
+      { color: 'bg-blue-400', label: 'Tasks & Lists' },
+      { color: 'bg-purple-500', label: 'Project Tasks' }
+    ],
+    []
+  );
 
   // 🚀 PERFORMANCE: Memoize calendar instructions
-  const calendarInstructions = useMemo(() => [
-    '• Click events to view details',
-    '• Export to sync with your device',
-    '• View by month, week, or day',
-    '• All household members can see events',
-  ], []);
+  const calendarInstructions = useMemo(
+    () => [
+      '• Click events to view details',
+      '• Export to sync with your device',
+      '• View by month, week, or day',
+      '• All household members can see events'
+    ],
+    []
+  );
 
   // 🚀 PERFORMANCE: Render tab content based on active tab
   const renderTabContent = useCallback(() => {
@@ -736,12 +843,16 @@ export default function CalendarPage() {
 
               {/* Calendar Info */}
               <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Calendar Types</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Calendar Types
+                </h3>
                 <div className="space-y-3">
                   {calendarTypes.map((type, index) => (
                     <div key={index} className="flex items-center gap-3">
                       <div className={`w-4 h-4 rounded ${type.color}`}></div>
-                      <span className="text-sm text-gray-700">{type.label}</span>
+                      <span className="text-sm text-gray-700">
+                        {type.label}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -749,7 +860,9 @@ export default function CalendarPage() {
 
               {/* Calendar Instructions */}
               <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">Using Your Calendar</h3>
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                  Using Your Calendar
+                </h3>
                 <ul className="text-sm text-blue-800 space-y-1">
                   {calendarInstructions.map((instruction, index) => (
                     <li key={index}>{instruction}</li>
@@ -772,7 +885,15 @@ export default function CalendarPage() {
       default:
         return null;
     }
-  }, [activeTab, calendarKey, selectedDate, handleCalendarEventClick, handleEventCreated, calendarTypes, calendarInstructions]);
+  }, [
+    activeTab,
+    calendarKey,
+    selectedDate,
+    handleCalendarEventClick,
+    handleEventCreated,
+    calendarTypes,
+    calendarInstructions
+  ]);
 
   return (
     <PageErrorBoundary>
@@ -867,7 +988,22 @@ export default function CalendarPage() {
         {/* Event Modal */}
         <ComponentErrorBoundary>
           <EventModal
-            event={selectedEvent as { event_id: string; household_id: string; kind: 'manual' | 'meal' | 'list_item' | 'project_task'; title: string; description?: string; location?: string; start_ts: string; end_ts: string; all_day: boolean; color?: string; link_href?: string; meta?: unknown } | null}
+            event={
+              selectedEvent as {
+                event_id: string;
+                household_id: string;
+                kind: 'manual' | 'meal' | 'list_item' | 'project_task';
+                title: string;
+                description?: string;
+                location?: string;
+                start_ts: string;
+                end_ts: string;
+                all_day: boolean;
+                color?: string;
+                link_href?: string;
+                meta?: unknown;
+              } | null
+            }
             isOpen={showEventModal}
             onClose={closeEventModal}
             onSave={handleEventSave}

@@ -1,6 +1,6 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Test script to apply feedback table migration
  */
 
@@ -10,8 +10,10 @@ async function applyMigration() {
   try {
     // Use your actual Supabase credentials
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    
+    const supabaseKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
     if (!supabaseUrl || !supabaseKey) {
       console.error('Missing Supabase credentials');
       return;
@@ -98,17 +100,19 @@ async function applyMigration() {
 
     console.log('Applying migration...');
     const { error } = await supabase.rpc('exec_sql', { sql: migrationSQL });
-    
+
     if (error) {
       console.error('Migration failed:', error);
-      
+
       // Try alternative approach - execute each statement separately
-      const statements = migrationSQL.split(';').filter(s => s.trim());
-      
+      const statements = migrationSQL.split(';').filter((s) => s.trim());
+
       for (const statement of statements) {
         if (statement.trim()) {
           console.log('Executing:', statement.trim().substring(0, 50) + '...');
-          const { error: stmtError } = await supabase.rpc('exec_sql', { sql: statement.trim() });
+          const { error: stmtError } = await supabase.rpc('exec_sql', {
+            sql: statement.trim()
+          });
           if (stmtError) {
             console.error('Statement failed:', stmtError);
           }
@@ -117,7 +121,6 @@ async function applyMigration() {
     } else {
       console.log('Migration applied successfully!');
     }
-
   } catch (error) {
     console.error('Error:', error);
   }

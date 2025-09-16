@@ -14,7 +14,7 @@ function loadEnvFile(filename) {
     const envPath = path.join(process.cwd(), filename);
     if (fs.existsSync(envPath)) {
       const envContent = fs.readFileSync(envPath, 'utf8');
-      envContent.split('\n').forEach(line => {
+      envContent.split('\n').forEach((line) => {
         line = line.trim();
         if (line && !line.startsWith('#') && line.includes('=')) {
           const [key, ...valueParts] = line.split('=');
@@ -71,12 +71,12 @@ function log(message, color = 'reset') {
 
 function validateEnvironment() {
   log('\n🔍 Environment Variables Validation\n', 'bold');
-  
+
   let hasErrors = false;
-  
+
   // Check public variables
   log('📋 Public Variables:', 'blue');
-  requiredVars.public.forEach(varName => {
+  requiredVars.public.forEach((varName) => {
     const value = process.env[varName];
     if (value) {
       log(`  ✅ ${varName}: ${value}`, 'green');
@@ -85,9 +85,9 @@ function validateEnvironment() {
       hasErrors = true;
     }
   });
-  
+
   log('\n🔐 Secret Variables:', 'blue');
-  requiredVars.secrets.forEach(varName => {
+  requiredVars.secrets.forEach((varName) => {
     const value = process.env[varName];
     if (value) {
       log(`  ✅ ${varName}: Set (${value.length} characters)`, 'green');
@@ -96,14 +96,14 @@ function validateEnvironment() {
       hasErrors = true;
     }
   });
-  
+
   // Check file security
   log('\n📁 File Security Check:', 'blue');
-  
+
   const envFiles = ['.env', '.env.local', '.env.production', '.env.staging'];
   const gitignoreContent = fs.readFileSync('.gitignore', 'utf8');
-  
-  envFiles.forEach(filename => {
+
+  envFiles.forEach((filename) => {
     if (fs.existsSync(filename)) {
       if (gitignoreContent.includes(filename)) {
         log(`  ✅ ${filename}: Exists and ignored by git`, 'green');
@@ -113,17 +113,17 @@ function validateEnvironment() {
       }
     }
   });
-  
+
   // Environment-specific checks
   log('\n🌍 Environment-Specific Checks:', 'blue');
-  
+
   const nodeEnv = process.env.NODE_ENV || 'development';
   log(`  📍 NODE_ENV: ${nodeEnv}`);
-  
+
   const isLocal = process.env.NEXT_PUBLIC_SITE_URL?.includes('localhost');
   const debugMode = process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
   const mockData = process.env.NEXT_PUBLIC_ENABLE_MOCK_DATA === 'true';
-  
+
   if (isLocal) {
     log('  🏠 Local development detected');
     if (!debugMode) {
@@ -138,14 +138,20 @@ function validateEnvironment() {
       log('  ⚠️  Mock data is enabled in production!', 'yellow');
     }
   }
-  
+
   // Final result
   log('\n' + '='.repeat(50), 'blue');
   if (hasErrors) {
-    log('❌ Environment validation failed! Please fix the issues above.', 'red');
+    log(
+      '❌ Environment validation failed! Please fix the issues above.',
+      'red'
+    );
     process.exit(1);
   } else {
-    log('✅ Environment validation passed! All variables are properly configured.', 'green');
+    log(
+      '✅ Environment validation passed! All variables are properly configured.',
+      'green'
+    );
   }
 }
 

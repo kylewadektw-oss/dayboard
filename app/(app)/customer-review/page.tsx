@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -22,7 +22,8 @@ import { createClient } from '@/utils/supabase/client';
 import { Check, X, MessageSquare, User, AlertCircle } from 'lucide-react';
 import { Database } from '@/src/lib/types_db';
 
-type Json = Database['public']['Tables']['customer_reviews']['Row']['device_info'];
+type Json =
+  Database['public']['Tables']['customer_reviews']['Row']['device_info'];
 
 interface CustomerReview {
   id: string;
@@ -54,10 +55,12 @@ interface Profile {
 export default function CustomerReviewPage() {
   const { user, profile } = useAuth();
   const supabase = createClient();
-  
+
   const [reviews, setReviews] = useState<CustomerReview[]>([]);
   const [profiles, setProfiles] = useState<{ [key: string]: Profile }>({});
-  const [selectedReview, setSelectedReview] = useState<CustomerReview | null>(null);
+  const [selectedReview, setSelectedReview] = useState<CustomerReview | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [responseText, setResponseText] = useState('');
@@ -68,7 +71,7 @@ export default function CustomerReviewPage() {
   const fetchReviews = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       let query = supabase
         .from('customer_reviews')
         .select('*')
@@ -86,8 +89,8 @@ export default function CustomerReviewPage() {
 
       // Fetch user profiles for reviewers
       if (reviewData && reviewData.length > 0) {
-        const userIds = reviewData.map(review => review.user_id);
-        
+        const userIds = reviewData.map((review) => review.user_id);
+
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('id, name, avatar_url')
@@ -95,7 +98,7 @@ export default function CustomerReviewPage() {
 
         if (!profileError && profileData) {
           const profileMap: { [key: string]: Profile } = {};
-          profileData.forEach(profile => {
+          profileData.forEach((profile) => {
             profileMap[profile.id] = profile;
           });
           setProfiles(profileMap);
@@ -117,7 +120,7 @@ export default function CustomerReviewPage() {
   const updateReviewStatus = async (reviewId: string, newStatus: string) => {
     try {
       const updateData: Partial<CustomerReview> = { status: newStatus };
-      
+
       if (newStatus === 'completed') {
         updateData.completed_at = new Date().toISOString();
       }
@@ -184,7 +187,9 @@ export default function CustomerReviewPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Access Denied
+          </h1>
           <p className="text-gray-600">Please sign in to access this page.</p>
         </div>
       </div>
@@ -195,8 +200,12 @@ export default function CustomerReviewPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600">Only administrators can access customer reviews.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Access Denied
+          </h1>
+          <p className="text-gray-600">
+            Only administrators can access customer reviews.
+          </p>
         </div>
       </div>
     );
@@ -243,9 +252,11 @@ export default function CustomerReviewPage() {
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
                     Reviews ({reviews.length})
                   </h3>
-                  
+
                   {reviews.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No reviews found.</p>
+                    <p className="text-gray-500 text-center py-8">
+                      No reviews found.
+                    </p>
                   ) : (
                     <div className="space-y-4">
                       {reviews.map((review) => (
@@ -259,25 +270,31 @@ export default function CustomerReviewPage() {
                               {getReviewTypeIcon(review.review_type)}
                               <div>
                                 <p className="font-medium text-gray-900">
-                                  {profiles[review.user_id]?.name || review.reviewer_name || 'Anonymous'}
+                                  {profiles[review.user_id]?.name ||
+                                    review.reviewer_name ||
+                                    'Anonymous'}
                                 </p>
                                 <p className="text-sm text-gray-500">
                                   {formatDate(review.created_at)}
                                 </p>
                               </div>
                             </div>
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(review.status)}`}>
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(review.status)}`}
+                            >
                               {review.status}
                             </span>
                           </div>
-                          
+
                           {review.rating && (
                             <div className="mt-2 flex items-center">
                               {[...Array(5)].map((_, i) => (
                                 <span
                                   key={i}
                                   className={`text-sm ${
-                                    i < review.rating! ? 'text-yellow-400' : 'text-gray-300'
+                                    i < review.rating!
+                                      ? 'text-yellow-400'
+                                      : 'text-gray-300'
                                   }`}
                                 >
                                   ★
@@ -285,7 +302,7 @@ export default function CustomerReviewPage() {
                               ))}
                             </div>
                           )}
-                          
+
                           {review.review_text && (
                             <p className="mt-2 text-sm text-gray-600 line-clamp-2">
                               {review.review_text}
@@ -304,35 +321,51 @@ export default function CustomerReviewPage() {
               {selectedReview ? (
                 <div className="bg-white shadow rounded-lg">
                   <div className="px-4 py-5 sm:p-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Review Details</h3>
-                    
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                      Review Details
+                    </h3>
+
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Reviewer</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Reviewer
+                        </label>
                         <p className="mt-1 text-sm text-gray-900">
-                          {profiles[selectedReview.user_id]?.name || selectedReview.reviewer_name || 'Anonymous'}
+                          {profiles[selectedReview.user_id]?.name ||
+                            selectedReview.reviewer_name ||
+                            'Anonymous'}
                         </p>
                         {selectedReview.reviewer_email && (
-                          <p className="text-sm text-gray-500">{selectedReview.reviewer_email}</p>
+                          <p className="text-sm text-gray-500">
+                            {selectedReview.reviewer_email}
+                          </p>
                         )}
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Status</label>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedReview.status)}`}>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Status
+                        </label>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedReview.status)}`}
+                        >
                           {selectedReview.status}
                         </span>
                       </div>
 
                       {selectedReview.rating && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Rating</label>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Rating
+                          </label>
                           <div className="flex items-center mt-1">
                             {[...Array(5)].map((_, i) => (
                               <span
                                 key={i}
                                 className={`text-lg ${
-                                  i < selectedReview.rating! ? 'text-yellow-400' : 'text-gray-300'
+                                  i < selectedReview.rating!
+                                    ? 'text-yellow-400'
+                                    : 'text-gray-300'
                                 }`}
                               >
                                 ★
@@ -344,7 +377,9 @@ export default function CustomerReviewPage() {
 
                       {selectedReview.review_text && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Review</label>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Review
+                          </label>
                           <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
                             {selectedReview.review_text}
                           </p>
@@ -353,20 +388,30 @@ export default function CustomerReviewPage() {
 
                       {selectedReview.review_type && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Type</label>
-                          <p className="mt-1 text-sm text-gray-900">{selectedReview.review_type}</p>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Type
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {selectedReview.review_type}
+                          </p>
                         </div>
                       )}
 
                       {selectedReview.feedback_category && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Category</label>
-                          <p className="mt-1 text-sm text-gray-900">{selectedReview.feedback_category}</p>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Category
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {selectedReview.feedback_category}
+                          </p>
                         </div>
                       )}
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Created</label>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Created
+                        </label>
                         <p className="mt-1 text-sm text-gray-900">
                           {formatDate(selectedReview.created_at)}
                         </p>
@@ -374,13 +419,16 @@ export default function CustomerReviewPage() {
 
                       {selectedReview.response_from_team && (
                         <div>
-                          <label className="block text-sm font-medium text-gray-700">Team Response</label>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Team Response
+                          </label>
                           <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
                             {selectedReview.response_from_team}
                           </p>
                           {selectedReview.response_at && (
                             <p className="text-sm text-gray-500 mt-2">
-                              Reviewed on {formatDate(selectedReview.response_at)}
+                              Reviewed on{' '}
+                              {formatDate(selectedReview.response_at)}
                             </p>
                           )}
                         </div>
@@ -406,20 +454,29 @@ export default function CustomerReviewPage() {
                       {selectedReview.status !== 'completed' && (
                         <div className="flex space-x-2 pt-4">
                           <button
-                            onClick={() => updateReviewStatus(selectedReview.id, 'in_progress')}
+                            onClick={() =>
+                              updateReviewStatus(
+                                selectedReview.id,
+                                'in_progress'
+                              )
+                            }
                             className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
                           >
                             Mark In Progress
                           </button>
                           <button
-                            onClick={() => updateReviewStatus(selectedReview.id, 'completed')}
+                            onClick={() =>
+                              updateReviewStatus(selectedReview.id, 'completed')
+                            }
                             className="flex-1 bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700"
                           >
                             <Check className="h-4 w-4 inline mr-1" />
                             Complete
                           </button>
                           <button
-                            onClick={() => updateReviewStatus(selectedReview.id, 'rejected')}
+                            onClick={() =>
+                              updateReviewStatus(selectedReview.id, 'rejected')
+                            }
                             className="flex-1 bg-red-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-700"
                           >
                             <X className="h-4 w-4 inline mr-1" />
@@ -434,7 +491,9 @@ export default function CustomerReviewPage() {
                 <div className="bg-white shadow rounded-lg">
                   <div className="px-4 py-5 sm:p-6 text-center">
                     <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">Select a review to view details</p>
+                    <p className="text-gray-500">
+                      Select a review to view details
+                    </p>
                   </div>
                 </div>
               )}

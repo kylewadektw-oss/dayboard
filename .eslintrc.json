@@ -1,12 +1,4 @@
 {
-  "extends": [
-    "next/core-web-vitals",
-    "next/typescript"
-  ],
-  "ignorePatterns": [
-    "*.js",
-    "scripts/",
-    "supabase/",
-    "node_modules/"
-  ]
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "ignorePatterns": ["*.js", "scripts/", "supabase/", "node_modules/"]
 }

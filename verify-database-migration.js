@@ -17,11 +17,13 @@ async function verifyMigration() {
   const checks = [
     {
       name: 'Global Feature Control Table',
-      test: () => supabase.from('global_feature_control').select('feature_key').limit(1)
+      test: () =>
+        supabase.from('global_feature_control').select('feature_key').limit(1)
     },
     {
       name: 'Settings Categories Table',
-      test: () => supabase.from('settings_categories').select('category_key').limit(1)
+      test: () =>
+        supabase.from('settings_categories').select('category_key').limit(1)
     },
     {
       name: 'Settings Items Table',
@@ -37,7 +39,8 @@ async function verifyMigration() {
     },
     {
       name: 'Household Feature Settings Table',
-      test: () => supabase.from('household_feature_settings').select('id').limit(1)
+      test: () =>
+        supabase.from('household_feature_settings').select('id').limit(1)
     },
     {
       name: 'User Feature Overrides Table',
@@ -45,9 +48,10 @@ async function verifyMigration() {
     },
     {
       name: 'get_user_settings_tabs Function',
-      test: () => supabase.rpc('get_user_settings_tabs', { 
-        user_id_param: '0139a6fc-bf13-426d-8929-604051c4d1f4' 
-      })
+      test: () =>
+        supabase.rpc('get_user_settings_tabs', {
+          user_id_param: '0139a6fc-bf13-426d-8929-604051c4d1f4'
+        })
     }
   ];
 
@@ -68,27 +72,31 @@ async function verifyMigration() {
     }
   }
 
-  console.log(`\n📊 Migration Status: ${successCount}/${totalCount} components verified`);
+  console.log(
+    `\n📊 Migration Status: ${successCount}/${totalCount} components verified`
+  );
 
   if (successCount === totalCount) {
     console.log('🎉 Enhanced Permissions System is fully deployed!');
     console.log('✨ You can now use the enhanced settings interface');
   } else {
-    console.log('⚠️  Some components are missing. Please run the SQL migration in Supabase Dashboard.');
+    console.log(
+      '⚠️  Some components are missing. Please run the SQL migration in Supabase Dashboard.'
+    );
   }
 
   // Test data insertion
   if (successCount === totalCount) {
     console.log('\n🧪 Testing default data...');
-    
+
     try {
       const { data: features } = await supabase
         .from('global_feature_control')
         .select('feature_key, display_name')
         .limit(3);
-      
+
       console.log('📋 Sample Features:');
-      features?.forEach(feature => {
+      features?.forEach((feature) => {
         console.log(`   • ${feature.display_name} (${feature.feature_key})`);
       });
 
@@ -96,12 +104,11 @@ async function verifyMigration() {
         .from('settings_categories')
         .select('category_key, display_name')
         .order('sort_order');
-      
+
       console.log('\n📂 Settings Categories:');
-      categories?.forEach(cat => {
+      categories?.forEach((cat) => {
         console.log(`   • ${cat.display_name} (${cat.category_key})`);
       });
-
     } catch (err) {
       console.log('⚠️  Data verification failed:', err.message);
     }

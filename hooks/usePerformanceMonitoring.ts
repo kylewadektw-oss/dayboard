@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -46,17 +46,22 @@ export function usePerformanceMonitoring(componentName: string) {
   useEffect(() => {
     mountTime.current = Date.now();
     renderStartTime.current = performance.now();
-    
+
     return () => {
       const componentLifetime = Date.now() - mountTime.current;
-      performanceMonitor.measureExecution(`${componentName}_lifetime`, () => componentLifetime);
+      performanceMonitor.measureExecution(
+        `${componentName}_lifetime`,
+        () => componentLifetime
+      );
     };
   }, [componentName]);
 
   const recordRenderComplete = useCallback(() => {
     if (renderStartTime.current > 0) {
       const renderTime = performance.now() - renderStartTime.current;
-      console.log(`🚀 ${componentName} render time: ${renderTime.toFixed(2)}ms`);
+      console.log(
+        `🚀 ${componentName} render time: ${renderTime.toFixed(2)}ms`
+      );
     }
   }, [componentName]);
 
@@ -67,34 +72,34 @@ export function usePerformanceMonitoring(componentName: string) {
 export function useApiPerformance() {
   const [metrics, setMetrics] = useState<Record<string, number>>({});
 
-  const measureApiCall = useCallback(async <T>(
-    endpoint: string,
-    apiCall: () => Promise<T>
-  ): Promise<T> => {
-    const startTime = performance.now();
-    
-    try {
-      const result = await apiCall();
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-      
-      setMetrics(prev => ({
-        ...prev,
-        [endpoint]: duration
-      }));
-      
-      console.log(`🚀 API ${endpoint} took ${duration.toFixed(2)}ms`);
-      
-      return result;
-    } catch (error) {
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-      
-      console.log(`🚀 API ${endpoint} failed after ${duration.toFixed(2)}ms`);
-      
-      throw error;
-    }
-  }, []);
+  const measureApiCall = useCallback(
+    async <T>(endpoint: string, apiCall: () => Promise<T>): Promise<T> => {
+      const startTime = performance.now();
+
+      try {
+        const result = await apiCall();
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+
+        setMetrics((prev) => ({
+          ...prev,
+          [endpoint]: duration
+        }));
+
+        console.log(`🚀 API ${endpoint} took ${duration.toFixed(2)}ms`);
+
+        return result;
+      } catch (error) {
+        const endTime = performance.now();
+        const duration = endTime - startTime;
+
+        console.log(`🚀 API ${endpoint} failed after ${duration.toFixed(2)}ms`);
+
+        throw error;
+      }
+    },
+    []
+  );
 
   return { measureApiCall, metrics };
 }
@@ -122,9 +127,11 @@ export function useMemoryMonitoring(interval: number = 30000) {
           jsHeapSizeLimit: memory.jsHeapSizeLimit,
           timestamp: Date.now()
         };
-        
+
         setMemoryInfo(info);
-        console.log(`🚀 Memory usage: ${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`);
+        console.log(
+          `🚀 Memory usage: ${(memory.usedJSHeapSize / 1024 / 1024).toFixed(2)}MB`
+        );
       }
     };
 
@@ -153,7 +160,7 @@ export function useNetworkMonitoring() {
     }
 
     const connection = (navigator as ExtendedNavigator).connection;
-    
+
     const updateNetworkInfo = () => {
       if (connection) {
         const info = {
@@ -163,17 +170,19 @@ export function useNetworkMonitoring() {
           saveData: connection.saveData || false,
           timestamp: Date.now()
         };
-        
+
         setNetworkInfo(info);
-        console.log(`🚀 Network: ${connection.effectiveType}, RTT: ${connection.rtt}ms`);
+        console.log(
+          `🚀 Network: ${connection.effectiveType}, RTT: ${connection.rtt}ms`
+        );
       }
     };
 
     updateNetworkInfo();
-    
+
     if (connection) {
       connection.addEventListener?.('change', updateNetworkInfo);
-      
+
       return () => {
         connection.removeEventListener?.('change', updateNetworkInfo);
       };
@@ -195,35 +204,44 @@ export function useCoreWebVitals() {
       for (const entry of list.getEntries()) {
         if (entry.entryType === 'largest-contentful-paint') {
           const lcp = entry.startTime;
-          setVitals(prev => ({ ...prev, LCP: lcp }));
+          setVitals((prev) => ({ ...prev, LCP: lcp }));
           console.log(`🚀 LCP: ${lcp.toFixed(2)}ms`);
         }
-        
+
         if (entry.entryType === 'layout-shift') {
           const cls = (entry as PerformanceEntry & { value: number }).value;
-          setVitals(prev => ({ ...prev, CLS: (prev.CLS || 0) + cls }));
+          setVitals((prev) => ({ ...prev, CLS: (prev.CLS || 0) + cls }));
           console.log(`🚀 CLS: ${cls.toFixed(4)}`);
         }
       }
     });
 
     try {
-      observer.observe({ entryTypes: ['largest-contentful-paint', 'layout-shift'] });
+      observer.observe({
+        entryTypes: ['largest-contentful-paint', 'layout-shift']
+      });
     } catch {
       // Browser doesn't support these metrics
     }
 
     // Monitor FID (First Input Delay)
-    const handleFirstInput = (entry: PerformanceEntry & { processingStart: number; startTime: number }) => {
+    const handleFirstInput = (
+      entry: PerformanceEntry & { processingStart: number; startTime: number }
+    ) => {
       const fid = entry.processingStart - entry.startTime;
-      setVitals(prev => ({ ...prev, FID: fid }));
+      setVitals((prev) => ({ ...prev, FID: fid }));
       console.log(`🚀 FID: ${fid.toFixed(2)}ms`);
     };
 
     if ('PerformanceEventTiming' in window) {
       const fidObserver = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          handleFirstInput(entry as PerformanceEntry & { processingStart: number; startTime: number });
+          handleFirstInput(
+            entry as PerformanceEntry & {
+              processingStart: number;
+              startTime: number;
+            }
+          );
         }
       });
 
@@ -260,15 +278,18 @@ export function useBundleMonitoring() {
     // Monitor resource loading
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
-      const jsResources = entries.filter((entry: PerformanceEntry) => 
-        entry.name.endsWith('.js') && entry.name.includes('_next')
+      const jsResources = entries.filter(
+        (entry: PerformanceEntry) =>
+          entry.name.endsWith('.js') && entry.name.includes('_next')
       );
 
       if (jsResources.length > 0) {
-        const totalSize = jsResources.reduce((sum: number, entry: PerformanceEntry) => 
-          sum + ((entry as PerformanceResourceTiming).transferSize || 0), 0
+        const totalSize = jsResources.reduce(
+          (sum: number, entry: PerformanceEntry) =>
+            sum + ((entry as PerformanceResourceTiming).transferSize || 0),
+          0
         );
-        
+
         setBundleInfo({
           jsResourceCount: jsResources.length,
           totalJsSize: totalSize,
@@ -282,7 +303,9 @@ export function useBundleMonitoring() {
           })
         });
 
-        console.log(`🚀 Bundle size: ${(totalSize / 1024).toFixed(2)}KB across ${jsResources.length} files`);
+        console.log(
+          `🚀 Bundle size: ${(totalSize / 1024).toFixed(2)}KB across ${jsResources.length} files`
+        );
       }
     });
 

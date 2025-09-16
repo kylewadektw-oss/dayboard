@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -53,19 +53,23 @@ function getFromCache(key: string): CalendarResponse | null {
   return null;
 }
 
-function setCache(key: string, data: CalendarResponse, ttl: number = CACHE_TTL) {
+function setCache(
+  key: string,
+  data: CalendarResponse,
+  ttl: number = CACHE_TTL
+) {
   cache.set(key, { data, timestamp: Date.now(), ttl });
 }
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const from = searchParams.get("from");
-    const to = searchParams.get("to");
-    
+    const from = searchParams.get('from');
+    const to = searchParams.get('to');
+
     if (!from || !to) {
       return NextResponse.json(
-        { error: "from & to are required (ISO dates)" }, 
+        { error: 'from & to are required (ISO dates)' },
         { status: 400 }
       );
     }
@@ -73,11 +77,14 @@ export async function GET(req: NextRequest) {
     const supabase = await createClient();
 
     // Get current user to verify authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
       return NextResponse.json(
-        { error: "Authentication required" }, 
+        { error: 'Authentication required' },
         { status: 401 }
       );
     }
@@ -85,21 +92,24 @@ export async function GET(req: NextRequest) {
     // 🚀 PERFORMANCE: Check cache first
     const cacheKey = getCacheKey(from, to, user.id);
     const cachedData = getFromCache(cacheKey);
-    
+
     if (cachedData) {
-      return NextResponse.json({ 
-        ...cachedData,
-        meta: {
-          ...cachedData.meta,
-          cached: true
+      return NextResponse.json(
+        {
+          ...cachedData,
+          meta: {
+            ...cachedData.meta,
+            cached: true
+          }
+        },
+        {
+          headers: {
+            'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
+            'CDN-Cache-Control': 'public, max-age=300',
+            'Vercel-CDN-Cache-Control': 'public, max-age=300'
+          }
         }
-      }, {
-        headers: {
-          'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
-          'CDN-Cache-Control': 'public, max-age=300',
-          'Vercel-CDN-Cache-Control': 'public, max-age=300'
-        }
-      });
+      );
     }
 
     // Filter the unified view by time window & the user's household via RLS
@@ -107,15 +117,15 @@ export async function GET(req: NextRequest) {
       // Use raw query for view that might not be in generated types
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (supabase as any)
-        .from("v_calendar_feed")
-        .select("*")
-        .gte("start_ts", from)
-        .lte("end_ts", to)
-        .order("start_ts");
+        .from('v_calendar_feed')
+        .select('*')
+        .gte('start_ts', from)
+        .lte('end_ts', to)
+        .order('start_ts');
 
       if (error) throw error;
 
-      const responseData = { 
+      const responseData = {
         events: data || [],
         meta: {
           from,
@@ -136,13 +146,17 @@ export async function GET(req: NextRequest) {
         }
       });
     } catch (dbError) {
-      console.error("Calendar API error:", dbError);
-      const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown error';
-      
+      console.error('Calendar API error:', dbError);
+      const errorMessage =
+        dbError instanceof Error ? dbError.message : 'Unknown error';
+
       // If the view doesn't exist yet, return mock data
-      if (errorMessage.includes("v_calendar_feed") || errorMessage.includes("does not exist")) {
-        console.log("Calendar view not deployed yet, returning mock data");
-        
+      if (
+        errorMessage.includes('v_calendar_feed') ||
+        errorMessage.includes('does not exist')
+      ) {
+        console.log('Calendar view not deployed yet, returning mock data');
+
         // Generate some mock calendar events for testing
         const mockEvents = [
           {
@@ -152,8 +166,12 @@ export async function GET(req: NextRequest) {
             title: 'Family Dinner',
             description: 'Weekly family dinner planning',
             location: 'Home',
-            start_ts: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
-            end_ts: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000).toISOString(), // +2 hours
+            start_ts: new Date(
+              Date.now() + 2 * 24 * 60 * 60 * 1000
+            ).toISOString(), // 2 days from now
+            end_ts: new Date(
+              Date.now() + 2 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000
+            ).toISOString(), // +2 hours
             all_day: false,
             color: '#3b82f6',
             link_href: null,
@@ -166,8 +184,12 @@ export async function GET(req: NextRequest) {
             title: 'Breakfast: Pancakes',
             description: 'Fluffy pancakes with syrup',
             location: null,
-            start_ts: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000 + 7.5 * 60 * 60 * 1000).toISOString(), // tomorrow at 7:30am
-            end_ts: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000 + 8.5 * 60 * 60 * 1000).toISOString(), // +1 hour
+            start_ts: new Date(
+              Date.now() + 1 * 24 * 60 * 60 * 1000 + 7.5 * 60 * 60 * 1000
+            ).toISOString(), // tomorrow at 7:30am
+            end_ts: new Date(
+              Date.now() + 1 * 24 * 60 * 60 * 1000 + 8.5 * 60 * 60 * 1000
+            ).toISOString(), // +1 hour
             all_day: false,
             color: '#22c55e',
             link_href: '/meals/recipes/mock-1',
@@ -180,8 +202,12 @@ export async function GET(req: NextRequest) {
             title: 'Grocery Shopping',
             description: 'Weekly grocery run',
             location: null,
-            start_ts: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000).toISOString(), // 3 days from now at 10am
-            end_ts: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 11 * 60 * 60 * 1000).toISOString(), // +1 hour
+            start_ts: new Date(
+              Date.now() + 3 * 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000
+            ).toISOString(), // 3 days from now at 10am
+            end_ts: new Date(
+              Date.now() + 3 * 24 * 60 * 60 * 1000 + 11 * 60 * 60 * 1000
+            ).toISOString(), // +1 hour
             all_day: false,
             color: '#3b82f6',
             link_href: '/lists/mock-1',
@@ -194,44 +220,48 @@ export async function GET(req: NextRequest) {
             title: 'Home Renovation: Install Kitchen Backsplash',
             description: 'Install subway tile backsplash in kitchen',
             location: null,
-            start_ts: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000 + 14 * 60 * 60 * 1000).toISOString(), // 1 week from now at 2pm
-            end_ts: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000).toISOString(), // +3 hours
+            start_ts: new Date(
+              Date.now() + 7 * 24 * 60 * 60 * 1000 + 14 * 60 * 60 * 1000
+            ).toISOString(), // 1 week from now at 2pm
+            end_ts: new Date(
+              Date.now() + 7 * 24 * 60 * 60 * 1000 + 17 * 60 * 60 * 1000
+            ).toISOString(), // +3 hours
             all_day: false,
             color: '#a855f7',
             link_href: '/projects/mock-1',
-            meta: { project_id: 'mock-1', status: 'pending', priority: 'medium' }
+            meta: {
+              project_id: 'mock-1',
+              status: 'pending',
+              priority: 'medium'
+            }
           }
         ];
 
         // Filter mock events by date range
-        const filteredMockEvents = mockEvents.filter(event => {
+        const filteredMockEvents = mockEvents.filter((event) => {
           const eventStart = new Date(event.start_ts);
           const rangeStart = new Date(from);
           const rangeEnd = new Date(to);
           return eventStart >= rangeStart && eventStart <= rangeEnd;
         });
 
-        return NextResponse.json({ 
+        return NextResponse.json({
           events: filteredMockEvents,
           meta: {
-            note: "Using mock data - deploy calendar migrations to use real data",
+            note: 'Using mock data - deploy calendar migrations to use real data',
             from,
             to,
             mockEventsCount: filteredMockEvents.length
           }
         });
       }
-      
-      return NextResponse.json(
-        { error: errorMessage }, 
-        { status: 500 }
-      );
-    }
 
+      return NextResponse.json({ error: errorMessage }, { status: 500 });
+    }
   } catch (error) {
-    console.error("Calendar API unexpected error:", error);
+    console.error('Calendar API unexpected error:', error);
     return NextResponse.json(
-      { error: "Internal server error" }, 
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

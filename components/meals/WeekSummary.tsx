@@ -1,21 +1,27 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 import { useMemo } from 'react';
-import { Calendar, Clock, DollarSign, ChefHat, CheckCircle } from 'lucide-react';
+import {
+  Calendar,
+  Clock,
+  DollarSign,
+  ChefHat,
+  CheckCircle
+} from 'lucide-react';
 import { MealPlan, Recipe } from '@/types/recipes';
 
 interface WeekSummaryProps {
@@ -42,11 +48,16 @@ interface WeekStats {
   }>;
 }
 
-export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryProps) {
+export function WeekSummary({
+  mealPlans,
+  recipes,
+  weekStartDate
+}: WeekSummaryProps) {
   const weekStats = useMemo(() => {
     const stats: WeekStats = {
       totalMeals: mealPlans.length,
-      completedMeals: mealPlans.filter(plan => plan.status === 'completed').length,
+      completedMeals: mealPlans.filter((plan) => plan.status === 'completed')
+        .length,
       estimatedCost: 0,
       totalCookTime: 0,
       totalPrepTime: 0,
@@ -60,8 +71,8 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
     let totalRating = 0;
     let ratedRecipes = 0;
 
-    mealPlans.forEach(plan => {
-      const recipe = recipes.find(r => r.id === plan.recipe_id);
+    mealPlans.forEach((plan) => {
+      const recipe = recipes.find((r) => r.id === plan.recipe_id);
       if (!recipe) return;
 
       // Cost calculation (using servings as a proxy for cost)
@@ -84,34 +95,44 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
 
       // Dietary breakdown
       if (recipe.diet_types) {
-        recipe.diet_types.forEach(diet => {
-          stats.dietaryBreakdown[diet] = (stats.dietaryBreakdown[diet] || 0) + 1;
+        recipe.diet_types.forEach((diet) => {
+          stats.dietaryBreakdown[diet] =
+            (stats.dietaryBreakdown[diet] || 0) + 1;
         });
       }
 
       // Cuisine breakdown
       if (recipe.cuisine) {
-        stats.cuisineBreakdown[recipe.cuisine] = 
+        stats.cuisineBreakdown[recipe.cuisine] =
           (stats.cuisineBreakdown[recipe.cuisine] || 0) + 1;
       }
 
       // Difficulty breakdown
       if (recipe.difficulty) {
-        stats.difficultyBreakdown[recipe.difficulty] = 
+        stats.difficultyBreakdown[recipe.difficulty] =
           (stats.difficultyBreakdown[recipe.difficulty] || 0) + 1;
       }
 
       // Upcoming meals (next 3 days)
       const planDate = new Date(plan.planned_date);
       const today = new Date();
-      const threeDaysFromNow = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
+      const threeDaysFromNow = new Date(
+        today.getTime() + 3 * 24 * 60 * 60 * 1000
+      );
 
-      if (planDate >= today && planDate <= threeDaysFromNow && plan.status === 'planned') {
+      if (
+        planDate >= today &&
+        planDate <= threeDaysFromNow &&
+        plan.status === 'planned'
+      ) {
         stats.upcomingMeals.push({
           day: planDate.toLocaleDateString('en-US', { weekday: 'short' }),
           mealType: plan.meal_type,
           recipeName: recipe.title,
-          time: planDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+          time: planDate.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit'
+          })
         });
       }
     });
@@ -135,8 +156,9 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
   };
 
   const getProgressPercentage = () => {
-    return weekStats.totalMeals > 0 ? 
-      Math.round((weekStats.completedMeals / weekStats.totalMeals) * 100) : 0;
+    return weekStats.totalMeals > 0
+      ? Math.round((weekStats.completedMeals / weekStats.totalMeals) * 100)
+      : 0;
   };
 
   return (
@@ -145,12 +167,16 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-gray-900">Week Summary</h2>
         <div className="text-sm text-gray-500">
-          {weekStartDate.toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric' 
-          })} - {new Date(weekStartDate.getTime() + 6 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric' 
+          {weekStartDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+          })}{' '}
+          -{' '}
+          {new Date(
+            weekStartDate.getTime() + 6 * 24 * 60 * 60 * 1000
+          ).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
           })}
         </div>
       </div>
@@ -159,10 +185,12 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-600">Week Progress</span>
-          <span className="font-medium">{weekStats.completedMeals}/{weekStats.totalMeals} meals</span>
+          <span className="font-medium">
+            {weekStats.completedMeals}/{weekStats.totalMeals} meals
+          </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
+          <div
             className="bg-green-500 h-2 rounded-full transition-all duration-300"
             style={{ width: `${getProgressPercentage()}%` }}
           />
@@ -176,7 +204,9 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-blue-50 rounded-lg p-4 text-center">
           <Calendar className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-blue-700">{weekStats.totalMeals}</div>
+          <div className="text-2xl font-bold text-blue-700">
+            {weekStats.totalMeals}
+          </div>
           <div className="text-xs text-blue-600">Total Meals</div>
         </div>
 
@@ -198,7 +228,9 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
 
         <div className="bg-yellow-50 rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-yellow-700 mb-2">
-            {weekStats.averageRating > 0 ? weekStats.averageRating.toFixed(1) : '-'}
+            {weekStats.averageRating > 0
+              ? weekStats.averageRating.toFixed(1)
+              : '-'}
           </div>
           <div className="text-xs text-yellow-600">Avg Rating ⭐</div>
         </div>
@@ -213,7 +245,10 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
           </h3>
           <div className="space-y-2">
             {weekStats.upcomingMeals.slice(0, 3).map((meal, index) => (
-              <div key={index} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+              <div
+                key={index}
+                className="flex items-center justify-between bg-gray-50 rounded-lg p-3"
+              >
                 <div className="flex items-center space-x-3">
                   <div className="text-sm font-medium text-gray-900 w-10">
                     {meal.day}
@@ -226,9 +261,7 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
                   </div>
                 </div>
                 {meal.time && (
-                  <div className="text-xs text-gray-500">
-                    {meal.time}
-                  </div>
+                  <div className="text-xs text-gray-500">{meal.time}</div>
                 )}
               </div>
             ))}
@@ -241,17 +274,19 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
         {/* Dietary Breakdown */}
         {Object.keys(weekStats.dietaryBreakdown).length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold text-gray-700">Dietary Types</h4>
+            <h4 className="text-sm font-semibold text-gray-700">
+              Dietary Types
+            </h4>
             <div className="space-y-1">
               {Object.entries(weekStats.dietaryBreakdown)
-                .sort(([,a], [,b]) => b - a)
+                .sort(([, a], [, b]) => b - a)
                 .slice(0, 3)
                 .map(([diet, count]) => (
-                <div key={diet} className="flex justify-between text-xs">
-                  <span className="text-gray-600 capitalize">{diet}</span>
-                  <span className="font-medium">{count}</span>
-                </div>
-              ))}
+                  <div key={diet} className="flex justify-between text-xs">
+                    <span className="text-gray-600 capitalize">{diet}</span>
+                    <span className="font-medium">{count}</span>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -262,14 +297,14 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
             <h4 className="text-sm font-semibold text-gray-700">Cuisines</h4>
             <div className="space-y-1">
               {Object.entries(weekStats.cuisineBreakdown)
-                .sort(([,a], [,b]) => b - a)
+                .sort(([, a], [, b]) => b - a)
                 .slice(0, 3)
                 .map(([cuisine, count]) => (
-                <div key={cuisine} className="flex justify-between text-xs">
-                  <span className="text-gray-600 capitalize">{cuisine}</span>
-                  <span className="font-medium">{count}</span>
-                </div>
-              ))}
+                  <div key={cuisine} className="flex justify-between text-xs">
+                    <span className="text-gray-600 capitalize">{cuisine}</span>
+                    <span className="font-medium">{count}</span>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -280,13 +315,18 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
             <h4 className="text-sm font-semibold text-gray-700">Difficulty</h4>
             <div className="space-y-1">
               {Object.entries(weekStats.difficultyBreakdown)
-                .sort(([,a], [,b]) => b - a)
+                .sort(([, a], [, b]) => b - a)
                 .map(([difficulty, count]) => (
-                <div key={difficulty} className="flex justify-between text-xs">
-                  <span className="text-gray-600 capitalize">{difficulty}</span>
-                  <span className="font-medium">{count}</span>
-                </div>
-              ))}
+                  <div
+                    key={difficulty}
+                    className="flex justify-between text-xs"
+                  >
+                    <span className="text-gray-600 capitalize">
+                      {difficulty}
+                    </span>
+                    <span className="font-medium">{count}</span>
+                  </div>
+                ))}
             </div>
           </div>
         )}
@@ -297,7 +337,9 @@ export function WeekSummary({ mealPlans, recipes, weekStartDate }: WeekSummaryPr
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center">
           <CheckCircle className="h-5 w-5 text-green-600 mr-3" />
           <div>
-            <div className="text-sm font-medium text-green-800">Week Complete!</div>
+            <div className="text-sm font-medium text-green-800">
+              Week Complete!
+            </div>
             <div className="text-xs text-green-600">
               Great job finishing all your planned meals this week.
             </div>

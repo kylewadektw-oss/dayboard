@@ -7,7 +7,7 @@ import EnhancedAnalyticsDashboard from '@/components/analytics/EnhancedAnalytics
 
 export const metadata = {
   title: 'Analytics Dashboard | Dayboard',
-  description: 'Real-time user engagement and feature analytics dashboard',
+  description: 'Real-time user engagement and feature analytics dashboard'
 };
 
 export default function AnalyticsPage() {

@@ -1,25 +1,25 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 /*
  * BUSINESS INTELLIGENCE DASHBOARD - KPIs & Strategic Metrics
- * 
+ *
  * PURPOSE: Comprehensive business intelligence including revenue tracking,
  * user engagement metrics, and strategic decision-making analytics
- * 
+ *
  * FEATURES:
  * - Revenue analytics and financial performance tracking
  * - User engagement and retention analysis with cohort studies
@@ -29,15 +29,15 @@
  * - Operational efficiency metrics and cost optimization insights
  * - Predictive analytics for growth forecasting and trend analysis
  * - Strategic KPI dashboards for executive decision-making
- * 
+ *
  * ACCESS: Executive team, product managers, and business analysts
- * 
+ *
  * TECHNICAL:
  * - Real-time business metrics aggregation and visualization
  * - Integration with revenue tracking and analytics platforms
  * - Advanced statistical analysis and predictive modeling
  * - Executive-level reporting with drill-down capabilities
- * 
+ *
  * NAVIGATION: Part of strategic business analytics suite
  * Links to: financial-reports, user-analytics, performance-metrics
  */
@@ -59,36 +59,36 @@ export default function BusinessIntelligence() {
       target: 165000,
       recurring: 89.2
     },
-    
+
     users: {
       total: 2847,
       active: 1923,
       new: 156,
       churn: 3.2
     },
-    
+
     conversion: {
       signupToTrial: 68.4,
       trialToPaid: 23.7,
       overallConversion: 16.2,
-      averageOrderValue: 89.50
+      averageOrderValue: 89.5
     },
-    
+
     retention: {
       day1: 87.3,
       day7: 62.1,
       day30: 45.8,
       day90: 38.2
     },
-    
+
     financial: {
       mrr: 98750,
       arr: 1185000,
-      cac: 45.20,
-      clv: 567.80,
+      cac: 45.2,
+      clv: 567.8,
       ltv_cac_ratio: 12.6
     },
-    
+
     topFeatures: [
       { name: 'Dashboard Views', usage: 89.4, revenue: '$23,450' },
       { name: 'Project Management', usage: 76.2, revenue: '$18,920' },
@@ -96,14 +96,14 @@ export default function BusinessIntelligence() {
       { name: 'Analytics Reports', usage: 54.3, revenue: '$12,780' },
       { name: 'Mobile Access', usage: 43.9, revenue: '$8,965' }
     ],
-    
+
     revenueStreams: [
       { name: 'Subscription Plans', amount: 89450, percentage: 60.5 },
       { name: 'Premium Features', amount: 34200, percentage: 23.1 },
       { name: 'Enterprise Licenses', amount: 18900, percentage: 12.8 },
       { name: 'Consulting Services', amount: 5300, percentage: 3.6 }
     ],
-    
+
     marketMetrics: {
       marketShare: 8.7,
       competitorGap: '+2.3%',
@@ -145,19 +145,24 @@ export default function BusinessIntelligence() {
 
   return (
     <>
-      <LoggingNav 
+      <LoggingNav
         variant="sidebar"
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-      
-      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}>
+
+      <div
+        className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-80'}`}
+      >
         <div className="p-6 max-w-full mx-auto bg-gray-50 min-h-screen">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">💼 Business Intelligence Dashboard</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              💼 Business Intelligence Dashboard
+            </h1>
             <p className="text-gray-600">
-              Strategic KPIs, revenue analytics, and business performance insights for data-driven decision making
+              Strategic KPIs, revenue analytics, and business performance
+              insights for data-driven decision making
             </p>
           </div>
 
@@ -165,31 +170,41 @@ export default function BusinessIntelligence() {
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-600">Total Revenue</h3>
+                <h3 className="text-sm font-medium text-gray-600">
+                  Total Revenue
+                </h3>
                 <div className="text-2xl">💰</div>
               </div>
               <div className="text-3xl font-bold text-green-600 mb-2">
                 {formatCurrency(mockData.revenue.current)}
               </div>
-              <div className={`text-sm ${getGrowthColor(mockData.revenue.growth)}`}>
+              <div
+                className={`text-sm ${getGrowthColor(mockData.revenue.growth)}`}
+              >
                 +{mockData.revenue.growth}% vs last month
               </div>
             </div>
-            
+
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-600">Monthly Recurring Revenue</h3>
+                <h3 className="text-sm font-medium text-gray-600">
+                  Monthly Recurring Revenue
+                </h3>
                 <div className="text-2xl">🔄</div>
               </div>
               <div className="text-3xl font-bold text-blue-600 mb-2">
                 {formatCurrency(mockData.financial.mrr)}
               </div>
-              <div className="text-sm text-gray-500">ARR: {formatCurrency(mockData.financial.arr)}</div>
+              <div className="text-sm text-gray-500">
+                ARR: {formatCurrency(mockData.financial.arr)}
+              </div>
             </div>
-            
+
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-600">Active Users</h3>
+                <h3 className="text-sm font-medium text-gray-600">
+                  Active Users
+                </h3>
                 <div className="text-2xl">👥</div>
               </div>
               <div className="text-3xl font-bold text-purple-600 mb-2">
@@ -199,24 +214,32 @@ export default function BusinessIntelligence() {
                 of {mockData.users.total.toLocaleString()} total
               </div>
             </div>
-            
+
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-600">Conversion Rate</h3>
+                <h3 className="text-sm font-medium text-gray-600">
+                  Conversion Rate
+                </h3>
                 <div className="text-2xl">🎯</div>
               </div>
-              <div className={`text-3xl font-bold mb-2 ${getPerformanceColor(mockData.conversion.overallConversion, 15)}`}>
+              <div
+                className={`text-3xl font-bold mb-2 ${getPerformanceColor(mockData.conversion.overallConversion, 15)}`}
+              >
                 {mockData.conversion.overallConversion}%
               </div>
               <div className="text-sm text-gray-500">End-to-end conversion</div>
             </div>
-            
+
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-gray-600">LTV:CAC Ratio</h3>
+                <h3 className="text-sm font-medium text-gray-600">
+                  LTV:CAC Ratio
+                </h3>
                 <div className="text-2xl">⚖️</div>
               </div>
-              <div className={`text-3xl font-bold mb-2 ${getPerformanceColor(mockData.financial.ltv_cac_ratio, 3)}`}>
+              <div
+                className={`text-3xl font-bold mb-2 ${getPerformanceColor(mockData.financial.ltv_cac_ratio, 3)}`}
+              >
                 {mockData.financial.ltv_cac_ratio}:1
               </div>
               <div className="text-sm text-gray-500">Healthy: 3:1+</div>
@@ -225,13 +248,21 @@ export default function BusinessIntelligence() {
 
           {/* Revenue Streams */}
           <div className="bg-white rounded-lg shadow-sm border mb-6 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">💰 Revenue Stream Analysis</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              💰 Revenue Stream Analysis
+            </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {mockData.revenueStreams.map((stream, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{formatCurrency(stream.amount)}</div>
-                  <div className="text-sm text-green-600 font-medium">{stream.percentage}%</div>
-                  <div className="text-xs text-gray-600 mt-1">{stream.name}</div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {formatCurrency(stream.amount)}
+                  </div>
+                  <div className="text-sm text-green-600 font-medium">
+                    {stream.percentage}%
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    {stream.name}
+                  </div>
                 </div>
               ))}
             </div>
@@ -239,23 +270,35 @@ export default function BusinessIntelligence() {
 
           {/* Market Position */}
           <div className="bg-white rounded-lg shadow-sm border mb-6 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">🏆 Market Position & Competitive Analysis</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              🏆 Market Position & Competitive Analysis
+            </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{mockData.marketMetrics.marketShare}%</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {mockData.marketMetrics.marketShare}%
+                </div>
                 <div className="text-sm text-blue-600">Market Share</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{mockData.marketMetrics.competitorGap}</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {mockData.marketMetrics.competitorGap}
+                </div>
                 <div className="text-sm text-green-600">vs Competitors</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">{mockData.marketMetrics.brandAwareness}%</div>
+                <div className="text-2xl font-bold text-purple-600">
+                  {mockData.marketMetrics.brandAwareness}%
+                </div>
                 <div className="text-sm text-purple-600">Brand Awareness</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">{mockData.marketMetrics.customerSatisfaction}/5</div>
-                <div className="text-sm text-orange-600">Customer Satisfaction</div>
+                <div className="text-2xl font-bold text-orange-600">
+                  {mockData.marketMetrics.customerSatisfaction}/5
+                </div>
+                <div className="text-sm text-orange-600">
+                  Customer Satisfaction
+                </div>
               </div>
             </div>
           </div>
@@ -285,26 +328,41 @@ export default function BusinessIntelligence() {
             <div className="p-6">
               {activeTab === 'overview' && (
                 <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-gray-900">💼 Executive Dashboard</h3>
-                  
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    💼 Executive Dashboard
+                  </h3>
+
                   {/* Top Features by Revenue */}
                   <div className="bg-gray-50 rounded-lg p-6">
-                    <h4 className="font-semibold text-gray-900 mb-4">🚀 Top Features by Revenue Impact</h4>
+                    <h4 className="font-semibold text-gray-900 mb-4">
+                      🚀 Top Features by Revenue Impact
+                    </h4>
                     <div className="space-y-4">
                       {mockData.topFeatures.map((feature, index) => (
-                        <div key={index} className="flex items-center justify-between bg-white p-4 rounded-lg border">
+                        <div
+                          key={index}
+                          className="flex items-center justify-between bg-white p-4 rounded-lg border"
+                        >
                           <div className="flex items-center space-x-4">
                             <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm">
                               {index + 1}
                             </div>
                             <div>
-                              <div className="font-medium text-gray-900">{feature.name}</div>
-                              <div className="text-sm text-gray-600">Usage: {feature.usage}% of users</div>
+                              <div className="font-medium text-gray-900">
+                                {feature.name}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                Usage: {feature.usage}% of users
+                              </div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="font-bold text-green-600">{feature.revenue}</div>
-                            <div className="text-sm text-gray-500">monthly revenue</div>
+                            <div className="font-bold text-green-600">
+                              {feature.revenue}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              monthly revenue
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -313,9 +371,12 @@ export default function BusinessIntelligence() {
 
                   <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     <div className="text-4xl mb-4">📊</div>
-                    <h4 className="text-lg font-medium text-gray-900 mb-2">Strategic Business Intelligence</h4>
+                    <h4 className="text-lg font-medium text-gray-900 mb-2">
+                      Strategic Business Intelligence
+                    </h4>
                     <p className="text-gray-600">
-                      Comprehensive business analytics with real-time KPI tracking and strategic decision support.
+                      Comprehensive business analytics with real-time KPI
+                      tracking and strategic decision support.
                     </p>
                   </div>
                 </div>
@@ -323,59 +384,87 @@ export default function BusinessIntelligence() {
 
               {activeTab === 'revenue' && (
                 <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-gray-900">💰 Revenue Analytics & Financial Performance</h3>
-                  
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    💰 Revenue Analytics & Financial Performance
+                  </h3>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-green-50 p-6 rounded-lg">
-                      <h4 className="font-semibold text-green-900 mb-4">Revenue Metrics</h4>
+                      <h4 className="font-semibold text-green-900 mb-4">
+                        Revenue Metrics
+                      </h4>
                       <div className="space-y-3">
                         <div className="flex justify-between">
                           <span className="text-green-700">Current Month</span>
-                          <span className="font-semibold text-green-900">{formatCurrency(mockData.revenue.current)}</span>
+                          <span className="font-semibold text-green-900">
+                            {formatCurrency(mockData.revenue.current)}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-green-700">Target</span>
-                          <span className="font-semibold text-green-900">{formatCurrency(mockData.revenue.target)}</span>
+                          <span className="font-semibold text-green-900">
+                            {formatCurrency(mockData.revenue.target)}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-green-700">Recurring %</span>
-                          <span className="font-semibold text-green-900">{mockData.revenue.recurring}%</span>
+                          <span className="font-semibold text-green-900">
+                            {mockData.revenue.recurring}%
+                          </span>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="bg-blue-50 p-6 rounded-lg">
-                      <h4 className="font-semibold text-blue-900 mb-4">Customer Economics</h4>
+                      <h4 className="font-semibold text-blue-900 mb-4">
+                        Customer Economics
+                      </h4>
                       <div className="space-y-3">
                         <div className="flex justify-between">
                           <span className="text-blue-700">CAC</span>
-                          <span className="font-semibold text-blue-900">${mockData.financial.cac}</span>
+                          <span className="font-semibold text-blue-900">
+                            ${mockData.financial.cac}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-blue-700">CLV</span>
-                          <span className="font-semibold text-blue-900">${mockData.financial.clv}</span>
+                          <span className="font-semibold text-blue-900">
+                            ${mockData.financial.clv}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-blue-700">AOV</span>
-                          <span className="font-semibold text-blue-900">${mockData.conversion.averageOrderValue}</span>
+                          <span className="font-semibold text-blue-900">
+                            ${mockData.conversion.averageOrderValue}
+                          </span>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="bg-purple-50 p-6 rounded-lg">
-                      <h4 className="font-semibold text-purple-900 mb-4">Growth Indicators</h4>
+                      <h4 className="font-semibold text-purple-900 mb-4">
+                        Growth Indicators
+                      </h4>
                       <div className="space-y-3">
                         <div className="flex justify-between">
-                          <span className="text-purple-700">Revenue Growth</span>
-                          <span className="font-semibold text-purple-900">+{mockData.revenue.growth}%</span>
+                          <span className="text-purple-700">
+                            Revenue Growth
+                          </span>
+                          <span className="font-semibold text-purple-900">
+                            +{mockData.revenue.growth}%
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-purple-700">User Growth</span>
-                          <span className="font-semibold text-purple-900">+{mockData.users.new}</span>
+                          <span className="font-semibold text-purple-900">
+                            +{mockData.users.new}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-purple-700">Churn Rate</span>
-                          <span className="font-semibold text-purple-900">{mockData.users.churn}%</span>
+                          <span className="font-semibold text-purple-900">
+                            {mockData.users.churn}%
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -383,9 +472,12 @@ export default function BusinessIntelligence() {
 
                   <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     <div className="text-4xl mb-4">📈</div>
-                    <h4 className="text-lg font-medium text-gray-900 mb-2">Advanced Revenue Analytics</h4>
+                    <h4 className="text-lg font-medium text-gray-900 mb-2">
+                      Advanced Revenue Analytics
+                    </h4>
                     <p className="text-gray-600">
-                      Detailed financial performance tracking with revenue attribution and forecasting models.
+                      Detailed financial performance tracking with revenue
+                      attribution and forecasting models.
                     </p>
                   </div>
                 </div>
@@ -393,32 +485,53 @@ export default function BusinessIntelligence() {
 
               {activeTab === 'users' && (
                 <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-gray-900">👥 User Intelligence & Engagement</h3>
-                  
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    👥 User Intelligence & Engagement
+                  </h3>
+
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <div className="bg-blue-50 p-4 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-blue-600">{mockData.retention.day1}%</div>
-                      <div className="text-sm text-blue-600">Day 1 Retention</div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {mockData.retention.day1}%
+                      </div>
+                      <div className="text-sm text-blue-600">
+                        Day 1 Retention
+                      </div>
                     </div>
                     <div className="bg-green-50 p-4 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-green-600">{mockData.retention.day7}%</div>
-                      <div className="text-sm text-green-600">Day 7 Retention</div>
+                      <div className="text-2xl font-bold text-green-600">
+                        {mockData.retention.day7}%
+                      </div>
+                      <div className="text-sm text-green-600">
+                        Day 7 Retention
+                      </div>
                     </div>
                     <div className="bg-yellow-50 p-4 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-yellow-600">{mockData.retention.day30}%</div>
-                      <div className="text-sm text-yellow-600">Day 30 Retention</div>
+                      <div className="text-2xl font-bold text-yellow-600">
+                        {mockData.retention.day30}%
+                      </div>
+                      <div className="text-sm text-yellow-600">
+                        Day 30 Retention
+                      </div>
                     </div>
                     <div className="bg-purple-50 p-4 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-purple-600">{mockData.retention.day90}%</div>
-                      <div className="text-sm text-purple-600">Day 90 Retention</div>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {mockData.retention.day90}%
+                      </div>
+                      <div className="text-sm text-purple-600">
+                        Day 90 Retention
+                      </div>
                     </div>
                   </div>
 
                   <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     <div className="text-4xl mb-4">👤</div>
-                    <h4 className="text-lg font-medium text-gray-900 mb-2">User Intelligence Platform</h4>
+                    <h4 className="text-lg font-medium text-gray-900 mb-2">
+                      User Intelligence Platform
+                    </h4>
                     <p className="text-gray-600">
-                      Advanced user behavior analysis, cohort studies, and engagement optimization insights.
+                      Advanced user behavior analysis, cohort studies, and
+                      engagement optimization insights.
                     </p>
                   </div>
                 </div>
@@ -426,28 +539,43 @@ export default function BusinessIntelligence() {
 
               {activeTab === 'conversion' && (
                 <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-gray-900">🎯 Conversion Funnel Optimization</h3>
-                  
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    🎯 Conversion Funnel Optimization
+                  </h3>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-blue-50 p-6 rounded-lg text-center">
-                      <div className="text-3xl font-bold text-blue-600">{mockData.conversion.signupToTrial}%</div>
-                      <div className="text-sm text-blue-600">Signup → Trial</div>
+                      <div className="text-3xl font-bold text-blue-600">
+                        {mockData.conversion.signupToTrial}%
+                      </div>
+                      <div className="text-sm text-blue-600">
+                        Signup → Trial
+                      </div>
                     </div>
                     <div className="bg-green-50 p-6 rounded-lg text-center">
-                      <div className="text-3xl font-bold text-green-600">{mockData.conversion.trialToPaid}%</div>
+                      <div className="text-3xl font-bold text-green-600">
+                        {mockData.conversion.trialToPaid}%
+                      </div>
                       <div className="text-sm text-green-600">Trial → Paid</div>
                     </div>
                     <div className="bg-purple-50 p-6 rounded-lg text-center">
-                      <div className="text-3xl font-bold text-purple-600">{mockData.conversion.overallConversion}%</div>
-                      <div className="text-sm text-purple-600">Overall Conversion</div>
+                      <div className="text-3xl font-bold text-purple-600">
+                        {mockData.conversion.overallConversion}%
+                      </div>
+                      <div className="text-sm text-purple-600">
+                        Overall Conversion
+                      </div>
                     </div>
                   </div>
 
                   <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                     <div className="text-4xl mb-4">🔄</div>
-                    <h4 className="text-lg font-medium text-gray-900 mb-2">Conversion Optimization Suite</h4>
+                    <h4 className="text-lg font-medium text-gray-900 mb-2">
+                      Conversion Optimization Suite
+                    </h4>
                     <p className="text-gray-600">
-                      Advanced funnel analysis, A/B testing integration, and conversion rate optimization tools.
+                      Advanced funnel analysis, A/B testing integration, and
+                      conversion rate optimization tools.
                     </p>
                   </div>
                 </div>
@@ -455,13 +583,18 @@ export default function BusinessIntelligence() {
 
               {activeTab === 'forecasting' && (
                 <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-gray-900">🔮 Predictive Analytics & Forecasting</h3>
-                  
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    🔮 Predictive Analytics & Forecasting
+                  </h3>
+
                   <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
                     <div className="text-6xl mb-4">📊</div>
-                    <h4 className="text-xl font-medium text-gray-900 mb-2">Advanced Predictive Modeling</h4>
+                    <h4 className="text-xl font-medium text-gray-900 mb-2">
+                      Advanced Predictive Modeling
+                    </h4>
                     <p className="text-gray-600 max-w-md mx-auto">
-                      Machine learning-powered forecasting, trend analysis, and strategic planning insights for data-driven growth.
+                      Machine learning-powered forecasting, trend analysis, and
+                      strategic planning insights for data-driven growth.
                     </p>
                     <div className="mt-6 grid grid-cols-2 gap-4 text-sm text-gray-500">
                       <div>📈 Revenue forecasting</div>
@@ -480,19 +613,43 @@ export default function BusinessIntelligence() {
             <div className="flex items-start space-x-3">
               <div className="text-2xl">🚧</div>
               <div>
-                <h3 className="text-lg font-semibold text-green-800 mb-2">Business Intelligence Implementation Roadmap</h3>
+                <h3 className="text-lg font-semibold text-green-800 mb-2">
+                  Business Intelligence Implementation Roadmap
+                </h3>
                 <p className="text-green-700 mb-4">
                   Comprehensive business intelligence system will include:
                 </p>
                 <ul className="space-y-2 text-sm text-green-700">
-                  <li>• Real-time revenue tracking and financial performance monitoring</li>
-                  <li>• Advanced customer analytics with lifetime value and acquisition cost analysis</li>
-                  <li>• Conversion funnel optimization with A/B testing integration</li>
-                  <li>• Predictive analytics for growth forecasting and trend identification</li>
-                  <li>• Market intelligence and competitive analysis dashboards</li>
-                  <li>• Executive KPI tracking with automated reporting and alerts</li>
-                  <li>• Strategic planning tools with scenario modeling and what-if analysis</li>
-                  <li>• Business intelligence API integration with third-party platforms</li>
+                  <li>
+                    • Real-time revenue tracking and financial performance
+                    monitoring
+                  </li>
+                  <li>
+                    • Advanced customer analytics with lifetime value and
+                    acquisition cost analysis
+                  </li>
+                  <li>
+                    • Conversion funnel optimization with A/B testing
+                    integration
+                  </li>
+                  <li>
+                    • Predictive analytics for growth forecasting and trend
+                    identification
+                  </li>
+                  <li>
+                    • Market intelligence and competitive analysis dashboards
+                  </li>
+                  <li>
+                    • Executive KPI tracking with automated reporting and alerts
+                  </li>
+                  <li>
+                    • Strategic planning tools with scenario modeling and
+                    what-if analysis
+                  </li>
+                  <li>
+                    • Business intelligence API integration with third-party
+                    platforms
+                  </li>
                 </ul>
               </div>
             </div>

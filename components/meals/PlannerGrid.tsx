@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -62,9 +62,15 @@ export function PlannerGrid({
   const [showAutoFill, setShowAutoFill] = useState(false);
 
   const daysOfWeek = [
-    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday'
   ];
-  
+
   const mealSlots = ['Breakfast', 'Lunch', 'Dinner'];
 
   const getDaySlotKey = (day: string, slot: string) => {
@@ -94,7 +100,11 @@ export function PlannerGrid({
   const getWeekProgress = () => {
     const totalSlots = daysOfWeek.length * mealSlots.length;
     const filledSlots = Object.values(weekPlan).filter(Boolean).length;
-    return { filled: filledSlots, total: totalSlots, percentage: Math.round((filledSlots / totalSlots) * 100) };
+    return {
+      filled: filledSlots,
+      total: totalSlots,
+      percentage: Math.round((filledSlots / totalSlots) * 100)
+    };
   };
 
   const progress = getWeekProgress();
@@ -111,12 +121,14 @@ export function PlannerGrid({
             </span>
           </div>
           <div className="w-24 bg-gray-200 rounded-full h-2">
-            <div 
+            <div
               className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress.percentage}%` }}
             />
           </div>
-          <span className="text-sm font-medium text-gray-700">{progress.percentage}%</span>
+          <span className="text-sm font-medium text-gray-700">
+            {progress.percentage}%
+          </span>
         </div>
 
         {/* Auto-Fill Actions */}
@@ -144,29 +156,45 @@ export function PlannerGrid({
                   onClick={() => handleAutoFillStrategy('favorites')}
                   className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-50"
                 >
-                  <div className="font-medium text-sm text-gray-900">Favorites-First</div>
-                  <div className="text-xs text-gray-500">Fill with your most-loved recipes</div>
+                  <div className="font-medium text-sm text-gray-900">
+                    Favorites-First
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Fill with your most-loved recipes
+                  </div>
                 </button>
                 <button
                   onClick={() => handleAutoFillStrategy('rated')}
                   className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-50"
                 >
-                  <div className="font-medium text-sm text-gray-900">Highly Rated</div>
-                  <div className="text-xs text-gray-500">Choose top-rated recipes</div>
+                  <div className="font-medium text-sm text-gray-900">
+                    Highly Rated
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Choose top-rated recipes
+                  </div>
                 </button>
                 <button
                   onClick={() => handleAutoFillStrategy('quick')}
                   className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-50"
                 >
-                  <div className="font-medium text-sm text-gray-900">Quick Week</div>
-                  <div className="text-xs text-gray-500">Focus on 30-minute meals</div>
+                  <div className="font-medium text-sm text-gray-900">
+                    Quick Week
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Focus on 30-minute meals
+                  </div>
                 </button>
                 <button
                   onClick={() => handleAutoFillStrategy('kidfriendly')}
                   className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-50"
                 >
-                  <div className="font-medium text-sm text-gray-900">Kid-Friendly</div>
-                  <div className="text-xs text-gray-500">Family-approved favorites</div>
+                  <div className="font-medium text-sm text-gray-900">
+                    Kid-Friendly
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Family-approved favorites
+                  </div>
                 </button>
                 <button
                   onClick={() => handleAutoFillStrategy('random')}
@@ -175,8 +203,12 @@ export function PlannerGrid({
                   <div className="flex items-center gap-2">
                     <Shuffle className="h-4 w-4 text-indigo-600" />
                     <div>
-                      <div className="font-medium text-sm text-gray-900">Surprise Me</div>
-                      <div className="text-xs text-gray-500">Random variety for adventure</div>
+                      <div className="font-medium text-sm text-gray-900">
+                        Surprise Me
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        Random variety for adventure
+                      </div>
                     </div>
                   </div>
                 </button>
@@ -194,7 +226,10 @@ export function PlannerGrid({
             <span className="sr-only">Meal Slots</span>
           </div>
           {daysOfWeek.map((day) => (
-            <div key={day} className="p-4 text-center font-medium text-gray-900 border-r border-gray-200 last:border-r-0">
+            <div
+              key={day}
+              className="p-4 text-center font-medium text-gray-900 border-r border-gray-200 last:border-r-0"
+            >
               <div className="text-sm">{day}</div>
               <div className="text-xs text-gray-500 mt-1">
                 {/* You could add dates here */}
@@ -206,7 +241,10 @@ export function PlannerGrid({
 
         {/* Meal Rows */}
         {mealSlots.map((slot) => (
-          <div key={slot} className="grid grid-cols-8 gap-0 border-b border-gray-200 last:border-b-0">
+          <div
+            key={slot}
+            className="grid grid-cols-8 gap-0 border-b border-gray-200 last:border-b-0"
+          >
             {/* Slot Label */}
             <div className="p-4 flex items-center font-medium text-gray-900 bg-gray-50 border-r border-gray-200">
               <span className="text-sm">{slot}</span>
@@ -219,12 +257,19 @@ export function PlannerGrid({
               const conflicts = conflictData[daySlotKey];
 
               return (
-                <div key={daySlotKey} className="p-2 border-r border-gray-200 last:border-r-0">
+                <div
+                  key={daySlotKey}
+                  className="p-2 border-r border-gray-200 last:border-r-0"
+                >
                   <PlannerCell
                     value={meal}
-                    onDropRecipe={(recipeId) => handleDropRecipe(daySlotKey, recipeId)}
+                    onDropRecipe={(recipeId) =>
+                      handleDropRecipe(daySlotKey, recipeId)
+                    }
                     onQuickAdd={() => onQuickAdd(daySlotKey)}
-                    onMealAction={(action, meal) => onMealAction(action, meal, daySlotKey)}
+                    onMealAction={(action, meal) =>
+                      onMealAction(action, meal, daySlotKey)
+                    }
                     dayName={day}
                     slotName={slot}
                     enhancedMode={enhancedMode}
@@ -243,21 +288,30 @@ export function PlannerGrid({
           <div className="flex items-start gap-3">
             <Sparkles className="h-5 w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-medium text-indigo-900 mb-1">Enhanced Mode Active</h4>
+              <h4 className="font-medium text-indigo-900 mb-1">
+                Enhanced Mode Active
+              </h4>
               <p className="text-sm text-indigo-700">
-                Showing calendar conflicts, weather recommendations, and nutrition insights.
+                Showing calendar conflicts, weather recommendations, and
+                nutrition insights.
               </p>
               <div className="flex items-center gap-4 mt-2 text-xs text-indigo-600">
                 <span className="flex items-center gap-1">
-                  <span className="w-3 h-3 bg-red-100 text-red-600 rounded-full flex items-center justify-center">⏰</span>
+                  <span className="w-3 h-3 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+                    ⏰
+                  </span>
                   Calendar conflict
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="w-3 h-3 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">🌧️</span>
+                  <span className="w-3 h-3 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                    🌧️
+                  </span>
                   Weather suggestion
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="w-3 h-3 bg-green-100 text-green-600 rounded-full flex items-center justify-center">🥗</span>
+                  <span className="w-3 h-3 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                    🥗
+                  </span>
                   Nutrition insight
                 </span>
               </div>

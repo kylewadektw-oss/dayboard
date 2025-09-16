@@ -23,12 +23,12 @@ async function executeSecurityFixes() {
 
   // Read the SQL commands from the file
   const sqlContent = fs.readFileSync('fix-function-search-path.sql', 'utf8');
-  
+
   // Split by individual ALTER FUNCTION commands
   const commands = sqlContent
     .split('\n')
-    .filter(line => line.trim().startsWith('ALTER FUNCTION'))
-    .map(line => line.trim());
+    .filter((line) => line.trim().startsWith('ALTER FUNCTION'))
+    .map((line) => line.trim());
 
   console.log(`📋 Found ${commands.length} functions to secure\n`);
 
@@ -38,15 +38,18 @@ async function executeSecurityFixes() {
   // Execute each command individually
   for (let i = 0; i < commands.length; i++) {
     const command = commands[i];
-    const functionName = command.match(/public\.([a-zA-Z_]+)/)?.[1] || 'unknown';
-    
-    console.log(`🔨 [${i+1}/${commands.length}] Securing function: ${functionName}`);
-    
+    const functionName =
+      command.match(/public\.([a-zA-Z_]+)/)?.[1] || 'unknown';
+
+    console.log(
+      `🔨 [${i + 1}/${commands.length}] Securing function: ${functionName}`
+    );
+
     try {
-      const { error } = await supabase.rpc('exec_sql', { 
-        sql: command 
+      const { error } = await supabase.rpc('exec_sql', {
+        sql: command
       });
-      
+
       if (error) {
         console.log(`   ❌ Failed: ${error.message}`);
         errorCount++;
@@ -58,25 +61,27 @@ async function executeSecurityFixes() {
       console.log(`   ❌ Error: ${err.message}`);
       errorCount++;
     }
-    
+
     // Small delay between commands
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
   console.log(`\n📊 Security Fix Summary:`);
   console.log(`   ✅ Successfully secured: ${successCount} functions`);
   console.log(`   ❌ Failed to secure: ${errorCount} functions`);
-  
+
   if (errorCount === 0) {
     console.log(`\n🎉 All database functions are now secure!`);
     console.log(`🛡️ SQL injection prevention via search_path is now active`);
   } else {
-    console.log(`\n⚠️  Some functions failed to update. Check Supabase logs for details.`);
+    console.log(
+      `\n⚠️  Some functions failed to update. Check Supabase logs for details.`
+    );
   }
 
   // Run verification query
   console.log(`\n🔍 Verifying security status...`);
-  
+
   const verificationSQL = `
     SELECT 
         p.proname as function_name,
@@ -100,21 +105,23 @@ async function executeSecurityFixes() {
     )
     ORDER BY security_status, p.proname;
   `;
-  
+
   try {
-    const { data, error } = await supabase.rpc('exec_sql', { 
-      sql: verificationSQL 
+    const { data, error } = await supabase.rpc('exec_sql', {
+      sql: verificationSQL
     });
-    
+
     if (error) {
       console.log(`   ❌ Verification failed: ${error.message}`);
     } else {
       console.log(`   ✅ Verification complete`);
       if (data) {
         console.log(`\n📋 Function Security Status:`);
-        data.forEach(row => {
+        data.forEach((row) => {
           const status = row.security_status === 'SECURED' ? '✅' : '❌';
-          console.log(`   ${status} ${row.function_name}: ${row.security_status}`);
+          console.log(
+            `   ${status} ${row.function_name}: ${row.security_status}`
+          );
         });
       }
     }
@@ -140,11 +147,13 @@ async function ensureExecSqlFunction() {
     END;
     $$;
   `;
-  
+
   console.log('🔧 Ensuring exec_sql helper function exists...');
-  
+
   try {
-    const { error } = await supabase.rpc('exec_sql', { sql: createFunctionSQL });
+    const { error } = await supabase.rpc('exec_sql', {
+      sql: createFunctionSQL
+    });
     if (error && !error.message.includes('does not exist')) {
       console.log(`   ✅ Helper function ready`);
     }
@@ -159,14 +168,13 @@ async function main() {
   try {
     await ensureExecSqlFunction();
     await executeSecurityFixes();
-    
+
     console.log(`\n✨ Security fixes complete!`);
     console.log(`\n📝 Next steps:`);
     console.log(`   1. Go to Supabase Dashboard > Authentication > Settings`);
     console.log(`   2. Enable "Leaked Password Protection"`);
     console.log(`   3. Set "Email OTP expiry" to 1800 seconds (30 minutes)`);
     console.log(`   4. Schedule PostgreSQL upgrade in Infrastructure settings`);
-    
   } catch (error) {
     console.error('❌ Fatal error:', error.message);
     process.exit(1);

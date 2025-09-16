@@ -10,12 +10,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
+  DialogTrigger
+} from '@/components/ui/dialog';
+import {
+  Plus,
+  Edit,
+  Trash2,
   DollarSign,
   AlertCircle,
   TrendingUp,
@@ -25,8 +25,11 @@ import { mockBudgetCategories } from '@/fixtures/budget-data';
 import type { BudgetCategory } from '@/types/budget';
 
 const BudgetCategories = () => {
-  const [categories, setCategories] = useState<BudgetCategory[]>(mockBudgetCategories);
-  const [editingCategory, setEditingCategory] = useState<BudgetCategory | null>(null);
+  const [categories, setCategories] =
+    useState<BudgetCategory[]>(mockBudgetCategories);
+  const [editingCategory, setEditingCategory] = useState<BudgetCategory | null>(
+    null
+  );
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -47,9 +50,18 @@ const BudgetCategories = () => {
   ];
 
   const colorOptions = [
-    'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500',
-    'bg-pink-500', 'bg-red-500', 'bg-indigo-500', 'bg-orange-500',
-    'bg-teal-500', 'bg-gray-500', 'bg-cyan-500', 'bg-emerald-500'
+    'bg-blue-500',
+    'bg-green-500',
+    'bg-yellow-500',
+    'bg-purple-500',
+    'bg-pink-500',
+    'bg-red-500',
+    'bg-indigo-500',
+    'bg-orange-500',
+    'bg-teal-500',
+    'bg-gray-500',
+    'bg-cyan-500',
+    'bg-emerald-500'
   ];
 
   const formatCurrency = (amount: number) => {
@@ -57,14 +69,20 @@ const BudgetCategories = () => {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(amount);
   };
 
   const getSpendingStatus = (spent: number, budget: number) => {
     const percentage = (spent / budget) * 100;
-    if (percentage >= 90) return { status: 'danger', color: 'text-red-600', bgColor: 'bg-red-100' };
-    if (percentage >= 75) return { status: 'warning', color: 'text-yellow-600', bgColor: 'bg-yellow-100' };
+    if (percentage >= 90)
+      return { status: 'danger', color: 'text-red-600', bgColor: 'bg-red-100' };
+    if (percentage >= 75)
+      return {
+        status: 'warning',
+        color: 'text-yellow-600',
+        bgColor: 'bg-yellow-100'
+      };
     return { status: 'good', color: 'text-green-600', bgColor: 'bg-green-100' };
   };
 
@@ -78,36 +96,46 @@ const BudgetCategories = () => {
       spentAmount: 0,
       isCustom: true
     };
-    
+
     setCategories([...categories, newCategory]);
     setIsCreateDialogOpen(false);
   };
 
   const handleEditCategory = (formData: FormData) => {
     if (!editingCategory) return;
-    
+
     const updatedCategory: BudgetCategory = {
       ...editingCategory,
       name: formData.get('name') as string,
       icon: formData.get('icon') as string,
       color: formData.get('color') as string,
-      budgetAmount: parseFloat(formData.get('budgetAmount') as string) || 0,
+      budgetAmount: parseFloat(formData.get('budgetAmount') as string) || 0
     };
-    
-    setCategories(categories.map(cat => 
-      cat.id === editingCategory.id ? updatedCategory : cat
-    ));
+
+    setCategories(
+      categories.map((cat) =>
+        cat.id === editingCategory.id ? updatedCategory : cat
+      )
+    );
     setEditingCategory(null);
     setIsEditDialogOpen(false);
   };
 
   const handleDeleteCategory = (categoryId: string) => {
-    setCategories(categories.filter(cat => cat.id !== categoryId));
+    setCategories(categories.filter((cat) => cat.id !== categoryId));
   };
 
-  const CategoryForm = ({ category, onSubmit }: { category?: BudgetCategory, onSubmit: (formData: FormData) => void }) => {
+  const CategoryForm = ({
+    category,
+    onSubmit
+  }: {
+    category?: BudgetCategory;
+    onSubmit: (formData: FormData) => void;
+  }) => {
     const [selectedIcon, setSelectedIcon] = useState(category?.icon || '🏠');
-    const [selectedColor, setSelectedColor] = useState(category?.color || 'bg-blue-500');
+    const [selectedColor, setSelectedColor] = useState(
+      category?.color || 'bg-blue-500'
+    );
 
     return (
       <form action={onSubmit} className="space-y-4">
@@ -118,7 +146,7 @@ const BudgetCategories = () => {
             name="name"
             placeholder="Enter category name"
             defaultValue={category?.name || ''}
-            onChange={() => {}} 
+            onChange={() => {}}
             required
           />
         </div>
@@ -132,7 +160,9 @@ const BudgetCategories = () => {
                 type="button"
                 onClick={() => setSelectedIcon(option.icon)}
                 className={`p-2 text-xl border rounded-lg hover:bg-gray-50 ${
-                  selectedIcon === option.icon ? 'ring-2 ring-blue-500 bg-blue-50' : ''
+                  selectedIcon === option.icon
+                    ? 'ring-2 ring-blue-500 bg-blue-50'
+                    : ''
                 }`}
               >
                 {option.icon}
@@ -151,7 +181,9 @@ const BudgetCategories = () => {
                 type="button"
                 onClick={() => setSelectedColor(color)}
                 className={`w-8 h-8 rounded-full ${color} ${
-                  selectedColor === color ? 'ring-2 ring-gray-400 ring-offset-2' : ''
+                  selectedColor === color
+                    ? 'ring-2 ring-gray-400 ring-offset-2'
+                    : ''
                 }`}
               />
             ))}
@@ -179,11 +211,15 @@ const BudgetCategories = () => {
         </div>
 
         <div className="flex justify-end space-x-2 pt-4">
-          <Button type="button" variant="slim" onClick={() => {
-            setIsCreateDialogOpen(false);
-            setIsEditDialogOpen(false);
-            setEditingCategory(null);
-          }}>
+          <Button
+            type="button"
+            variant="slim"
+            onClick={() => {
+              setIsCreateDialogOpen(false);
+              setIsEditDialogOpen(false);
+              setEditingCategory(null);
+            }}
+          >
             Cancel
           </Button>
           <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
@@ -199,8 +235,12 @@ const BudgetCategories = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Budget Categories</h1>
-          <p className="text-gray-600">Manage your budget categories and allocations</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Budget Categories
+          </h1>
+          <p className="text-gray-600">
+            Manage your budget categories and allocations
+          </p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
@@ -224,9 +264,13 @@ const BudgetCategories = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Budget</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Budget
+                </p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {formatCurrency(categories.reduce((sum, cat) => sum + cat.budgetAmount, 0))}
+                  {formatCurrency(
+                    categories.reduce((sum, cat) => sum + cat.budgetAmount, 0)
+                  )}
                 </p>
               </div>
               <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -242,7 +286,9 @@ const BudgetCategories = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Total Spent</p>
                 <p className="text-2xl font-bold text-red-600">
-                  {formatCurrency(categories.reduce((sum, cat) => sum + cat.spentAmount, 0))}
+                  {formatCurrency(
+                    categories.reduce((sum, cat) => sum + cat.spentAmount, 0)
+                  )}
                 </p>
               </div>
               <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -260,7 +306,7 @@ const BudgetCategories = () => {
                 <p className="text-2xl font-bold text-green-600">
                   {formatCurrency(
                     categories.reduce((sum, cat) => sum + cat.budgetAmount, 0) -
-                    categories.reduce((sum, cat) => sum + cat.spentAmount, 0)
+                      categories.reduce((sum, cat) => sum + cat.spentAmount, 0)
                   )}
                 </p>
               </div>
@@ -275,9 +321,15 @@ const BudgetCategories = () => {
       {/* Categories Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {categories.map((category) => {
-          const percentage = category.budgetAmount > 0 ? (category.spentAmount / category.budgetAmount) * 100 : 0;
+          const percentage =
+            category.budgetAmount > 0
+              ? (category.spentAmount / category.budgetAmount) * 100
+              : 0;
           const remaining = category.budgetAmount - category.spentAmount;
-          const spendingStatus = getSpendingStatus(category.spentAmount, category.budgetAmount);
+          const spendingStatus = getSpendingStatus(
+            category.spentAmount,
+            category.budgetAmount
+          );
 
           return (
             <Card key={category.id} className="relative">
@@ -288,7 +340,9 @@ const BudgetCategories = () => {
                     <div>
                       <CardTitle className="text-lg">{category.name}</CardTitle>
                       {category.isCustom && (
-                        <Badge variant="slim" className="text-xs">Custom</Badge>
+                        <Badge variant="slim" className="text-xs">
+                          Custom
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -319,50 +373,73 @@ const BudgetCategories = () => {
                   {/* Budget vs Spent */}
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Budget</span>
-                    <span className="font-semibold">{formatCurrency(category.budgetAmount)}</span>
+                    <span className="font-semibold">
+                      {formatCurrency(category.budgetAmount)}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Spent</span>
-                    <span className="font-semibold">{formatCurrency(category.spentAmount)}</span>
+                    <span className="font-semibold">
+                      {formatCurrency(category.spentAmount)}
+                    </span>
                   </div>
-                  
+
                   {/* Progress Bar */}
                   <div>
-                    <Progress 
-                      value={Math.min(percentage, 100)} 
+                    <Progress
+                      value={Math.min(percentage, 100)}
                       className="h-2"
                     />
                     <div className="flex justify-between items-center mt-1">
-                      <span className="text-xs text-gray-500">{percentage.toFixed(1)}% used</span>
-                      <span className={`text-xs font-medium ${spendingStatus.color}`}>
-                        {remaining >= 0 ? `${formatCurrency(remaining)} left` : `${formatCurrency(Math.abs(remaining))} over`}
+                      <span className="text-xs text-gray-500">
+                        {percentage.toFixed(1)}% used
+                      </span>
+                      <span
+                        className={`text-xs font-medium ${spendingStatus.color}`}
+                      >
+                        {remaining >= 0
+                          ? `${formatCurrency(remaining)} left`
+                          : `${formatCurrency(Math.abs(remaining))} over`}
                       </span>
                     </div>
                   </div>
 
                   {/* Status Badge */}
                   <div className="flex justify-center">
-                    <Badge className={`${spendingStatus.bgColor} ${spendingStatus.color} border-0`}>
-                      {spendingStatus.status === 'danger' && <AlertCircle className="h-3 w-3 mr-1" />}
-                      {spendingStatus.status === 'danger' ? 'Over Budget' : 
-                       spendingStatus.status === 'warning' ? 'Near Limit' : 'On Track'}
+                    <Badge
+                      className={`${spendingStatus.bgColor} ${spendingStatus.color} border-0`}
+                    >
+                      {spendingStatus.status === 'danger' && (
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                      )}
+                      {spendingStatus.status === 'danger'
+                        ? 'Over Budget'
+                        : spendingStatus.status === 'warning'
+                          ? 'Near Limit'
+                          : 'On Track'}
                     </Badge>
                   </div>
 
                   {/* Subcategories */}
-                  {category.subcategories && category.subcategories.length > 0 && (
-                    <div className="pt-2 border-t">
-                      <p className="text-xs text-gray-500 mb-2">{category.subcategories.length} subcategories</p>
-                      <div className="space-y-1">
-                        {category.subcategories.slice(0, 3).map((sub) => (
-                          <div key={sub.id} className="flex justify-between text-xs">
-                            <span className="text-gray-600">{sub.name}</span>
-                            <span>{formatCurrency(sub.spentAmount)}</span>
-                          </div>
-                        ))}
+                  {category.subcategories &&
+                    category.subcategories.length > 0 && (
+                      <div className="pt-2 border-t">
+                        <p className="text-xs text-gray-500 mb-2">
+                          {category.subcategories.length} subcategories
+                        </p>
+                        <div className="space-y-1">
+                          {category.subcategories.slice(0, 3).map((sub) => (
+                            <div
+                              key={sub.id}
+                              className="flex justify-between text-xs"
+                            >
+                              <span className="text-gray-600">{sub.name}</span>
+                              <span>{formatCurrency(sub.spentAmount)}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -377,7 +454,10 @@ const BudgetCategories = () => {
             <DialogTitle>Edit Category</DialogTitle>
           </DialogHeader>
           {editingCategory && (
-            <CategoryForm category={editingCategory} onSubmit={handleEditCategory} />
+            <CategoryForm
+              category={editingCategory}
+              onSubmit={handleEditCategory}
+            />
           )}
         </DialogContent>
       </Dialog>

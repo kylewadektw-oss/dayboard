@@ -8,7 +8,7 @@ const supabase = createClient(
 
 async function createMagic8Table() {
   console.log('🚀 Creating magic8_questions table in production...');
-  
+
   // Step 1: Create the table
   const createTableSQL = `
     CREATE TABLE IF NOT EXISTS magic8_questions (
@@ -21,19 +21,19 @@ async function createMagic8Table() {
       created_at timestamp with time zone DEFAULT now()
     );
   `;
-  
+
   try {
-    const { error: createError } = await supabase.rpc('sql', { 
-      query: createTableSQL 
+    const { error: createError } = await supabase.rpc('sql', {
+      query: createTableSQL
     });
-    
+
     if (createError) {
       console.log('❌ Error creating table:', createError);
       return;
     }
-    
+
     console.log('✅ Table created successfully');
-    
+
     // Step 2: Create indexes
     const indexesSQL = `
       CREATE INDEX IF NOT EXISTS idx_magic8_household_id ON magic8_questions(household_id);
@@ -41,17 +41,17 @@ async function createMagic8Table() {
       CREATE INDEX IF NOT EXISTS idx_magic8_created_at ON magic8_questions(created_at DESC);
       CREATE INDEX IF NOT EXISTS idx_magic8_theme ON magic8_questions(theme);
     `;
-    
-    const { error: indexError } = await supabase.rpc('sql', { 
-      query: indexesSQL 
+
+    const { error: indexError } = await supabase.rpc('sql', {
+      query: indexesSQL
     });
-    
+
     if (indexError) {
       console.log('⚠️  Error creating indexes:', indexError);
     } else {
       console.log('✅ Indexes created successfully');
     }
-    
+
     // Step 3: Enable RLS and create policies
     const rlsSQL = `
       ALTER TABLE magic8_questions ENABLE ROW LEVEL SECURITY;
@@ -90,30 +90,29 @@ async function createMagic8Table() {
       ON magic8_questions FOR DELETE 
       USING (asked_by = auth.uid());
     `;
-    
-    const { error: rlsError } = await supabase.rpc('sql', { 
-      query: rlsSQL 
+
+    const { error: rlsError } = await supabase.rpc('sql', {
+      query: rlsSQL
     });
-    
+
     if (rlsError) {
       console.log('⚠️  Error setting up RLS policies:', rlsError);
     } else {
       console.log('✅ RLS policies created successfully');
     }
-    
+
     // Step 4: Test the table
     console.log('🧪 Testing table access...');
     const { data, error } = await supabase
       .from('magic8_questions')
       .select('count(*)')
       .limit(1);
-    
+
     if (error) {
       console.log('❌ Error testing table:', error);
     } else {
       console.log('✅ Table is accessible and ready!');
     }
-    
   } catch (err) {
     console.log('❌ Unexpected error:', err);
   }

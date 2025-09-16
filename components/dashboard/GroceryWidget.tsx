@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 import { ShoppingCart, Plus, Eye, AlertTriangle } from 'lucide-react';
 import { memo, useMemo } from 'react';
@@ -28,13 +27,49 @@ interface GroceryItem {
 
 // Mock grocery data
 const mockGroceryItems: GroceryItem[] = [
-  { id: '1', name: 'Milk (Whole)', category: 'Dairy', urgent: true, addedBy: 'Ashley' },
-  { id: '2', name: 'Chicken Breast', category: 'Meat', urgent: false, addedBy: 'Kyle' },
-  { id: '3', name: 'Bananas', category: 'Produce', urgent: false, addedBy: 'Harper' },
+  {
+    id: '1',
+    name: 'Milk (Whole)',
+    category: 'Dairy',
+    urgent: true,
+    addedBy: 'Ashley'
+  },
+  {
+    id: '2',
+    name: 'Chicken Breast',
+    category: 'Meat',
+    urgent: false,
+    addedBy: 'Kyle'
+  },
+  {
+    id: '3',
+    name: 'Bananas',
+    category: 'Produce',
+    urgent: false,
+    addedBy: 'Harper'
+  },
   { id: '4', name: 'Bread', category: 'Bakery', urgent: true, addedBy: 'Kyle' },
-  { id: '5', name: 'Greek Yogurt', category: 'Dairy', urgent: false, addedBy: 'Ashley' },
-  { id: '6', name: 'Apples (Honeycrisp)', category: 'Produce', urgent: false, addedBy: 'Harper' },
-  { id: '7', name: 'Ground Turkey', category: 'Meat', urgent: false, addedBy: 'Kyle' }
+  {
+    id: '5',
+    name: 'Greek Yogurt',
+    category: 'Dairy',
+    urgent: false,
+    addedBy: 'Ashley'
+  },
+  {
+    id: '6',
+    name: 'Apples (Honeycrisp)',
+    category: 'Produce',
+    urgent: false,
+    addedBy: 'Harper'
+  },
+  {
+    id: '7',
+    name: 'Ground Turkey',
+    category: 'Meat',
+    urgent: false,
+    addedBy: 'Kyle'
+  }
 ];
 
 // Memoize category icon function to avoid recreating it on each render
@@ -56,10 +91,10 @@ const getCategoryIcon = (category: string) => {
 function GroceryWidgetComponent() {
   // Memoize all calculated values
   const memoizedData = useMemo(() => {
-    const urgent = mockGroceryItems.filter(item => item.urgent).length;
+    const urgent = mockGroceryItems.filter((item) => item.urgent).length;
     const topItems = mockGroceryItems.slice(0, 5);
     const remainingCount = Math.max(0, mockGroceryItems.length - 5);
-    
+
     return {
       pantryStats: {
         inPantry: 23,
@@ -76,7 +111,9 @@ function GroceryWidgetComponent() {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 px-3 py-1 rounded-lg tracking-wide">GROCERY LIST</h3>
+        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-600 px-3 py-1 rounded-lg tracking-wide">
+          GROCERY LIST
+        </h3>
         <ShoppingCart className="h-4 w-4 text-gray-400" />
       </div>
 
@@ -86,7 +123,8 @@ function GroceryWidgetComponent() {
           <div className="flex items-center">
             <AlertTriangle className="h-3 w-3 text-red-500 mr-1" />
             <span className="text-xs text-red-700 font-medium">
-              {pantryStats.urgent} urgent item{pantryStats.urgent !== 1 ? 's' : ''}
+              {pantryStats.urgent} urgent item
+              {pantryStats.urgent !== 1 ? 's' : ''}
             </span>
           </div>
         </div>
@@ -95,20 +133,25 @@ function GroceryWidgetComponent() {
       {/* Top 5 Items */}
       <div className="space-y-2 mb-4">
         {topItems.map((item) => (
-          <div key={item.id} className={`flex items-center justify-between p-2 rounded-lg ${
-            item.urgent ? 'bg-red-50 border border-red-200' : 'bg-gray-50'
-          }`}>
+          <div
+            key={item.id}
+            className={`flex items-center justify-between p-2 rounded-lg ${
+              item.urgent ? 'bg-red-50 border border-red-200' : 'bg-gray-50'
+            }`}
+          >
             <div className="flex items-center flex-1 min-w-0">
-              <span className="text-sm mr-2">{getCategoryIcon(item.category)}</span>
+              <span className="text-sm mr-2">
+                {getCategoryIcon(item.category)}
+              </span>
               <div className="flex-1 min-w-0">
-                <div className={`text-sm font-medium truncate ${
-                  item.urgent ? 'text-red-900' : 'text-gray-900'
-                }`}>
+                <div
+                  className={`text-sm font-medium truncate ${
+                    item.urgent ? 'text-red-900' : 'text-gray-900'
+                  }`}
+                >
                   {item.name}
                 </div>
-                <div className="text-xs text-gray-500">
-                  by {item.addedBy}
-                </div>
+                <div className="text-xs text-gray-500">by {item.addedBy}</div>
               </div>
             </div>
             {item.urgent && (
@@ -135,7 +178,7 @@ function GroceryWidgetComponent() {
           <Plus className="h-3 w-3 mr-1" />
           Add Item
         </button>
-        
+
         <button className="w-full py-2 px-3 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-medium transition-colors flex items-center justify-center">
           <Eye className="h-3 w-3 mr-1" />
           View Full List
@@ -146,11 +189,15 @@ function GroceryWidgetComponent() {
       <div className="mt-3 pt-3 border-t border-gray-100 space-y-1">
         <div className="flex justify-between text-xs text-gray-500">
           <span>Items needed</span>
-          <span className="font-medium text-gray-700">{pantryStats.needed}</span>
+          <span className="font-medium text-gray-700">
+            {pantryStats.needed}
+          </span>
         </div>
         <div className="flex justify-between text-xs text-gray-500">
           <span>Items in pantry</span>
-          <span className="font-medium text-gray-700">{pantryStats.inPantry}</span>
+          <span className="font-medium text-gray-700">
+            {pantryStats.inPantry}
+          </span>
         </div>
       </div>
 

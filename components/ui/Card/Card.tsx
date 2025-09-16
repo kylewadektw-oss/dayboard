@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 import { ReactNode, forwardRef } from 'react';
 import { cn } from '@/utils/cn';
@@ -56,7 +55,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     <div
       ref={ref}
       className={cn(
-        "rounded-lg border border-gray-200 bg-white text-gray-900 shadow-sm",
+        'rounded-lg border border-gray-200 bg-white text-gray-900 shadow-sm',
         className
       )}
       {...props}
@@ -65,27 +64,27 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     </div>
   )
 );
-Card.displayName = "Card";
+Card.displayName = 'Card';
 
 const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
   ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex flex-col space-y-1.5 p-6", className)}
+      className={cn('flex flex-col space-y-1.5 p-6', className)}
       {...props}
     >
       {children}
     </div>
   )
 );
-CardHeader.displayName = "CardHeader";
+CardHeader.displayName = 'CardHeader';
 
 const CardTitle = forwardRef<HTMLParagraphElement, CardTitleProps>(
   ({ className, children, ...props }, ref) => (
     <h3
       ref={ref}
       className={cn(
-        "text-2xl font-semibold leading-none tracking-tight",
+        'text-2xl font-semibold leading-none tracking-tight',
         className
       )}
       {...props}
@@ -94,29 +93,29 @@ const CardTitle = forwardRef<HTMLParagraphElement, CardTitleProps>(
     </h3>
   )
 );
-CardTitle.displayName = "CardTitle";
+CardTitle.displayName = 'CardTitle';
 
 const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
   ({ className, children, ...props }, ref) => (
-    <div ref={ref} className={cn("p-6 pt-0", className)} {...props}>
+    <div ref={ref} className={cn('p-6 pt-0', className)} {...props}>
       {children}
     </div>
   )
 );
-CardContent.displayName = "CardContent";
+CardContent.displayName = 'CardContent';
 
 const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
   ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("flex items-center p-6 pt-0", className)}
+      className={cn('flex items-center p-6 pt-0', className)}
       {...props}
     >
       {children}
     </div>
   )
 );
-CardFooter.displayName = "CardFooter";
+CardFooter.displayName = 'CardFooter';
 
 // Legacy Card component for backward compatibility
 function LegacyCard({ title, description, footer, children }: LegacyCardProps) {

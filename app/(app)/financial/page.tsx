@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -19,7 +19,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Financial Dashboard - Dayboard',
-  description: 'Comprehensive financial management for your household',
+  description: 'Comprehensive financial management for your household'
 };
 
 export default function FinancialPage() {
@@ -31,10 +31,11 @@ export default function FinancialPage() {
             Financial Dashboard
           </h1>
           <p className="text-gray-600">
-            Comprehensive financial management for your household - budgets, savings, bills, and more
+            Comprehensive financial management for your household - budgets,
+            savings, bills, and more
           </p>
         </div>
-        
+
         <FinancialTabs />
       </div>
     </div>

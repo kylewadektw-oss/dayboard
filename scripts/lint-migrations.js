@@ -8,25 +8,35 @@ const path = require('path');
 const MIGRATIONS_DIR = path.join(process.cwd(), 'supabase', 'migrations');
 let failed = false;
 
-function warn(msg){
+function warn(msg) {
   console.warn('\u001b[33m[migrations:lint] ' + msg + '\u001b[0m');
 }
-function error(msg){
-  failed = true; console.error('\u001b[31m[migrations:lint] ' + msg + '\u001b[0m');
+function error(msg) {
+  failed = true;
+  console.error('\u001b[31m[migrations:lint] ' + msg + '\u001b[0m');
 }
 
 try {
-  const files = readdirSync(MIGRATIONS_DIR).filter(f=>f.endsWith('.sql'));
+  const files = readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith('.sql'));
   for (const file of files) {
     const full = path.join(MIGRATIONS_DIR, file);
-    const sql = readFileSync(full,'utf8');
+    const sql = readFileSync(full, 'utf8');
 
     // ENUM creation should be guarded
-    if (/create\s+type\s+"?[a-z0-9_]+"?\s+as\s+enum/i.test(sql) && !/if not exists/i.test(sql)) {
-      warn(`${file}: enum creation missing IF NOT EXISTS guard (wrap in DO $$ or add conditional check).`);
+    if (
+      /create\s+type\s+"?[a-z0-9_]+"?\s+as\s+enum/i.test(sql) &&
+      !/if not exists/i.test(sql)
+    ) {
+      warn(
+        `${file}: enum creation missing IF NOT EXISTS guard (wrap in DO $$ or add conditional check).`
+      );
     }
     // Column add should use IF NOT EXISTS
-    if (/alter\s+table/i.test(sql) && /add\s+column/i.test(sql) && !/if\s+not\s+exists/i.test(sql)) {
+    if (
+      /alter\s+table/i.test(sql) &&
+      /add\s+column/i.test(sql) &&
+      !/if\s+not\s+exists/i.test(sql)
+    ) {
       warn(`${file}: column add missing IF NOT EXISTS safeguard.`);
     }
     // Index creation

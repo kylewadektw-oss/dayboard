@@ -15,13 +15,13 @@ import { Json } from '@/src/lib/types_db';CODE
 'use client';
 
 import React, { useState } from 'react';
-import { 
-  MessageSquare, 
-  X, 
-  Send, 
-  Bug, 
-  Lightbulb, 
-  Zap, 
+import {
+  MessageSquare,
+  X,
+  Send,
+  Bug,
+  Lightbulb,
+  Zap,
   Frown,
   ThumbsUp,
   MessageCircle,
@@ -29,10 +29,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
-import { 
-  FeedbackType, 
-  FeedbackPriority, 
-  CreateFeedbackData, 
+import {
+  FeedbackType,
+  FeedbackPriority,
+  CreateFeedbackData,
   FEEDBACK_TYPES,
   FEEDBACK_PRIORITIES,
   BrowserInfo
@@ -52,12 +52,14 @@ const FEEDBACK_ICONS = {
   other: MessageCircle
 };
 
-export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) {
+export default function FeedbackWidget({
+  className = ''
+}: FeedbackWidgetProps) {
   const { profile } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  
+
   // Form state
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('improvement');
   const [priority, setPriority] = useState<FeedbackPriority>('medium');
@@ -66,7 +68,7 @@ export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) 
   const [stepsToReproduce, setStepsToReproduce] = useState('');
   const [expectedBehavior, setExpectedBehavior] = useState('');
   const [actualBehavior, setActualBehavior] = useState('');
-  
+
   const supabase = createClient();
 
   // Always show the widget for testing - we'll handle auth in the form submission
@@ -94,7 +96,8 @@ export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) 
   const getBrowserName = (): string => {
     const userAgent = navigator.userAgent;
     if (userAgent.includes('Firefox')) return 'Firefox';
-    if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return 'Safari';
+    if (userAgent.includes('Safari') && !userAgent.includes('Chrome'))
+      return 'Safari';
     if (userAgent.includes('Chrome')) return 'Chrome';
     if (userAgent.includes('Edge')) return 'Edge';
     return 'Unknown';
@@ -113,7 +116,12 @@ export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) 
   const getDeviceType = (): string => {
     const userAgent = navigator.userAgent;
     if (/tablet|ipad|playbook|silk/i.test(userAgent)) return 'Tablet';
-    if (/mobile|iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile/i.test(userAgent)) return 'Mobile';
+    if (
+      /mobile|iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile/i.test(
+        userAgent
+      )
+    )
+      return 'Mobile';
     return 'Desktop';
   };
 
@@ -137,7 +145,7 @@ export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!profile?.id || !title.trim() || !description.trim()) {
       if (!profile?.id) {
         alert('Please sign in to submit feedback');
@@ -167,46 +175,45 @@ export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) 
         user_agent: browserInfo.userAgent
       };
 
-      const { error } = await supabase
-        .from('application_logs')
-        .insert({
-          user_id: profile.id,
-          session_id: `feedback-${Date.now()}`,
-          level: 'info',
-          message: `Feedback: ${feedbackData.title}`,
-          component: 'feedback_system',
-          data: {
-            feedback_type: feedbackData.feedback_type,
-            priority: feedbackData.priority || 'medium',
-            title: feedbackData.title,
-            description: feedbackData.description,
-            steps_to_reproduce: feedbackData.steps_to_reproduce || null,
-            expected_behavior: feedbackData.expected_behavior || null,
-            actual_behavior: feedbackData.actual_behavior || null,
-            browser_info: feedbackData.browser_info ? JSON.parse(JSON.stringify(feedbackData.browser_info)) : null,
-            screen_resolution: feedbackData.screen_resolution || null,
-            user_agent: feedbackData.user_agent || null,
-            page_url: feedbackData.page_url || null,
-            page_title: feedbackData.page_title || null,
-            household_id: profile.household_id,
-            status: 'submitted'
-          } as Json,
+      const { error } = await supabase.from('application_logs').insert({
+        user_id: profile.id,
+        session_id: `feedback-${Date.now()}`,
+        level: 'info',
+        message: `Feedback: ${feedbackData.title}`,
+        component: 'feedback_system',
+        data: {
+          feedback_type: feedbackData.feedback_type,
+          priority: feedbackData.priority || 'medium',
+          title: feedbackData.title,
+          description: feedbackData.description,
+          steps_to_reproduce: feedbackData.steps_to_reproduce || null,
+          expected_behavior: feedbackData.expected_behavior || null,
+          actual_behavior: feedbackData.actual_behavior || null,
+          browser_info: feedbackData.browser_info
+            ? JSON.parse(JSON.stringify(feedbackData.browser_info))
+            : null,
+          screen_resolution: feedbackData.screen_resolution || null,
           user_agent: feedbackData.user_agent || null,
-          url: feedbackData.page_url || null,
-          timestamp: new Date().toISOString()
-        });
+          page_url: feedbackData.page_url || null,
+          page_title: feedbackData.page_title || null,
+          household_id: profile.household_id,
+          status: 'submitted'
+        } as Json,
+        user_agent: feedbackData.user_agent || null,
+        url: feedbackData.page_url || null,
+        timestamp: new Date().toISOString()
+      });
 
       if (error) throw error;
 
       setSubmitted(true);
       resetForm();
-      
+
       // Auto-close after 3 seconds
       setTimeout(() => {
         setSubmitted(false);
         setIsOpen(false);
       }, 3000);
-
     } catch (error: unknown) {
       console.error('Error submitting feedback:', error);
       alert('Failed to submit feedback. Please try again.');
@@ -216,10 +223,13 @@ export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) 
   };
 
   return (
-    <div className={`fixed bottom-6 right-6 z-50 ${className}`} style={{ zIndex: 9999 }}>
+    <div
+      className={`fixed bottom-6 right-6 z-50 ${className}`}
+      style={{ zIndex: 9999 }}
+    >
       {/* Debug indicator */}
       <div className="absolute -top-2 -left-2 w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
-      
+
       {/* Feedback Button */}
       {!isOpen && (
         <button
@@ -254,18 +264,27 @@ export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) 
               <div className="bg-green-100 text-green-800 p-4 rounded-lg">
                 <ThumbsUp className="h-8 w-8 mx-auto mb-2" />
                 <h4 className="font-semibold mb-1">Thank you!</h4>
-                <p className="text-sm">Your feedback has been submitted successfully.</p>
+                <p className="text-sm">
+                  Your feedback has been submitted successfully.
+                </p>
               </div>
             </div>
           )}
 
           {/* Form */}
           {!submitted && (
-            <form onSubmit={handleSubmit} className="p-4 space-y-4 max-h-[calc(80vh-80px)] overflow-y-auto">
+            <form
+              onSubmit={handleSubmit}
+              className="p-4 space-y-4 max-h-[calc(80vh-80px)] overflow-y-auto"
+            >
               {/* Page Info */}
               <div className="bg-gray-50 p-3 rounded text-sm">
-                <div className="font-medium text-gray-700 mb-1">Current Page:</div>
-                <div className="text-gray-600 truncate">{getCurrentPageInfo().pathname}</div>
+                <div className="font-medium text-gray-700 mb-1">
+                  Current Page:
+                </div>
+                <div className="text-gray-600 truncate">
+                  {getCurrentPageInfo().pathname}
+                </div>
               </div>
 
               {/* Feedback Type */}
@@ -302,7 +321,9 @@ export default function FeedbackWidget({ className = '' }: FeedbackWidgetProps) 
                 </label>
                 <select
                   value={priority}
-                  onChange={(e) => setPriority(e.target.value as FeedbackPriority)}
+                  onChange={(e) =>
+                    setPriority(e.target.value as FeedbackPriority)
+                  }
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   {FEEDBACK_PRIORITIES.map((p) => (

@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -27,14 +27,14 @@ const badgeVariants = {
   secondary: 'bg-zinc-700 text-zinc-100 border-zinc-600',
   outline: 'border border-zinc-600 text-zinc-300 bg-transparent',
   destructive: 'bg-red-900 text-red-100 border-red-700',
-  slim: 'bg-zinc-800 text-zinc-200 border-zinc-600 px-2 py-0.5 text-xs',
+  slim: 'bg-zinc-800 text-zinc-200 border-zinc-600 px-2 py-0.5 text-xs'
 };
 
-function Badge({ 
-  className, 
-  variant = 'default', 
+function Badge({
+  className,
+  variant = 'default',
   children,
-  ...props 
+  ...props
 }: BadgeProps) {
   return (
     <span

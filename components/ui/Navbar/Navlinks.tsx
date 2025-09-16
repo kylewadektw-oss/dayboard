@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 'use client';
 
@@ -38,7 +37,11 @@ export default function Navlinks({ user }: NavlinksProps) {
   return (
     <div className="relative flex flex-row justify-between py-4 align-center md:py-6">
       <div className="flex items-center flex-1">
-        <Link href={user ? "/dashboard" : "/"} className={s.logo} aria-label="Dayboard">
+        <Link
+          href={user ? '/dashboard' : '/'}
+          className={s.logo}
+          aria-label="Dayboard"
+        >
           <Logo />
         </Link>
         {user && (
@@ -67,7 +70,15 @@ export default function Navlinks({ user }: NavlinksProps) {
             <Link href="/account" className={s.link}>
               Account
             </Link>
-            <form onSubmit={(e) => handleRequest(e, SignOut, redirectMethod === 'client' ? router : null)}>
+            <form
+              onSubmit={(e) =>
+                handleRequest(
+                  e,
+                  SignOut,
+                  redirectMethod === 'client' ? router : null
+                )
+              }
+            >
               <input type="hidden" name="pathName" value={pathname} />
               <button type="submit" className={s.link}>
                 Sign out
@@ -79,8 +90,8 @@ export default function Navlinks({ user }: NavlinksProps) {
             <Link href="/signin" className={s.link}>
               Sign In
             </Link>
-            <Link 
-              href="/#pricing" 
+            <Link
+              href="/#pricing"
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Get Started

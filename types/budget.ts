@@ -44,7 +44,18 @@ export interface SavingsGoal {
   targetAmount: number;
   currentAmount: number;
   targetDate: string;
-  category: 'vacation' | 'emergency' | 'purchase' | 'education' | 'retirement' | 'other' | 'home' | 'car' | 'entertainment' | 'family' | 'gift';
+  category:
+    | 'vacation'
+    | 'emergency'
+    | 'purchase'
+    | 'education'
+    | 'retirement'
+    | 'other'
+    | 'home'
+    | 'car'
+    | 'entertainment'
+    | 'family'
+    | 'gift';
   icon?: string;
   color?: string;
   monthlyContribution: number;
@@ -82,7 +93,12 @@ export interface AllowanceTransaction {
 
 export interface BudgetInsight {
   id: string;
-  type: 'overspend' | 'savings_opportunity' | 'trend' | 'goal_progress' | 'bill_reminder';
+  type:
+    | 'overspend'
+    | 'savings_opportunity'
+    | 'trend'
+    | 'goal_progress'
+    | 'bill_reminder';
   title: string;
   description: string;
   priority: 'low' | 'medium' | 'high';

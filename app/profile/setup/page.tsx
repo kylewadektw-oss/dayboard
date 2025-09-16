@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -20,7 +20,14 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Home, Users, ArrowRight, CheckCircle, UserCheck, ArrowLeft } from 'lucide-react';
+import {
+  Home,
+  Users,
+  ArrowRight,
+  CheckCircle,
+  UserCheck,
+  ArrowLeft
+} from 'lucide-react';
 import { Json } from '@/src/lib/types_db';
 
 type SetupStep = 'choose' | 'join' | 'create' | 'profile';
@@ -41,24 +48,24 @@ interface UserProfile {
 }
 
 // Household living situation categories
-type HouseholdType = 
-  | 'solo_user' 
-  | 'roommate_household' 
-  | 'couple_no_kids' 
-  | 'family_household' 
-  | 'single_parent_household' 
+type HouseholdType =
+  | 'solo_user'
+  | 'roommate_household'
+  | 'couple_no_kids'
+  | 'family_household'
+  | 'single_parent_household'
   | 'multi_generational_household';
 
 // Individual roles within the household
-type FamilyRole = 
-  | 'parent_guardian' 
-  | 'mom' 
-  | 'dad' 
-  | 'child' 
-  | 'spouse_partner' 
-  | 'roommate' 
-  | 'guest' 
-  | 'caregiver' 
+type FamilyRole =
+  | 'parent_guardian'
+  | 'mom'
+  | 'dad'
+  | 'child'
+  | 'spouse_partner'
+  | 'roommate'
+  | 'guest'
+  | 'caregiver'
   | 'pet';
 
 interface HouseholdInfo {
@@ -92,7 +99,7 @@ function ProfileSetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
-  
+
   const editMode = searchParams.get('edit') === 'true';
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState<SetupStep>('choose');
@@ -100,16 +107,16 @@ function ProfileSetupContent() {
   const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [householdInfo, setHouseholdInfo] = useState<HouseholdInfo>({
     name: '',
     household_type: 'solo_user',
     address: '',
     city: '',
     state: '',
-    zip: '',
+    zip: ''
   });
-  
+
   const [profileInfo, setProfileInfo] = useState<ProfileInfo>({
     full_name: '',
     display_name: '',
@@ -123,8 +130,8 @@ function ProfileSetupContent() {
       email: true,
       push: true,
       sms: false,
-      daycare_pickup_backup: false,
-    },
+      daycare_pickup_backup: false
+    }
   });
 
   // Redirect if not authenticated
@@ -138,7 +145,8 @@ function ProfileSetupContent() {
     try {
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select(`
+        .select(
+          `
           *,
           households!household_id (
             id,
@@ -150,7 +158,8 @@ function ProfileSetupContent() {
             state,
             zip
           )
-        `)
+        `
+        )
         .eq('user_id', user!.id)
         .single();
 
@@ -170,29 +179,44 @@ function ProfileSetupContent() {
           onboarding_completed: profile.onboarding_completed ?? undefined,
           role: profile.role ?? undefined
         } as UserProfile);
-        
+
         if (editMode) {
           setCurrentStep('profile');
-          const notificationPrefs = profile.notification_preferences as Record<string, boolean>;
-          setProfileInfo(prev => ({
+          const notificationPrefs = profile.notification_preferences as Record<
+            string,
+            boolean
+          >;
+          setProfileInfo((prev) => ({
             ...prev,
             full_name: profile.name || '',
             display_name: profile.name || '',
             preferred_name: profile.preferred_name || '',
             phone_number: profile.phone_number || '',
             date_of_birth: profile.date_of_birth || '',
-            family_role: (profile.family_role as FamilyRole) || 'parent_guardian',
-            dietary_preferences: (Array.isArray(profile.dietary_preferences) ? profile.dietary_preferences : []).filter((item): item is string => typeof item === 'string'),
-            allergies: (Array.isArray(profile.allergies) ? profile.allergies : []).filter((item): item is string => typeof item === 'string'),
+            family_role:
+              (profile.family_role as FamilyRole) || 'parent_guardian',
+            dietary_preferences: (Array.isArray(profile.dietary_preferences)
+              ? profile.dietary_preferences
+              : []
+            ).filter((item): item is string => typeof item === 'string'),
+            allergies: (Array.isArray(profile.allergies)
+              ? profile.allergies
+              : []
+            ).filter((item): item is string => typeof item === 'string'),
             notification_preferences: {
               email: notificationPrefs?.email ?? true,
               push: notificationPrefs?.push ?? true,
               sms: notificationPrefs?.sms ?? false,
-              daycare_pickup_backup: notificationPrefs?.daycare_pickup_backup ?? false,
-            },
+              daycare_pickup_backup:
+                notificationPrefs?.daycare_pickup_backup ?? false
+            }
           }));
-          
-          if (profile.households && Array.isArray(profile.households) && profile.households.length > 0) {
+
+          if (
+            profile.households &&
+            Array.isArray(profile.households) &&
+            profile.households.length > 0
+          ) {
             const household = profile.households[0];
             setHouseholdInfo({
               name: household.name || '',
@@ -200,7 +224,7 @@ function ProfileSetupContent() {
               address: household.address || '',
               city: household.city || '',
               state: household.state || '',
-              zip: household.zip || '',
+              zip: household.zip || ''
             });
           }
         } else {
@@ -215,7 +239,17 @@ function ProfileSetupContent() {
     } finally {
       setLoading(false);
     }
-  }, [supabase, user, editMode, router, setUserProfile, setCurrentStep, setProfileInfo, setHouseholdInfo, setLoading]);
+  }, [
+    supabase,
+    user,
+    editMode,
+    router,
+    setUserProfile,
+    setCurrentStep,
+    setProfileInfo,
+    setHouseholdInfo,
+    setLoading
+  ]);
 
   // Check existing profile
   useEffect(() => {
@@ -261,7 +295,7 @@ function ProfileSetupContent() {
           dietary_preferences: profileInfo.dietary_preferences,
           allergies: profileInfo.allergies,
           notification_preferences: profileInfo.notification_preferences,
-          onboarding_completed: true,
+          onboarding_completed: true
         })
         .select()
         .single();
@@ -288,7 +322,7 @@ function ProfileSetupContent() {
     try {
       // Generate unique join code
       const joinCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-      
+
       // Create household
       const { data: household, error: householdError } = await supabase
         .from('households')
@@ -300,7 +334,7 @@ function ProfileSetupContent() {
           state: householdInfo.state,
           zip: householdInfo.zip,
           household_code: joinCode,
-          created_by: user!.id,
+          created_by: user!.id
         })
         .select()
         .single();
@@ -326,7 +360,7 @@ function ProfileSetupContent() {
           dietary_preferences: profileInfo.dietary_preferences,
           allergies: profileInfo.allergies,
           notification_preferences: profileInfo.notification_preferences,
-          onboarding_completed: true,
+          onboarding_completed: true
         })
         .select()
         .single();
@@ -362,7 +396,7 @@ function ProfileSetupContent() {
           family_role: profileInfo.family_role,
           dietary_preferences: profileInfo.dietary_preferences,
           allergies: profileInfo.allergies,
-          notification_preferences: profileInfo.notification_preferences,
+          notification_preferences: profileInfo.notification_preferences
         })
         .eq('user_id', user!.id);
 
@@ -374,7 +408,10 @@ function ProfileSetupContent() {
       }
 
       // Update household if user has one
-      if (userProfile?.household_id && Object.values(householdInfo).some(v => v)) {
+      if (
+        userProfile?.household_id &&
+        Object.values(householdInfo).some((v) => v)
+      ) {
         const { error: householdError } = await supabase
           .from('households')
           .update({
@@ -383,7 +420,7 @@ function ProfileSetupContent() {
             address: householdInfo.address,
             city: householdInfo.city,
             state: householdInfo.state,
-            zip: householdInfo.zip,
+            zip: householdInfo.zip
           })
           .eq('id', userProfile.household_id);
 
@@ -420,7 +457,8 @@ function ProfileSetupContent() {
           Welcome to Dayboard! 🏠
         </h1>
         <p className="text-lg text-gray-600">
-          Let&apos;s get your household set up. Choose how you&apos;d like to get started:
+          Let&apos;s get your household set up. Choose how you&apos;d like to
+          get started:
         </p>
       </div>
 
@@ -435,7 +473,8 @@ function ProfileSetupContent() {
               Join Existing Household
             </h3>
             <p className="text-gray-600">
-              Someone in your household already set up Dayboard? Join them with a household code.
+              Someone in your household already set up Dayboard? Join them with
+              a household code.
             </p>
           </div>
         </button>
@@ -450,7 +489,8 @@ function ProfileSetupContent() {
               Create New Household
             </h3>
             <p className="text-gray-600">
-              Start fresh! Set up a new household and invite family members or roommates later.
+              Start fresh! Set up a new household and invite family members or
+              roommates later.
             </p>
           </div>
         </button>
@@ -480,7 +520,10 @@ function ProfileSetupContent() {
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="joinCode" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="joinCode"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Household Code
           </label>
           <input
@@ -534,90 +577,130 @@ function ProfileSetupContent() {
 
       <div className="space-y-6">
         <div>
-          <label htmlFor="householdName" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="householdName"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Household Name
           </label>
           <input
             type="text"
             id="householdName"
             value={householdInfo.name}
-            onChange={(e) => setHouseholdInfo(prev => ({ ...prev, name: e.target.value }))}
+            onChange={(e) =>
+              setHouseholdInfo((prev) => ({ ...prev, name: e.target.value }))
+            }
             placeholder="The Smith Family, Apartment 4B, etc."
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white text-gray-900 placeholder-gray-400"
           />
         </div>
 
         <div>
-          <label htmlFor="householdType" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="householdType"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Household Type
           </label>
           <select
             id="householdType"
             value={householdInfo.household_type}
-            onChange={(e) => setHouseholdInfo(prev => ({ ...prev, household_type: e.target.value as HouseholdType }))}
+            onChange={(e) =>
+              setHouseholdInfo((prev) => ({
+                ...prev,
+                household_type: e.target.value as HouseholdType
+              }))
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
           >
             <option value="solo_user">Solo User</option>
             <option value="roommate_household">Roommate Household</option>
             <option value="couple_no_kids">Couple (No Kids)</option>
             <option value="family_household">Family Household</option>
-            <option value="single_parent_household">Single Parent Household</option>
-            <option value="multi_generational_household">Multi-Generational</option>
+            <option value="single_parent_household">
+              Single Parent Household
+            </option>
+            <option value="multi_generational_household">
+              Multi-Generational
+            </option>
           </select>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="address"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Address
             </label>
             <input
               type="text"
               id="address"
               value={householdInfo.address}
-              onChange={(e) => setHouseholdInfo(prev => ({ ...prev, address: e.target.value }))}
+              onChange={(e) =>
+                setHouseholdInfo((prev) => ({
+                  ...prev,
+                  address: e.target.value
+                }))
+              }
               placeholder="123 Main St"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white text-gray-900 placeholder-gray-400"
             />
           </div>
 
           <div>
-            <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="city"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               City
             </label>
             <input
               type="text"
               id="city"
               value={householdInfo.city}
-              onChange={(e) => setHouseholdInfo(prev => ({ ...prev, city: e.target.value }))}
+              onChange={(e) =>
+                setHouseholdInfo((prev) => ({ ...prev, city: e.target.value }))
+              }
               placeholder="City"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white text-gray-900 placeholder-gray-400"
             />
           </div>
 
           <div>
-            <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="state"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               State
             </label>
             <input
               type="text"
               id="state"
               value={householdInfo.state}
-              onChange={(e) => setHouseholdInfo(prev => ({ ...prev, state: e.target.value }))}
+              onChange={(e) =>
+                setHouseholdInfo((prev) => ({ ...prev, state: e.target.value }))
+              }
               placeholder="State"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white text-gray-900 placeholder-gray-400"
             />
           </div>
 
           <div>
-            <label htmlFor="zip" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="zip"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               ZIP Code
             </label>
             <input
               type="text"
               id="zip"
               value={householdInfo.zip}
-              onChange={(e) => setHouseholdInfo(prev => ({ ...prev, zip: e.target.value }))}
+              onChange={(e) =>
+                setHouseholdInfo((prev) => ({ ...prev, zip: e.target.value }))
+              }
               placeholder="12345"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white text-gray-900 placeholder-gray-400"
             />
@@ -640,7 +723,9 @@ function ProfileSetupContent() {
     <div className="max-w-2xl mx-auto">
       {!editMode && (
         <button
-          onClick={() => setCurrentStep(currentStep === 'profile' ? 'choose' : currentStep)}
+          onClick={() =>
+            setCurrentStep(currentStep === 'profile' ? 'choose' : currentStep)
+          }
           className="flex items-center text-gray-600 hover:text-gray-900 mb-6 transition-colors"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -654,21 +739,31 @@ function ProfileSetupContent() {
           {editMode ? 'Edit Your Profile' : 'Complete Your Profile'}
         </h1>
         <p className="text-gray-600">
-          {editMode ? 'Update your information' : 'Tell us about yourself to personalize your Dayboard experience.'}
+          {editMode
+            ? 'Update your information'
+            : 'Tell us about yourself to personalize your Dayboard experience.'}
         </p>
       </div>
 
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="fullName"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Full Name *
             </label>
             <input
               type="text"
               id="fullName"
               value={profileInfo.full_name}
-              onChange={(e) => setProfileInfo(prev => ({ ...prev, full_name: e.target.value }))}
+              onChange={(e) =>
+                setProfileInfo((prev) => ({
+                  ...prev,
+                  full_name: e.target.value
+                }))
+              }
               placeholder="John Smith"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 placeholder-gray-400"
               required
@@ -676,68 +771,108 @@ function ProfileSetupContent() {
           </div>
 
           <div>
-            <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="displayName"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Display Name
             </label>
             <input
               type="text"
               id="displayName"
               value={profileInfo.display_name}
-              onChange={(e) => setProfileInfo(prev => ({ ...prev, display_name: e.target.value }))}
+              onChange={(e) =>
+                setProfileInfo((prev) => ({
+                  ...prev,
+                  display_name: e.target.value
+                }))
+              }
               placeholder="John"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 placeholder-gray-400"
             />
           </div>
 
           <div>
-            <label htmlFor="preferredName" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="preferredName"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Preferred Name
             </label>
             <input
               type="text"
               id="preferredName"
               value={profileInfo.preferred_name}
-              onChange={(e) => setProfileInfo(prev => ({ ...prev, preferred_name: e.target.value }))}
+              onChange={(e) =>
+                setProfileInfo((prev) => ({
+                  ...prev,
+                  preferred_name: e.target.value
+                }))
+              }
               placeholder="Johnny"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 placeholder-gray-400"
             />
           </div>
 
           <div>
-            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="phoneNumber"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Phone Number
             </label>
             <input
               type="tel"
               id="phoneNumber"
               value={profileInfo.phone_number}
-              onChange={(e) => setProfileInfo(prev => ({ ...prev, phone_number: e.target.value }))}
+              onChange={(e) =>
+                setProfileInfo((prev) => ({
+                  ...prev,
+                  phone_number: e.target.value
+                }))
+              }
               placeholder="(555) 123-4567"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 placeholder-gray-400"
             />
           </div>
 
           <div>
-            <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="dateOfBirth"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Date of Birth
             </label>
             <input
               type="date"
               id="dateOfBirth"
               value={profileInfo.date_of_birth}
-              onChange={(e) => setProfileInfo(prev => ({ ...prev, date_of_birth: e.target.value }))}
+              onChange={(e) =>
+                setProfileInfo((prev) => ({
+                  ...prev,
+                  date_of_birth: e.target.value
+                }))
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 placeholder-gray-400"
             />
           </div>
 
           <div>
-            <label htmlFor="familyRole" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="familyRole"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Family Role
             </label>
             <select
               id="familyRole"
               value={profileInfo.family_role}
-              onChange={(e) => setProfileInfo(prev => ({ ...prev, family_role: e.target.value as FamilyRole }))}
+              onChange={(e) =>
+                setProfileInfo((prev) => ({
+                  ...prev,
+                  family_role: e.target.value as FamilyRole
+                }))
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
             >
               <option value="parent_guardian">Parent/Guardian</option>
@@ -755,38 +890,60 @@ function ProfileSetupContent() {
         {/* Household Info for Edit Mode */}
         {editMode && userProfile?.household_id && (
           <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Household Information</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Household Information
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="editHouseholdName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="editHouseholdName"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Household Name
                 </label>
                 <input
                   type="text"
                   id="editHouseholdName"
                   value={householdInfo.name}
-                  onChange={(e) => setHouseholdInfo(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setHouseholdInfo((prev) => ({
+                      ...prev,
+                      name: e.target.value
+                    }))
+                  }
                   placeholder="The Smith Family"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900 placeholder-gray-400"
                 />
               </div>
 
               <div>
-                <label htmlFor="editHouseholdType" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="editHouseholdType"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Household Type
                 </label>
                 <select
                   id="editHouseholdType"
                   value={householdInfo.household_type}
-                  onChange={(e) => setHouseholdInfo(prev => ({ ...prev, household_type: e.target.value as HouseholdType }))}
+                  onChange={(e) =>
+                    setHouseholdInfo((prev) => ({
+                      ...prev,
+                      household_type: e.target.value as HouseholdType
+                    }))
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 bg-white text-gray-900"
                 >
                   <option value="solo_user">Solo User</option>
                   <option value="roommate_household">Roommate Household</option>
                   <option value="couple_no_kids">Couple (No Kids)</option>
                   <option value="family_household">Family Household</option>
-                  <option value="single_parent_household">Single Parent Household</option>
-                  <option value="multi_generational_household">Multi-Generational</option>
+                  <option value="single_parent_household">
+                    Single Parent Household
+                  </option>
+                  <option value="multi_generational_household">
+                    Multi-Generational
+                  </option>
                 </select>
               </div>
             </div>
@@ -800,7 +957,13 @@ function ProfileSetupContent() {
         )}
 
         <button
-          onClick={editMode ? handleUpdateProfile : (currentStep === 'join' ? handleJoinHousehold : handleCreateHousehold)}
+          onClick={
+            editMode
+              ? handleUpdateProfile
+              : currentStep === 'join'
+                ? handleJoinHousehold
+                : handleCreateHousehold
+          }
           disabled={!profileInfo.full_name.trim() || isSubmitting}
           className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
@@ -824,27 +987,47 @@ function ProfileSetupContent() {
         {!editMode && (
           <div className="mb-8">
             <div className="flex items-center justify-center space-x-4">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                currentStep === 'choose' ? 'bg-blue-600 text-white' : 
-                ['join', 'create', 'profile'].includes(currentStep) ? 'bg-green-600 text-white' : 'bg-gray-300'
-              }`}>
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  currentStep === 'choose'
+                    ? 'bg-blue-600 text-white'
+                    : ['join', 'create', 'profile'].includes(currentStep)
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-300'
+                }`}
+              >
                 1
               </div>
-              <div className={`h-1 w-16 ${
-                ['join', 'create', 'profile'].includes(currentStep) ? 'bg-green-600' : 'bg-gray-300'
-              }`}></div>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                ['join', 'create'].includes(currentStep) ? 'bg-blue-600 text-white' : 
-                currentStep === 'profile' ? 'bg-green-600 text-white' : 'bg-gray-300'
-              }`}>
+              <div
+                className={`h-1 w-16 ${
+                  ['join', 'create', 'profile'].includes(currentStep)
+                    ? 'bg-green-600'
+                    : 'bg-gray-300'
+                }`}
+              ></div>
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  ['join', 'create'].includes(currentStep)
+                    ? 'bg-blue-600 text-white'
+                    : currentStep === 'profile'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-300'
+                }`}
+              >
                 2
               </div>
-              <div className={`h-1 w-16 ${
-                currentStep === 'profile' ? 'bg-green-600' : 'bg-gray-300'
-              }`}></div>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                currentStep === 'profile' ? 'bg-blue-600 text-white' : 'bg-gray-300'
-              }`}>
+              <div
+                className={`h-1 w-16 ${
+                  currentStep === 'profile' ? 'bg-green-600' : 'bg-gray-300'
+                }`}
+              ></div>
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  currentStep === 'profile'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-300'
+                }`}
+              >
                 3
               </div>
             </div>
@@ -863,11 +1046,13 @@ function ProfileSetupContent() {
 
 export default function ProfileSetup() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
+      }
+    >
       <ProfileSetupContent />
     </Suspense>
   );

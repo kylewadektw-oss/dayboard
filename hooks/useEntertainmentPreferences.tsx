@@ -62,7 +62,8 @@ const defaultPreferences: UserPreferences = {
 };
 
 export function useEntertainmentPreferences() {
-  const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
+  const [preferences, setPreferences] =
+    useState<UserPreferences>(defaultPreferences);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load preferences from localStorage
@@ -82,7 +83,10 @@ export function useEntertainmentPreferences() {
   // Save preferences to localStorage
   const savePreferences = useCallback((newPreferences: UserPreferences) => {
     try {
-      localStorage.setItem('entertainment-preferences', JSON.stringify(newPreferences));
+      localStorage.setItem(
+        'entertainment-preferences',
+        JSON.stringify(newPreferences)
+      );
       setPreferences(newPreferences);
     } catch (error) {
       console.error('Error saving preferences:', error);
@@ -90,81 +94,96 @@ export function useEntertainmentPreferences() {
   }, []);
 
   // Update specific category preferences
-  const updateMoviePreferences = useCallback((updates: Partial<UserPreferences['movies']>) => {
-    savePreferences({
-      ...preferences,
-      movies: { ...preferences.movies, ...updates }
-    });
-  }, [preferences, savePreferences]);
+  const updateMoviePreferences = useCallback(
+    (updates: Partial<UserPreferences['movies']>) => {
+      savePreferences({
+        ...preferences,
+        movies: { ...preferences.movies, ...updates }
+      });
+    },
+    [preferences, savePreferences]
+  );
 
-  const updateMusicPreferences = useCallback((updates: Partial<UserPreferences['music']>) => {
-    savePreferences({
-      ...preferences,
-      music: { ...preferences.music, ...updates }
-    });
-  }, [preferences, savePreferences]);
+  const updateMusicPreferences = useCallback(
+    (updates: Partial<UserPreferences['music']>) => {
+      savePreferences({
+        ...preferences,
+        music: { ...preferences.music, ...updates }
+      });
+    },
+    [preferences, savePreferences]
+  );
 
-  const updateEventPreferences = useCallback((updates: Partial<UserPreferences['events']>) => {
-    savePreferences({
-      ...preferences,
-      events: { ...preferences.events, ...updates }
-    });
-  }, [preferences, savePreferences]);
+  const updateEventPreferences = useCallback(
+    (updates: Partial<UserPreferences['events']>) => {
+      savePreferences({
+        ...preferences,
+        events: { ...preferences.events, ...updates }
+      });
+    },
+    [preferences, savePreferences]
+  );
 
-  const updateGamePreferences = useCallback((updates: Partial<UserPreferences['games']>) => {
-    savePreferences({
-      ...preferences,
-      games: { ...preferences.games, ...updates }
-    });
-  }, [preferences, savePreferences]);
+  const updateGamePreferences = useCallback(
+    (updates: Partial<UserPreferences['games']>) => {
+      savePreferences({
+        ...preferences,
+        games: { ...preferences.games, ...updates }
+      });
+    },
+    [preferences, savePreferences]
+  );
 
   // Generate personalized recommendations based on preferences
-  const getPersonalizedRecommendations = useCallback((category: keyof UserPreferences) => {    
-    switch (category) {
-      case 'movies':
-        return {
-          genres: preferences.movies.favoriteGenres,
-          suggestedContent: [
-            'Movies trending in your favorite genres',
-            'New releases on your streaming services',
-            'Critics picks matching your ratings preference'
-          ]
-        };
-      
-      case 'music':
-        return {
-          genres: preferences.music.favoriteGenres,
-          suggestedContent: [
-            'Artists similar to your favorites',
-            'New releases in preferred genres',
-            'Trending songs from your preferred era'
-          ]
-        };
-      
-      case 'events':
-        return {
-          categories: preferences.events.categories,
-          suggestedContent: [
-            `Events within ${preferences.events.maxDistance} miles`,
-            'Events in your favorite categories',
-            'Events matching your time preferences'
-          ]
-        };
-      
-      case 'games':
-        return {
-          categories: preferences.games.categories,
-          suggestedContent: [
-            `Games for ${Math.min(...preferences.games.playerCount)}-${Math.max(...preferences.games.playerCount)} players`,
-            'Games matching your complexity preference',
-            'New releases in your favorite categories'
-          ]
-        };
-      
-      default:
-        return { genres: [], suggestedContent: [] };
-    }
-  }, [preferences]);
+  const getPersonalizedRecommendations = useCallback(
+    (category: keyof UserPreferences) => {
+      switch (category) {
+        case 'movies':
+          return {
+            genres: preferences.movies.favoriteGenres,
+            suggestedContent: [
+              'Movies trending in your favorite genres',
+              'New releases on your streaming services',
+              'Critics picks matching your ratings preference'
+            ]
+          };
+
+        case 'music':
+          return {
+            genres: preferences.music.favoriteGenres,
+            suggestedContent: [
+              'Artists similar to your favorites',
+              'New releases in preferred genres',
+              'Trending songs from your preferred era'
+            ]
+          };
+
+        case 'events':
+          return {
+            categories: preferences.events.categories,
+            suggestedContent: [
+              `Events within ${preferences.events.maxDistance} miles`,
+              'Events in your favorite categories',
+              'Events matching your time preferences'
+            ]
+          };
+
+        case 'games':
+          return {
+            categories: preferences.games.categories,
+            suggestedContent: [
+              `Games for ${Math.min(...preferences.games.playerCount)}-${Math.max(...preferences.games.playerCount)} players`,
+              'Games matching your complexity preference',
+              'New releases in your favorite categories'
+            ]
+          };
+
+        default:
+          return { genres: [], suggestedContent: [] };
+      }
+    },
+    [preferences]
+  );
 
   // Reset preferences to defaults
   const resetPreferences = useCallback(() => {

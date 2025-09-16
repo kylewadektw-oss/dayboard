@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -21,7 +21,7 @@ import LoggingNav from '@/components/logging/LoggingNav';
 
 export default function TestConsoleLogging() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  
+
   const testBasicLogging = () => {
     console.log('✅ This is a test console.log message');
     console.info('ℹ️ This is a test console.info message');
@@ -40,7 +40,7 @@ export default function TestConsoleLogging() {
         notifications: true
       }
     };
-    
+
     console.log('User object test:', testUser);
     console.info('Array test:', [1, 2, 3, 'test', { nested: true }]);
   };
@@ -62,7 +62,7 @@ export default function TestConsoleLogging() {
   useEffect(() => {
     console.log('TestConsoleLogging component mounted');
     console.info('Component useEffect triggered');
-    
+
     return () => {
       console.log('TestConsoleLogging component unmounting');
     };
@@ -70,28 +70,41 @@ export default function TestConsoleLogging() {
 
   return (
     <>
-      <LoggingNav 
+      <LoggingNav
         variant="sidebar"
         isCollapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-      
-      <div className={`transition-all duration-300 ${
-        sidebarCollapsed ? 'ml-16' : 'ml-80'
-      }`}>
+
+      <div
+        className={`transition-all duration-300 ${
+          sidebarCollapsed ? 'ml-16' : 'ml-80'
+        }`}
+      >
         <div className="min-h-screen bg-gray-50 p-8">
           <div className="max-w-4xl mx-auto">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900">🧪 Console Logging Test Suite</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                🧪 Console Logging Test Suite
+              </h1>
             </div>
-            
+
             <div className="grid gap-6">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-blue-900 mb-3">📋 Testing Instructions</h3>
+                <h3 className="text-lg font-semibold text-blue-900 mb-3">
+                  📋 Testing Instructions
+                </h3>
                 <ul className="space-y-2 text-blue-900 font-semibold">
-                  <li>• Open the <strong>Logs Dashboard</strong> in another tab to see console output in real-time</li>
-                  <li>• Each test below generates different types of console logs</li>
-                  <li>• All console logs are automatically captured and stored</li>
+                  <li>
+                    • Open the <strong>Logs Dashboard</strong> in another tab to
+                    see console output in real-time
+                  </li>
+                  <li>
+                    • Each test below generates different types of console logs
+                  </li>
+                  <li>
+                    • All console logs are automatically captured and stored
+                  </li>
                 </ul>
               </div>
 
@@ -100,7 +113,8 @@ export default function TestConsoleLogging() {
                   📝 Basic Console Methods
                 </h2>
                 <p className="text-gray-900 font-semibold mb-4">
-                  Tests all standard console methods: log, info, warn, error, debug
+                  Tests all standard console methods: log, info, warn, error,
+                  debug
                 </p>
                 <button
                   onClick={testBasicLogging}

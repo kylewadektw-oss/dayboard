@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -88,12 +88,15 @@ export function useVirtualScroll<T extends VirtualListItem>(
     createOptimizedDebounce((event: Event) => {
       const target = event.target as HTMLElement;
       const newScrollTop = target.scrollTop;
-      
+
       setScrollDirection(newScrollTop > lastScrollTop.current ? 'down' : 'up');
       setScrollTop(newScrollTop);
       lastScrollTop.current = newScrollTop;
-      
-      onScroll?.(newScrollTop, newScrollTop > lastScrollTop.current ? 'down' : 'up');
+
+      onScroll?.(
+        newScrollTop,
+        newScrollTop > lastScrollTop.current ? 'down' : 'up'
+      );
     }, 16), // ~60fps
     [onScroll]
   );
@@ -103,29 +106,37 @@ export function useVirtualScroll<T extends VirtualListItem>(
     const element = scrollRef.current;
     if (!element) return;
 
-    element.addEventListener('scroll', debouncedScrollHandler, { passive: true });
-    
+    element.addEventListener('scroll', debouncedScrollHandler, {
+      passive: true
+    });
+
     return () => {
       element.removeEventListener('scroll', debouncedScrollHandler);
     };
   }, [debouncedScrollHandler]);
 
   // 🚀 PERFORMANCE: Scroll to item utility
-  const scrollToItem = useCallback((index: number, behavior: ScrollBehavior = scrollBehavior) => {
-    const element = scrollRef.current;
-    if (!element || index < 0 || index >= items.length) return;
+  const scrollToItem = useCallback(
+    (index: number, behavior: ScrollBehavior = scrollBehavior) => {
+      const element = scrollRef.current;
+      if (!element || index < 0 || index >= items.length) return;
 
-    const targetScrollTop = index * itemHeight;
-    element.scrollTo({ top: targetScrollTop, behavior });
-  }, [items.length, itemHeight, scrollBehavior]);
+      const targetScrollTop = index * itemHeight;
+      element.scrollTo({ top: targetScrollTop, behavior });
+    },
+    [items.length, itemHeight, scrollBehavior]
+  );
 
   // 🚀 PERFORMANCE: Scroll to top utility
-  const scrollToTop = useCallback((behavior: ScrollBehavior = scrollBehavior) => {
-    const element = scrollRef.current;
-    if (!element) return;
+  const scrollToTop = useCallback(
+    (behavior: ScrollBehavior = scrollBehavior) => {
+      const element = scrollRef.current;
+      if (!element) return;
 
-    element.scrollTo({ top: 0, behavior });
-  }, [scrollBehavior]);
+      element.scrollTo({ top: 0, behavior });
+    },
+    [scrollBehavior]
+  );
 
   return {
     scrollRef,
@@ -163,9 +174,12 @@ function VirtualListComponent<T extends VirtualListItem>({
   const { scrollRef, scrollMetrics } = useVirtualScroll(items, config);
 
   // 🚀 PERFORMANCE: Memoized item click handler
-  const handleItemClick = useCallback((item: T, index: number) => {
-    onItemClick?.(item, index);
-  }, [onItemClick]);
+  const handleItemClick = useCallback(
+    (item: T, index: number) => {
+      onItemClick?.(item, index);
+    },
+    [onItemClick]
+  );
 
   // 🚀 PERFORMANCE: Memoized rendered items
   const renderedItems = useMemo(() => {
@@ -175,12 +189,14 @@ function VirtualListComponent<T extends VirtualListItem>({
         <div
           key={item.id}
           onClick={() => handleItemClick(item, actualIndex)}
-          style={{ 
+          style={{
             position: 'absolute',
             top: (scrollMetrics.startIndex + virtualIndex) * config.itemHeight,
             left: 0,
             right: 0,
-            height: config.getItemHeight ? config.getItemHeight(actualIndex, item) : config.itemHeight
+            height: config.getItemHeight
+              ? config.getItemHeight(actualIndex, item)
+              : config.itemHeight
           }}
         >
           {renderItem(item, actualIndex)}
@@ -188,11 +204,11 @@ function VirtualListComponent<T extends VirtualListItem>({
       );
     });
   }, [
-    scrollMetrics.visibleItems, 
-    scrollMetrics.startIndex, 
-    config.itemHeight, 
+    scrollMetrics.visibleItems,
+    scrollMetrics.startIndex,
+    config.itemHeight,
     config.getItemHeight,
-    renderItem, 
+    renderItem,
     handleItemClick
   ]);
 
@@ -219,7 +235,9 @@ function VirtualListComponent<T extends VirtualListItem>({
 }
 
 // 🚀 PERFORMANCE: Export memoized component
-export const VirtualList = memo(VirtualListComponent) as <T extends VirtualListItem>(
+export const VirtualList = memo(VirtualListComponent) as <
+  T extends VirtualListItem
+>(
   props: VirtualListProps<T>
 ) => JSX.Element;
 
@@ -236,11 +254,11 @@ export function useVirtualGrid<T extends VirtualListItem>(
   config: VirtualGridConfig
 ) {
   const { itemWidth, itemHeight, columns, gap = 0 } = config;
-  
+
   // Convert grid to list logic
   const rowHeight = itemHeight + gap;
   const totalRows = Math.ceil(items.length / columns);
-  
+
   const modifiedConfig: VirtualScrollConfig = {
     ...config,
     itemHeight: rowHeight
@@ -252,12 +270,12 @@ export function useVirtualGrid<T extends VirtualListItem>(
   const gridMetrics = useMemo(() => {
     const startRow = Math.floor(virtualScroll.scrollMetrics.startIndex);
     const endRow = Math.ceil(virtualScroll.scrollMetrics.endIndex);
-    
+
     const startItemIndex = startRow * columns;
     const endItemIndex = Math.min(items.length - 1, (endRow + 1) * columns - 1);
-    
+
     const visibleItems = items.slice(startItemIndex, endItemIndex + 1);
-    
+
     return {
       ...virtualScroll.scrollMetrics,
       startRow,
@@ -271,7 +289,15 @@ export function useVirtualGrid<T extends VirtualListItem>(
       itemHeight,
       gap
     };
-  }, [virtualScroll.scrollMetrics, items, columns, itemWidth, itemHeight, gap, totalRows]);
+  }, [
+    virtualScroll.scrollMetrics,
+    items,
+    columns,
+    itemWidth,
+    itemHeight,
+    gap,
+    totalRows
+  ]);
 
   return {
     ...virtualScroll,
@@ -309,7 +335,7 @@ function VirtualGridComponent<T extends VirtualListItem>({
       const actualIndex = gridMetrics.startItemIndex + virtualIndex;
       const row = Math.floor(actualIndex / gridMetrics.columns);
       const col = actualIndex % gridMetrics.columns;
-      
+
       return (
         <div
           key={item.id}
@@ -342,11 +368,14 @@ function VirtualGridComponent<T extends VirtualListItem>({
       className={`relative overflow-auto ${className}`}
       style={{ height: config.containerHeight }}
     >
-      <div style={{ 
-        height: gridMetrics.totalRows * (gridMetrics.itemHeight + gridMetrics.gap),
-        position: 'relative',
-        width: gridMetrics.columns * (gridMetrics.itemWidth + gridMetrics.gap)
-      }}>
+      <div
+        style={{
+          height:
+            gridMetrics.totalRows * (gridMetrics.itemHeight + gridMetrics.gap),
+          position: 'relative',
+          width: gridMetrics.columns * (gridMetrics.itemWidth + gridMetrics.gap)
+        }}
+      >
         {renderedItems}
       </div>
     </div>
@@ -354,7 +383,9 @@ function VirtualGridComponent<T extends VirtualListItem>({
 }
 
 // 🚀 PERFORMANCE: Export memoized grid component
-export const VirtualGrid = memo(VirtualGridComponent) as <T extends VirtualListItem>(
+export const VirtualGrid = memo(VirtualGridComponent) as <
+  T extends VirtualListItem
+>(
   props: VirtualGridProps<T>
 ) => JSX.Element;
 

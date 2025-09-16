@@ -6,18 +6,23 @@ const { execSync } = require('child_process');
 const { readFileSync, writeFileSync, unlinkSync } = require('fs');
 const { createHash } = require('crypto');
 
-function hash(data){
+function hash(data) {
   return createHash('sha256').update(data).digest('hex');
 }
 
 try {
-  execSync('npx supabase gen types typescript --local --schema public > types_db.check.tmp.ts', { stdio: 'inherit' });
-  const current = readFileSync('types_db.ts','utf8');
-  const fresh = readFileSync('types_db.check.tmp.ts','utf8');
+  execSync(
+    'npx supabase gen types typescript --local --schema public > types_db.check.tmp.ts',
+    { stdio: 'inherit' }
+  );
+  const current = readFileSync('types_db.ts', 'utf8');
+  const fresh = readFileSync('types_db.check.tmp.ts', 'utf8');
   unlinkSync('types_db.check.tmp.ts');
 
   if (hash(current) !== hash(fresh)) {
-    console.error('\n[types:check] Drift detected between committed types_db.ts and freshly generated types.');
+    console.error(
+      '\n[types:check] Drift detected between committed types_db.ts and freshly generated types.'
+    );
     console.error('[types:check] Run: npm run types:update');
     process.exit(2);
   }

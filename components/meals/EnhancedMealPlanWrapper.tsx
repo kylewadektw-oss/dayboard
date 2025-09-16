@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -180,25 +180,29 @@ export default function EnhancedMealPlanWrapper() {
 
   const handleUpdateMealPlan = async (mealPlan: Partial<MealPlan>) => {
     if (mealPlan.id) {
-      setMealPlans(prev => prev.map(plan => 
-        plan.id === mealPlan.id ? { ...plan, ...mealPlan } : plan
-      ));
+      setMealPlans((prev) =>
+        prev.map((plan) =>
+          plan.id === mealPlan.id ? { ...plan, ...mealPlan } : plan
+        )
+      );
     }
   };
 
-  const handleCreateMealPlan = async (mealPlan: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>) => {
+  const handleCreateMealPlan = async (
+    mealPlan: Omit<MealPlan, 'id' | 'created_at' | 'updated_at'>
+  ) => {
     const newPlan: MealPlan = {
       ...mealPlan,
       id: `plan-${Date.now()}`,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    
-    setMealPlans(prev => [...prev, newPlan]);
+
+    setMealPlans((prev) => [...prev, newPlan]);
   };
 
   const handleDeleteMealPlan = async (id: string) => {
-    setMealPlans(prev => prev.filter(plan => plan.id !== id));
+    setMealPlans((prev) => prev.filter((plan) => plan.id !== id));
   };
 
   return (

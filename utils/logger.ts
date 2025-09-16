@@ -1,26 +1,25 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-
 /*
  * 📝 CENTRALIZED LOGGING UTILITY - Advanced Application Monitoring
- * 
+ *
  * PURPOSE: Comprehensive logging system with real-time capture, enhanced user experience,
  * and intelligent diagnostic data collection for the Dayboard application
- * 
+ *
  * FEATURES:
  * - Real-time console interception with circular reference protection
  * - Enhanced user identification and context tracking
@@ -31,25 +30,25 @@
  * - OAuth and Auth-specific logging helpers
  * - Async logging with non-blocking performance
  * - Smart message categorization and source detection
- * 
+ *
  * USAGE:
  * ```typescript
  * import { logger, oauthLogger, authLogger } from '@/utils/logger';
- * 
+ *
  * // Basic logging
  * await logger.error('Database connection failed', 'DatabaseComponent', { errorCode: 'DB_001' });
  * await logger.warn('API response slow', 'APIClient', { responseTime: 2500 });
  * await logger.info('User action completed', 'UserInterface', { action: 'profile_update' });
- * 
+ *
  * // Specialized logging
  * await oauthLogger.error('OAuth token expired', { provider: 'google' });
  * await authLogger.info('User signed in successfully', { userId: 'user123' });
- * 
+ *
  * // Configure dashboard filtering
  * logger.setDashboardFilteringEnabled(false); // Disable filtering if needed
  * console.log(logger.isDashboardFilteringEnabled()); // Check current state
  * ```
- * 
+ *
  * ENHANCED FEATURES:
  * - User Information: Automatic user ID, email, role, and display name collection
  * - Device Detection: Browser, OS, screen size, mobile/desktop identification
@@ -60,7 +59,7 @@
  * - Impact Analysis: Business impact assessment for each log entry
  * - Suggested Actions: Contextual recommendations for error resolution
  * - Dashboard Filtering: Automatic filtering of dashboard refresh alerts to reduce DB load
- * 
+ *
  * TECHNICAL:
  * - Circular Reference Protection: Safe object serialization
  * - Console Interception: Automatic capture of all console methods
@@ -68,7 +67,7 @@
  * - Memory Management: Automatic log rotation and cleanup
  * - Performance Optimization: Throttled database writes and efficient filtering
  * - Error Handling: Graceful fallbacks and error recovery
- * 
+ *
  * ACCESSIBILITY: Used throughout the application for monitoring and debugging
  */
 
@@ -79,7 +78,7 @@ import { createClient } from '@/utils/supabase/client';
 
 export enum LogLevel {
   DEBUG = 'debug',
-  INFO = 'info', 
+  INFO = 'info',
   WARN = 'warn',
   ERROR = 'error'
 }
@@ -214,36 +213,38 @@ class Logger {
   private isIntercepting = false;
   private sessionId: string;
   private supabase = createClient();
-  
+
   // Configuration - Complete prevention of dashboard refresh alerts (not filterable)
   private filterDashboardRefreshAlerts: boolean = true; // Always enabled for complete prevention
-  
+
   // Performance optimizations
   private dbLogsCache: LogEntry[] = [];
   private lastDbFetch: number = 0;
   private cacheTimeout: number = 30000; // 30 seconds cache
   private isDbLoading: boolean = false;
   private dbLoadPromise: Promise<LogEntry[]> | null = null;
-  
+
   // Database logging throttling to prevent spam (32 logs/min)
   private databaseLogThrottle: Map<string, number> = new Map();
   private databaseLogThrottleWindow: number = 10000; // 10 seconds
   private maxDatabaseLogsPerWindow: number = 3; // Max 3 logs per 10 seconds per unique message
-  
+
   // API-Client logging throttling to prevent spam during login (7 logs/min)
   private apiClientLogThrottle: Map<string, number> = new Map();
   private apiClientLogThrottleWindow: number = 15000; // 15 seconds
   private maxApiClientLogsPerWindow: number = 2; // Max 2 logs per 15 seconds per unique message
-  
+
   // Localhost testing isolation
-  private isLocalhost: boolean = typeof window !== 'undefined' && 
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  private isLocalhost: boolean =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1');
   private enableLocalhostIsolation: boolean = true; // Can be configured
-  
+
   constructor() {
     this.sessionId = this.generateSessionId();
     this.setupConsoleInterception();
-    
+
     // Initialize global error capture on the client side
     if (typeof window !== 'undefined') {
       this.initializeGlobalErrorCapture();
@@ -262,7 +263,9 @@ class Logger {
 
   private async getCurrentUserId(): Promise<string | null> {
     try {
-      const { data: { user } } = await this.supabase.auth.getUser();
+      const {
+        data: { user }
+      } = await this.supabase.auth.getUser();
       return user?.id || null;
     } catch {
       return null;
@@ -272,14 +275,20 @@ class Logger {
   // Enhanced user information collection
   private async getCurrentUserInfo(): Promise<any> {
     try {
-      const { data: { user } } = await this.supabase.auth.getUser();
+      const {
+        data: { user }
+      } = await this.supabase.auth.getUser();
       if (!user) return null;
 
       return {
         id: user.id,
         email: user.email,
         role: user.user_metadata?.role || user.app_metadata?.role || 'user',
-        displayName: user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Anonymous'
+        displayName:
+          user.user_metadata?.display_name ||
+          user.user_metadata?.full_name ||
+          user.email?.split('@')[0] ||
+          'Anonymous'
       };
     } catch {
       return null;
@@ -292,16 +301,18 @@ class Logger {
 
     const ua = window.navigator.userAgent;
     const platform = window.navigator.platform;
-    
+
     // Detect browser
     let browser = 'Unknown';
     if (ua.includes('Chrome') && !ua.includes('Edg')) browser = 'Chrome';
     else if (ua.includes('Firefox')) browser = 'Firefox';
-    else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+    else if (ua.includes('Safari') && !ua.includes('Chrome'))
+      browser = 'Safari';
     else if (ua.includes('Edg')) browser = 'Edge';
 
     // Detect mobile
-    const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    const mobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
 
     // Get screen size
     const screenSize = `${window.screen.width}x${window.screen.height}`;
@@ -316,11 +327,17 @@ class Logger {
   }
 
   private getBrowserVersion(ua: string, browserName?: string): string {
-    const regex = browserName === 'Chrome' ? /Chrome\/(\d+)/ :
-                  browserName === 'Firefox' ? /Firefox\/(\d+)/ :
-                  browserName === 'Safari' ? /Version\/(\d+)/ :
-                  browserName === 'Edg' ? /Edg\/(\d+)/ : null;
-    
+    const regex =
+      browserName === 'Chrome'
+        ? /Chrome\/(\d+)/
+        : browserName === 'Firefox'
+          ? /Firefox\/(\d+)/
+          : browserName === 'Safari'
+            ? /Version\/(\d+)/
+            : browserName === 'Edg'
+              ? /Edg\/(\d+)/
+              : null;
+
     const match = regex ? ua.match(regex) : null;
     return match ? match[1] : 'Unknown';
   }
@@ -330,11 +347,17 @@ class Logger {
     if (typeof window === 'undefined' || !window.performance) return null;
 
     const memory = (performance as any).memory;
-    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const navigation = performance.getEntriesByType(
+      'navigation'
+    )[0] as PerformanceNavigationTiming;
 
     return {
-      memoryUsage: memory ? Math.round(memory.usedJSHeapSize / 1024 / 1024) : null, // MB
-      loadTime: navigation ? Math.round(navigation.loadEventEnd - navigation.fetchStart) : null, // ms
+      memoryUsage: memory
+        ? Math.round(memory.usedJSHeapSize / 1024 / 1024)
+        : null, // MB
+      loadTime: navigation
+        ? Math.round(navigation.loadEventEnd - navigation.fetchStart)
+        : null, // ms
       networkSpeed: this.getNetworkSpeed()
     };
   }
@@ -372,7 +395,8 @@ class Logger {
       timeOnPage: this.getTimeOnCurrentPage(),
       // User interaction context
       lastClickTarget: sessionStorage.getItem('lastClickTarget') || 'unknown',
-      formFieldsInteracted: sessionStorage.getItem('formFieldsInteracted') || '0',
+      formFieldsInteracted:
+        sessionStorage.getItem('formFieldsInteracted') || '0',
       buttonsClicked: sessionStorage.getItem('buttonsClicked') || '0'
     };
   }
@@ -390,7 +414,9 @@ class Logger {
 
   private getPageLoadTime(): number {
     if (typeof window === 'undefined' || !window.performance) return 0;
-    const navigation = window.performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    const navigation = window.performance.getEntriesByType(
+      'navigation'
+    )[0] as PerformanceNavigationTiming;
     if (navigation) {
       return navigation.loadEventEnd - navigation.fetchStart;
     }
@@ -414,7 +440,7 @@ class Logger {
     // Track clicks
     document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
-      
+
       // Safely get className - handle SVG elements and non-string className values
       let className = '';
       try {
@@ -436,16 +462,22 @@ class Logger {
         // Fallback - just use empty string if we can't get className
         className = '';
       }
-      
-      sessionStorage.setItem('lastClickTarget', 
-        target.tagName + 
-        (target.id ? `#${target.id}` : '') + 
-        (className ? `.${className}` : '')
+
+      sessionStorage.setItem(
+        'lastClickTarget',
+        target.tagName +
+          (target.id ? `#${target.id}` : '') +
+          (className ? `.${className}` : '')
       );
-      
+
       // Increment button clicks if it's a button
-      if (target.tagName === 'BUTTON' || (target as HTMLInputElement).type === 'submit') {
-        const current = parseInt(sessionStorage.getItem('buttonsClicked') || '0');
+      if (
+        target.tagName === 'BUTTON' ||
+        (target as HTMLInputElement).type === 'submit'
+      ) {
+        const current = parseInt(
+          sessionStorage.getItem('buttonsClicked') || '0'
+        );
         sessionStorage.setItem('buttonsClicked', (current + 1).toString());
       }
     });
@@ -453,9 +485,18 @@ class Logger {
     // Track form interactions
     document.addEventListener('focusin', (event) => {
       const target = event.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
-        const current = parseInt(sessionStorage.getItem('formFieldsInteracted') || '0');
-        sessionStorage.setItem('formFieldsInteracted', (current + 1).toString());
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT'
+      ) {
+        const current = parseInt(
+          sessionStorage.getItem('formFieldsInteracted') || '0'
+        );
+        sessionStorage.setItem(
+          'formFieldsInteracted',
+          (current + 1).toString()
+        );
       }
     });
 
@@ -463,7 +504,7 @@ class Logger {
     const resetPageTimer = () => {
       sessionStorage.setItem('currentPageStartTime', Date.now().toString());
     };
-    
+
     // Listen for page changes (for SPAs)
     let currentPath = window.location.pathname;
     const checkForPageChange = () => {
@@ -480,17 +521,21 @@ class Logger {
     if (typeof window === 'undefined') return;
 
     // Track page views
-    const currentPageViews = parseInt(sessionStorage.getItem('pageViews') || '0');
+    const currentPageViews = parseInt(
+      sessionStorage.getItem('pageViews') || '0'
+    );
     sessionStorage.setItem('pageViews', (currentPageViews + 1).toString());
 
     // Track total interactions
     const trackInteraction = () => {
-      const current = parseInt(sessionStorage.getItem('totalInteractions') || '0');
+      const current = parseInt(
+        sessionStorage.getItem('totalInteractions') || '0'
+      );
       sessionStorage.setItem('totalInteractions', (current + 1).toString());
     };
 
     // Track various interaction types
-    ['click', 'keydown', 'scroll', 'touch'].forEach(eventType => {
+    ['click', 'keydown', 'scroll', 'touch'].forEach((eventType) => {
       document.addEventListener(eventType, trackInteraction, { passive: true });
     });
 
@@ -515,8 +560,11 @@ class Logger {
   private getNetworkInfo(): any {
     if (typeof window === 'undefined' || !navigator) return null;
 
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-    
+    const connection =
+      (navigator as any).connection ||
+      (navigator as any).mozConnection ||
+      (navigator as any).webkitConnection;
+
     return {
       online: navigator.onLine,
       connectionType: connection?.effectiveType || 'unknown',
@@ -540,25 +588,25 @@ class Logger {
       localStorage: !!window.localStorage,
       sessionStorage: !!window.sessionStorage,
       indexedDB: !!window.indexedDB,
-      
+
       // API capabilities
       geolocation: !!navigator.geolocation,
       webWorkers: !!window.Worker,
       serviceWorkers: 'serviceWorker' in navigator,
       pushNotifications: 'PushManager' in window,
       notifications: 'Notification' in window,
-      
+
       // Display and media
       pixelRatio: window.devicePixelRatio || 1,
       colorDepth: screen.colorDepth || null,
       screenResolution: `${screen.width}x${screen.height}`,
       availableResolution: `${screen.availWidth}x${screen.availHeight}`,
-      
+
       // JavaScript features
       webGL: !!window.WebGLRenderingContext,
       webGL2: !!window.WebGL2RenderingContext,
       webAssembly: !!window.WebAssembly,
-      
+
       // Security
       secureContext: window.isSecureContext,
       crossOriginIsolated: window.crossOriginIsolated || false
@@ -573,7 +621,7 @@ class Logger {
       name: error.name,
       message: error.message,
       stack: error.stack,
-      stackLines: error.stack ? error.stack.split('\n').slice(1, 6) : [], // Top 5 stack frames
+      stackLines: error.stack ? error.stack.split('\n').slice(1, 6) : [] // Top 5 stack frames
     };
 
     // Try to extract file and line information
@@ -615,20 +663,23 @@ class Logger {
     if (typeof window === 'undefined' || !window.performance) return null;
 
     const timing = window.performance.timing;
-    const navigation = window.performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-    
+    const navigation = window.performance.getEntriesByType(
+      'navigation'
+    )[0] as PerformanceNavigationTiming;
+
     return {
       // Page load performance
-      domContentLoaded: timing.domContentLoadedEventEnd - timing.navigationStart,
+      domContentLoaded:
+        timing.domContentLoadedEventEnd - timing.navigationStart,
       pageLoadComplete: timing.loadEventEnd - timing.navigationStart,
       firstPaint: navigation?.responseStart - navigation?.requestStart || 0,
-      
+
       // Resource performance
       resources: window.performance.getEntriesByType('resource').length,
-      
+
       // Navigation type
       navigationType: navigation?.type || 'unknown',
-      
+
       // Current memory usage (if available)
       usedMemory: (window.performance as any).memory?.usedJSHeapSize || null,
       totalMemory: (window.performance as any).memory?.totalJSHeapSize || null,
@@ -643,7 +694,9 @@ class Logger {
     const engagementData = {
       timeSpentOnSite: this.getSessionDuration(),
       pageViews: parseInt(sessionStorage.getItem('pageViews') || '1'),
-      interactionEvents: parseInt(sessionStorage.getItem('totalInteractions') || '0'),
+      interactionEvents: parseInt(
+        sessionStorage.getItem('totalInteractions') || '0'
+      ),
       clickDepth: parseInt(sessionStorage.getItem('clickDepth') || '0'),
       scrollDepth: this.getScrollDepth(),
       bounceRate: this.calculateBounceRate()
@@ -663,25 +716,30 @@ class Logger {
       document.documentElement.offsetHeight
     );
     const windowHeight = window.innerHeight;
-    return Math.round((scrollTop + windowHeight) / documentHeight * 100);
+    return Math.round(((scrollTop + windowHeight) / documentHeight) * 100);
   }
 
   private calculateBounceRate(): number {
     const sessionStart = sessionStorage.getItem('sessionStartTime');
     const pageViews = parseInt(sessionStorage.getItem('pageViews') || '1');
-    
+
     if (!sessionStart || pageViews > 1) return 0; // Not a bounce if multiple pages viewed
-    
+
     const sessionDuration = Date.now() - parseInt(sessionStart);
     return sessionDuration < 30000 ? 1 : 0; // Bounce if less than 30 seconds on single page
   }
 
   private detectCurrentFeature(): string {
     if (typeof window === 'undefined') return 'unknown';
-    
+
     const path = window.location.pathname;
     if (path.includes('/dashboard')) return 'Dashboard';
-    if (path.includes('/auth') || path.includes('/signin') || path.includes('/login')) return 'Authentication';
+    if (
+      path.includes('/auth') ||
+      path.includes('/signin') ||
+      path.includes('/login')
+    )
+      return 'Authentication';
     if (path.includes('/profile')) return 'Profile Management';
     if (path.includes('/projects')) return 'Project Management';
     if (path.includes('/meals')) return 'Meal Planning';
@@ -693,10 +751,10 @@ class Logger {
 
   private detectUserJourney(): string {
     if (typeof window === 'undefined') return 'unknown';
-    
+
     const sessionActions = sessionStorage.getItem('userActions');
     if (!sessionActions) return 'new-session';
-    
+
     const actions = JSON.parse(sessionActions);
     if (actions.length < 3) return 'exploring';
     if (actions.length < 10) return 'engaged';
@@ -707,10 +765,11 @@ class Logger {
   private isDashboardRefreshAlert(message: string): boolean {
     // COMPLETE PREVENTION: Always check patterns, no configuration toggle needed
     // Use compiled regex for better performance instead of multiple includes()
-    const refreshPatternRegex = /dashboard refresh|refreshing dashboard|dashboard updated|dashboard reload|dashboard data|auto-refresh|live updating|dashboard sync|dashboard polling|dashboard state|dashboard mounted|dashboard component|refreshing data|updating dashboard|dashboard load|dashboard ready|dayboard proprietary|batch of|logs persisted to database|dashboard refresh - time range:/i;
-    
+    const refreshPatternRegex =
+      /dashboard refresh|refreshing dashboard|dashboard updated|dashboard reload|dashboard data|auto-refresh|live updating|dashboard sync|dashboard polling|dashboard state|dashboard mounted|dashboard component|refreshing data|updating dashboard|dashboard load|dashboard ready|dayboard proprietary|batch of|logs persisted to database|dashboard refresh - time range:/i;
+
     const refreshEmojiRegex = /📊|🔄|⚡|🔃|↻|🛡️|✅/;
-    
+
     return refreshPatternRegex.test(message) || refreshEmojiRegex.test(message);
   }
 
@@ -718,7 +777,9 @@ class Logger {
   public setDashboardFilteringEnabled(enabled: boolean): void {
     this.filterDashboardRefreshAlerts = enabled;
     if (this.isDev && this.originalConsole.log) {
-      this.originalConsole.log(`📊 Dashboard refresh alert prevention ${enabled ? 'enabled' : 'disabled'} (complete prevention always active)`);
+      this.originalConsole.log(
+        `📊 Dashboard refresh alert prevention ${enabled ? 'enabled' : 'disabled'} (complete prevention always active)`
+      );
     }
   }
 
@@ -726,7 +787,9 @@ class Logger {
   public setLocalhostIsolationEnabled(enabled: boolean): void {
     this.enableLocalhostIsolation = enabled;
     if (this.isDev && this.originalConsole.log) {
-      this.originalConsole.log(`🔧 Localhost testing isolation ${enabled ? 'enabled' : 'disabled'}`);
+      this.originalConsole.log(
+        `🔧 Localhost testing isolation ${enabled ? 'enabled' : 'disabled'}`
+      );
     }
   }
 
@@ -745,7 +808,7 @@ class Logger {
   public setupConsoleInterception() {
     if (typeof window !== 'undefined' && !this.isIntercepting) {
       this.isIntercepting = true;
-      
+
       // Store original console methods
       this.originalConsole = {
         log: console.log,
@@ -783,58 +846,72 @@ class Logger {
     }
   }
 
-  private captureConsoleLog(level: LogLevel, args: any[], defaultComponent: string) {
+  private captureConsoleLog(
+    level: LogLevel,
+    args: any[],
+    defaultComponent: string
+  ) {
     try {
       // Skip debug logging entirely - not beneficial right now
       if (level === LogLevel.DEBUG) {
         return;
       }
-      
+
       // Early performance optimization: convert args to string once
-      const messageStr = args.length === 1 && typeof args[0] === 'string' 
-        ? args[0] 
-        : args.join(' ');
-      
+      const messageStr =
+        args.length === 1 && typeof args[0] === 'string'
+          ? args[0]
+          : args.join(' ');
+
       // Performance: Skip empty or very short messages early
       if (!messageStr || messageStr.length < 3) return;
-      
+
       // Performance: Early exit for dashboard-specific logs to prevent recursive logging
-      if (typeof window !== 'undefined' && window.location.pathname.includes('/logs-dashboard')) {
+      if (
+        typeof window !== 'undefined' &&
+        window.location.pathname.includes('/logs-dashboard')
+      ) {
         // Use a single regex for better performance instead of multiple includes()
-        const dashboardPatterns = /📊|Dashboard|LogsDashboard|Refreshing logs|Retrieved|Time filter|Final result|🛡️ Dayboard Proprietary|✅ Batch of|logs persisted to database|Dashboard refresh - Time range:/;
+        const dashboardPatterns =
+          /📊|Dashboard|LogsDashboard|Refreshing logs|Retrieved|Time filter|Final result|🛡️ Dayboard Proprietary|✅ Batch of|logs persisted to database|Dashboard refresh - Time range:/;
         if (dashboardPatterns.test(messageStr)) {
           return; // Skip dashboard internal logging only
         }
       }
-      
+
       // Use the helper method to check for dashboard refresh alerts - PREVENT CAPTURE ENTIRELY
       if (this.isDashboardRefreshAlert(messageStr)) {
         return; // COMPLETE PREVENTION: Do not capture, process, store, or make available
       }
-      
+
       // Database logging throttling to prevent spam (32 logs/min)
-      const isDatabaseLog = /database|supabase|sql|query|db|persist|fetch.*logs|api.*logs/i.test(messageStr);
+      const isDatabaseLog =
+        /database|supabase|sql|query|db|persist|fetch.*logs|api.*logs/i.test(
+          messageStr
+        );
       if (isDatabaseLog) {
         const messageKey = messageStr.substring(0, 50); // Use first 50 chars as key
         const now = Date.now();
         const lastLogTime = this.databaseLogThrottle.get(messageKey) || 0;
-        
+
         if (now - lastLogTime < this.databaseLogThrottleWindow) {
           // Count how many times this message appeared in the window
           const windowStart = now - this.databaseLogThrottleWindow;
-          const recentSimilarLogs = this.logs.filter(log => 
-            log.timestamp && new Date(log.timestamp).getTime() > windowStart &&
-            log.message.substring(0, 50) === messageKey
+          const recentSimilarLogs = this.logs.filter(
+            (log) =>
+              log.timestamp &&
+              new Date(log.timestamp).getTime() > windowStart &&
+              log.message.substring(0, 50) === messageKey
           ).length;
-          
+
           if (recentSimilarLogs >= this.maxDatabaseLogsPerWindow) {
             // Skip this log to prevent spam
             return;
           }
         }
-        
+
         this.databaseLogThrottle.set(messageKey, now);
-        
+
         // Clean up old throttle entries periodically
         if (this.databaseLogThrottle.size > 100) {
           const keysToDelete: string[] = [];
@@ -843,33 +920,36 @@ class Logger {
               keysToDelete.push(key);
             }
           });
-          keysToDelete.forEach(key => this.databaseLogThrottle.delete(key));
+          keysToDelete.forEach((key) => this.databaseLogThrottle.delete(key));
         }
       }
-      
+
       // API-Client logging throttling to prevent spam during login (7 logs/min)
-      const isApiClientLog = /fetch|API|request|auth|login|oauth|token|signin/i.test(messageStr);
+      const isApiClientLog =
+        /fetch|API|request|auth|login|oauth|token|signin/i.test(messageStr);
       if (isApiClientLog) {
         const messageKey = messageStr.substring(0, 50); // Use first 50 chars as key
         const now = Date.now();
         const lastLogTime = this.apiClientLogThrottle.get(messageKey) || 0;
-        
+
         if (now - lastLogTime < this.apiClientLogThrottleWindow) {
           // Count how many times this message appeared in the window
           const windowStart = now - this.apiClientLogThrottleWindow;
-          const recentSimilarLogs = this.logs.filter(log => 
-            log.timestamp && new Date(log.timestamp).getTime() > windowStart &&
-            log.message.substring(0, 50) === messageKey
+          const recentSimilarLogs = this.logs.filter(
+            (log) =>
+              log.timestamp &&
+              new Date(log.timestamp).getTime() > windowStart &&
+              log.message.substring(0, 50) === messageKey
           ).length;
-          
+
           if (recentSimilarLogs >= this.maxApiClientLogsPerWindow) {
             // Skip this log to prevent spam
             return;
           }
         }
-        
+
         this.apiClientLogThrottle.set(messageKey, now);
-        
+
         // Clean up old throttle entries periodically
         if (this.apiClientLogThrottle.size > 50) {
           const keysToDelete: string[] = [];
@@ -878,13 +958,14 @@ class Logger {
               keysToDelete.push(key);
             }
           });
-          keysToDelete.forEach(key => this.apiClientLogThrottle.delete(key));
+          keysToDelete.forEach((key) => this.apiClientLogThrottle.delete(key));
         }
       }
-      
+
       // Localhost testing isolation - filter out test-specific logs in development
       if (this.enableLocalhostIsolation && this.isLocalhost) {
-        const testPatterns = /test|spec|mock|stub|fixture|demo|example|localhost.*testing|development.*testing/i;
+        const testPatterns =
+          /test|spec|mock|stub|fixture|demo|example|localhost.*testing|development.*testing/i;
         if (testPatterns.test(messageStr)) {
           // Only log to console for development, don't persist to database
           if (this.isDev && this.originalConsole.log) {
@@ -893,23 +974,31 @@ class Logger {
           return;
         }
       }
-      
+
       // Enhanced component detection and tagging (only if we're going to process)
       const component = this.detectMessageSource(messageStr, args);
       const tags = this.generateMessageTags(messageStr, args, level);
 
       // Extract any error objects for stack traces
-      const error = args.find(arg => arg instanceof Error);
+      const error = args.find((arg) => arg instanceof Error);
 
       // Safely serialize arguments to prevent circular reference issues
       const safeArgs = this.safeSerializeArgs(args);
 
-      this.writeLog(this.createLogEntry(level, messageStr, component, {
-        originalArgs: safeArgs,
-        tags: tags,
-        messageType: this.categorizeMessage(messageStr),
-        source: this.detectThirdPartySource(messageStr)
-      }, error));
+      this.writeLog(
+        this.createLogEntry(
+          level,
+          messageStr,
+          component,
+          {
+            originalArgs: safeArgs,
+            tags: tags,
+            messageType: this.categorizeMessage(messageStr),
+            source: this.detectThirdPartySource(messageStr)
+          },
+          error
+        )
+      );
     } catch (err) {
       // Fallback to prevent infinite loops
       this.originalConsole.error('Logger error:', err);
@@ -923,18 +1012,30 @@ class Logger {
     if (args.length === 0) return [];
     if (args.length === 1) {
       const arg = args[0];
-      if (arg === null || arg === undefined || typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') {
+      if (
+        arg === null ||
+        arg === undefined ||
+        typeof arg === 'string' ||
+        typeof arg === 'number' ||
+        typeof arg === 'boolean'
+      ) {
         return [arg];
       }
     }
-    
+
     try {
-      return args.map(arg => {
+      return args.map((arg) => {
         // Fast path for primitives
-        if (arg === null || arg === undefined || typeof arg === 'string' || typeof arg === 'number' || typeof arg === 'boolean') {
+        if (
+          arg === null ||
+          arg === undefined ||
+          typeof arg === 'string' ||
+          typeof arg === 'number' ||
+          typeof arg === 'boolean'
+        ) {
           return arg;
         }
-        
+
         // Handle Errors
         if (arg instanceof Error) {
           return {
@@ -943,26 +1044,38 @@ class Logger {
             stack: arg.stack
           };
         }
-        
+
         // Handle objects
         if (typeof arg === 'object') {
           // DOM element checks (most common first)
           if (arg.nodeType) {
             return `[DOM Element: ${arg.nodeName || 'Unknown'}]`;
           }
-          
+
           // React component checks (use single regex for better performance)
-          if (arg._reactInternalFiber || arg.__reactFiber || 
-              (arg.constructor?.name && /Fiber|React/.test(arg.constructor.name))) {
+          if (
+            arg._reactInternalFiber ||
+            arg.__reactFiber ||
+            (arg.constructor?.name && /Fiber|React/.test(arg.constructor.name))
+          ) {
             return '[React Component/Fiber]';
           }
-          
+
           // Quick check for React Fiber in keys (limited to first few keys for performance)
           const keys = Object.keys(arg);
-          if (keys.length > 0 && keys.slice(0, 5).some(key => key.includes('__reactFiber') || key.includes('_reactInternalFiber'))) {
+          if (
+            keys.length > 0 &&
+            keys
+              .slice(0, 5)
+              .some(
+                (key) =>
+                  key.includes('__reactFiber') ||
+                  key.includes('_reactInternalFiber')
+              )
+          ) {
             return '[React Fiber Object]';
           }
-          
+
           // Try to serialize (with size limit for performance)
           try {
             const str = JSON.stringify(arg);
@@ -971,14 +1084,13 @@ class Logger {
             return '[Circular Object]';
           }
         }
-        
+
         return String(arg);
       });
     } catch {
       return ['[Serialization Error]'];
     }
   }
-
 
   // Enhanced message source detection - optimized with regex patterns
   private detectMessageSource(message: string, args: any[]): string {
@@ -1001,23 +1113,27 @@ class Logger {
     if (/database|supabase|sql/i.test(message)) {
       return 'Database';
     }
-    
+
     // Check for third-party libraries
     const thirdPartySource = this.detectThirdPartySource(message);
     if (thirdPartySource !== 'App') {
       return thirdPartySource;
     }
-    
+
     return 'App-Console';
   }
 
   // Generate contextual tags for messages
-  private generateMessageTags(message: string, args: any[], level: LogLevel): string[] {
+  private generateMessageTags(
+    message: string,
+    args: any[],
+    level: LogLevel
+  ): string[] {
     const tags: string[] = [];
-    
+
     // Level-based tags
     tags.push(level.toLowerCase());
-    
+
     // Content-based tags
     if (message.includes('error') || level === LogLevel.ERROR) {
       tags.push('error');
@@ -1031,16 +1147,28 @@ class Logger {
     if (message.includes('performance') || message.includes('slow')) {
       tags.push('performance');
     }
-    if (message.includes('security') || message.includes('auth') || message.includes('token')) {
+    if (
+      message.includes('security') ||
+      message.includes('auth') ||
+      message.includes('token')
+    ) {
       tags.push('security');
     }
-    if (message.includes('network') || message.includes('fetch') || message.includes('request')) {
+    if (
+      message.includes('network') ||
+      message.includes('fetch') ||
+      message.includes('request')
+    ) {
       tags.push('network');
     }
-    if (message.includes('database') || message.includes('sql') || message.includes('query')) {
+    if (
+      message.includes('database') ||
+      message.includes('sql') ||
+      message.includes('query')
+    ) {
       tags.push('database');
     }
-    
+
     // Framework-specific tags
     if (message.includes('React') || message.includes('Hook')) {
       tags.push('react');
@@ -1051,7 +1179,7 @@ class Logger {
     if (message.includes('Turbopack') || message.includes('webpack')) {
       tags.push('bundler');
     }
-    
+
     // Third-party tags
     if (message.includes('Google') || message.includes('OAuth')) {
       tags.push('third-party', 'oauth');
@@ -1062,7 +1190,7 @@ class Logger {
     if (message.includes('Supabase')) {
       tags.push('third-party', 'backend');
     }
-    
+
     return Array.from(new Set(tags)); // Remove duplicates
   }
 
@@ -1074,10 +1202,18 @@ class Logger {
     if (message.includes('Route') || message.includes('Static')) {
       return 'routing-error';
     }
-    if (message.includes('fetch') || message.includes('network') || message.includes('CORS')) {
+    if (
+      message.includes('fetch') ||
+      message.includes('network') ||
+      message.includes('CORS')
+    ) {
       return 'network-request';
     }
-    if (message.includes('OAuth') || message.includes('auth') || message.includes('token')) {
+    if (
+      message.includes('OAuth') ||
+      message.includes('auth') ||
+      message.includes('token')
+    ) {
       return 'authentication';
     }
     if (message.includes('database') || message.includes('sql')) {
@@ -1089,139 +1225,192 @@ class Logger {
     if (message.includes('performance') || message.includes('slow')) {
       return 'performance-issue';
     }
-    
+
     return 'general';
   }
 
   // Detect third-party vs app messages
   private detectThirdPartySource(message: string): string {
     // Google/OAuth related
-    if (message.includes('Google') || message.includes('googleapis') || message.includes('gapi')) {
+    if (
+      message.includes('Google') ||
+      message.includes('googleapis') ||
+      message.includes('gapi')
+    ) {
       return 'Google-Services';
     }
-    
+
     // Stripe related
     if (message.includes('Stripe') || message.includes('stripe.com')) {
       return 'Stripe-Payment';
     }
-    
+
     // Supabase related
     if (message.includes('Supabase') || message.includes('supabase.co')) {
       return 'Supabase-Backend';
     }
-    
+
     // Vercel/Next.js related
     if (message.includes('Vercel') || message.includes('vercel.app')) {
       return 'Vercel-Platform';
     }
-    
+
     // Analytics related
-    if (message.includes('analytics') || message.includes('gtag') || message.includes('ga.js')) {
+    if (
+      message.includes('analytics') ||
+      message.includes('gtag') ||
+      message.includes('ga.js')
+    ) {
       return 'Analytics-Service';
     }
-    
+
     // CDN or external scripts
-    if (message.includes('cdn.') || message.includes('unpkg.') || message.includes('jsdelivr.')) {
+    if (
+      message.includes('cdn.') ||
+      message.includes('unpkg.') ||
+      message.includes('jsdelivr.')
+    ) {
       return 'CDN-Resource';
     }
-    
+
     // Browser APIs or extensions
-    if (message.includes('chrome-extension') || message.includes('moz-extension')) {
+    if (
+      message.includes('chrome-extension') ||
+      message.includes('moz-extension')
+    ) {
       return 'Browser-Extension';
     }
-    
+
     return 'App';
   }
 
   // Generate layman's terms explanation for technical messages
-  private generateLaymanExplanation(message: string, level: LogLevel, component?: string): string {
+  private generateLaymanExplanation(
+    message: string,
+    level: LogLevel,
+    component?: string
+  ): string {
     const lowerMessage = message.toLowerCase();
 
     // Authentication/Login errors
-    if (lowerMessage.includes('auth') || lowerMessage.includes('token') || lowerMessage.includes('unauthorized')) {
+    if (
+      lowerMessage.includes('auth') ||
+      lowerMessage.includes('token') ||
+      lowerMessage.includes('unauthorized')
+    ) {
       if (level === LogLevel.ERROR) {
-        return "There was a problem signing you in or verifying your account. Please try logging in again.";
+        return 'There was a problem signing you in or verifying your account. Please try logging in again.';
       }
-      return "The app is checking your login information. This helps keep your account secure.";
+      return 'The app is checking your login information. This helps keep your account secure.';
     }
 
     // Network/Connection errors
-    if (lowerMessage.includes('network') || lowerMessage.includes('fetch') || lowerMessage.includes('timeout') || lowerMessage.includes('cors')) {
+    if (
+      lowerMessage.includes('network') ||
+      lowerMessage.includes('fetch') ||
+      lowerMessage.includes('timeout') ||
+      lowerMessage.includes('cors')
+    ) {
       if (level === LogLevel.ERROR) {
         return "The app couldn't connect to our servers. Please check your internet connection and try again.";
       }
-      return "The app is communicating with our servers. Some features might be slower than usual.";
+      return 'The app is communicating with our servers. Some features might be slower than usual.';
     }
 
     // Database errors
-    if (lowerMessage.includes('database') || lowerMessage.includes('sql') || lowerMessage.includes('supabase')) {
+    if (
+      lowerMessage.includes('database') ||
+      lowerMessage.includes('sql') ||
+      lowerMessage.includes('supabase')
+    ) {
       if (level === LogLevel.ERROR) {
-        return "There was a problem saving or loading your data. Your information is safe, but some features might not work properly.";
+        return 'There was a problem saving or loading your data. Your information is safe, but some features might not work properly.';
       }
-      return "The app is working with your data. Everything should work normally.";
+      return 'The app is working with your data. Everything should work normally.';
     }
 
     // Build/Compilation errors (development)
-    if (lowerMessage.includes('compiled') || lowerMessage.includes('[fast refresh]') || lowerMessage.includes('webpack')) {
+    if (
+      lowerMessage.includes('compiled') ||
+      lowerMessage.includes('[fast refresh]') ||
+      lowerMessage.includes('webpack')
+    ) {
       return "The development team is updating the app. You might see this message while we're making improvements.";
     }
 
     // React/Component errors
-    if (lowerMessage.includes('react') || lowerMessage.includes('component') || lowerMessage.includes('hook') || lowerMessage.includes('hydration')) {
+    if (
+      lowerMessage.includes('react') ||
+      lowerMessage.includes('component') ||
+      lowerMessage.includes('hook') ||
+      lowerMessage.includes('hydration')
+    ) {
       if (level === LogLevel.ERROR) {
         return "A part of the app interface had trouble loading. Try refreshing the page if something doesn't look right.";
       }
-      return "The app is setting up the page you&apos;re viewing. This is normal and usually happens quickly.";
+      return 'The app is setting up the page you&apos;re viewing. This is normal and usually happens quickly.';
     }
 
     // Performance issues
-    if (lowerMessage.includes('slow') || lowerMessage.includes('performance') || lowerMessage.includes('memory')) {
-      return "The app is running a bit slower than usual. This might be due to your device or internet connection.";
+    if (
+      lowerMessage.includes('slow') ||
+      lowerMessage.includes('performance') ||
+      lowerMessage.includes('memory')
+    ) {
+      return 'The app is running a bit slower than usual. This might be due to your device or internet connection.';
     }
 
     // Permission/Security issues
-    if (lowerMessage.includes('permission') || lowerMessage.includes('security') || lowerMessage.includes('blocked')) {
+    if (
+      lowerMessage.includes('permission') ||
+      lowerMessage.includes('security') ||
+      lowerMessage.includes('blocked')
+    ) {
       if (level === LogLevel.ERROR) {
         return "You don't have permission to do that action, or there's a security restriction in place.";
       }
-      return "The app is checking your permissions to make sure everything is secure.";
+      return 'The app is checking your permissions to make sure everything is secure.';
     }
 
     // Payment/Stripe errors
     if (lowerMessage.includes('stripe') || lowerMessage.includes('payment')) {
       if (level === LogLevel.ERROR) {
-        return "There was a problem processing your payment. Please check your payment information and try again.";
+        return 'There was a problem processing your payment. Please check your payment information and try again.';
       }
-      return "The app is processing payment information. This is secure and normal.";
+      return 'The app is processing payment information. This is secure and normal.';
     }
 
     // General error types by level
     switch (level) {
       case LogLevel.ERROR:
-        return "Something went wrong with the app. Try refreshing the page or contact support if the problem continues.";
+        return 'Something went wrong with the app. Try refreshing the page or contact support if the problem continues.';
       case LogLevel.WARN:
-        return "The app noticed something unusual but is handling it. You can continue using the app normally.";
+        return 'The app noticed something unusual but is handling it. You can continue using the app normally.';
       case LogLevel.INFO:
         return "The app is working normally and keeping track of what's happening.";
       case LogLevel.DEBUG:
         return "Technical information for developers. This doesn't affect your experience.";
       default:
-        return "The app is running and monitoring its performance.";
+        return 'The app is running and monitoring its performance.';
     }
   }
 
   // Determine severity and impact assessment for logged messages
-  private getSeverityAndImpact(message: string, level: LogLevel): { severity: string; impact: string; suggestedAction: string } {
+  private getSeverityAndImpact(
+    message: string,
+    level: LogLevel
+  ): { severity: string; impact: string; suggestedAction: string } {
     const lowerMessage = message.toLowerCase();
 
     // Critical issues
-    if (level === LogLevel.ERROR && (
-      lowerMessage.includes('auth') || 
-      lowerMessage.includes('unauthorized') ||
-      lowerMessage.includes('payment') ||
-      lowerMessage.includes('data loss') ||
-      lowerMessage.includes('security')
-    )) {
+    if (
+      level === LogLevel.ERROR &&
+      (lowerMessage.includes('auth') ||
+        lowerMessage.includes('unauthorized') ||
+        lowerMessage.includes('payment') ||
+        lowerMessage.includes('data loss') ||
+        lowerMessage.includes('security'))
+    ) {
       return {
         severity: 'critical',
         impact: 'User cannot access account or complete important actions',
@@ -1230,12 +1419,13 @@ class Logger {
     }
 
     // High priority issues
-    if (level === LogLevel.ERROR && (
-      lowerMessage.includes('network') ||
-      lowerMessage.includes('database') ||
-      lowerMessage.includes('fetch') ||
-      lowerMessage.includes('timeout')
-    )) {
+    if (
+      level === LogLevel.ERROR &&
+      (lowerMessage.includes('network') ||
+        lowerMessage.includes('database') ||
+        lowerMessage.includes('fetch') ||
+        lowerMessage.includes('timeout'))
+    ) {
       return {
         severity: 'high',
         impact: 'Some features may not work properly or data may not save',
@@ -1244,11 +1434,15 @@ class Logger {
     }
 
     // Medium priority issues
-    if (level === LogLevel.ERROR || (level === LogLevel.WARN && lowerMessage.includes('performance'))) {
+    if (
+      level === LogLevel.ERROR ||
+      (level === LogLevel.WARN && lowerMessage.includes('performance'))
+    ) {
       return {
         severity: 'medium',
         impact: 'App functionality may be reduced or slower than normal',
-        suggestedAction: 'Continue using the app, but watch for additional problems'
+        suggestedAction:
+          'Continue using the app, but watch for additional problems'
       };
     }
 
@@ -1256,7 +1450,7 @@ class Logger {
     if (level === LogLevel.WARN) {
       return {
         severity: 'low',
-        impact: 'Minor issue that doesn\'t affect main functionality',
+        impact: "Minor issue that doesn't affect main functionality",
         suggestedAction: 'No action needed, but developers will investigate'
       };
     }
@@ -1280,11 +1474,11 @@ class Logger {
       this.isIntercepting = false;
     }
   }
-  
+
   private async createLogEntry(
-    level: LogLevel, 
-    message: string, 
-    component?: string, 
+    level: LogLevel,
+    message: string,
+    component?: string,
     data?: any,
     error?: Error
   ): Promise<LogEntry> {
@@ -1298,14 +1492,23 @@ class Logger {
     const errorContext = this.getEnhancedErrorContext(error, message);
     const clientMetrics = this.getClientMetrics();
     const engagementMetrics = this.getUserEngagementMetrics();
-    
+
     // Generate layman's explanation and severity info
-    const laymanExplanation = this.generateLaymanExplanation(message, level, component);
-    const { severity, impact, suggestedAction } = this.getSeverityAndImpact(message, level);
+    const laymanExplanation = this.generateLaymanExplanation(
+      message,
+      level,
+      component
+    );
+    const { severity, impact, suggestedAction } = this.getSeverityAndImpact(
+      message,
+      level
+    );
 
     // Track user action for journey mapping
     if (typeof window !== 'undefined') {
-      const currentActions = JSON.parse(sessionStorage.getItem('userActions') || '[]');
+      const currentActions = JSON.parse(
+        sessionStorage.getItem('userActions') || '[]'
+      );
       currentActions.push({
         timestamp: new Date().toISOString(),
         action: component || 'unknown',
@@ -1328,7 +1531,8 @@ class Logger {
       component,
       data,
       stack: error?.stack,
-      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined,
+      userAgent:
+        typeof window !== 'undefined' ? window.navigator.userAgent : undefined,
       url: typeof window !== 'undefined' ? window.location.href : undefined,
       side: 'client', // Mark all client-side logger entries as client
       // Enhanced fields
@@ -1351,7 +1555,7 @@ class Logger {
   private async writeLog(entry: LogEntry | Promise<LogEntry>) {
     const resolvedEntry = await entry;
     this.logs.push(resolvedEntry);
-    
+
     // More aggressive memory management: keep only last 300 logs and trim more frequently
     if (this.logs.length > 300) {
       this.logs = this.logs.slice(-250); // Keep fewer logs for better performance
@@ -1366,7 +1570,8 @@ class Logger {
     this.throttledPersistToDatabase(resolvedEntry);
 
     // Simplified console output in development
-    if (this.isDev && resolvedEntry.level !== LogLevel.DEBUG) { // Skip debug logs in dev
+    if (this.isDev && resolvedEntry.level !== LogLevel.DEBUG) {
+      // Skip debug logs in dev
       const emoji = {
         [LogLevel.ERROR]: '❌',
         [LogLevel.WARN]: '⚠️',
@@ -1375,7 +1580,7 @@ class Logger {
       };
 
       const prefix = `${emoji[resolvedEntry.level]} [${resolvedEntry.component || 'APP'}]`;
-      
+
       switch (resolvedEntry.level) {
         case LogLevel.ERROR:
           this.originalConsole?.error?.(prefix, resolvedEntry.message);
@@ -1396,17 +1601,17 @@ class Logger {
 
   private throttledPersistToDatabase(entry: LogEntry) {
     this.pendingLogs.push(entry);
-    
+
     // Clear existing timeout only if we're about to create a new one
     if (this.persistTimeout) {
       clearTimeout(this.persistTimeout);
       this.persistTimeout = null;
     }
-    
+
     // More aggressive batching: batch immediately at 15+ logs, or after 1.5 seconds for smaller batches
     const batchSize = this.pendingLogs.length;
-    const timeout = batchSize >= 15 ? 50 : (batchSize >= 5 ? 800 : 1500);
-    
+    const timeout = batchSize >= 15 ? 50 : batchSize >= 5 ? 800 : 1500;
+
     this.persistTimeout = setTimeout(() => {
       if (this.pendingLogs.length > 0) {
         const logsToProcess = [...this.pendingLogs];
@@ -1420,8 +1625,8 @@ class Logger {
   private async batchPersistToDatabase(entries: LogEntry[]) {
     try {
       const userId = await this.getCurrentUserId();
-      
-      const insertData = entries.map(entry => ({
+
+      const insertData = entries.map((entry) => ({
         user_id: userId,
         session_id: entry.sessionId,
         level: entry.level,
@@ -1465,7 +1670,7 @@ class Logger {
   private async persistToDatabase(entry: LogEntry) {
     try {
       const userId = await this.getCurrentUserId();
-      
+
       // Insert without 'side' column since it doesn't exist in remote database yet
       const { error } = await (this.supabase as any)
         .from('application_logs')
@@ -1503,11 +1708,11 @@ class Logger {
   // Safe serialization specifically for database storage
   private safeSerializeForDatabase(data: any): any {
     if (data === null || data === undefined) return null;
-    
+
     try {
       // First, clean the data of any circular references
       const cleanData = this.removeCircularReferences(data);
-      
+
       // Then stringify and parse to ensure it's fully serializable
       const serialized = JSON.stringify(cleanData);
       return JSON.parse(serialized);
@@ -1524,7 +1729,7 @@ class Logger {
   // Remove circular references from objects
   private removeCircularReferences(obj: any, seen = new WeakSet()): any {
     if (obj === null || obj === undefined) return obj;
-    
+
     // Handle primitive types
     if (typeof obj !== 'object') {
       // Convert functions to string representation
@@ -1533,7 +1738,7 @@ class Logger {
       if (typeof obj === 'symbol') return obj.toString();
       return obj;
     }
-    
+
     // Handle special objects that can't be serialized
     if (obj instanceof Error) {
       return {
@@ -1542,41 +1747,51 @@ class Logger {
         stack: obj.stack?.substring(0, 200)
       };
     }
-    
+
     if (obj instanceof Date) return obj.toISOString();
     if (obj instanceof RegExp) return obj.toString();
-    
+
     // Check for circular references
     if (seen.has(obj)) return '[Circular Reference]';
     seen.add(obj);
-    
+
     if (Array.isArray(obj)) {
-      return obj.map(item => this.removeCircularReferences(item, seen));
+      return obj.map((item) => this.removeCircularReferences(item, seen));
     }
-    
+
     // Handle DOM elements
     if (obj.nodeType && obj.nodeName) {
       return `[DOM Element: ${obj.nodeName}]`;
     }
-    
+
     // Handle React components/fibers - Enhanced detection
-    if (obj._reactInternalFiber || obj.__reactFiber || 
-        (obj.constructor && obj.constructor.name && 
-         (obj.constructor.name.includes('Fiber') || obj.constructor.name.includes('React')))) {
+    if (
+      obj._reactInternalFiber ||
+      obj.__reactFiber ||
+      (obj.constructor &&
+        obj.constructor.name &&
+        (obj.constructor.name.includes('Fiber') ||
+          obj.constructor.name.includes('React')))
+    ) {
       return '[React Component/Fiber]';
     }
-    
+
     // Check for React Fiber properties in object keys
     const objectKeys = Object.keys(obj);
-    if (objectKeys.some(key => key.includes('__reactFiber') || key.includes('_reactInternalFiber'))) {
+    if (
+      objectKeys.some(
+        (key) =>
+          key.includes('__reactFiber') || key.includes('_reactInternalFiber')
+      )
+    ) {
       return '[React Fiber Object]';
     }
-    
+
     // Handle HTMLElement objects
     if (obj instanceof HTMLElement || (obj.nodeType && obj.nodeType === 1)) {
       return `[HTML Element: ${obj.tagName || obj.nodeName || 'Unknown'}]`;
     }
-    
+
     // Handle Error objects
     if (obj instanceof Error) {
       return {
@@ -1585,7 +1800,7 @@ class Logger {
         stack: obj.stack
       };
     }
-    
+
     // Handle regular objects
     const result: any = {};
     for (const key in obj) {
@@ -1597,12 +1812,15 @@ class Logger {
         }
       }
     }
-    
+
     return result;
   }
 
   // Optimized method to load logs from database with caching
-  async loadLogsFromDatabase(limit: number = 100, timeRangeMs?: number): Promise<LogEntry[]> {
+  async loadLogsFromDatabase(
+    limit: number = 100,
+    timeRangeMs?: number
+  ): Promise<LogEntry[]> {
     // Skip cache if we have a time range filter
     if (timeRangeMs) {
       return this.fetchLogsFromDatabase(limit, timeRangeMs);
@@ -1610,7 +1828,10 @@ class Logger {
 
     // Return cached results if recent enough (only for non-filtered requests)
     const now = Date.now();
-    if (this.dbLogsCache.length > 0 && (now - this.lastDbFetch) < this.cacheTimeout) {
+    if (
+      this.dbLogsCache.length > 0 &&
+      now - this.lastDbFetch < this.cacheTimeout
+    ) {
       return this.dbLogsCache.slice(0, limit);
     }
 
@@ -1641,14 +1862,19 @@ class Logger {
     }
   }
 
-  private async fetchLogsFromDatabase(limit: number, timeRangeMs?: number): Promise<LogEntry[]> {
+  private async fetchLogsFromDatabase(
+    limit: number,
+    timeRangeMs?: number
+  ): Promise<LogEntry[]> {
     try {
       // Removed verbose debug logging for routine database operations
-      
+
       // Try direct database access first
       let query = (this.supabase as any)
         .from('application_logs')
-        .select('id, user_id, session_id, level, message, component, data, stack_trace, user_agent, url, timestamp, created_at, side')
+        .select(
+          'id, user_id, session_id, level, message, component, data, stack_trace, user_agent, url, timestamp, created_at, side'
+        )
         .order('timestamp', { ascending: false });
 
       // Apply time range filter if specified
@@ -1660,42 +1886,56 @@ class Logger {
       query = query.limit(limit);
 
       // Removed verbose query execution logging
-      
+
       // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timeout after 8 seconds')), 8000)
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Database query timeout after 8 seconds')),
+          8000
+        )
       );
 
       const queryPromise = query;
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+      const { data, error } = (await Promise.race([
+        queryPromise,
+        timeoutPromise
+      ])) as any;
 
       // Removed verbose result logging
 
       if (error) {
         if (this.isDev && this.originalConsole.warn) {
-          this.originalConsole.warn('⚠️ Direct database access failed, trying API fallback:', error);
+          this.originalConsole.warn(
+            '⚠️ Direct database access failed, trying API fallback:',
+            error
+          );
         }
         // Fallback to API endpoint
         return await this.fetchLogsFromAPI(limit, timeRangeMs);
       }
 
-      return data?.map((row: any) => ({
-        id: row.id,
-        userId: row.user_id,
-        sessionId: row.session_id,
-        level: row.level,
-        message: row.message,
-        component: row.component,
-        data: row.data,
-        stack: row.stack_trace,
-        userAgent: row.user_agent,
-        url: row.url,
-        timestamp: row.timestamp,
-        side: row.side || 'client' // Use the side column from database
-      })) || [];
+      return (
+        data?.map((row: any) => ({
+          id: row.id,
+          userId: row.user_id,
+          sessionId: row.session_id,
+          level: row.level,
+          message: row.message,
+          component: row.component,
+          data: row.data,
+          stack: row.stack_trace,
+          userAgent: row.user_agent,
+          url: row.url,
+          timestamp: row.timestamp,
+          side: row.side || 'client' // Use the side column from database
+        })) || []
+      );
     } catch (error) {
       if (this.isDev && this.originalConsole.warn) {
-        this.originalConsole.warn('⚠️ Direct database access failed, trying API fallback:', error);
+        this.originalConsole.warn(
+          '⚠️ Direct database access failed, trying API fallback:',
+          error
+        );
       }
       // Fallback to API endpoint
       return await this.fetchLogsFromAPI(limit, timeRangeMs);
@@ -1703,33 +1943,39 @@ class Logger {
   }
 
   // New method to fetch logs via API endpoint
-  private async fetchLogsFromAPI(limit: number, timeRangeMs?: number): Promise<LogEntry[]> {
+  private async fetchLogsFromAPI(
+    limit: number,
+    timeRangeMs?: number
+  ): Promise<LogEntry[]> {
     try {
       // Removed debug logging - no need to log routine operations
-      
+
       const params = new URLSearchParams({
         limit: limit.toString()
       });
-      
+
       if (timeRangeMs) {
         params.append('timeRangeMs', timeRangeMs.toString());
       }
-      
+
       const response = await fetch(`/api/logs?${params}`);
-      
+
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `API request failed: ${response.status} ${response.statusText}`
+        );
       }
-      
+
       const result = await response.json();
-      
+
       if (!result.success) {
-        throw new Error(`API error: ${result.error?.message || 'Unknown error'}`);
+        throw new Error(
+          `API error: ${result.error?.message || 'Unknown error'}`
+        );
       }
-      
+
       // API fetch successful - no need to log success
       return result.logs || [];
-      
     } catch (error) {
       // More detailed error logging
       const errorInfo = {
@@ -1743,84 +1989,99 @@ class Logger {
         errorType: typeof error,
         errorConstructor: error?.constructor?.name
       };
-      
+
       console.error('❌ API logs fetch failed:', errorInfo);
-      
+
       // Also log to console for debugging
       console.error('Full error object:', error);
-      
+
       return [];
     }
   }
 
   // Optimized method to get combined logs with better performance
-  async getAllLogsIncludingDatabase(limit: number = 100, timeRangeMs?: number): Promise<LogEntry[]> {
+  async getAllLogsIncludingDatabase(
+    limit: number = 100,
+    timeRangeMs?: number
+  ): Promise<LogEntry[]> {
     try {
       // Get database logs (with optional time filtering)
       const dbLogs = await this.loadLogsFromDatabase(limit, timeRangeMs);
-      
+
       // Get recent memory logs (apply time filter if specified)
       let recentMemoryLogs = this.logs;
-      
+
       if (timeRangeMs) {
         const cutoff = Date.now() - timeRangeMs;
-        recentMemoryLogs = this.logs.filter(log => new Date(log.timestamp).getTime() > cutoff);
+        recentMemoryLogs = this.logs.filter(
+          (log) => new Date(log.timestamp).getTime() > cutoff
+        );
       } else {
         // Only get recent memory logs if no time filter (to avoid duplicates)
-        const cutoff = Date.now() - (5 * 60 * 1000); // Last 5 minutes
-        recentMemoryLogs = this.logs.filter(log => {
+        const cutoff = Date.now() - 5 * 60 * 1000; // Last 5 minutes
+        recentMemoryLogs = this.logs.filter((log) => {
           const logTime = new Date(log.timestamp).getTime();
           return logTime > cutoff;
         });
       }
-      
+
       // Combine and deduplicate more efficiently
       const logMap = new Map<string, LogEntry>();
-      
+
       // Add database logs first
-      dbLogs.forEach(log => {
+      dbLogs.forEach((log) => {
         const key = `${log.timestamp}-${log.message}-${log.component}`;
         logMap.set(key, log);
       });
-      
+
       // Add memory logs (will overwrite duplicates)
-      recentMemoryLogs.forEach(log => {
+      recentMemoryLogs.forEach((log) => {
         const key = `${log.timestamp}-${log.message}-${log.component}`;
         logMap.set(key, log);
       });
-      
+
       // Convert back to array and sort
       const allLogs = Array.from(logMap.values());
       return allLogs
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
         .slice(0, limit);
-        
     } catch (error) {
       this.originalConsole?.error?.('❌ Failed to get combined logs:', error);
       // Fallback to memory logs only
       let fallbackLogs = this.logs;
       if (timeRangeMs) {
         const cutoff = Date.now() - timeRangeMs;
-        fallbackLogs = this.logs.filter(log => new Date(log.timestamp).getTime() > cutoff);
+        fallbackLogs = this.logs.filter(
+          (log) => new Date(log.timestamp).getTime() > cutoff
+        );
       }
       return fallbackLogs
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
         .slice(0, limit);
     }
   }
 
   // Trigger automatic review after high error activity
   private checkForAutoReview() {
-    const recentErrors = this.logs.filter(log => 
-      log.level === LogLevel.ERROR && 
-      new Date(log.timestamp) > new Date(Date.now() - 2 * 60 * 1000) // Last 2 minutes
+    const recentErrors = this.logs.filter(
+      (log) =>
+        log.level === LogLevel.ERROR &&
+        new Date(log.timestamp) > new Date(Date.now() - 2 * 60 * 1000) // Last 2 minutes
     );
 
     // If we have 3+ errors in 2 minutes, suggest review
     if (recentErrors.length >= 3) {
       if (this.isDev && this.originalConsole.log) {
         this.originalConsole.log('🚨 HIGH ERROR ACTIVITY DETECTED');
-        this.originalConsole.log('💡 Consider running automated log analysis to identify issues');
+        this.originalConsole.log(
+          '💡 Consider running automated log analysis to identify issues'
+        );
       }
       console.log('🔗 Visit /auto-log-review to see detailed analysis');
     }
@@ -1831,7 +2092,12 @@ class Logger {
     if (this.isDashboardRefreshAlert(message)) {
       return; // Do not capture, process, store, or make available
     }
-    const entry = this.createLogEntry(LogLevel.ERROR, message, component, details);
+    const entry = this.createLogEntry(
+      LogLevel.ERROR,
+      message,
+      component,
+      details
+    );
     await this.writeLog(entry);
   }
 
@@ -1840,7 +2106,12 @@ class Logger {
     if (this.isDashboardRefreshAlert(message)) {
       return; // Do not capture, process, store, or make available
     }
-    const entry = this.createLogEntry(LogLevel.WARN, message, component, details);
+    const entry = this.createLogEntry(
+      LogLevel.WARN,
+      message,
+      component,
+      details
+    );
     await this.writeLog(entry);
   }
 
@@ -1849,7 +2120,12 @@ class Logger {
     if (this.isDashboardRefreshAlert(message)) {
       return; // Do not capture, process, store, or make available
     }
-    const entry = this.createLogEntry(LogLevel.INFO, message, component, details);
+    const entry = this.createLogEntry(
+      LogLevel.INFO,
+      message,
+      component,
+      details
+    );
     await this.writeLog(entry);
   }
 
@@ -1858,7 +2134,12 @@ class Logger {
     if (this.isDashboardRefreshAlert(message)) {
       return; // Do not capture, process, store, or make available
     }
-    const entry = this.createLogEntry(LogLevel.DEBUG, message, component, details);
+    const entry = this.createLogEntry(
+      LogLevel.DEBUG,
+      message,
+      component,
+      details
+    );
     await this.writeLog(entry);
   }
 
@@ -1869,12 +2150,12 @@ class Logger {
 
   // Get logs by level
   getLogsByLevel(level: LogLevel): LogEntry[] {
-    return this.logs.filter(log => log.level === level);
+    return this.logs.filter((log) => log.level === level);
   }
 
   // Get logs by component
   getLogsByComponent(component: string): LogEntry[] {
-    return this.logs.filter(log => log.component === component);
+    return this.logs.filter((log) => log.component === component);
   }
 
   // Clear logs
@@ -1900,7 +2181,12 @@ class Logger {
   }
 
   // Method to manually log from components
-  logFromComponent(level: LogLevel, message: string, component: string, data?: any) {
+  logFromComponent(
+    level: LogLevel,
+    message: string,
+    component: string,
+    data?: any
+  ) {
     this.writeLog(this.createLogEntry(level, message, component, data));
   }
 
@@ -1912,7 +2198,7 @@ class Logger {
       const source = this.detectMessageSource(message, []);
       const tags = this.generateMessageTags(message, [], LogLevel.ERROR);
       const category = this.categorizeMessage(message);
-      
+
       this.captureConsoleLog(LogLevel.ERROR, [message], source);
     });
 
@@ -1922,7 +2208,7 @@ class Logger {
       const source = this.detectMessageSource(reason, []);
       const tags = this.generateMessageTags(reason, [], LogLevel.ERROR);
       const category = this.categorizeMessage(reason);
-      
+
       this.captureConsoleLog(LogLevel.ERROR, [reason], source);
     });
 
@@ -1930,8 +2216,8 @@ class Logger {
     if (typeof window !== 'undefined' && (window as any).next) {
       const originalPushState = history.pushState;
       const originalReplaceState = history.replaceState;
-      
-      history.pushState = function(...args) {
+
+      history.pushState = function (...args) {
         try {
           return originalPushState.apply(this, args);
         } catch (error) {
@@ -1940,8 +2226,8 @@ class Logger {
           throw error;
         }
       };
-      
-      history.replaceState = function(...args) {
+
+      history.replaceState = function (...args) {
         try {
           return originalReplaceState.apply(this, args);
         } catch (error) {
@@ -1967,7 +2253,7 @@ class Logger {
       timestamp: new Date().toISOString(),
       sessionId: this.sessionId,
       currentUrl: typeof window !== 'undefined' ? window.location.href : 'N/A',
-      
+
       // Essential context
       user: userInfo,
       environment: {
@@ -1976,19 +2262,19 @@ class Logger {
         online: networkInfo?.online,
         connectionType: networkInfo?.connectionType
       },
-      
+
       // Performance snapshot
       performance: {
         memoryUsage: clientMetrics?.usedMemory,
         pageLoadTime: clientMetrics?.pageLoadComplete,
         resourceCount: clientMetrics?.resources
       },
-      
+
       // User behavior
       engagement: engagementMetrics,
-      
+
       // Recent activity
-      recentLogs: this.logs.slice(-10).map(log => ({
+      recentLogs: this.logs.slice(-10).map((log) => ({
         timestamp: log.timestamp,
         level: log.level,
         message: log.message,
@@ -2015,9 +2301,12 @@ class Logger {
   }
 
   // Enhanced error reporting with full context
-  async reportCriticalIssue(description: string, additionalData?: any): Promise<void> {
+  async reportCriticalIssue(
+    description: string,
+    additionalData?: any
+  ): Promise<void> {
     const debugSummary = await this.getDebugSummary(true);
-    
+
     await this.error(
       `CRITICAL ISSUE REPORT: ${description}`,
       'Critical-Issue-Reporter',
@@ -2035,48 +2324,56 @@ class Logger {
 
   private analyzePotentialCauses(debugSummary: any): string[] {
     const causes: string[] = [];
-    
+
     if (!debugSummary.environment.online) {
       causes.push('Network connectivity issues');
     }
-    
-    if (debugSummary.performance.memoryUsage > 50000000) { // 50MB
+
+    if (debugSummary.performance.memoryUsage > 50000000) {
+      // 50MB
       causes.push('High memory usage may be causing performance issues');
     }
-    
-    if (debugSummary.performance.pageLoadTime > 5000) { // 5 seconds
+
+    if (debugSummary.performance.pageLoadTime > 5000) {
+      // 5 seconds
       causes.push('Slow page load times detected');
     }
-    
+
     if (debugSummary.engagement.bounceRate === 1) {
-      causes.push('User may be experiencing usability issues (high bounce rate)');
+      causes.push(
+        'User may be experiencing usability issues (high bounce rate)'
+      );
     }
-    
-    const errorLogs = debugSummary.recentLogs.filter((log: any) => log.level === 'error');
+
+    const errorLogs = debugSummary.recentLogs.filter(
+      (log: any) => log.level === 'error'
+    );
     if (errorLogs.length > 3) {
       causes.push('Multiple recent errors detected');
     }
-    
-    return causes.length > 0 ? causes : ['Unknown - requires manual investigation'];
+
+    return causes.length > 0
+      ? causes
+      : ['Unknown - requires manual investigation'];
   }
 
   private getRecommendedActions(debugSummary: any): string[] {
     const actions: string[] = [];
-    
+
     if (!debugSummary.environment.online) {
       actions.push('Check internet connection and retry');
     }
-    
+
     if (debugSummary.performance.memoryUsage > 50000000) {
       actions.push('Consider refreshing the page to clear memory');
     }
-    
+
     if (!debugSummary.user?.id) {
       actions.push('User authentication may need to be verified');
     }
-    
+
     actions.push('Contact support with this debug report if issue persists');
-    
+
     return actions;
   }
 
@@ -2089,10 +2386,16 @@ export const logger = new Logger();
 // Enhanced logging helpers with full context capture
 export const enhancedLogger = {
   // Log with automatic web address and full context
-  async logWithFullContext(level: LogLevel, message: string, component?: string, data?: any) {
-    const currentUrl = typeof window !== 'undefined' ? window.location.href : 'N/A';
+  async logWithFullContext(
+    level: LogLevel,
+    message: string,
+    component?: string,
+    data?: any
+  ) {
+    const currentUrl =
+      typeof window !== 'undefined' ? window.location.href : 'N/A';
     const enhancedMessage = `[${currentUrl}] ${message}`;
-    
+
     switch (level) {
       case LogLevel.ERROR:
         await logger.error(enhancedMessage, component, data);
@@ -2119,25 +2422,33 @@ export const enhancedLogger = {
     console.log('⚡ Performance:', summary.performance);
     console.log('📈 Engagement:', summary.engagement);
     console.groupEnd();
-    
-    await logger.info(`Debug snapshot: ${description}`, 'Enhanced-Logger', summary);
+
+    await logger.info(
+      `Debug snapshot: ${description}`,
+      'Enhanced-Logger',
+      summary
+    );
   },
 
   // Report issue with full diagnostic data
   async reportIssue(title: string, description: string, additionalData?: any) {
-    await logger.reportCriticalIssue(`${title}: ${description}`, additionalData);
+    await logger.reportCriticalIssue(
+      `${title}: ${description}`,
+      additionalData
+    );
   },
 
   // Track user journey with context
   async trackJourneyStep(stepName: string, stepData?: any) {
-    const currentUrl = typeof window !== 'undefined' ? window.location.href : 'N/A';
+    const currentUrl =
+      typeof window !== 'undefined' ? window.location.href : 'N/A';
     const context = {
       step: stepName,
       url: currentUrl,
       timestamp: new Date().toISOString(),
       data: stepData
     };
-    
+
     await logger.info(`Journey Step: ${stepName}`, 'User-Journey', context);
   }
 };
@@ -2148,15 +2459,15 @@ export const oauthLogger = {
     const details = { data, error };
     await logger.error(message, 'OAuth', details);
   },
-  
-  warn: async (message: string, data?: any) => 
+
+  warn: async (message: string, data?: any) =>
     await logger.warn(message, 'OAuth', data),
-  
-  info: async (message: string, data?: any) => 
+
+  info: async (message: string, data?: any) =>
     await logger.info(message, 'OAuth', data),
-  
-  debug: async (message: string, data?: any) => 
-    await logger.debug(message, 'OAuth', data),
+
+  debug: async (message: string, data?: any) =>
+    await logger.debug(message, 'OAuth', data)
 };
 
 // Auth-specific logging helpers
@@ -2165,40 +2476,40 @@ export const authLogger = {
     const details = { data, error };
     await logger.error(message, 'Auth', details);
   },
-  
-  warn: async (message: string, data?: any) => 
+
+  warn: async (message: string, data?: any) =>
     await logger.warn(message, 'Auth', data),
-  
-  info: async (message: string, data?: any) => 
+
+  info: async (message: string, data?: any) =>
     await logger.info(message, 'Auth', data),
-  
-  debug: async (message: string, data?: any) => 
-    await logger.debug(message, 'Auth', data),
+
+  debug: async (message: string, data?: any) =>
+    await logger.debug(message, 'Auth', data)
 };
 
 /*
  * ENHANCED LOGGING USAGE EXAMPLES:
- * 
+ *
  * // Basic logging with automatic URL capture
  * await enhancedLogger.logWithFullContext(LogLevel.ERROR, 'Payment failed', 'Checkout', errorData);
- * 
+ *
  * // Quick debugging snapshot
  * await enhancedLogger.debugSnapshot('User authentication issue');
- * 
+ *
  * // Report critical issue with full diagnostic data
  * await enhancedLogger.reportIssue('Payment Processing', 'Credit card validation failed', { cardType, amount });
- * 
+ *
  * // Track user journey
  * await enhancedLogger.trackJourneyStep('Started checkout process', { productId, quantity });
- * 
+ *
  * // Get full debug context
  * const fullContext = await logger.getDebugSummary(true);
  * console.log('Full diagnostic data:', fullContext);
- * 
+ *
  * // OAuth specific logging
  * await oauthLogger.error('Token refresh failed', { tokenExpiry, attemptCount }, refreshError);
  * await authLogger.warn('Multiple login attempts detected', { attempts, timeWindow });
- * 
+ *
  * CAPTURED DATA INCLUDES:
  * ✅ Exact web address/URL where issue occurred
  * ✅ User information and authentication state

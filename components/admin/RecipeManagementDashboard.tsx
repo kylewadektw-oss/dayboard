@@ -1,112 +1,124 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
  */
 
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
-import { Search, Database, Clock, CheckCircle, XCircle, Plus, RefreshCw } from 'lucide-react'
-import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
-import { useAuth } from '@/contexts/AuthContext'
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import {
+  Search,
+  Database,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Plus,
+  RefreshCw
+} from 'lucide-react';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Recipe {
-  id: string
-  external_id: string
-  title: string
-  description?: string
-  image_url?: string
-  status: 'pending' | 'approved' | 'rejected' | 'needs_review'
-  created_at: string
-  servings?: number
-  prep_time_minutes?: number
-  cook_time_minutes?: number
-  cuisine?: string
-  diet_types?: string[]
-  tags?: string[]
+  id: string;
+  external_id: string;
+  title: string;
+  description?: string;
+  image_url?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'needs_review';
+  created_at: string;
+  servings?: number;
+  prep_time_minutes?: number;
+  cook_time_minutes?: number;
+  cuisine?: string;
+  diet_types?: string[];
+  tags?: string[];
 }
 
 interface SearchState {
-  query: string
-  loading: boolean
-  results: unknown[]
-  selectedRecipes: Set<string>
+  query: string;
+  loading: boolean;
+  results: unknown[];
+  selectedRecipes: Set<string>;
 }
 
 export default function RecipeManagementDashboard() {
-  const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState<'search' | 'queue' | 'approved'>('search')
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'search' | 'queue' | 'approved'>(
+    'search'
+  );
   const [searchState, setSearchState] = useState<SearchState>({
     query: '',
     loading: false,
     results: [],
     selectedRecipes: new Set()
-  })
-  const [queueRecipes, setQueueRecipes] = useState<Recipe[]>([])
+  });
+  const [queueRecipes, setQueueRecipes] = useState<Recipe[]>([]);
   const [stats, setStats] = useState({
     pending: 0,
     approved: 0,
     rejected: 0,
     total: 0
-  })
+  });
 
   // Load queue recipes and stats
   useEffect(() => {
-    loadQueueRecipes()
-    loadStats()
-  }, [])
+    loadQueueRecipes();
+    loadStats();
+  }, []);
 
   const loadQueueRecipes = async () => {
     try {
-      const response = await fetch('/api/recipes/queue')
+      const response = await fetch('/api/recipes/queue');
       if (response.ok) {
-        const data = await response.json()
-        setQueueRecipes(data)
+        const data = await response.json();
+        setQueueRecipes(data);
       }
     } catch (error) {
-      console.error('Failed to load queue recipes:', error)
+      console.error('Failed to load queue recipes:', error);
     }
-  }
+  };
 
   const loadStats = async () => {
     try {
-      const response = await fetch('/api/recipes/stats')
+      const response = await fetch('/api/recipes/stats');
       if (response.ok) {
-        const data = await response.json()
-        setStats(data)
+        const data = await response.json();
+        setStats(data);
       }
     } catch (error) {
-      console.error('Failed to load stats:', error)
+      console.error('Failed to load stats:', error);
     }
-  }
+  };
 
   const searchRecipes = async () => {
-    if (!searchState.query.trim()) return
+    if (!searchState.query.trim()) return;
 
-    setSearchState(prev => ({ ...prev, loading: true, results: [] }))
-    
+    setSearchState((prev) => ({ ...prev, loading: true, results: [] }));
+
     try {
-      const response = await fetch(`/api/spoonacular?query=${encodeURIComponent(searchState.query)}&number=12`)
+      const response = await fetch(
+        `/api/spoonacular?query=${encodeURIComponent(searchState.query)}&number=12`
+      );
       if (response.ok) {
-        const data = await response.json()
-        setSearchState(prev => ({ 
-          ...prev, 
-          loading: false, 
+        const data = await response.json();
+        setSearchState((prev) => ({
+          ...prev,
+          loading: false,
           results: data.results || []
-        }))
+        }));
       }
     } catch (error) {
-      console.error('Search failed:', error)
-      setSearchState(prev => ({ ...prev, loading: false }))
+      console.error('Search failed:', error);
+      setSearchState((prev) => ({ ...prev, loading: false }));
     }
-  }
+  };
 
   const importSelectedRecipes = async () => {
-    const selectedIds = Array.from(searchState.selectedRecipes)
-    if (selectedIds.length === 0) return
+    const selectedIds = Array.from(searchState.selectedRecipes);
+    if (selectedIds.length === 0) return;
 
     try {
       const response = await fetch('/api/recipes/import', {
@@ -116,34 +128,37 @@ export default function RecipeManagementDashboard() {
           recipeIds: selectedIds,
           userId: user?.id
         })
-      })
+      });
 
       if (response.ok) {
-        setSearchState(prev => ({ ...prev, selectedRecipes: new Set() }))
-        loadQueueRecipes()
-        loadStats()
+        setSearchState((prev) => ({ ...prev, selectedRecipes: new Set() }));
+        loadQueueRecipes();
+        loadStats();
       }
     } catch (error) {
-      console.error('Import failed:', error)
+      console.error('Import failed:', error);
     }
-  }
+  };
 
-  const updateRecipeStatus = async (recipeId: string, status: Recipe['status']) => {
+  const updateRecipeStatus = async (
+    recipeId: string,
+    status: Recipe['status']
+  ) => {
     try {
       const response = await fetch('/api/recipes/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ recipeId, status })
-      })
+      });
 
       if (response.ok) {
-        loadQueueRecipes()
-        loadStats()
+        loadQueueRecipes();
+        loadStats();
       }
     } catch (error) {
-      console.error('Update failed:', error)
+      console.error('Update failed:', error);
     }
-  }
+  };
 
   const getStatusBadge = (status: Recipe['status']) => {
     const colors = {
@@ -151,13 +166,15 @@ export default function RecipeManagementDashboard() {
       approved: 'bg-green-100 text-green-800',
       rejected: 'bg-red-100 text-red-800',
       needs_review: 'bg-blue-100 text-blue-800'
-    }
+    };
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[status]}`}>
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[status]}`}
+      >
         {status}
       </span>
-    )
-  }
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -182,7 +199,9 @@ export default function RecipeManagementDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Pending</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.pending}
+              </p>
             </div>
           </div>
         </div>
@@ -194,7 +213,9 @@ export default function RecipeManagementDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Approved</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.approved}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.approved}
+              </p>
             </div>
           </div>
         </div>
@@ -206,7 +227,9 @@ export default function RecipeManagementDashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Rejected</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.rejected}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {stats.rejected}
+              </p>
             </div>
           </div>
         </div>
@@ -222,10 +245,12 @@ export default function RecipeManagementDashboard() {
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id as 'search' | 'queue' | 'approved')}
+              onClick={() =>
+                setActiveTab(id as 'search' | 'queue' | 'approved')
+              }
               className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-colors ${
-                activeTab === id 
-                  ? 'bg-purple-600 text-white' 
+                activeTab === id
+                  ? 'bg-purple-600 text-white'
                   : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
               }`}
             >
@@ -241,18 +266,24 @@ export default function RecipeManagementDashboard() {
         {activeTab === 'search' && (
           <div className="p-6">
             <div className="mb-6">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Search Spoonacular Recipes</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                Search Spoonacular Recipes
+              </h3>
               <div className="flex space-x-4">
                 <div className="flex-1">
                   <Input
                     type="text"
                     placeholder="Search for recipes (e.g., 'chicken pasta', 'vegan desserts')"
                     value={searchState.query}
-                    onChange={(value: string) => setSearchState(prev => ({ ...prev, query: value }))}
-                    onKeyPress={(e: React.KeyboardEvent) => e.key === 'Enter' && searchRecipes()}
+                    onChange={(value: string) =>
+                      setSearchState((prev) => ({ ...prev, query: value }))
+                    }
+                    onKeyPress={(e: React.KeyboardEvent) =>
+                      e.key === 'Enter' && searchRecipes()
+                    }
                   />
                 </div>
-                <Button 
+                <Button
                   onClick={searchRecipes}
                   disabled={searchState.loading}
                   className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl"
@@ -272,7 +303,7 @@ export default function RecipeManagementDashboard() {
                   <span className="text-sm font-medium text-purple-800">
                     {searchState.selectedRecipes.size} recipes selected
                   </span>
-                  <Button 
+                  <Button
                     onClick={importSelectedRecipes}
                     className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
                   >
@@ -285,46 +316,50 @@ export default function RecipeManagementDashboard() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {searchState.results.map((recipe) => {
-                const r = recipe as Recipe & { image?: string; readyInMinutes?: number };
+                const r = recipe as Recipe & {
+                  image?: string;
+                  readyInMinutes?: number;
+                };
                 return (
-                <div
-                  key={r.id}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    searchState.selectedRecipes.has(r.id.toString())
-                      ? 'border-purple-500 bg-purple-50'
-                      : 'border-gray-200 hover:border-purple-300'
-                  }`}
-                  onClick={() => {
-                    const newSelected = new Set(searchState.selectedRecipes)
-                    const id = r.id.toString()
-                    if (newSelected.has(id)) {
-                      newSelected.delete(id)
-                    } else {
-                      newSelected.add(id)
-                    }
-                    setSearchState(prev => ({ ...prev, selectedRecipes: newSelected }))
-                  }}
-                >
-                  {r.image && (
-                    <Image
-                      src={r.image}
-                      alt={r.title}
-                      width={300}
-                      height={200}
-                      className="w-full h-32 object-cover rounded mb-3"
-                    />
-                  )}
-                  <h4 className="font-semibold text-gray-900 mb-2">{r.title}</h4>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    {r.readyInMinutes && (
-                      <span>{r.readyInMinutes} min</span>
+                  <div
+                    key={r.id}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      searchState.selectedRecipes.has(r.id.toString())
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-gray-200 hover:border-purple-300'
+                    }`}
+                    onClick={() => {
+                      const newSelected = new Set(searchState.selectedRecipes);
+                      const id = r.id.toString();
+                      if (newSelected.has(id)) {
+                        newSelected.delete(id);
+                      } else {
+                        newSelected.add(id);
+                      }
+                      setSearchState((prev) => ({
+                        ...prev,
+                        selectedRecipes: newSelected
+                      }));
+                    }}
+                  >
+                    {r.image && (
+                      <Image
+                        src={r.image}
+                        alt={r.title}
+                        width={300}
+                        height={200}
+                        className="w-full h-32 object-cover rounded mb-3"
+                      />
                     )}
-                    {r.servings && (
-                      <span>{r.servings} servings</span>
-                    )}
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      {r.title}
+                    </h4>
+                    <div className="flex justify-between text-sm text-gray-600">
+                      {r.readyInMinutes && <span>{r.readyInMinutes} min</span>}
+                      {r.servings && <span>{r.servings} servings</span>}
+                    </div>
                   </div>
-                </div>
-                )
+                );
               })}
             </div>
           </div>
@@ -332,75 +367,99 @@ export default function RecipeManagementDashboard() {
 
         {activeTab === 'queue' && (
           <div className="p-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">Pending Approval</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              Pending Approval
+            </h3>
             <div className="space-y-4">
-              {queueRecipes.filter(r => r.status === 'pending').map((recipe) => (
-                <div key={recipe.id} className="p-4 border border-gray-200 rounded-xl">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">{recipe.title}</h4>
-                      <p className="text-sm text-gray-600 mt-1">{recipe.description}</p>
-                      <div className="flex items-center space-x-4 mt-2">
-                        {getStatusBadge(recipe.status)}
-                        {recipe.cuisine && (
-                          <span className="text-xs text-gray-500">{recipe.cuisine}</span>
-                        )}
+              {queueRecipes
+                .filter((r) => r.status === 'pending')
+                .map((recipe) => (
+                  <div
+                    key={recipe.id}
+                    className="p-4 border border-gray-200 rounded-xl"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900">
+                          {recipe.title}
+                        </h4>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {recipe.description}
+                        </p>
+                        <div className="flex items-center space-x-4 mt-2">
+                          {getStatusBadge(recipe.status)}
+                          {recipe.cuisine && (
+                            <span className="text-xs text-gray-500">
+                              {recipe.cuisine}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          onClick={() =>
+                            updateRecipeStatus(recipe.id, 'approved')
+                          }
+                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm"
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          onClick={() =>
+                            updateRecipeStatus(recipe.id, 'rejected')
+                          }
+                          className="bg-white border border-red-300 text-red-600 hover:bg-red-50 px-3 py-1 rounded-lg text-sm"
+                        >
+                          Reject
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex space-x-2">
-                      <Button
-                        onClick={() => updateRecipeStatus(recipe.id, 'approved')}
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm"
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        onClick={() => updateRecipeStatus(recipe.id, 'rejected')}
-                        className="bg-white border border-red-300 text-red-600 hover:bg-red-50 px-3 py-1 rounded-lg text-sm"
-                      >
-                        Reject
-                      </Button>
-                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}
 
         {activeTab === 'approved' && (
           <div className="p-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">Approved Recipes</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+              Approved Recipes
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {queueRecipes.filter(r => r.status === 'approved').map((recipe) => (
-                <div key={recipe.id} className="p-4 border border-gray-200 rounded-xl">
-                  {recipe.image_url && (
-                    <Image
-                      src={recipe.image_url}
-                      alt={recipe.title}
-                      width={300}
-                      height={128}
-                      className="w-full h-32 object-cover rounded-lg mb-3"
-                    />
-                  )}
-                  <h4 className="font-semibold text-gray-900 mb-2">{recipe.title}</h4>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    {recipe.prep_time_minutes && (
-                      <span>{recipe.prep_time_minutes} min prep</span>
+              {queueRecipes
+                .filter((r) => r.status === 'approved')
+                .map((recipe) => (
+                  <div
+                    key={recipe.id}
+                    className="p-4 border border-gray-200 rounded-xl"
+                  >
+                    {recipe.image_url && (
+                      <Image
+                        src={recipe.image_url}
+                        alt={recipe.title}
+                        width={300}
+                        height={128}
+                        className="w-full h-32 object-cover rounded-lg mb-3"
+                      />
                     )}
-                    {recipe.servings && (
-                      <span>{recipe.servings} servings</span>
-                    )}
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      {recipe.title}
+                    </h4>
+                    <div className="flex items-center space-x-4 text-sm text-gray-600">
+                      {recipe.prep_time_minutes && (
+                        <span>{recipe.prep_time_minutes} min prep</span>
+                      )}
+                      {recipe.servings && (
+                        <span>{recipe.servings} servings</span>
+                      )}
+                    </div>
+                    <div className="mt-2">{getStatusBadge(recipe.status)}</div>
                   </div>
-                  <div className="mt-2">
-                    {getStatusBadge(recipe.status)}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

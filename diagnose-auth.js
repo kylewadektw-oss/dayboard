@@ -1,41 +1,41 @@
 #!/usr/bin/env node
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
-
 
 console.log('🔍 Diagnosing Google OAuth Issues...\n');
 
 // Check environment variables
 const requiredEnvVars = [
   'NEXT_PUBLIC_SUPABASE_URL',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY', 
+  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   'NEXT_PUBLIC_GOOGLE_CLIENT_ID',
   'GOOGLE_CLIENT_SECRET'
 ];
 
 console.log('📋 Environment Variables Check:');
-requiredEnvVars.forEach(envVar => {
+requiredEnvVars.forEach((envVar) => {
   const value = process.env[envVar];
   console.log(`${value ? '✅' : '❌'} ${envVar}: ${value ? 'Set' : 'Missing'}`);
 });
 
 console.log('\n🌐 URLs to Check:');
 console.log('1. Supabase Auth Providers:');
-console.log('   https://supabase.com/dashboard/project/csbwewirwzeitavhvykr/auth/providers');
+console.log(
+  '   https://supabase.com/dashboard/project/csbwewirwzeitavhvykr/auth/providers'
+);
 console.log('\n2. Google Cloud Console:');
 console.log('   https://console.cloud.google.com/apis/credentials');
 

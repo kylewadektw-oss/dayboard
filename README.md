@@ -17,6 +17,7 @@ For licensing inquiries: legal@bentlolabs.com
 ## ✨ Features
 
 ### 🏠 **Dashboard Hub**
+
 - **Weather Integration**: 6-day forecast with current conditions
 - **Household Calendar**: Color-coded events for all household members
 - **Meal Planning**: Weekly dinner suggestions and favorites
@@ -25,24 +26,28 @@ For licensing inquiries: legal@bentlolabs.com
 - **Quick Actions**: Common tasks like adding meals, starting timers
 
 ### 🍽️ **Meal Planning**
+
 - **Recipe Library**: 50+ household-tested recipes with ratings
 - **Weekly Planner**: Drag-and-drop meal scheduling
 - **Favorites Management**: Save and organize preferred dishes
 - **Shopping Integration**: Auto-generate grocery lists from meal plans
 
 ### 📝 **Smart Lists**
+
 - **Grocery Lists**: Organized by categories (Produce, Dairy, etc.)
 - **Todo Management**: Household task tracking with completion status
 - **Shopping Lists**: Progress tracking and shared access
 - **Real-time Sync**: Updates across all household devices
 
 ### 💼 **Work & Project Management**
+
 - **Time Tracking**: Built-in timers for work sessions
 - **Project Dashboard**: Visual progress tracking with task breakdowns
 - **Schedule Management**: Daily events and meeting coordination
 - **Analytics**: Productivity insights and time allocation
 
 ### 👨‍👩‍👧‍👦 **Household Profiles**
+
 - **Member Management**: Individual profiles with roles and responsibilities
 - **Household Settings**: Shared preferences and configurations
 - **Achievement Tracking**: Celebrate household member accomplishments
@@ -57,7 +62,8 @@ For licensing inquiries: legal@bentlolabs.com
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - pnpm (recommended) or npm
 - Supabase account (for database)
 - Stripe account (for payments)
@@ -87,17 +93,20 @@ Visit [http://localhost:3000](http://localhost:3000) to see the app.
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **Next.js 14** with App Router
 - **TypeScript** for type safety
 - **Tailwind CSS** for styling
 - **Lucide React** for icons
 
 ### Backend
+
 - **Supabase** for database and auth
 - **PostgreSQL** for data storage
 - **Stripe** for subscription payments
 
 ### Deployment
+
 - **Vercel** for hosting
 - **Supabase** for backend services
 
@@ -108,6 +117,7 @@ Visit [http://localhost:3000](http://localhost:3000) to see the app.
 See [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) for detailed development timeline and feature roadmap.
 
 ### Completed Features
+
 - ✅ Full dashboard with 8 interactive widgets
 - ✅ Complete meal planning system
 - ✅ Multi-list management (grocery, todo, shopping)
@@ -118,6 +128,7 @@ See [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) for detailed development timeline
 - ✅ Analytics dashboard suite with 7 specialized monitoring pages
 
 ### Next Up
+
 - 🚧 Phase 2: Database Integration with Supabase
 - 📅 Phase 3: Advanced features and navigation enhancements
 - 💰 Phase 4: Premium features and monetization
@@ -125,17 +136,21 @@ See [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) for detailed development timeline
 ## 🔍 Understanding Log Types & Notifications
 
 ### 💬 Console Messages (Normal)
+
 - **Info**: General information and status updates
 - **Debug**: Technical details for development
-- *These are expected and help with monitoring app behavior*
+- _These are expected and help with monitoring app behavior_
 
 ### ⚠️ Issues (Need Attention)
+
 - **Warnings**: Potential problems or deprecated code
 - **Errors**: Broken functionality that affects users
-- *These should be investigated and resolved when possible*
+- _These should be investigated and resolved when possible_
 
 ### 🔄 Why Notifications Come and Go
+
 Logs appear and disappear based on user activity, page changes, and system operations. Errors that "fix themselves" often indicate:
+
 - 🔄 Page refresh resolved the issue
 - 🌐 Network connectivity improved
 - ⏱️ Temporary timing or loading issue

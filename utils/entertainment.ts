@@ -9,7 +9,12 @@
 // TYPES & INTERFACES
 // ===============================
 
-export type EntertainmentCategory = 'movies' | 'music' | 'events' | 'games' | 'activities';
+export type EntertainmentCategory =
+  | 'movies'
+  | 'music'
+  | 'events'
+  | 'games'
+  | 'activities';
 
 export interface BaseEntertainmentItem {
   id: string | number;
@@ -54,7 +59,14 @@ export interface LocalEvent extends BaseEntertainmentItem {
   price: string;
   organizer?: string;
   attendeeCount?: number;
-  eventType: 'festival' | 'concert' | 'workshop' | 'market' | 'sports' | 'family' | 'other';
+  eventType:
+    | 'festival'
+    | 'concert'
+    | 'workshop'
+    | 'market'
+    | 'sports'
+    | 'family'
+    | 'other';
 }
 
 export interface Game extends BaseEntertainmentItem {
@@ -142,7 +154,7 @@ export interface UserPreferences {
 export function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  
+
   if (hours === 0) {
     return `${mins}m`;
   } else if (mins === 0) {
@@ -156,19 +168,21 @@ export function formatDuration(minutes: number): string {
  * Calculate distance between two coordinates (approximate)
  */
 export function calculateDistance(
-  lat1: number, 
-  lon1: number, 
-  lat2: number, 
+  lat1: number,
+  lon1: number,
+  lat2: number,
   lon2: number
 ): number {
   const R = 3959; // Radius of the Earth in miles
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
 
@@ -183,7 +197,7 @@ export function formatRating(rating: number): string {
  * Get age-appropriate content filter
  */
 export function isAgeAppropriate(
-  content: BaseEntertainmentItem, 
+  content: BaseEntertainmentItem,
   userAge: number
 ): boolean {
   // Basic age filtering logic - would be expanded based on content ratings
@@ -228,7 +242,7 @@ export function getCategoryColor(category: EntertainmentCategory): {
       border: 'border-yellow-200'
     }
   };
-  
+
   return colors[category];
 }
 
@@ -249,28 +263,29 @@ export function searchEntertainment<T extends BaseEntertainmentItem>(
   // Apply text search
   if (query.trim()) {
     const searchQuery = query.toLowerCase();
-    filtered = filtered.filter(item =>
-      item.title.toLowerCase().includes(searchQuery) ||
-      item.description?.toLowerCase().includes(searchQuery) ||
-      item.tags?.some(tag => tag.toLowerCase().includes(searchQuery))
+    filtered = filtered.filter(
+      (item) =>
+        item.title.toLowerCase().includes(searchQuery) ||
+        item.description?.toLowerCase().includes(searchQuery) ||
+        item.tags?.some((tag) => tag.toLowerCase().includes(searchQuery))
     );
   }
 
   // Apply filters
   if (filters) {
     if (filters.category) {
-      filtered = filtered.filter(item => item.category === filters.category);
+      filtered = filtered.filter((item) => item.category === filters.category);
     }
-    
+
     if (filters.minRating) {
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter((item) =>
         item.rating ? item.rating >= filters.minRating! : false
       );
     }
-    
+
     if (filters.tags && filters.tags.length > 0) {
-      filtered = filtered.filter(item =>
-        item.tags?.some(tag => filters.tags!.includes(tag))
+      filtered = filtered.filter((item) =>
+        item.tags?.some((tag) => filters.tags!.includes(tag))
       );
     }
   }
@@ -313,14 +328,14 @@ export function getRecommendations<T extends BaseEntertainmentItem>(
   category: EntertainmentCategory,
   limit: number = 10
 ): T[] {
-  let filtered = items.filter(item => item.category === category);
+  let filtered = items.filter((item) => item.category === category);
 
   // Filter by preferred genres if available
   if (userPreferences.favoriteGenres?.[category]) {
     const preferredGenres = userPreferences.favoriteGenres[category];
-    filtered = filtered.filter(item => {
+    filtered = filtered.filter((item) => {
       if ('genre' in item) {
-        return preferredGenres.some(genre => 
+        return preferredGenres.some((genre) =>
           (item.genre as string).toLowerCase().includes(genre.toLowerCase())
         );
       }
@@ -343,14 +358,16 @@ export function getCategoryEmoji(category: EntertainmentCategory): string {
     games: '🎲',
     activities: '⚡'
   };
-  
+
   return emojis[category];
 }
 
 /**
  * Validate entertainment item data
  */
-export function validateEntertainmentItem(item: Partial<BaseEntertainmentItem>): {
+export function validateEntertainmentItem(
+  item: Partial<BaseEntertainmentItem>
+): {
   isValid: boolean;
   errors: string[];
 } {
@@ -383,10 +400,11 @@ export function generateShareableContent(item: BaseEntertainmentItem): {
   url?: string;
 } {
   const emoji = getCategoryEmoji(item.category);
-  
+
   return {
     title: `${emoji} ${item.title}`,
-    description: item.description || `Check out this ${item.category} recommendation!`,
+    description:
+      item.description || `Check out this ${item.category} recommendation!`,
     url: window.location.href
   };
 }
@@ -402,17 +420,17 @@ export const API_ENDPOINTS = {
   // Movie APIs
   TMDB_BASE: 'https://api.themoviedb.org/3',
   FANDANGO_BASE: 'https://api.fandango.com/v1',
-  
-  // Music APIs  
+
+  // Music APIs
   SPOTIFY_BASE: 'https://api.spotify.com/v1',
   LASTFM_BASE: 'https://ws.audioscrobbler.com/2.0',
   SONGKICK_BASE: 'https://api.songkick.com/api/3.0',
-  
+
   // Events APIs
   EVENTBRITE_BASE: 'https://www.eventbriteapi.com/v3',
   MEETUP_BASE: 'https://api.meetup.com',
   TICKETMASTER_BASE: 'https://app.ticketmaster.com/discovery/v2',
-  
+
   // Games APIs
   BOARDGAMEGEEK_BASE: 'https://boardgamegeek.com/xmlapi2',
   RAWG_BASE: 'https://api.rawg.io/api'
@@ -425,7 +443,7 @@ export const MockDataGenerators = {
   generateMovies: (count: number): Movie[] => {
     const genres = ['Action', 'Comedy', 'Drama', 'Horror', 'Sci-Fi', 'Romance'];
     const movies: Movie[] = [];
-    
+
     for (let i = 0; i < count; i++) {
       movies.push({
         id: i + 1,
@@ -438,29 +456,41 @@ export const MockDataGenerators = {
         tags: ['Popular', 'New Release']
       });
     }
-    
+
     return movies;
   },
 
   generateEvents: (count: number): LocalEvent[] => {
-    const eventTypes = ['festival', 'concert', 'workshop', 'market', 'sports', 'family'] as const;
+    const eventTypes = [
+      'festival',
+      'concert',
+      'workshop',
+      'market',
+      'sports',
+      'family'
+    ] as const;
     const events: LocalEvent[] = [];
-    
+
     for (let i = 0; i < count; i++) {
       events.push({
         id: i + 1,
         title: `Event ${i + 1}`,
         category: 'events',
-        date: new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        date: new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0],
         time: `${Math.floor(Math.random() * 12) + 1}:00 PM`,
         location: `Venue ${i + 1}`,
-        price: Math.random() > 0.5 ? 'Free' : `$${Math.floor(Math.random() * 50) + 10}`,
+        price:
+          Math.random() > 0.5
+            ? 'Free'
+            : `$${Math.floor(Math.random() * 50) + 10}`,
         eventType: eventTypes[Math.floor(Math.random() * eventTypes.length)],
         description: `An exciting ${eventTypes[Math.floor(Math.random() * eventTypes.length)]} event.`,
         tags: ['Local', 'Popular']
       });
     }
-    
+
     return events;
   }
 };

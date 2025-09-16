@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -47,7 +47,6 @@ interface GoogleAddressInputProps {
   disabled?: boolean;
 }
 
-
 export function GoogleAddressInput({
   onAddressSelect,
   initialValue = '',
@@ -68,7 +67,9 @@ export function GoogleAddressInput({
         // Check if Google Maps API key is available
         const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
         if (!apiKey) {
-          console.log('Google Maps API key not configured, using fallback address input');
+          console.log(
+            'Google Maps API key not configured, using fallback address input'
+          );
           setError('Google Maps API not configured for address autocomplete');
           return;
         }
@@ -86,31 +87,37 @@ export function GoogleAddressInput({
 
   // Initialize autocomplete when Google Places is loaded
   useEffect(() => {
-    if (!isLoaded || !inputRef.current || autocompleteRef.current || disabled) return;
+    if (!isLoaded || !inputRef.current || autocompleteRef.current || disabled)
+      return;
 
     try {
       // Double-check that Google API is actually available
       if (!window.google?.maps?.places?.Autocomplete) {
-        console.log('Google Places API not fully loaded, skipping autocomplete initialization');
+        console.log(
+          'Google Places API not fully loaded, skipping autocomplete initialization'
+        );
         setError('Address autocomplete not available');
         return;
       }
 
-      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
-        types: ['address'],
-        componentRestrictions: { country: 'us' }, // Restrict to US addresses
-        fields: ['address_components', 'formatted_address', 'geometry']
-      });
+      const autocomplete = new window.google.maps.places.Autocomplete(
+        inputRef.current,
+        {
+          types: ['address'],
+          componentRestrictions: { country: 'us' }, // Restrict to US addresses
+          fields: ['address_components', 'formatted_address', 'geometry']
+        }
+      );
 
       // Ensure dropdown suggestions are fully visible
       autocomplete.setOptions({
         bounds: undefined, // Don't restrict to viewport bounds
-        strictBounds: false, // Allow suggestions outside bounds
+        strictBounds: false // Allow suggestions outside bounds
       });
 
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
-        
+
         if (!place.address_components) {
           setError('Please select a valid address from the dropdown');
           return;
@@ -123,31 +130,31 @@ export function GoogleAddressInput({
       });
 
       autocompleteRef.current = autocomplete;
-      
+
       // Clear any previous errors when autocomplete is successfully initialized
       setError(null);
     } catch (err) {
       console.log('Error initializing Google Places Autocomplete:', err);
       setError('Address autocomplete not available');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, disabled, onAddressSelect]);
 
-type GooglePlaceGeometry = {
-  location: {
-    lat(): number;
-    lng(): number;
-  }
-};
+  type GooglePlaceGeometry = {
+    location: {
+      lat(): number;
+      lng(): number;
+    };
+  };
 
-// Parse Google Places API response into structured address data
+  // Parse Google Places API response into structured address data
   const parseAddressComponents = (place: unknown): AddressData => {
-    const placeObj = place as { 
-      address_components?: Array<{ 
-        long_name: string; 
-        short_name: string; 
-        types: string[] 
-      }>; 
+    const placeObj = place as {
+      address_components?: Array<{
+        long_name: string;
+        short_name: string;
+        types: string[];
+      }>;
       formatted_address?: string;
       geometry?: GooglePlaceGeometry;
     };
@@ -159,10 +166,12 @@ type GooglePlaceGeometry = {
       zip: '',
       country: '',
       formattedAddress: placeObj.formatted_address || '',
-      coordinates: placeObj.geometry?.location ? {
-        lat: placeObj.geometry.location.lat(),
-        lng: placeObj.geometry.location.lng()
-      } : undefined
+      coordinates: placeObj.geometry?.location
+        ? {
+            lat: placeObj.geometry.location.lat(),
+            lng: placeObj.geometry.location.lng()
+          }
+        : undefined
     };
 
     let streetNumber = '';
@@ -229,7 +238,13 @@ type GooglePlaceGeometry = {
           value={inputValue}
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
-          placeholder={isLoaded ? placeholder : error ? 'Enter address manually' : 'Loading address search...'}
+          placeholder={
+            isLoaded
+              ? placeholder
+              : error
+                ? 'Enter address manually'
+                : 'Loading address search...'
+          }
           disabled={disabled}
           className={`
             w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md 
@@ -249,54 +264,56 @@ type GooglePlaceGeometry = {
           </div>
         )}
       </div>
-      
+
       {error && error.includes('not configured') && (
         <p className="mt-1 text-sm text-yellow-600">
           Address autocomplete not available. Type your address and press Enter.
         </p>
       )}
-      
+
       {error && !error.includes('not configured') && (
         <p className="mt-1 text-sm text-yellow-600">{error}</p>
       )}
-      
+
       {!isLoaded && !error && (
         <p className="mt-1 text-sm text-gray-500">
           Loading address autocomplete...
         </p>
       )}
-      
+
       {isLoaded && !error && (
         <p className="mt-1 text-sm text-green-600">
           ✓ Address search ready - start typing to see suggestions
         </p>
       )}
-      
+
       <style jsx>{`
         /* Ensure Google Places dropdown appears above other elements */
         :global(.pac-container) {
           z-index: 9999 !important;
           border: 1px solid #d1d5db !important;
           border-radius: 0.375rem !important;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+          box-shadow:
+            0 10px 15px -3px rgba(0, 0, 0, 0.1),
+            0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
           margin-top: 4px !important;
         }
-        
+
         :global(.pac-item) {
           padding: 8px 12px !important;
           border-bottom: 1px solid #f3f4f6 !important;
           font-size: 14px !important;
           cursor: pointer !important;
         }
-        
+
         :global(.pac-item:hover) {
           background-color: #f3f4f6 !important;
         }
-        
+
         :global(.pac-item-selected) {
           background-color: #dbeafe !important;
         }
-        
+
         :global(.pac-matched) {
           font-weight: 600 !important;
           color: #1d4ed8 !important;

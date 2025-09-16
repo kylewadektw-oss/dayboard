@@ -34,7 +34,7 @@ export default function EnhancedAnalyticsDashboard() {
       },
       {
         label: 'Page Views',
-        value: (Math.floor(Math.random() * 50) + 20) + 'K',
+        value: Math.floor(Math.random() * 50) + 20 + 'K',
         change: (Math.random() - 0.5) * 15,
         trend: Math.random() > 0.5 ? 'up' : 'down',
         icon: '📊'
@@ -115,10 +115,14 @@ export default function EnhancedAnalyticsDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <p className="text-gray-600 mt-1">Real-time insights and user engagement metrics</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Analytics Dashboard
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Real-time insights and user engagement metrics
+          </p>
         </div>
-        
+
         <div className="flex items-center space-x-3">
           <select
             value={selectedTimeRange}
@@ -131,7 +135,7 @@ export default function EnhancedAnalyticsDashboard() {
               </option>
             ))}
           </select>
-          
+
           <div className="flex items-center space-x-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg">
             <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
             <span className="text-sm font-medium">Live</span>
@@ -153,17 +157,30 @@ export default function EnhancedAnalyticsDashboard() {
               <div className="flex items-center space-x-3">
                 <span className="text-2xl">{metric.icon}</span>
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{metric.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">{metric.value}</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    {metric.label}
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {metric.value}
+                  </p>
                 </div>
               </div>
-              
-              <div className={`flex items-center space-x-1 text-sm font-medium ${
-                metric.trend === 'up' ? 'text-green-600' : 
-                metric.trend === 'down' ? 'text-red-600' : 'text-gray-600'
-              }`}>
+
+              <div
+                className={`flex items-center space-x-1 text-sm font-medium ${
+                  metric.trend === 'up'
+                    ? 'text-green-600'
+                    : metric.trend === 'down'
+                      ? 'text-red-600'
+                      : 'text-gray-600'
+                }`}
+              >
                 <span>
-                  {metric.trend === 'up' ? '↗️' : metric.trend === 'down' ? '↘️' : '➡️'}
+                  {metric.trend === 'up'
+                    ? '↗️'
+                    : metric.trend === 'down'
+                      ? '↘️'
+                      : '➡️'}
                 </span>
                 <span>{Math.abs(metric.change).toFixed(1)}%</span>
               </div>
@@ -182,7 +199,7 @@ export default function EnhancedAnalyticsDashboard() {
           height={350}
           className="shadow-sm"
         />
-        
+
         <RealTimeChart
           type="bar"
           title="Feature Usage Distribution"
@@ -191,7 +208,7 @@ export default function EnhancedAnalyticsDashboard() {
           height={350}
           className="shadow-sm"
         />
-        
+
         <RealTimeChart
           type="doughnut"
           title="Device Distribution"
@@ -200,21 +217,44 @@ export default function EnhancedAnalyticsDashboard() {
           height={350}
           className="shadow-sm"
         />
-        
+
         <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activities</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Recent Activities
+          </h3>
           <div className="space-y-3">
             {[
-              { action: 'New user registered', time: '2 minutes ago', icon: '👤' },
-              { action: 'Movie added to watchlist', time: '5 minutes ago', icon: '🎬' },
+              {
+                action: 'New user registered',
+                time: '2 minutes ago',
+                icon: '👤'
+              },
+              {
+                action: 'Movie added to watchlist',
+                time: '5 minutes ago',
+                icon: '🎬'
+              },
               { action: 'List created', time: '8 minutes ago', icon: '📝' },
-              { action: 'Concert event saved', time: '12 minutes ago', icon: '🎵' },
-              { action: 'Game night planned', time: '15 minutes ago', icon: '🎲' }
+              {
+                action: 'Concert event saved',
+                time: '12 minutes ago',
+                icon: '🎵'
+              },
+              {
+                action: 'Game night planned',
+                time: '15 minutes ago',
+                icon: '🎲'
+              }
             ].map((activity, index) => (
-              <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+              <div
+                key={index}
+                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+              >
                 <span className="text-lg">{activity.icon}</span>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {activity.action}
+                  </p>
                   <p className="text-xs text-gray-500">{activity.time}</p>
                 </div>
               </div>
@@ -226,8 +266,7 @@ export default function EnhancedAnalyticsDashboard() {
       {/* Footer Info */}
       <div className="bg-white rounded-lg border border-gray-200 p-4 text-center">
         <p className="text-sm text-gray-600">
-          Dashboard updates every few seconds • 
-          Data processed in real-time • 
+          Dashboard updates every few seconds • Data processed in real-time •
           Last update: {new Date().toLocaleTimeString()}
         </p>
       </div>

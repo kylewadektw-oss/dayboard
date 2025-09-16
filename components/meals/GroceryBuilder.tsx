@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -19,10 +19,10 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { 
-  ShoppingCart, 
-  Plus, 
-  Minus, 
+import {
+  ShoppingCart,
+  Plus,
+  Minus,
   Download,
   Share2,
   Search,
@@ -110,13 +110,48 @@ const mockRecipes: Recipe[] = [
 ];
 
 const storeCategories = [
-  { id: 'produce', name: 'Produce', icon: '🥬', color: 'bg-green-100 text-green-700' },
-  { id: 'meat', name: 'Meat & Seafood', icon: '🥩', color: 'bg-red-100 text-red-700' },
-  { id: 'dairy', name: 'Dairy & Eggs', icon: '🥛', color: 'bg-blue-100 text-blue-700' },
-  { id: 'pantry', name: 'Pantry', icon: '🥫', color: 'bg-orange-100 text-orange-700' },
-  { id: 'frozen', name: 'Frozen', icon: '🧊', color: 'bg-cyan-100 text-cyan-700' },
-  { id: 'bakery', name: 'Bakery', icon: '🍞', color: 'bg-yellow-100 text-yellow-700' },
-  { id: 'beverages', name: 'Beverages', icon: '🥤', color: 'bg-purple-100 text-purple-700' },
+  {
+    id: 'produce',
+    name: 'Produce',
+    icon: '🥬',
+    color: 'bg-green-100 text-green-700'
+  },
+  {
+    id: 'meat',
+    name: 'Meat & Seafood',
+    icon: '🥩',
+    color: 'bg-red-100 text-red-700'
+  },
+  {
+    id: 'dairy',
+    name: 'Dairy & Eggs',
+    icon: '🥛',
+    color: 'bg-blue-100 text-blue-700'
+  },
+  {
+    id: 'pantry',
+    name: 'Pantry',
+    icon: '🥫',
+    color: 'bg-orange-100 text-orange-700'
+  },
+  {
+    id: 'frozen',
+    name: 'Frozen',
+    icon: '🧊',
+    color: 'bg-cyan-100 text-cyan-700'
+  },
+  {
+    id: 'bakery',
+    name: 'Bakery',
+    icon: '🍞',
+    color: 'bg-yellow-100 text-yellow-700'
+  },
+  {
+    id: 'beverages',
+    name: 'Beverages',
+    icon: '🥤',
+    color: 'bg-purple-100 text-purple-700'
+  },
   { id: 'other', name: 'Other', icon: '📦', color: 'bg-gray-100 text-gray-700' }
 ];
 
@@ -133,49 +168,59 @@ export const GroceryBuilder = () => {
   const [selectedRecipes, setSelectedRecipes] = useState<string[]>(['1', '2']);
   const [customItems, setCustomItems] = useState<GroceryItem[]>([]);
   const [currentList, setCurrentList] = useState<GroceryList | null>(null);
-  const [activeView, setActiveView] = useState<'builder' | 'list' | 'history'>('builder');
+  const [activeView, setActiveView] = useState<'builder' | 'list' | 'history'>(
+    'builder'
+  );
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [servingMultiplier, setServingMultiplier] = useState<Record<string, number>>({});
+  const [servingMultiplier, setServingMultiplier] = useState<
+    Record<string, number>
+  >({});
 
   // Unit conversion utility
-  const normalizeUnit = useCallback((amount: string, unit: string): { quantity: number; unit: string } => {
-    const quantity = parseFloat(amount) || 1;
-    
-    // Normalize common units
-    const unitMappings: Record<string, string> = {
-      'tbsp': 'tablespoon',
-      'tsp': 'teaspoon',
-      'oz': 'ounce',
-      'lb': 'pound',
-      'lbs': 'pound',
-      'pieces': 'piece',
-      'cloves': 'clove',
-      'heads': 'head'
-    };
+  const normalizeUnit = useCallback(
+    (amount: string, unit: string): { quantity: number; unit: string } => {
+      const quantity = parseFloat(amount) || 1;
 
-    return {
-      quantity,
-      unit: unitMappings[unit.toLowerCase()] || unit
-    };
-  }, []);
+      // Normalize common units
+      const unitMappings: Record<string, string> = {
+        tbsp: 'tablespoon',
+        tsp: 'teaspoon',
+        oz: 'ounce',
+        lb: 'pound',
+        lbs: 'pound',
+        pieces: 'piece',
+        cloves: 'clove',
+        heads: 'head'
+      };
+
+      return {
+        quantity,
+        unit: unitMappings[unit.toLowerCase()] || unit
+      };
+    },
+    []
+  );
 
   // Consolidate ingredients from selected recipes
   const consolidatedIngredients = useMemo(() => {
     const ingredientMap = new Map<string, GroceryItem>();
 
-    selectedRecipes.forEach(recipeId => {
-      const recipe = mockRecipes.find(r => r.id === recipeId);
+    selectedRecipes.forEach((recipeId) => {
+      const recipe = mockRecipes.find((r) => r.id === recipeId);
       if (!recipe) return;
 
       const multiplier = servingMultiplier[recipeId] || 1;
 
-      recipe.ingredients.forEach(ingredient => {
-        const { quantity, unit } = normalizeUnit(ingredient.amount, ingredient.unit);
+      recipe.ingredients.forEach((ingredient) => {
+        const { quantity, unit } = normalizeUnit(
+          ingredient.amount,
+          ingredient.unit
+        );
         const adjustedQuantity = quantity * multiplier;
-        
+
         const key = `${ingredient.name}-${unit}`;
-        
+
         if (ingredientMap.has(key)) {
           const existing = ingredientMap.get(key)!;
           existing.quantity += adjustedQuantity;
@@ -189,7 +234,10 @@ export const GroceryBuilder = () => {
             recipeSource: recipe.title,
             isChecked: false,
             priority: 'medium',
-            estimatedPrice: estimatePriceForIngredient(ingredient.name, adjustedQuantity)
+            estimatedPrice: estimatePriceForIngredient(
+              ingredient.name,
+              adjustedQuantity
+            )
           });
         }
       });
@@ -201,43 +249,51 @@ export const GroceryBuilder = () => {
   // Helper functions
   const getCategoryForIngredient = (name: string): string => {
     const categoryMappings: Record<string, string> = {
-      'lettuce': 'produce',
+      lettuce: 'produce',
       'bell peppers': 'produce',
-      'broccoli': 'produce',
-      'garlic': 'produce',
-      'ginger': 'produce',
+      broccoli: 'produce',
+      garlic: 'produce',
+      ginger: 'produce',
       'chicken breast': 'meat',
-      'pancetta': 'meat',
-      'eggs': 'dairy',
+      pancetta: 'meat',
+      eggs: 'dairy',
       'parmesan cheese': 'dairy',
-      'spaghetti': 'pantry',
+      spaghetti: 'pantry',
       'soy sauce': 'pantry',
       'vegetable oil': 'pantry',
       'black pepper': 'pantry',
-      'croutons': 'bakery',
+      croutons: 'bakery',
       'caesar dressing': 'pantry'
     };
-    
+
     return categoryMappings[name.toLowerCase()] || 'other';
   };
 
-  const estimatePriceForIngredient = (name: string, quantity: number): number => {
+  const estimatePriceForIngredient = (
+    name: string,
+    quantity: number
+  ): number => {
     const basePrices: Record<string, number> = {
-      'spaghetti': 2.50,
-      'pancetta': 8.00,
-      'eggs': 4.00,
-      'parmesan cheese': 12.00,
-      'romaine lettuce': 3.00,
+      spaghetti: 2.5,
+      pancetta: 8.0,
+      eggs: 4.0,
+      'parmesan cheese': 12.0,
+      'romaine lettuce': 3.0,
       'chicken breast': 6.99,
-      'bell peppers': 1.50,
-      'broccoli': 2.00
+      'bell peppers': 1.5,
+      broccoli: 2.0
     };
-    
-    return (basePrices[name.toLowerCase()] || 3.00) * Math.max(quantity * 0.3, 0.5);
+
+    return (
+      (basePrices[name.toLowerCase()] || 3.0) * Math.max(quantity * 0.3, 0.5)
+    );
   };
 
   const formatQuantity = (quantity: number, unit: string): string => {
-    if (quantity < 1 && (unit === 'cup' || unit === 'tablespoon' || unit === 'teaspoon')) {
+    if (
+      quantity < 1 &&
+      (unit === 'cup' || unit === 'tablespoon' || unit === 'teaspoon')
+    ) {
       if (unit === 'cup') {
         if (quantity === 0.25) return '1/4 cup';
         if (quantity === 0.5) return '1/2 cup';
@@ -246,13 +302,18 @@ export const GroceryBuilder = () => {
       if (unit === 'tablespoon' && quantity === 0.5) return '1/2 tbsp';
       if (unit === 'teaspoon' && quantity === 0.5) return '1/2 tsp';
     }
-    
-    return quantity % 1 === 0 ? `${quantity} ${unit}${quantity !== 1 ? 's' : ''}` : `${quantity.toFixed(2)} ${unit}${quantity !== 1 ? 's' : ''}`;
+
+    return quantity % 1 === 0
+      ? `${quantity} ${unit}${quantity !== 1 ? 's' : ''}`
+      : `${quantity.toFixed(2)} ${unit}${quantity !== 1 ? 's' : ''}`;
   };
 
   const generateGroceryList = () => {
     const allItems = [...consolidatedIngredients, ...customItems];
-    const estimatedTotal = allItems.reduce((sum, item) => sum + (item.estimatedPrice || 0), 0);
+    const estimatedTotal = allItems.reduce(
+      (sum, item) => sum + (item.estimatedPrice || 0),
+      0
+    );
 
     const newList: GroceryList = {
       id: `list-${Date.now()}`,
@@ -278,61 +339,80 @@ export const GroceryBuilder = () => {
       isChecked: false,
       priority: 'medium'
     };
-    
-    setCustomItems(prev => [...prev, newItem]);
+
+    setCustomItems((prev) => [...prev, newItem]);
   };
 
   const updateCustomItem = (id: string, updates: Partial<GroceryItem>) => {
-    setCustomItems(prev => prev.map(item => 
-      item.id === id ? { ...item, ...updates } : item
-    ));
+    setCustomItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
+    );
   };
 
   const removeCustomItem = (id: string) => {
-    setCustomItems(prev => prev.filter(item => item.id !== id));
+    setCustomItems((prev) => prev.filter((item) => item.id !== id));
   };
 
   const toggleRecipeSelection = (recipeId: string) => {
-    setSelectedRecipes(prev => 
-      prev.includes(recipeId) 
-        ? prev.filter(id => id !== recipeId)
+    setSelectedRecipes((prev) =>
+      prev.includes(recipeId)
+        ? prev.filter((id) => id !== recipeId)
         : [...prev, recipeId]
     );
   };
 
   const updateServingMultiplier = (recipeId: string, multiplier: number) => {
-    setServingMultiplier(prev => ({
+    setServingMultiplier((prev) => ({
       ...prev,
       [recipeId]: Math.max(0.5, multiplier)
     }));
   };
 
   const filteredItems = useMemo(() => {
-    const allItems = currentList ? currentList.items : [...consolidatedIngredients, ...customItems];
-    
-    return allItems.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = filterCategory === 'all' || item.category === filterCategory;
+    const allItems = currentList
+      ? currentList.items
+      : [...consolidatedIngredients, ...customItems];
+
+    return allItems.filter((item) => {
+      const matchesSearch = item.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+      const matchesCategory =
+        filterCategory === 'all' || item.category === filterCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [consolidatedIngredients, customItems, currentList, searchTerm, filterCategory]);
+  }, [
+    consolidatedIngredients,
+    customItems,
+    currentList,
+    searchTerm,
+    filterCategory
+  ]);
 
   const groupedItems = useMemo(() => {
-    const grouped = filteredItems.reduce((acc, item) => {
-      const category = item.category;
-      if (!acc[category]) acc[category] = [];
-      acc[category].push(item);
-      return acc;
-    }, {} as Record<string, GroceryItem[]>);
+    const grouped = filteredItems.reduce(
+      (acc, item) => {
+        const category = item.category;
+        if (!acc[category]) acc[category] = [];
+        acc[category].push(item);
+        return acc;
+      },
+      {} as Record<string, GroceryItem[]>
+    );
 
     // Sort categories by predefined order
     const sortedCategories = storeCategories
-      .map(cat => cat.id)
-      .filter(catId => grouped[catId])
-      .reduce((acc, catId) => {
-        acc[catId] = grouped[catId].sort((a, b) => a.name.localeCompare(b.name));
-        return acc;
-      }, {} as Record<string, GroceryItem[]>);
+      .map((cat) => cat.id)
+      .filter((catId) => grouped[catId])
+      .reduce(
+        (acc, catId) => {
+          acc[catId] = grouped[catId].sort((a, b) =>
+            a.name.localeCompare(b.name)
+          );
+          return acc;
+        },
+        {} as Record<string, GroceryItem[]>
+      );
 
     return sortedCategories;
   }, [filteredItems]);
@@ -343,9 +423,12 @@ export const GroceryBuilder = () => {
         {/* List Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">{currentList.name}</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {currentList.name}
+            </h2>
             <p className="text-gray-600">
-              {currentList.items.length} items • Est. ${currentList.estimatedTotal.toFixed(2)}
+              {currentList.items.length} items • Est. $
+              {currentList.estimatedTotal.toFixed(2)}
             </p>
           </div>
           <div className="flex gap-2">
@@ -381,8 +464,10 @@ export const GroceryBuilder = () => {
             className="px-4 py-2 border border-gray-300 rounded-lg"
           >
             <option value="all">All Categories</option>
-            {storeCategories.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            {storeCategories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
             ))}
           </select>
         </div>
@@ -390,14 +475,18 @@ export const GroceryBuilder = () => {
         {/* Grocery List by Category */}
         <div className="space-y-6">
           {Object.entries(groupedItems).map(([categoryId, items]) => {
-            const category = storeCategories.find(cat => cat.id === categoryId);
-            const checkedCount = items.filter(item => item.isChecked).length;
-            
+            const category = storeCategories.find(
+              (cat) => cat.id === categoryId
+            );
+            const checkedCount = items.filter((item) => item.isChecked).length;
+
             return (
               <Card key={categoryId}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">
-                    <span className={`p-2 rounded-lg ${category?.color || 'bg-gray-100'}`}>
+                    <span
+                      className={`p-2 rounded-lg ${category?.color || 'bg-gray-100'}`}
+                    >
                       {category?.icon || '📦'}
                     </span>
                     <div className="flex-1">
@@ -410,12 +499,12 @@ export const GroceryBuilder = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {items.map(item => (
-                      <div 
+                    {items.map((item) => (
+                      <div
                         key={item.id}
                         className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${
-                          item.isChecked 
-                            ? 'bg-green-50 border-green-200 opacity-60' 
+                          item.isChecked
+                            ? 'bg-green-50 border-green-200 opacity-60'
                             : 'bg-white border-gray-200 hover:border-gray-300'
                         }`}
                       >
@@ -425,8 +514,8 @@ export const GroceryBuilder = () => {
                           onChange={(e) => {
                             const newList = {
                               ...currentList,
-                              items: currentList.items.map(listItem =>
-                                listItem.id === item.id 
+                              items: currentList.items.map((listItem) =>
+                                listItem.id === item.id
                                   ? { ...listItem, isChecked: e.target.checked }
                                   : listItem
                               )
@@ -435,11 +524,14 @@ export const GroceryBuilder = () => {
                           }}
                           className="w-5 h-5 text-green-600 rounded border-gray-300"
                         />
-                        
+
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <span className={`font-medium ${item.isChecked ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                              {formatQuantity(item.quantity, item.unit)} {item.name}
+                            <span
+                              className={`font-medium ${item.isChecked ? 'line-through text-gray-500' : 'text-gray-900'}`}
+                            >
+                              {formatQuantity(item.quantity, item.unit)}{' '}
+                              {item.name}
                             </span>
                             {item.estimatedPrice && (
                               <span className="text-sm text-gray-600">
@@ -470,7 +562,9 @@ export const GroceryBuilder = () => {
       {/* Header */}
       <div className="text-center">
         <h2 className="text-2xl font-bold text-gray-900">Grocery Builder</h2>
-        <p className="text-gray-600 mt-1">Generate smart grocery lists from your meal plans</p>
+        <p className="text-gray-600 mt-1">
+          Generate smart grocery lists from your meal plans
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -483,7 +577,9 @@ export const GroceryBuilder = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Selected Recipes</p>
-                <p className="text-lg font-semibold">{selectedRecipes.length}</p>
+                <p className="text-lg font-semibold">
+                  {selectedRecipes.length}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -514,7 +610,8 @@ export const GroceryBuilder = () => {
               <div>
                 <p className="text-sm text-gray-600">Est. Total</p>
                 <p className="text-lg font-semibold">
-                  ${[...consolidatedIngredients, ...customItems]
+                  $
+                  {[...consolidatedIngredients, ...customItems]
                     .reduce((sum, item) => sum + (item.estimatedPrice || 0), 0)
                     .toFixed(2)}
                 </p>
@@ -533,7 +630,7 @@ export const GroceryBuilder = () => {
                 <p className="text-sm text-gray-600">Servings</p>
                 <p className="text-lg font-semibold">
                   {selectedRecipes.reduce((sum, id) => {
-                    const recipe = mockRecipes.find(r => r.id === id);
+                    const recipe = mockRecipes.find((r) => r.id === id);
                     const multiplier = servingMultiplier[id] || 1;
                     return sum + (recipe ? recipe.servings * multiplier : 0);
                   }, 0)}
@@ -551,15 +648,17 @@ export const GroceryBuilder = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {mockRecipes.map(recipe => {
+            {mockRecipes.map((recipe) => {
               const isSelected = selectedRecipes.includes(recipe.id);
               const multiplier = servingMultiplier[recipe.id] || 1;
-              
+
               return (
-                <div 
+                <div
                   key={recipe.id}
                   className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                    isSelected ? 'border-green-300 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                    isSelected
+                      ? 'border-green-300 bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
                   }`}
                   onClick={() => toggleRecipeSelection(recipe.id)}
                 >
@@ -574,11 +673,12 @@ export const GroceryBuilder = () => {
                       <div>
                         <h3 className="font-medium">{recipe.title}</h3>
                         <p className="text-sm text-gray-600">
-                          {recipe.servings} servings • {recipe.ingredients.length} ingredients
+                          {recipe.servings} servings •{' '}
+                          {recipe.ingredients.length} ingredients
                         </p>
                       </div>
                     </div>
-                    
+
                     {isSelected && (
                       <div className="flex items-center gap-3">
                         <span className="text-sm text-gray-600">Servings:</span>
@@ -586,7 +686,10 @@ export const GroceryBuilder = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              updateServingMultiplier(recipe.id, multiplier - 0.5);
+                              updateServingMultiplier(
+                                recipe.id,
+                                multiplier - 0.5
+                              );
                             }}
                             className="p-1 rounded border border-gray-300 hover:bg-gray-100"
                           >
@@ -598,7 +701,10 @@ export const GroceryBuilder = () => {
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              updateServingMultiplier(recipe.id, multiplier + 0.5);
+                              updateServingMultiplier(
+                                recipe.id,
+                                multiplier + 0.5
+                              );
                             }}
                             className="p-1 rounded border border-gray-300 hover:bg-gray-100"
                           >
@@ -627,25 +733,36 @@ export const GroceryBuilder = () => {
         <CardContent>
           {customItems.length > 0 ? (
             <div className="space-y-3">
-              {customItems.map(item => (
-                <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
+              {customItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 p-3 border rounded-lg"
+                >
                   <input
                     type="text"
                     placeholder="Item name"
                     value={item.name}
-                    onChange={(e) => updateCustomItem(item.id, { name: e.target.value })}
+                    onChange={(e) =>
+                      updateCustomItem(item.id, { name: e.target.value })
+                    }
                     className="flex-1 px-2 py-1 border border-gray-300 rounded"
                   />
                   <input
                     type="number"
                     placeholder="Qty"
                     value={item.quantity}
-                    onChange={(e) => updateCustomItem(item.id, { quantity: parseFloat(e.target.value) || 1 })}
+                    onChange={(e) =>
+                      updateCustomItem(item.id, {
+                        quantity: parseFloat(e.target.value) || 1
+                      })
+                    }
                     className="w-16 px-2 py-1 border border-gray-300 rounded"
                   />
                   <select
                     value={item.unit}
-                    onChange={(e) => updateCustomItem(item.id, { unit: e.target.value })}
+                    onChange={(e) =>
+                      updateCustomItem(item.id, { unit: e.target.value })
+                    }
                     className="px-2 py-1 border border-gray-300 rounded"
                   >
                     <option value="piece">piece</option>
@@ -657,11 +774,15 @@ export const GroceryBuilder = () => {
                   </select>
                   <select
                     value={item.category}
-                    onChange={(e) => updateCustomItem(item.id, { category: e.target.value })}
+                    onChange={(e) =>
+                      updateCustomItem(item.id, { category: e.target.value })
+                    }
                     className="px-2 py-1 border border-gray-300 rounded"
                   >
-                    {storeCategories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    {storeCategories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
                     ))}
                   </select>
                   <button
@@ -677,7 +798,9 @@ export const GroceryBuilder = () => {
             <div className="text-center py-8 text-gray-500">
               <Package className="w-12 h-12 mx-auto mb-3 text-gray-400" />
               <p>No additional items added</p>
-              <p className="text-sm">Click &quot;Add Item&quot; to include extra groceries</p>
+              <p className="text-sm">
+                Click &quot;Add Item&quot; to include extra groceries
+              </p>
             </div>
           )}
         </CardContent>
@@ -696,19 +819,27 @@ export const GroceryBuilder = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Object.entries(groupedItems).map(([categoryId, items]) => {
-                const category = storeCategories.find(cat => cat.id === categoryId);
-                
+                const category = storeCategories.find(
+                  (cat) => cat.id === categoryId
+                );
+
                 return (
                   <div key={categoryId} className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className={`p-1 rounded ${category?.color || 'bg-gray-100'}`}>
+                      <span
+                        className={`p-1 rounded ${category?.color || 'bg-gray-100'}`}
+                      >
                         {category?.icon || '📦'}
                       </span>
-                      <span className="font-medium text-sm">{category?.name || 'Other'}</span>
-                      <span className="text-xs text-gray-500">({items.length})</span>
+                      <span className="font-medium text-sm">
+                        {category?.name || 'Other'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        ({items.length})
+                      </span>
                     </div>
                     <div className="space-y-1 pl-6">
-                      {items.slice(0, 3).map(item => (
+                      {items.slice(0, 3).map((item) => (
                         <div key={item.id} className="text-sm text-gray-600">
                           {formatQuantity(item.quantity, item.unit)} {item.name}
                         </div>

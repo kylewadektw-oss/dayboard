@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -95,7 +95,7 @@ function OptimizedImageComponent({
 
   // Generate placeholder while loading
   const LoadingPlaceholder = () => (
-    <div 
+    <div
       className={`bg-gray-200 animate-pulse flex items-center justify-center ${className}`}
       style={{ width: width || '100%', height: height || 'auto' }}
     >
@@ -106,7 +106,7 @@ function OptimizedImageComponent({
   // Error state
   if (hasError) {
     return (
-      <div 
+      <div
         className={`bg-gray-100 flex items-center justify-center border border-gray-200 ${className}`}
         style={{ width: width || '100%', height: height || 'auto' }}
       >
@@ -148,20 +148,11 @@ function OptimizedImageComponent({
           <LoadingPlaceholder />
         </div>
       )}
-      
+
       {fill ? (
-        <Image
-          {...imageProps}
-          fill
-          alt={alt}
-        />
+        <Image {...imageProps} fill alt={alt} />
       ) : (
-        <Image
-          {...imageProps}
-          width={width}
-          height={height}
-          alt={alt}
-        />
+        <Image {...imageProps} width={width} height={height} alt={alt} />
       )}
     </div>
   );
@@ -204,14 +195,18 @@ export const OptimizedAvatar = memo(function OptimizedAvatar({
 
   if (!src || hasError) {
     return (
-      <div className={`${sizeClasses[size]} bg-gray-300 rounded-full flex items-center justify-center font-medium text-gray-600 ${className}`}>
+      <div
+        className={`${sizeClasses[size]} bg-gray-300 rounded-full flex items-center justify-center font-medium text-gray-600 ${className}`}
+      >
         {fallback || alt.charAt(0).toUpperCase()}
       </div>
     );
   }
 
   return (
-    <div className={`${sizeClasses[size]} relative rounded-full overflow-hidden ${className}`}>
+    <div
+      className={`${sizeClasses[size]} relative rounded-full overflow-hidden ${className}`}
+    >
       <OptimizedImage
         src={src}
         alt={alt}
@@ -255,11 +250,9 @@ export const OptimizedHeroImage = memo(function OptimizedHeroImage({
         placeholder="blur"
         blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyLmhQoRbcWOsNcLJjGhGrOQ8C4lfgUvgU1z4aGrJ2TmN3MZAS1oWJCAE7Rv+R/xpF7Xe7rJw=="
       />
-      
-      {overlay && (
-        <div className="absolute inset-0 bg-black bg-opacity-30" />
-      )}
-      
+
+      {overlay && <div className="absolute inset-0 bg-black bg-opacity-30" />}
+
       {children && (
         <div className="absolute inset-0 flex items-center justify-center">
           {children}

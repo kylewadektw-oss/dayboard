@@ -1,21 +1,28 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 import { useState, useMemo } from 'react';
-import { Lightbulb, Clock, Star, TrendingUp, Calendar, Shuffle } from 'lucide-react';
+import {
+  Lightbulb,
+  Clock,
+  Star,
+  TrendingUp,
+  Calendar,
+  Shuffle
+} from 'lucide-react';
 import { Recipe, MealPlan, RecipeMealType } from '@/types/recipes';
 
 interface SmartMealSuggestionsProps {
@@ -95,15 +102,17 @@ export function SmartMealSuggestions({
 
   const suggestions = useMemo(() => {
     // Filter recipes based on meal type and dietary restrictions
-    const filteredRecipes = recipes.filter(recipe => {
+    const filteredRecipes = recipes.filter((recipe) => {
       // Check meal type
-      const matchesMealType = recipe.meal_type?.some(type => type === mealType);
+      const matchesMealType = recipe.meal_type?.some(
+        (type) => type === mealType
+      );
       if (!matchesMealType) return false;
 
       // Check dietary restrictions
       if (dietaryRestrictions.length > 0) {
-        const hasRequiredDiets = dietaryRestrictions.every(diet =>
-          recipe.diet_types?.some(recipeType => recipeType === diet)
+        const hasRequiredDiets = dietaryRestrictions.every((diet) =>
+          recipe.diet_types?.some((recipeType) => recipeType === diet)
         );
         if (!hasRequiredDiets) return false;
       }
@@ -117,97 +126,118 @@ export function SmartMealSuggestions({
     });
 
     // Calculate suggestion scores and reasons
-    const scoredSuggestions: RecipeSuggestion[] = filteredRecipes.map(recipe => {
-      let score = 0;
-      const reasons: SuggestionReason[] = [];
+    const scoredSuggestions: RecipeSuggestion[] = filteredRecipes.map(
+      (recipe) => {
+        let score = 0;
+        const reasons: SuggestionReason[] = [];
 
-      // Base score from rating
-      score += recipe.rating * 10;
+        // Base score from rating
+        score += recipe.rating * 10;
 
-      // Recently cooked recipes get lower priority
-      const recentPlans = mealPlans.filter(plan => 
-        plan.recipe_id === recipe.id &&
-        new Date(plan.planned_date) > new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
-      );
-      if (recentPlans.length === 0) {
-        score += 20; // Bonus for not cooked recently
-      } else {
-        score -= recentPlans.length * 5; // Penalty for recent cooking
-      }
+        // Recently cooked recipes get lower priority
+        const recentPlans = mealPlans.filter(
+          (plan) =>
+            plan.recipe_id === recipe.id &&
+            new Date(plan.planned_date) >
+              new Date(Date.now() - 14 * 24 * 60 * 60 * 1000)
+        );
+        if (recentPlans.length === 0) {
+          score += 20; // Bonus for not cooked recently
+        } else {
+          score -= recentPlans.length * 5; // Penalty for recent cooking
+        }
 
-      // High rating bonus
-      if (recipe.rating >= 4.5) {
-        score += 15;
-        reasons.push(SUGGESTION_REASONS.favorite);
-      }
-
-      // Quick meal bonus
-      if (recipe.total_time_minutes <= 30) {
-        score += 10;
-        reasons.push(SUGGESTION_REASONS.quick);
-      }
-
-      // Favorite bonus
-      if (recipe.is_favorite) {
-        score += 12;
-        if (!reasons.some(r => r.type === 'favorite')) {
+        // High rating bonus
+        if (recipe.rating >= 4.5) {
+          score += 15;
           reasons.push(SUGGESTION_REASONS.favorite);
         }
-      }
 
-      // Popular/trending logic (cooked frequently by others)
-      const popularityScore = Math.min(recipe.rating_count / 10, 5);
-      score += popularityScore;
-      if (recipe.rating_count >= 50) {
-        reasons.push(SUGGESTION_REASONS.trending);
-      }
+        // Quick meal bonus
+        if (recipe.total_time_minutes <= 30) {
+          score += 10;
+          reasons.push(SUGGESTION_REASONS.quick);
+        }
 
-      // Seasonal logic (fall recipes)
-      const currentMonth = selectedDate.getMonth(); // 0-11
-      const isFall = currentMonth >= 8 && currentMonth <= 10; // Sep-Nov
-      if (isFall) {
-        const fallKeywords = ['pumpkin', 'apple', 'cinnamon', 'squash', 'butternut', 'sweet potato', 'cranberry'];
-        const isSeasonalRecipe = fallKeywords.some(keyword => 
-          recipe.title.toLowerCase().includes(keyword) ||
-          recipe.description?.toLowerCase().includes(keyword) ||
-          recipe.tags.some(tag => tag.toLowerCase().includes(keyword))
+        // Favorite bonus
+        if (recipe.is_favorite) {
+          score += 12;
+          if (!reasons.some((r) => r.type === 'favorite')) {
+            reasons.push(SUGGESTION_REASONS.favorite);
+          }
+        }
+
+        // Popular/trending logic (cooked frequently by others)
+        const popularityScore = Math.min(recipe.rating_count / 10, 5);
+        score += popularityScore;
+        if (recipe.rating_count >= 50) {
+          reasons.push(SUGGESTION_REASONS.trending);
+        }
+
+        // Seasonal logic (fall recipes)
+        const currentMonth = selectedDate.getMonth(); // 0-11
+        const isFall = currentMonth >= 8 && currentMonth <= 10; // Sep-Nov
+        if (isFall) {
+          const fallKeywords = [
+            'pumpkin',
+            'apple',
+            'cinnamon',
+            'squash',
+            'butternut',
+            'sweet potato',
+            'cranberry'
+          ];
+          const isSeasonalRecipe = fallKeywords.some(
+            (keyword) =>
+              recipe.title.toLowerCase().includes(keyword) ||
+              recipe.description?.toLowerCase().includes(keyword) ||
+              recipe.tags.some((tag) => tag.toLowerCase().includes(keyword))
+          );
+          if (isSeasonalRecipe) {
+            score += 8;
+            reasons.push(SUGGESTION_REASONS.seasonal);
+          }
+        }
+
+        // Balanced nutrition bonus
+        if (recipe.nutrition) {
+          const hasGoodBalance =
+            recipe.nutrition.protein && recipe.nutrition.fiber;
+          if (hasGoodBalance) {
+            score += 5;
+            reasons.push(SUGGESTION_REASONS.balanced);
+          }
+        }
+
+        // New recipe bonus (never cooked)
+        const neverCooked = !mealPlans.some(
+          (plan) => plan.recipe_id === recipe.id
         );
-        if (isSeasonalRecipe) {
-          score += 8;
-          reasons.push(SUGGESTION_REASONS.seasonal);
+        if (neverCooked) {
+          score += 7;
+          reasons.push(SUGGESTION_REASONS.new);
         }
+
+        // Random factor for variety
+        score += Math.random() * 10;
+
+        return { recipe, score, reasons };
       }
-
-      // Balanced nutrition bonus
-      if (recipe.nutrition) {
-        const hasGoodBalance = recipe.nutrition.protein && recipe.nutrition.fiber;
-        if (hasGoodBalance) {
-          score += 5;
-          reasons.push(SUGGESTION_REASONS.balanced);
-        }
-      }
-
-      // New recipe bonus (never cooked)
-      const neverCooked = !mealPlans.some(plan => plan.recipe_id === recipe.id);
-      if (neverCooked) {
-        score += 7;
-        reasons.push(SUGGESTION_REASONS.new);
-      }
-
-      // Random factor for variety
-      score += Math.random() * 10;
-
-      return { recipe, score, reasons };
-    });
+    );
 
     // Sort by score and return top suggestions
-    return scoredSuggestions
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 6);
-  }, [recipes, mealPlans, selectedDate, mealType, dietaryRestrictions, maxCookTime]);
+    return scoredSuggestions.sort((a, b) => b.score - a.score).slice(0, 6);
+  }, [
+    recipes,
+    mealPlans,
+    selectedDate,
+    mealType,
+    dietaryRestrictions,
+    maxCookTime
+  ]);
 
   const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   const formatTime = (minutes: number) => {
@@ -221,8 +251,12 @@ export function SmartMealSuggestions({
     return (
       <div className={`bg-gray-50 rounded-lg p-6 text-center ${className}`}>
         <Lightbulb className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-        <p className="text-gray-600">No suggestions available for your current filters.</p>
-        <p className="text-sm text-gray-500 mt-1">Try adjusting your dietary restrictions or time limits.</p>
+        <p className="text-gray-600">
+          No suggestions available for your current filters.
+        </p>
+        <p className="text-sm text-gray-500 mt-1">
+          Try adjusting your dietary restrictions or time limits.
+        </p>
       </div>
     );
   }
@@ -234,7 +268,9 @@ export function SmartMealSuggestions({
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Lightbulb className="h-5 w-5 text-blue-600 mr-2" />
-            <h3 className="text-lg font-semibold text-gray-900">Smart Suggestions</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Smart Suggestions
+            </h3>
           </div>
           <button
             onClick={handleRefresh}
@@ -245,7 +281,8 @@ export function SmartMealSuggestions({
           </button>
         </div>
         <p className="text-sm text-gray-600 mt-1">
-          Personalized {mealType} recommendations for {selectedDate.toLocaleDateString()}
+          Personalized {mealType} recommendations for{' '}
+          {selectedDate.toLocaleDateString()}
         </p>
       </div>
 
@@ -304,9 +341,15 @@ export function SmartMealSuggestions({
               {/* Quick Stats */}
               <div className="mt-3 pt-3 border-t border-gray-100">
                 <div className="flex justify-between text-xs text-gray-600">
-                  <span>Difficulty: <span className="capitalize">{recipe.difficulty}</span></span>
+                  <span>
+                    Difficulty:{' '}
+                    <span className="capitalize">{recipe.difficulty}</span>
+                  </span>
                   {recipe.cuisine && (
-                    <span>Cuisine: <span className="capitalize">{recipe.cuisine}</span></span>
+                    <span>
+                      Cuisine:{' '}
+                      <span className="capitalize">{recipe.cuisine}</span>
+                    </span>
                   )}
                 </div>
               </div>

@@ -17,7 +17,13 @@ interface PreferenceSectionProps {
   onToggle: () => void;
 }
 
-function PreferenceSection({ title, icon, children, isOpen, onToggle }: PreferenceSectionProps) {
+function PreferenceSection({
+  title,
+  icon,
+  children,
+  isOpen,
+  onToggle
+}: PreferenceSectionProps) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <button
@@ -28,11 +34,13 @@ function PreferenceSection({ title, icon, children, isOpen, onToggle }: Preferen
           <span className="text-2xl">{icon}</span>
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
         </div>
-        <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+        <span
+          className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        >
           ⌄
         </span>
       </button>
-      
+
       {isOpen && (
         <motion.div
           initial={{ height: 0, opacity: 0 }}
@@ -57,7 +65,7 @@ interface MultiSelectProps {
 function MultiSelect({ label, options, selected, onChange }: MultiSelectProps) {
   const toggleOption = (option: string) => {
     if (selected.includes(option)) {
-      onChange(selected.filter(item => item !== option));
+      onChange(selected.filter((item) => item !== option));
     } else {
       onChange([...selected, option]);
     }
@@ -104,7 +112,7 @@ export default function EntertainmentPreferencesSettings() {
   });
 
   const toggleSection = (section: string) => {
-    setOpenSections(prev => ({
+    setOpenSections((prev) => ({
       ...prev,
       [section]: !prev[section]
     }));
@@ -128,10 +136,14 @@ export default function EntertainmentPreferencesSettings() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Entertainment Preferences</h1>
-          <p className="text-gray-600 mt-1">Customize your recommendations and discovery experience</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Entertainment Preferences
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Customize your recommendations and discovery experience
+          </p>
         </div>
-        
+
         <button
           onClick={resetPreferences}
           className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -150,27 +162,55 @@ export default function EntertainmentPreferencesSettings() {
         <div className="space-y-6">
           <MultiSelect
             label="Favorite Genres"
-            options={['Action', 'Adventure', 'Comedy', 'Drama', 'Horror', 'Romance', 'Sci-Fi', 'Thriller', 'Documentary', 'Animation']}
+            options={[
+              'Action',
+              'Adventure',
+              'Comedy',
+              'Drama',
+              'Horror',
+              'Romance',
+              'Sci-Fi',
+              'Thriller',
+              'Documentary',
+              'Animation'
+            ]}
             selected={preferences.movies.favoriteGenres}
-            onChange={(genres) => updateMoviePreferences({ favoriteGenres: genres })}
+            onChange={(genres) =>
+              updateMoviePreferences({ favoriteGenres: genres })
+            }
           />
-          
+
           <MultiSelect
             label="Preferred Ratings"
             options={['G', 'PG', 'PG-13', 'R', 'NC-17', 'Not Rated']}
             selected={preferences.movies.preferredRatings}
-            onChange={(ratings) => updateMoviePreferences({ preferredRatings: ratings })}
+            onChange={(ratings) =>
+              updateMoviePreferences({ preferredRatings: ratings })
+            }
           />
-          
+
           <MultiSelect
             label="Streaming Services"
-            options={['Netflix', 'Hulu', 'Prime Video', 'Disney+', 'HBO Max', 'Apple TV+', 'Paramount+', 'Peacock']}
+            options={[
+              'Netflix',
+              'Hulu',
+              'Prime Video',
+              'Disney+',
+              'HBO Max',
+              'Apple TV+',
+              'Paramount+',
+              'Peacock'
+            ]}
             selected={preferences.movies.streamingServices}
-            onChange={(services) => updateMoviePreferences({ streamingServices: services })}
+            onChange={(services) =>
+              updateMoviePreferences({ streamingServices: services })
+            }
           />
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Preferred Watch Time</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Preferred Watch Time
+            </label>
             <div className="flex space-x-3">
               {[
                 { value: 'short', label: 'Short (< 90 min)' },
@@ -179,7 +219,11 @@ export default function EntertainmentPreferencesSettings() {
               ].map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => updateMoviePreferences({ watchTime: option.value as 'short' | 'medium' | 'long' })}
+                  onClick={() =>
+                    updateMoviePreferences({
+                      watchTime: option.value as 'short' | 'medium' | 'long'
+                    })
+                  }
                   className={`px-4 py-2 text-sm rounded-lg border transition-colors ${
                     preferences.movies.watchTime === option.value
                       ? 'bg-blue-50 border-blue-200 text-blue-700'
@@ -204,36 +248,75 @@ export default function EntertainmentPreferencesSettings() {
         <div className="space-y-6">
           <MultiSelect
             label="Favorite Genres"
-            options={['Pop', 'Rock', 'Hip-Hop', 'R&B', 'Country', 'Electronic', 'Jazz', 'Classical', 'Alternative', 'Indie']}
+            options={[
+              'Pop',
+              'Rock',
+              'Hip-Hop',
+              'R&B',
+              'Country',
+              'Electronic',
+              'Jazz',
+              'Classical',
+              'Alternative',
+              'Indie'
+            ]}
             selected={preferences.music.favoriteGenres}
-            onChange={(genres) => updateMusicPreferences({ favoriteGenres: genres })}
+            onChange={(genres) =>
+              updateMusicPreferences({ favoriteGenres: genres })
+            }
           />
-          
+
           <MultiSelect
             label="Preferred Era"
-            options={['1960s', '1970s', '1980s', '1990s', '2000s', '2010s', '2020s']}
+            options={[
+              '1960s',
+              '1970s',
+              '1980s',
+              '1990s',
+              '2000s',
+              '2010s',
+              '2020s'
+            ]}
             selected={preferences.music.preferredEra}
             onChange={(era) => updateMusicPreferences({ preferredEra: era })}
           />
-          
+
           <MultiSelect
             label="Streaming Services"
-            options={['Spotify', 'Apple Music', 'YouTube Music', 'Amazon Music', 'Pandora', 'Tidal']}
+            options={[
+              'Spotify',
+              'Apple Music',
+              'YouTube Music',
+              'Amazon Music',
+              'Pandora',
+              'Tidal'
+            ]}
             selected={preferences.music.streamingServices}
-            onChange={(services) => updateMusicPreferences({ streamingServices: services })}
+            onChange={(services) =>
+              updateMusicPreferences({ streamingServices: services })
+            }
           />
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Discovery Mode</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Discovery Mode
+            </label>
             <div className="flex space-x-3">
               {[
                 { value: 'similar', label: 'Similar to favorites' },
                 { value: 'diverse', label: 'Diverse exploration' },
-                { value: 'trending', label: 'What\'s trending' }
+                { value: 'trending', label: "What's trending" }
               ].map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => updateMusicPreferences({ discoveryMode: option.value as 'similar' | 'diverse' | 'trending' })}
+                  onClick={() =>
+                    updateMusicPreferences({
+                      discoveryMode: option.value as
+                        | 'similar'
+                        | 'diverse'
+                        | 'trending'
+                    })
+                  }
                   className={`px-4 py-2 text-sm rounded-lg border transition-colors ${
                     preferences.music.discoveryMode === option.value
                       ? 'bg-blue-50 border-blue-200 text-blue-700'
@@ -258,11 +341,22 @@ export default function EntertainmentPreferencesSettings() {
         <div className="space-y-6">
           <MultiSelect
             label="Event Categories"
-            options={['Music', 'Food & Drink', 'Arts', 'Sports', 'Technology', 'Business', 'Health', 'Family', 'Community', 'Education']}
+            options={[
+              'Music',
+              'Food & Drink',
+              'Arts',
+              'Sports',
+              'Technology',
+              'Business',
+              'Health',
+              'Family',
+              'Community',
+              'Education'
+            ]}
             selected={preferences.events.categories}
             onChange={(categories) => updateEventPreferences({ categories })}
           />
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
               Maximum Distance: {preferences.events.maxDistance} miles
@@ -272,14 +366,19 @@ export default function EntertainmentPreferencesSettings() {
               min="5"
               max="100"
               value={preferences.events.maxDistance}
-              onChange={(e) => updateEventPreferences({ maxDistance: parseInt(e.target.value) })}
+              onChange={(e) =>
+                updateEventPreferences({
+                  maxDistance: parseInt(e.target.value)
+                })
+              }
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
-              Price Range: ${preferences.events.priceRange[0]} - ${preferences.events.priceRange[1]}
+              Price Range: ${preferences.events.priceRange[0]} - $
+              {preferences.events.priceRange[1]}
             </label>
             <div className="flex space-x-4">
               <input
@@ -287,9 +386,14 @@ export default function EntertainmentPreferencesSettings() {
                 min="0"
                 max="500"
                 value={preferences.events.priceRange[0]}
-                onChange={(e) => updateEventPreferences({ 
-                  priceRange: [parseInt(e.target.value), preferences.events.priceRange[1]] 
-                })}
+                onChange={(e) =>
+                  updateEventPreferences({
+                    priceRange: [
+                      parseInt(e.target.value),
+                      preferences.events.priceRange[1]
+                    ]
+                  })
+                }
                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               />
               <input
@@ -297,19 +401,26 @@ export default function EntertainmentPreferencesSettings() {
                 min="0"
                 max="500"
                 value={preferences.events.priceRange[1]}
-                onChange={(e) => updateEventPreferences({ 
-                  priceRange: [preferences.events.priceRange[0], parseInt(e.target.value)] 
-                })}
+                onChange={(e) =>
+                  updateEventPreferences({
+                    priceRange: [
+                      preferences.events.priceRange[0],
+                      parseInt(e.target.value)
+                    ]
+                  })
+                }
                 className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               />
             </div>
           </div>
-          
+
           <MultiSelect
             label="Time Preferences"
             options={['Morning', 'Afternoon', 'Evening', 'Weekend', 'Weekday']}
             selected={preferences.events.timePreferences}
-            onChange={(times) => updateEventPreferences({ timePreferences: times })}
+            onChange={(times) =>
+              updateEventPreferences({ timePreferences: times })
+            }
           />
         </div>
       </PreferenceSection>
@@ -324,22 +435,37 @@ export default function EntertainmentPreferencesSettings() {
         <div className="space-y-6">
           <MultiSelect
             label="Game Categories"
-            options={['Strategy', 'Party', 'Cooperative', 'Competitive', 'Puzzle', 'Adventure', 'Family', 'Adult', 'Quick', 'Board Games']}
+            options={[
+              'Strategy',
+              'Party',
+              'Cooperative',
+              'Competitive',
+              'Puzzle',
+              'Adventure',
+              'Family',
+              'Adult',
+              'Quick',
+              'Board Games'
+            ]}
             selected={preferences.games.categories}
             onChange={(categories) => updateGamePreferences({ categories })}
           />
-          
+
           <MultiSelect
             label="Player Count"
             options={['1', '2', '3', '4', '5', '6', '7', '8+']}
             selected={preferences.games.playerCount.map(String)}
-            onChange={(counts) => updateGamePreferences({ 
-              playerCount: counts.map(c => c === '8+' ? 8 : parseInt(c)) 
-            })}
+            onChange={(counts) =>
+              updateGamePreferences({
+                playerCount: counts.map((c) => (c === '8+' ? 8 : parseInt(c)))
+              })
+            }
           />
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Game Complexity</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Game Complexity
+            </label>
             <div className="flex space-x-3">
               {[
                 { value: 'simple', label: 'Simple & Easy' },
@@ -348,7 +474,14 @@ export default function EntertainmentPreferencesSettings() {
               ].map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => updateGamePreferences({ complexity: option.value as 'simple' | 'medium' | 'complex' })}
+                  onClick={() =>
+                    updateGamePreferences({
+                      complexity: option.value as
+                        | 'simple'
+                        | 'medium'
+                        | 'complex'
+                    })
+                  }
                   className={`px-4 py-2 text-sm rounded-lg border transition-colors ${
                     preferences.games.complexity === option.value
                       ? 'bg-blue-50 border-blue-200 text-blue-700'
@@ -360,9 +493,11 @@ export default function EntertainmentPreferencesSettings() {
               ))}
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">Game Length</label>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Game Length
+            </label>
             <div className="flex space-x-3">
               {[
                 { value: 'quick', label: 'Quick (< 30 min)' },
@@ -371,7 +506,11 @@ export default function EntertainmentPreferencesSettings() {
               ].map((option) => (
                 <button
                   key={option.value}
-                  onClick={() => updateGamePreferences({ gameLength: option.value as 'quick' | 'medium' | 'long' })}
+                  onClick={() =>
+                    updateGamePreferences({
+                      gameLength: option.value as 'quick' | 'medium' | 'long'
+                    })
+                  }
                   className={`px-4 py-2 text-sm rounded-lg border transition-colors ${
                     preferences.games.gameLength === option.value
                       ? 'bg-blue-50 border-blue-200 text-blue-700'
@@ -389,7 +528,8 @@ export default function EntertainmentPreferencesSettings() {
       {/* Save confirmation */}
       <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
         <p className="text-sm text-green-700">
-          ✅ Your preferences are automatically saved and will be used to personalize your recommendations
+          ✅ Your preferences are automatically saved and will be used to
+          personalize your recommendations
         </p>
       </div>
     </div>

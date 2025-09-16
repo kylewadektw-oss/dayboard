@@ -6,14 +6,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  User, 
-  Shield, 
-  Crown, 
+import {
+  User,
+  Shield,
+  Crown,
   Info,
   XCircle,
   // Unused imports commented out to fix build errors:
-  // Settings, 
+  // Settings,
   // CheckCircle,
   // Home,
   // Users,
@@ -172,9 +172,15 @@ export default function BasicSettingsPage() {
   // Unused variables commented out to fix build errors:
   // const { user, permissions } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('member');
-  const [memberSettings, setMemberSettings] = useState<Record<string, unknown>>({});
-  const [householdSettings, setHouseholdSettings] = useState<Record<string, unknown>>({});
-  const [featureToggles, setFeatureToggles] = useState<Record<string, boolean>>({});
+  const [memberSettings, setMemberSettings] = useState<Record<string, unknown>>(
+    {}
+  );
+  const [householdSettings, setHouseholdSettings] = useState<
+    Record<string, unknown>
+  >({});
+  const [featureToggles, setFeatureToggles] = useState<Record<string, boolean>>(
+    {}
+  );
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error] = useState<string | null>(null); // Error handling coming soon
@@ -185,7 +191,7 @@ export default function BasicSettingsPage() {
   const userRole = profile?.role || 'member';
 
   // Get available tabs based on user role
-  const availableTabs = TABS.filter(tab => 
+  const availableTabs = TABS.filter((tab) =>
     tab.available_for.includes(userRole)
   );
 
@@ -193,9 +199,12 @@ export default function BasicSettingsPage() {
   useEffect(() => {
     if (profile) {
       // Load member settings from profile
-      const notificationPrefs = typeof profile.notification_preferences === 'object' && profile.notification_preferences !== null 
-        ? profile.notification_preferences as Record<string, unknown> : {};
-      
+      const notificationPrefs =
+        typeof profile.notification_preferences === 'object' &&
+        profile.notification_preferences !== null
+          ? (profile.notification_preferences as Record<string, unknown>)
+          : {};
+
       setMemberSettings({
         email_notifications: notificationPrefs.email ?? true,
         dark_mode: false, // Will add UI preferences to profile later
@@ -203,7 +212,10 @@ export default function BasicSettingsPage() {
       });
 
       // Load household settings (if admin)
-      if (profile.household_id && (userRole === 'admin' || userRole === 'super_admin')) {
+      if (
+        profile.household_id &&
+        (userRole === 'admin' || userRole === 'super_admin')
+      ) {
         // For now, use placeholder data - will be replaced when new tables are available
         setHouseholdSettings({
           household_name: profile.preferred_name || profile.name || '',
@@ -214,7 +226,7 @@ export default function BasicSettingsPage() {
 
       // Initialize feature toggles
       const toggles: Record<string, boolean> = {};
-      FEATURE_CONTROLS.forEach(feature => {
+      FEATURE_CONTROLS.forEach((feature) => {
         toggles[feature.key] = true; // Default all features to enabled
       });
       setFeatureToggles(toggles);
@@ -223,7 +235,10 @@ export default function BasicSettingsPage() {
     }
   }, [profile, userRole]);
 
-  const updateMemberSetting = async (settingKey: string, value: string | number | boolean) => {
+  const updateMemberSetting = async (
+    settingKey: string,
+    value: string | number | boolean
+  ) => {
     if (!profile?.id) return;
 
     setSaving(true);
@@ -232,8 +247,11 @@ export default function BasicSettingsPage() {
 
       switch (settingKey) {
         case 'email_notifications':
-          const currentNotificationPrefs = typeof profile.notification_preferences === 'object' && profile.notification_preferences !== null 
-            ? profile.notification_preferences as Record<string, unknown> : {};
+          const currentNotificationPrefs =
+            typeof profile.notification_preferences === 'object' &&
+            profile.notification_preferences !== null
+              ? (profile.notification_preferences as Record<string, unknown>)
+              : {};
           updateData = {
             notification_preferences: {
               ...currentNotificationPrefs,
@@ -250,7 +268,10 @@ export default function BasicSettingsPage() {
           } catch {
             bioData = {};
           }
-          bioData.ui_preferences = { ...(bioData.ui_preferences as Record<string, unknown> || {}), dark_mode: value };
+          bioData.ui_preferences = {
+            ...((bioData.ui_preferences as Record<string, unknown>) || {}),
+            dark_mode: value
+          };
           updateData = { bio: JSON.stringify(bioData) };
           break;
         case 'timezone':
@@ -267,20 +288,25 @@ export default function BasicSettingsPage() {
 
       if (error) throw error;
 
-      setMemberSettings(prev => ({ ...prev, [settingKey]: value }));
+      setMemberSettings((prev) => ({ ...prev, [settingKey]: value }));
       toastHelpers.success('Setting updated successfully');
-      
+
       // Refresh user data to get updated profile
       await refreshUser();
     } catch (err: unknown) {
       console.error('Error updating member setting:', err);
-      toastHelpers.error(`Failed to update setting: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      toastHelpers.error(
+        `Failed to update setting: ${err instanceof Error ? err.message : 'Unknown error'}`
+      );
     } finally {
       setSaving(false);
     }
   };
 
-  const updateHouseholdSetting = async (settingKey: string, value: string | number | boolean) => {
+  const updateHouseholdSetting = async (
+    settingKey: string,
+    value: string | number | boolean
+  ) => {
     if (!profile?.household_id) return;
 
     setSaving(true);
@@ -302,7 +328,11 @@ export default function BasicSettingsPage() {
           } catch {
             bioData = {};
           }
-          bioData.household_preferences = { ...(bioData.household_preferences as Record<string, unknown> || {}), [settingKey]: value };
+          bioData.household_preferences = {
+            ...((bioData.household_preferences as Record<string, unknown>) ||
+              {}),
+            [settingKey]: value
+          };
           updateData = { bio: JSON.stringify(bioData) };
       }
 
@@ -313,13 +343,15 @@ export default function BasicSettingsPage() {
 
       if (error) throw error;
 
-      setHouseholdSettings(prev => ({ ...prev, [settingKey]: value }));
+      setHouseholdSettings((prev) => ({ ...prev, [settingKey]: value }));
       toastHelpers.success('Household setting updated successfully');
-      
+
       await refreshUser();
     } catch (err: unknown) {
       console.error('Error updating household setting:', err);
-      toastHelpers.error(`Failed to update setting: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      toastHelpers.error(
+        `Failed to update setting: ${err instanceof Error ? err.message : 'Unknown error'}`
+      );
     } finally {
       setSaving(false);
     }
@@ -339,7 +371,8 @@ export default function BasicSettingsPage() {
         bioData = {};
       }
 
-      const currentToggles = (bioData.feature_toggles as Record<string, boolean>) || {};
+      const currentToggles =
+        (bioData.feature_toggles as Record<string, boolean>) || {};
       const updatedToggles = { ...currentToggles, [featureKey]: enabled };
       bioData.feature_toggles = updatedToggles;
 
@@ -350,21 +383,23 @@ export default function BasicSettingsPage() {
 
       if (error) throw error;
 
-      setFeatureToggles(prev => ({ ...prev, [featureKey]: enabled }));
+      setFeatureToggles((prev) => ({ ...prev, [featureKey]: enabled }));
       toastHelpers.success('Feature toggle updated successfully');
-      
+
       await refreshUser();
     } catch (err: unknown) {
       console.error('Error updating feature toggle:', err);
-      toastHelpers.error(`Failed to update feature: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      toastHelpers.error(
+        `Failed to update feature: ${err instanceof Error ? err.message : 'Unknown error'}`
+      );
     } finally {
       setSaving(false);
     }
   };
 
   const renderSettingInput = (
-    setting: Setting, 
-    value: string | number | boolean, 
+    setting: Setting,
+    value: string | number | boolean,
     updateFn: (key: string, val: string | number | boolean) => void
   ) => {
     switch (setting.type) {
@@ -447,7 +482,9 @@ export default function BasicSettingsPage() {
             <div className="flex">
               <XCircle className="h-5 w-5 text-red-400" />
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error Loading Settings</h3>
+                <h3 className="text-sm font-medium text-red-800">
+                  Error Loading Settings
+                </h3>
                 <p className="mt-2 text-sm text-red-700">{error}</p>
               </div>
             </div>
@@ -462,7 +499,9 @@ export default function BasicSettingsPage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Settings</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            Settings
+          </h1>
           <p className="text-sm text-gray-600 mt-1">
             Manage your preferences, household settings, and feature access
           </p>
@@ -471,9 +510,13 @@ export default function BasicSettingsPage() {
               <div className="flex">
                 <Info className="h-5 w-5 text-purple-400" />
                 <div className="ml-3">
-                  <h3 className="text-sm font-medium text-purple-800">Enhanced Permissions System Available</h3>
+                  <h3 className="text-sm font-medium text-purple-800">
+                    Enhanced Permissions System Available
+                  </h3>
                   <p className="mt-2 text-sm text-purple-700">
-                    A comprehensive permissions system is ready to be deployed. Apply the latest database migration to enable advanced feature controls.
+                    A comprehensive permissions system is ready to be deployed.
+                    Apply the latest database migration to enable advanced
+                    feature controls.
                   </p>
                 </div>
               </div>
@@ -508,18 +551,28 @@ export default function BasicSettingsPage() {
           {activeTab === 'member' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Personal Preferences</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Personal Preferences
+                </h2>
                 <div className="space-y-6">
                   {MEMBER_SETTINGS.map((setting) => (
-                    <div key={setting.key} className="flex items-start justify-between">
+                    <div
+                      key={setting.key}
+                      className="flex items-start justify-between"
+                    >
                       <div className="flex-1 mr-4">
-                        <h3 className="text-sm font-medium text-gray-900">{setting.display_name}</h3>
-                        <p className="text-sm text-gray-600 mt-1">{setting.description}</p>
+                        <h3 className="text-sm font-medium text-gray-900">
+                          {setting.display_name}
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {setting.description}
+                        </p>
                       </div>
                       <div className="min-w-0">
                         {renderSettingInput(
-                          setting, 
-                          (memberSettings[setting.key] ?? setting.default_value) as string | number | boolean,
+                          setting,
+                          (memberSettings[setting.key] ??
+                            setting.default_value) as string | number | boolean,
                           updateMemberSetting
                         )}
                       </div>
@@ -531,80 +584,121 @@ export default function BasicSettingsPage() {
           )}
 
           {/* Admin Settings Tab */}
-          {(activeTab === 'admin') && (userRole === 'admin' || userRole === 'super_admin') && (
-            <div className="space-y-6">
-              {/* Household Settings */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Household Settings</h2>
-                <div className="space-y-6">
-                  {HOUSEHOLD_SETTINGS.map((setting) => (
-                    <div key={setting.key} className="flex items-start justify-between">
-                      <div className="flex-1 mr-4">
-                        <h3 className="text-sm font-medium text-gray-900">{setting.display_name}</h3>
-                        <p className="text-sm text-gray-600 mt-1">{setting.description}</p>
-                      </div>
-                      <div className="min-w-0">
-                        {renderSettingInput(
-                          setting, 
-                          (householdSettings[setting.key] ?? setting.default_value) as string | number | boolean,
-                          updateHouseholdSetting
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Feature Access Control */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Feature Access Control</h2>
-                <p className="text-sm text-gray-600 mb-6">
-                  Control which features are available to household members. These are basic controls - enhanced permissions will be available after database migration.
-                </p>
-                
-                <div className="space-y-4">
-                  {FEATURE_CONTROLS.map((feature) => (
-                    <div key={feature.key} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{feature.display_name}</h4>
-                          <p className="text-sm text-gray-600 mt-1">{feature.description}</p>
-                          <div className="flex items-center space-x-4 mt-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              feature.category === 'core' ? 'bg-green-100 text-green-800' :
-                              feature.category === 'premium' ? 'bg-purple-100 text-purple-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {feature.category}
-                            </span>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              feature.access_level === 'admin_only' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {feature.access_level.replace('_', ' ')}
-                            </span>
-                          </div>
+          {activeTab === 'admin' &&
+            (userRole === 'admin' || userRole === 'super_admin') && (
+              <div className="space-y-6">
+                {/* Household Settings */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                    Household Settings
+                  </h2>
+                  <div className="space-y-6">
+                    {HOUSEHOLD_SETTINGS.map((setting) => (
+                      <div
+                        key={setting.key}
+                        className="flex items-start justify-between"
+                      >
+                        <div className="flex-1 mr-4">
+                          <h3 className="text-sm font-medium text-gray-900">
+                            {setting.display_name}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {setting.description}
+                          </p>
                         </div>
-                        <button
-                          onClick={() => updateFeatureToggle(feature.key, !featureToggles[feature.key])}
-                          disabled={saving}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            featureToggles[feature.key] ? 'bg-purple-600' : 'bg-gray-300'
-                          } ${saving ? 'opacity-50' : ''}`}
-                        >
-                          <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              featureToggles[feature.key] ? 'translate-x-6' : 'translate-x-1'
-                            }`}
-                          />
-                        </button>
+                        <div className="min-w-0">
+                          {renderSettingInput(
+                            setting,
+                            (householdSettings[setting.key] ??
+                              setting.default_value) as
+                              | string
+                              | number
+                              | boolean,
+                            updateHouseholdSetting
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+
+                {/* Feature Access Control */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                    Feature Access Control
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-6">
+                    Control which features are available to household members.
+                    These are basic controls - enhanced permissions will be
+                    available after database migration.
+                  </p>
+
+                  <div className="space-y-4">
+                    {FEATURE_CONTROLS.map((feature) => (
+                      <div
+                        key={feature.key}
+                        className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">
+                              {feature.display_name}
+                            </h4>
+                            <p className="text-sm text-gray-600 mt-1">
+                              {feature.description}
+                            </p>
+                            <div className="flex items-center space-x-4 mt-2">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  feature.category === 'core'
+                                    ? 'bg-green-100 text-green-800'
+                                    : feature.category === 'premium'
+                                      ? 'bg-purple-100 text-purple-800'
+                                      : 'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                {feature.category}
+                              </span>
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  feature.access_level === 'admin_only'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                {feature.access_level.replace('_', ' ')}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() =>
+                              updateFeatureToggle(
+                                feature.key,
+                                !featureToggles[feature.key]
+                              )
+                            }
+                            disabled={saving}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                              featureToggles[feature.key]
+                                ? 'bg-purple-600'
+                                : 'bg-gray-300'
+                            } ${saving ? 'opacity-50' : ''}`}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                featureToggles[feature.key]
+                                  ? 'translate-x-6'
+                                  : 'translate-x-1'
+                              }`}
+                            />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Super Admin Settings Tab */}
           {activeTab === 'super_admin' && userRole === 'super_admin' && (
@@ -614,15 +708,21 @@ export default function BasicSettingsPage() {
                 <div className="flex">
                   <Crown className="h-6 w-6 text-purple-600 mt-1" />
                   <div className="ml-4">
-                    <h3 className="text-lg font-medium text-purple-900">Super Admin Controls</h3>
+                    <h3 className="text-lg font-medium text-purple-900">
+                      Super Admin Controls
+                    </h3>
                     <p className="mt-2 text-sm text-purple-700">
-                      You have access to system-wide controls. The enhanced permissions system provides granular feature toggles, 
-                      role-based access controls, and comprehensive settings management.
+                      You have access to system-wide controls. The enhanced
+                      permissions system provides granular feature toggles,
+                      role-based access controls, and comprehensive settings
+                      management.
                     </p>
                     <div className="mt-4">
                       <button
                         onClick={() => {
-                          toastHelpers.info('Enhanced permissions system is ready for deployment. Apply the latest database migration to enable all features.');
+                          toastHelpers.info(
+                            'Enhanced permissions system is ready for deployment. Apply the latest database migration to enable all features.'
+                          );
                         }}
                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
                       >
@@ -636,38 +736,61 @@ export default function BasicSettingsPage() {
 
               {/* Current Features */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Global Feature Control</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Global Feature Control
+                </h2>
                 <p className="text-sm text-gray-600 mb-6">
-                  Basic global feature toggles. Enhanced controls will be available after database migration.
+                  Basic global feature toggles. Enhanced controls will be
+                  available after database migration.
                 </p>
-                
+
                 <div className="space-y-4">
                   {FEATURE_CONTROLS.map((feature) => (
-                    <div key={feature.key} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <div
+                      key={feature.key}
+                      className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                    >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{feature.display_name}</h4>
-                          <p className="text-sm text-gray-600 mt-1">{feature.description}</p>
+                          <h4 className="font-medium text-gray-900">
+                            {feature.display_name}
+                          </h4>
+                          <p className="text-sm text-gray-600 mt-1">
+                            {feature.description}
+                          </p>
                           <div className="flex items-center space-x-4 mt-2">
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              feature.category === 'core' ? 'bg-green-100 text-green-800' :
-                              feature.category === 'premium' ? 'bg-purple-100 text-purple-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                feature.category === 'core'
+                                  ? 'bg-green-100 text-green-800'
+                                  : feature.category === 'premium'
+                                    ? 'bg-purple-100 text-purple-800'
+                                    : 'bg-gray-100 text-gray-800'
+                              }`}
+                            >
                               {feature.category}
                             </span>
                           </div>
                         </div>
                         <button
-                          onClick={() => updateFeatureToggle(feature.key, !featureToggles[feature.key])}
+                          onClick={() =>
+                            updateFeatureToggle(
+                              feature.key,
+                              !featureToggles[feature.key]
+                            )
+                          }
                           disabled={saving}
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                            featureToggles[feature.key] ? 'bg-green-600' : 'bg-gray-300'
+                            featureToggles[feature.key]
+                              ? 'bg-green-600'
+                              : 'bg-gray-300'
                           } ${saving ? 'opacity-50' : ''}`}
                         >
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              featureToggles[feature.key] ? 'translate-x-6' : 'translate-x-1'
+                              featureToggles[feature.key]
+                                ? 'translate-x-6'
+                                : 'translate-x-1'
                             }`}
                           />
                         </button>

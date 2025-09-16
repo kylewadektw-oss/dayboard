@@ -2,23 +2,23 @@
 
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 /**
  * 📝 COMPREHENSIVE DOCUMENTATION GENERATOR
- * 
+ *
  * Adds detailed documentation headers to all TypeScript and TSX files
  * including purpose, features, technical details, and usage examples
  */
@@ -184,8 +184,11 @@ const DOCUMENTATION_TEMPLATES = {
 // Smart categorization based on file path and content
 function categorizeFile(filePath, content) {
   const relativePath = path.relative(process.cwd(), filePath);
-  
-  if (relativePath.includes('/pages/') || relativePath.includes('/app/') && relativePath.endsWith('page.tsx')) {
+
+  if (
+    relativePath.includes('/pages/') ||
+    (relativePath.includes('/app/') && relativePath.endsWith('page.tsx'))
+  ) {
     return 'page';
   }
   if (relativePath.includes('/api/')) {
@@ -200,9 +203,12 @@ function categorizeFile(filePath, content) {
   if (relativePath.includes('/types/')) {
     return 'types';
   }
-  
+
   // Fallback based on content patterns
-  if (content.includes('export default function') && content.includes('return (')) {
+  if (
+    content.includes('export default function') &&
+    content.includes('return (')
+  ) {
     return 'component';
   }
   if (content.includes('NextApiRequest') || content.includes('route.ts')) {
@@ -211,7 +217,7 @@ function categorizeFile(filePath, content) {
   if (content.includes('interface ') || content.includes('type ')) {
     return 'types';
   }
-  
+
   return 'utility';
 }
 
@@ -219,16 +225,17 @@ function categorizeFile(filePath, content) {
 function generateDocumentation(filePath, content) {
   const filename = path.basename(filePath, path.extname(filePath));
   const category = categorizeFile(filePath, content);
-  
+
   // Extract component/function names for better titles
   let title = `📝 ${filename.toUpperCase()}`;
-  let purpose = 'Provides functionality for the Dayboard household command center application';
-  
+  let purpose =
+    'Provides functionality for the Dayboard household command center application';
+
   // Smart title and purpose generation based on content analysis
   if (category === 'page') {
     const pageName = filename.replace(/([A-Z])/g, ' $1').trim();
     title = `🏠 ${pageName.toUpperCase()} PAGE - Household Management Interface`;
-    
+
     // Analyze content for specific purpose
     if (content.includes('dashboard') || content.includes('Dashboard')) {
       purpose = `Central dashboard interface for household management and quick access to all features`;
@@ -252,7 +259,7 @@ function generateDocumentation(filePath, content) {
   } else if (category === 'component') {
     const componentName = filename.replace(/([A-Z])/g, ' $1').trim();
     title = `🧩 ${componentName.toUpperCase()} COMPONENT - Reusable UI Element`;
-    
+
     // Analyze content for component purpose
     if (content.includes('Widget') || content.includes('widget')) {
       purpose = `Dashboard widget component providing real-time ${componentName.toLowerCase()} information and quick actions`;
@@ -270,7 +277,7 @@ function generateDocumentation(filePath, content) {
   } else if (category === 'utility') {
     const utilName = filename.replace(/([A-Z])/g, ' $1').trim();
     title = `🛠️ ${utilName.toUpperCase()} UTILITY - Helper Functions`;
-    
+
     // Analyze content for utility purpose
     if (content.includes('logger') || content.includes('log')) {
       purpose = `Advanced logging and debugging utilities for development and production monitoring`;
@@ -280,7 +287,10 @@ function generateDocumentation(filePath, content) {
       purpose = `Database integration utilities for Supabase operations and data management`;
     } else if (content.includes('stripe') || content.includes('payment')) {
       purpose = `Payment processing utilities for subscription management and billing operations`;
-    } else if (content.includes('performance') || content.includes('optimization')) {
+    } else if (
+      content.includes('performance') ||
+      content.includes('optimization')
+    ) {
       purpose = `Performance monitoring and optimization utilities for application efficiency`;
     } else if (content.includes('protection') || content.includes('security')) {
       purpose = `Security and code protection utilities for application safety and integrity`;
@@ -290,7 +300,7 @@ function generateDocumentation(filePath, content) {
   } else if (category === 'api') {
     const apiName = filename.replace(/([A-Z])/g, ' $1').trim();
     title = `🔌 ${apiName.toUpperCase()} API - Backend Service`;
-    
+
     // Analyze content for API purpose
     if (content.includes('test') || content.includes('debug')) {
       purpose = `Testing and debugging API endpoint for development workflow validation`;
@@ -306,7 +316,7 @@ function generateDocumentation(filePath, content) {
   } else if (category === 'types') {
     const typeName = filename.replace(/([A-Z])/g, ' $1').trim();
     title = `📋 ${typeName.toUpperCase()} TYPES - Type Definitions`;
-    
+
     // Analyze content for types purpose
     if (content.includes('Database') || content.includes('database')) {
       purpose = `TypeScript type definitions for database schemas and data structures`;
@@ -316,62 +326,68 @@ function generateDocumentation(filePath, content) {
       purpose = `TypeScript type definitions for ${typeName.toLowerCase()} data structures and interfaces`;
     }
   }
-  
+
   const template = DOCUMENTATION_TEMPLATES[category];
   return template(filename, title, purpose);
 }
 
 // Check if file already has comprehensive documentation
 function hasComprehensiveDocumentation(content) {
-  return content.includes('PURPOSE:') && 
-         content.includes('FEATURES:') && 
-         content.includes('TECHNICAL:');
+  return (
+    content.includes('PURPOSE:') &&
+    content.includes('FEATURES:') &&
+    content.includes('TECHNICAL:')
+  );
 }
 
 // Add documentation to file
 function addDocumentationToFile(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
-    
+
     // Skip if already has comprehensive documentation
     if (hasComprehensiveDocumentation(content)) {
       console.log(`⏭️  Skipping ${filePath} (already documented)`);
       return;
     }
-    
+
     const doc = generateDocumentation(filePath, content);
-    
+
     // Find where to insert documentation (after copyright header)
     const lines = content.split('\n');
     let insertIndex = 0;
     let inCopyrightBlock = false;
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       if (line.includes('🛡️ DAYBOARD PROPRIETARY CODE')) {
         inCopyrightBlock = true;
       }
-      
+
       if (inCopyrightBlock && line === '*/') {
         insertIndex = i + 1;
         break;
       }
-      
+
       // If no copyright header, insert at top
-      if (line && !line.startsWith('/*') && !line.startsWith('*') && !line.startsWith('//')) {
+      if (
+        line &&
+        !line.startsWith('/*') &&
+        !line.startsWith('*') &&
+        !line.startsWith('//')
+      ) {
         insertIndex = i;
         break;
       }
     }
-    
+
     // Insert documentation
     lines.splice(insertIndex, 0, '', doc, '');
     const newContent = lines.join('\n');
-    
+
     fs.writeFileSync(filePath, newContent);
     console.log(`✅ Added documentation to ${filePath}`);
-    
   } catch (error) {
     console.error(`❌ Error processing ${filePath}:`, error.message);
   }
@@ -381,16 +397,18 @@ function addDocumentationToFile(filePath) {
 function processDirectory(dirPath) {
   try {
     const items = fs.readdirSync(dirPath, { withFileTypes: true });
-    
+
     for (const item of items) {
       const fullPath = path.join(dirPath, item.name);
-      
+
       if (item.isDirectory()) {
         // Skip certain directories
-        if (!item.name.startsWith('.') && 
-            item.name !== 'node_modules' && 
-            item.name !== '.next' &&
-            item.name !== 'public') {
+        if (
+          !item.name.startsWith('.') &&
+          item.name !== 'node_modules' &&
+          item.name !== '.next' &&
+          item.name !== 'public'
+        ) {
           processDirectory(fullPath);
         }
       } else if (item.isFile()) {
@@ -407,29 +425,31 @@ function processDirectory(dirPath) {
 
 function main() {
   console.log('📝 Adding comprehensive documentation to TypeScript files...\n');
-  
+
   // Process all relevant directories
   const directories = ['app', 'components', 'utils', 'types', 'contexts'];
-  
+
   for (const dir of directories) {
     if (fs.existsSync(dir)) {
       console.log(`📁 Processing ${dir}/`);
       processDirectory(dir);
     }
   }
-  
+
   // Process root TypeScript files
-  const rootFiles = fs.readdirSync('.').filter(file => {
+  const rootFiles = fs.readdirSync('.').filter((file) => {
     const ext = path.extname(file);
     return ['.ts', '.tsx'].includes(ext) && !file.includes('.d.ts');
   });
-  
+
   for (const file of rootFiles) {
     addDocumentationToFile(file);
   }
-  
+
   console.log('\n✅ Comprehensive documentation added successfully!');
-  console.log('📚 All TypeScript files now have detailed documentation headers.');
+  console.log(
+    '📚 All TypeScript files now have detailed documentation headers.'
+  );
 }
 
 main();

@@ -1,26 +1,25 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-
 /*
  * 👥 USER ROLES & PERMISSIONS SYSTEM - Access Control Management
- * 
+ *
  * PURPOSE: Comprehensive role-based access control (RBAC) system for the Dayboard application
  * Manages user permissions, household access, and feature availability across different user types
- * 
+ *
  * FEATURES:
  * - Three-tier role system (super_admin, admin, member)
  * - Granular permission control for all features
@@ -28,46 +27,46 @@
  * - Subscription tier integration
  * - Dynamic navigation based on permissions
  * - Feature flag system for gradual rollouts
- * 
+ *
  * ROLE HIERARCHY:
  * - SUPER_ADMIN: Full system access, global feature control, analytics
  * - ADMIN: Household management, user management, billing control
  * - MEMBER: Basic access with configurable features
- * 
+ *
  * USAGE:
  * ```typescript
  * import { hasPermission, canAccessPage, getVisibleNavigationItems } from '@/types/user-roles';
- * 
+ *
  * // Check specific permission
  * if (hasPermission(user.permissions, 'ai_features')) {
  *   // Show AI features
  * }
- * 
+ *
  * // Check page access
  * const canViewWork = canAccessPage(user.role, user.permissions, 'work');
- * 
+ *
  * // Get navigation items
  * const navItems = getVisibleNavigationItems(user.permissions, user.role);
  * ```
- * 
+ *
  * PERMISSION CATEGORIES:
  * - Core Pages: dashboard, meals, lists, work, projects, profile
  * - Premium Features: sports_ticker, financial_tracking, ai_features
  * - Admin Features: household_management, user_management, feature_management, billing_management
  * - Super Admin: system_admin, global_feature_control, analytics_dashboard
- * 
+ *
  * SECURITY:
  * - Server-side permission validation
  * - Row Level Security (RLS) integration
  * - Household-scoped data access
  * - Feature-level access control
- * 
+ *
  * TECHNICAL:
  * - TypeScript-first design for compile-time safety
  * - Default permissions by role
  * - Helper functions for permission checks
  * - Integration with Supabase auth and database
- * 
+ *
  * ACCESS: Used throughout the application for access control and feature gating
  */
 
@@ -82,18 +81,18 @@ export interface UserPermissions {
   work: boolean;
   projects: boolean;
   profile: boolean;
-  
+
   // Premium Features
   sports_ticker: boolean;
   financial_tracking: boolean;
   ai_features: boolean;
-  
+
   // Admin Features
   household_management: boolean;
   user_management: boolean;
   feature_management: boolean;
   billing_management: boolean;
-  
+
   // Super Admin Features
   system_admin: boolean;
   global_feature_control: boolean;
@@ -141,7 +140,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
     billing_management: true,
     system_admin: true,
     global_feature_control: true,
-    analytics_dashboard: true,
+    analytics_dashboard: true
   },
   admin: {
     // Full household management but no system admin
@@ -160,7 +159,7 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
     billing_management: true,
     system_admin: false,
     global_feature_control: false,
-    analytics_dashboard: false,
+    analytics_dashboard: false
   },
   member: {
     // Basic access, limited features
@@ -179,16 +178,23 @@ export const DEFAULT_PERMISSIONS: Record<UserRole, UserPermissions> = {
     billing_management: false,
     system_admin: false,
     global_feature_control: false,
-    analytics_dashboard: false,
-  },
+    analytics_dashboard: false
+  }
 };
 
 // Helper functions
-export function hasPermission(userPermissions: UserPermissions, feature: keyof UserPermissions): boolean {
+export function hasPermission(
+  userPermissions: UserPermissions,
+  feature: keyof UserPermissions
+): boolean {
   return userPermissions[feature] === true;
 }
 
-export function canAccessPage(userRole: UserRole, userPermissions: UserPermissions, page: string): boolean {
+export function canAccessPage(
+  userRole: UserRole,
+  userPermissions: UserPermissions,
+  page: string
+): boolean {
   switch (page) {
     case 'dashboard':
       return hasPermission(userPermissions, 'dashboard');
@@ -211,42 +217,45 @@ export function canAccessPage(userRole: UserRole, userPermissions: UserPermissio
   }
 }
 
-export function getVisibleNavigationItems(userPermissions: UserPermissions, userRole: UserRole) {
+export function getVisibleNavigationItems(
+  userPermissions: UserPermissions,
+  userRole: UserRole
+) {
   const items = [];
-  
+
   if (hasPermission(userPermissions, 'dashboard')) {
     items.push({ name: 'Dashboard', path: '/dashboard', icon: 'Home' });
   }
-  
+
   if (hasPermission(userPermissions, 'meals')) {
     items.push({ name: 'Meals', path: '/meals', icon: 'ChefHat' });
   }
-  
+
   if (hasPermission(userPermissions, 'lists')) {
     items.push({ name: 'Lists', path: '/lists', icon: 'ListTodo' });
   }
-  
+
   if (hasPermission(userPermissions, 'work')) {
     items.push({ name: 'Work', path: '/work', icon: 'Briefcase' });
   }
-  
+
   if (hasPermission(userPermissions, 'projects')) {
     items.push({ name: 'Projects', path: '/projects', icon: 'FolderOpen' });
   }
-  
+
   if (hasPermission(userPermissions, 'profile')) {
     items.push({ name: 'Profile', path: '/profile', icon: 'User' });
   }
-  
+
   // Admin-only items
   if (userRole === 'admin' || userRole === 'super_admin') {
     items.push({ name: 'Household', path: '/admin/household', icon: 'Users' });
   }
-  
+
   // Super Admin-only items
   if (userRole === 'super_admin') {
     items.push({ name: 'System Admin', path: '/super-admin', icon: 'Shield' });
   }
-  
+
   return items;
 }

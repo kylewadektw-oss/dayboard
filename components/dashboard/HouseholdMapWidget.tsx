@@ -1,38 +1,38 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
 /*
  * 🗺️ GOOGLE MAPS INTEGRATION NOTES:
- * 
+ *
  * IMPORTANT: Google Maps styling behavior
  * - When using mapId: Styles MUST be configured via Google Cloud Console
  * - When NOT using mapId: Styles can be defined in JavaScript code
  * - You CANNOT mix both approaches (mapId + local styles = API error)
- * 
+ *
  * CONFIGURATION OPTIONS:
  * 1. Use mapId (recommended for advanced features):
  *    - Set USE_MAP_ID = true
  *    - Configure styles at: https://console.cloud.google.com/google/maps-apis/studio/maps
  *    - Supports AdvancedMarkerElement and other modern features
- * 
+ *
  * 2. Use local styles (simpler setup):
- *    - Set USE_MAP_ID = false  
+ *    - Set USE_MAP_ID = false
  *    - Define styles in JavaScript (see fallback map example)
  *    - Limited to legacy marker features
- * 
+ *
  * ERROR RESOLUTION:
  * If you see "A Map's styles property cannot be set when a mapId is present":
  * - Either remove mapId and use local styles
@@ -69,7 +69,7 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
   const supabase = createClient();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<object | null>(null);
-  
+
   const [household, setHousehold] = useState<Household | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,7 +91,7 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
           .single();
 
         if (error) throw error;
-        
+
         if (data) {
           setHousehold(data);
           // Geocode the address if we have one
@@ -101,7 +101,11 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
         }
       } catch (err: unknown) {
         console.error('Error fetching household:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load household information');
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Failed to load household information'
+        );
       } finally {
         setLoading(false);
       }
@@ -146,14 +150,27 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
     const geocoder = new window.google.maps.Geocoder();
 
     try {
-      const results = await new Promise<{formatted_address: string; geometry: {location: {lat(): number; lng(): number}}}[]>((resolve, reject) => {
-        geocoder.geocode({ address: fullAddress }, (results, status: string) => {
-          if (status === 'OK' && results && results[0]) {
-            resolve(results as {formatted_address: string; geometry: {location: {lat(): number; lng(): number}}}[]);
-          } else {
-            reject(new Error(`Geocoding failed: ${status}`));
+      const results = await new Promise<
+        {
+          formatted_address: string;
+          geometry: { location: { lat(): number; lng(): number } };
+        }[]
+      >((resolve, reject) => {
+        geocoder.geocode(
+          { address: fullAddress },
+          (results, status: string) => {
+            if (status === 'OK' && results && results[0]) {
+              resolve(
+                results as {
+                  formatted_address: string;
+                  geometry: { location: { lat(): number; lng(): number } };
+                }[]
+              );
+            } else {
+              reject(new Error(`Geocoding failed: ${status}`));
+            }
           }
-        });
+        );
       });
 
       const location = results[0].geometry.location;
@@ -162,7 +179,7 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
         lng: location.lng()
       };
 
-      setHousehold(prev => prev ? { ...prev, coordinates } : null);
+      setHousehold((prev) => (prev ? { ...prev, coordinates } : null));
       initializeMap(coordinates);
     } catch (err) {
       console.error('Geocoding error:', err);
@@ -178,7 +195,7 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
     // Choose between mapId (cloud-controlled styles) or local styles
     // Set USE_MAP_ID to false if you want to use local styles instead
     const USE_MAP_ID = true;
-    
+
     const mapConfig: {
       center: { lat: number; lng: number };
       zoom: number;
@@ -200,7 +217,7 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
       zoomControl: true,
       mapTypeControl: false,
       streetViewControl: false,
-      fullscreenControl: false,
+      fullscreenControl: false
     };
 
     if (USE_MAP_ID) {
@@ -216,13 +233,13 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
         }
       ];
     }
-    
+
     // Ensure Google Maps is loaded
     if (!window.google?.maps) {
       console.error('Google Maps not loaded');
       return;
     }
-    
+
     const googleMaps = window.google.maps;
     const map = new googleMaps.Map(mapRef.current, mapConfig);
 
@@ -282,13 +299,13 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
 
     // Default to center of US if no specific location
     const defaultCenter = { lat: 39.8283, lng: -98.5795 };
-    
+
     // Ensure Google Maps is loaded
     if (!window.google?.maps) {
       console.error('Google Maps not loaded');
       return;
     }
-    
+
     const googleMaps = window.google.maps;
     const map = new googleMaps.Map(mapRef.current, {
       center: defaultCenter,
@@ -313,7 +330,7 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
     } else if (isMapLoaded && household && !household.coordinates) {
       geocodeAddress(household);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMapLoaded, household]);
 
   const formatAddress = (household: Household) => {
@@ -327,7 +344,7 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
 
   const openInGoogleMaps = () => {
     if (!household) return;
-    
+
     const address = formatAddress(household);
     const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
@@ -335,9 +352,13 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col ${className}`}>
+      <div
+        className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col ${className}`}
+      >
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-1 rounded-lg tracking-wide">HOUSEHOLD LOCATION</h3>
+          <h3 className="text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-1 rounded-lg tracking-wide">
+            HOUSEHOLD LOCATION
+          </h3>
           <Home className="h-4 w-4 text-gray-400" />
         </div>
         <div className="mb-3">
@@ -350,15 +371,21 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
 
   if (error || !household) {
     return (
-      <div className={`bg-white rounded-2xl shadow-lg p-6 h-full flex flex-col justify-center ${className}`}>
+      <div
+        className={`bg-white rounded-2xl shadow-lg p-6 h-full flex flex-col justify-center ${className}`}
+      >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-red-100 rounded-lg">
               <AlertCircle className="h-5 w-5 text-red-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">Household Location</h3>
-              <p className="text-sm text-red-600">{error || 'No household found'}</p>
+              <h3 className="font-semibold text-gray-900">
+                Household Location
+              </h3>
+              <p className="text-sm text-red-600">
+                {error || 'No household found'}
+              </p>
             </div>
           </div>
         </div>
@@ -366,7 +393,9 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
           <div className="text-center">
             <Home className="h-8 w-8 text-gray-400 mx-auto mb-2" />
             <p className="text-sm text-gray-500">
-              {!household ? 'Set up your household address in profile settings' : 'Unable to load map'}
+              {!household
+                ? 'Set up your household address in profile settings'
+                : 'Unable to load map'}
             </p>
           </div>
         </div>
@@ -375,9 +404,13 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
   }
 
   return (
-    <div className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col ${className}`}>
+    <div
+      className={`bg-white rounded-2xl shadow-lg p-4 h-full flex flex-col ${className}`}
+    >
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-1 rounded-lg tracking-wide">HOUSEHOLD LOCATION</h3>
+        <h3 className="text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-teal-600 px-3 py-1 rounded-lg tracking-wide">
+          HOUSEHOLD LOCATION
+        </h3>
         <Home className="h-4 w-4 text-gray-400" />
       </div>
       <div className="mb-3">
@@ -398,8 +431,8 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
       </div>
 
       <div className="relative">
-        <div 
-          ref={mapRef} 
+        <div
+          ref={mapRef}
           className="h-48 w-full rounded-lg overflow-hidden bg-gray-100"
           style={{ minHeight: '192px' }}
         />
@@ -418,8 +451,8 @@ function HouseholdMapWidgetComponent({ className = '' }: MapWidgetProps) {
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             <span className="text-gray-600">
-              Lat: {household.coordinates.lat.toFixed(4)}, 
-              Lng: {household.coordinates.lng.toFixed(4)}
+              Lat: {household.coordinates.lat.toFixed(4)}, Lng:{' '}
+              {household.coordinates.lng.toFixed(4)}
             </span>
           </div>
           <button

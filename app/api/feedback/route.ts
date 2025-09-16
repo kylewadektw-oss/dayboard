@@ -1,6 +1,6 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Feedback API - Handle CRUD operations for user feedback
  */
 
@@ -11,15 +11,15 @@ import { CreateFeedbackData, FeedbackStatus } from '@/types/feedback';
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Get the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get user profile for household_id
@@ -30,17 +30,18 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (profileError || !profile) {
-      return NextResponse.json(
-        { error: 'Profile not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
     const body = await request.json();
     const feedbackData: CreateFeedbackData = body;
 
     // Validate required fields
-    if (!feedbackData.title || !feedbackData.description || !feedbackData.feedback_type) {
+    if (
+      !feedbackData.title ||
+      !feedbackData.description ||
+      !feedbackData.feedback_type
+    ) {
       return NextResponse.json(
         { error: 'Title, description, and feedback type are required' },
         { status: 400 }
@@ -48,21 +49,23 @@ export async function POST(request: NextRequest) {
     }
 
     // Serialize browser_info to ensure compatibility with Supabase Json type
-    const serializedBrowserInfo = feedbackData.browser_info ? {
-      userAgent: feedbackData.browser_info.userAgent,
-      viewport: {
-        width: feedbackData.browser_info.viewport.width,
-        height: feedbackData.browser_info.viewport.height
-      },
-      screen: {
-        width: feedbackData.browser_info.screen.width,
-        height: feedbackData.browser_info.screen.height
-      },
-      browser: feedbackData.browser_info.browser,
-      os: feedbackData.browser_info.os,
-      device: feedbackData.browser_info.device,
-      timestamp: feedbackData.browser_info.timestamp
-    } : null;
+    const serializedBrowserInfo = feedbackData.browser_info
+      ? {
+          userAgent: feedbackData.browser_info.userAgent,
+          viewport: {
+            width: feedbackData.browser_info.viewport.width,
+            height: feedbackData.browser_info.viewport.height
+          },
+          screen: {
+            width: feedbackData.browser_info.screen.width,
+            height: feedbackData.browser_info.screen.height
+          },
+          browser: feedbackData.browser_info.browser,
+          os: feedbackData.browser_info.os,
+          device: feedbackData.browser_info.device,
+          timestamp: feedbackData.browser_info.timestamp
+        }
+      : null;
 
     // Store feedback in customer_reviews table
     const { data, error } = await supabase
@@ -105,7 +108,6 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(data, { status: 201 });
-
   } catch (error) {
     console.error('Feedback API error:', error);
     return NextResponse.json(
@@ -118,15 +120,15 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Get the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -164,7 +166,6 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(data);
-
   } catch (error) {
     console.error('Feedback API error:', error);
     return NextResponse.json(
@@ -177,15 +178,15 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Get the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -201,7 +202,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { status, admin_response } = body;
 
-    // Update feedback status in customer_reviews 
+    // Update feedback status in customer_reviews
     const { data: existingReview, error: fetchError } = await supabase
       .from('customer_reviews')
       .select('*')
@@ -236,7 +237,6 @@ export async function PATCH(request: NextRequest) {
     }
 
     return NextResponse.json(data);
-
   } catch (error) {
     console.error('Feedback API error:', error);
     return NextResponse.json(

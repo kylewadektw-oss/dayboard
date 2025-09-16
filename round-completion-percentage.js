@@ -4,12 +4,15 @@ const { createClient } = require('@supabase/supabase-js');
 // Use service role key for admin operations
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 async function updateTriggerFunction() {
-  console.log('🔧 Updating profile completion trigger function to round percentages...');
-  
+  console.log(
+    '🔧 Updating profile completion trigger function to round percentages...'
+  );
+
   const functionSQL = `
     CREATE OR REPLACE FUNCTION public.set_profile_completion()
     RETURNS trigger AS $$
@@ -70,43 +73,47 @@ async function updateTriggerFunction() {
 
 async function recalculateAllProfiles() {
   console.log('🔄 Recalculating profile completion for all profiles...');
-  
+
   try {
     // Get all profiles
     const { data: profiles, error: fetchError } = await supabase
       .from('profiles')
       .select('id, profile_completion_percentage');
-    
+
     if (fetchError) {
       console.error('❌ Error fetching profiles:', fetchError);
       return;
     }
-    
+
     console.log(`📊 Found ${profiles.length} profiles to recalculate`);
-    
+
     // Update each profile to trigger recalculation
     for (const profile of profiles) {
       const { data: updatedProfile, error: updateError } = await supabase
         .from('profiles')
-        .update({ 
+        .update({
           updated_at: new Date().toISOString() // Trigger the function
         })
         .eq('id', profile.id)
         .select('profile_completion_percentage')
         .single();
-      
+
       if (updateError) {
         console.error(`❌ Error updating profile ${profile.id}:`, updateError);
         continue;
       }
-      
-      if (profile.profile_completion_percentage !== updatedProfile.profile_completion_percentage) {
-        console.log(`📈 Profile ${profile.id}: ${profile.profile_completion_percentage}% → ${updatedProfile.profile_completion_percentage}%`);
+
+      if (
+        profile.profile_completion_percentage !==
+        updatedProfile.profile_completion_percentage
+      ) {
+        console.log(
+          `📈 Profile ${profile.id}: ${profile.profile_completion_percentage}% → ${updatedProfile.profile_completion_percentage}%`
+        );
       }
     }
-    
+
     console.log('✅ All profiles recalculated with rounded percentages');
-    
   } catch (error) {
     console.error('💥 Error recalculating profiles:', error);
   }
@@ -114,22 +121,26 @@ async function recalculateAllProfiles() {
 
 async function testRoundedCalculation() {
   console.log('🧪 Testing rounded percentage calculation...');
-  
+
   try {
     // Get first profile
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, profile_completion_percentage, name, phone_number, date_of_birth, bio, timezone, language, dietary_preferences, allergies, avatar_url')
+      .select(
+        'id, profile_completion_percentage, name, phone_number, date_of_birth, bio, timezone, language, dietary_preferences, allergies, avatar_url'
+      )
       .limit(1);
-    
+
     if (!profiles || profiles.length === 0) {
       console.log('❌ No profiles found to test');
       return;
     }
-    
+
     const profile = profiles[0];
-    console.log(`📊 Profile ${profile.id} completion: ${profile.profile_completion_percentage}%`);
-    
+    console.log(
+      `📊 Profile ${profile.id} completion: ${profile.profile_completion_percentage}%`
+    );
+
     // Count filled fields
     let filledFields = [];
     if (profile.name || profile.preferred_name) filledFields.push('name');
@@ -141,21 +152,24 @@ async function testRoundedCalculation() {
     if (profile.dietary_preferences?.length > 0) filledFields.push('dietary');
     if (profile.allergies?.length > 0) filledFields.push('allergies');
     if (profile.avatar_url) filledFields.push('avatar');
-    
+
     const exactPercentage = (filledFields.length * 100) / 9;
     const roundedPercentage = Math.round(exactPercentage);
-    
-    console.log(`✅ Filled fields (${filledFields.length}/9): ${filledFields.join(', ')}`);
+
+    console.log(
+      `✅ Filled fields (${filledFields.length}/9): ${filledFields.join(', ')}`
+    );
     console.log(`📊 Exact percentage: ${exactPercentage.toFixed(2)}%`);
     console.log(`📊 Rounded percentage: ${roundedPercentage}%`);
     console.log(`📊 Database value: ${profile.profile_completion_percentage}%`);
-    
+
     if (profile.profile_completion_percentage === roundedPercentage) {
-      console.log('🎉 Percentage is correctly rounded to nearest whole number!');
+      console.log(
+        '🎉 Percentage is correctly rounded to nearest whole number!'
+      );
     } else {
       console.log('⚠️ Percentage may need recalculation');
     }
-    
   } catch (error) {
     console.error('💥 Error testing calculation:', error);
   }
@@ -163,18 +177,22 @@ async function testRoundedCalculation() {
 
 async function main() {
   console.log('🚀 Updating profile completion to use rounded percentages...\n');
-  
+
   const functionSuccess = await updateTriggerFunction();
   if (!functionSuccess) {
     console.log('❌ Failed to update function, stopping');
     return;
   }
-  
+
   await recalculateAllProfiles();
   await testRoundedCalculation();
-  
-  console.log('\n✅ Profile completion percentages are now rounded to nearest whole number!');
-  console.log('🎯 Each field is worth ~11.11%, so percentages will be 0%, 11%, 22%, 33%, 44%, 56%, 67%, 78%, 89%, or 100%');
+
+  console.log(
+    '\n✅ Profile completion percentages are now rounded to nearest whole number!'
+  );
+  console.log(
+    '🎯 Each field is worth ~11.11%, so percentages will be 0%, 11%, 22%, 33%, 44%, 56%, 67%, 78%, 89%, or 100%'
+  );
 }
 
 main();

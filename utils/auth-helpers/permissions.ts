@@ -1,28 +1,34 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-
 import { createClient } from '@/utils/supabase/server';
-import { UserRole, UserPermissions, UserProfile, DEFAULT_PERMISSIONS } from '@/types/user-roles';
+import {
+  UserRole,
+  UserPermissions,
+  UserProfile,
+  DEFAULT_PERMISSIONS
+} from '@/types/user-roles';
 
 // Mock function for development - replace with real DB queries after migration
 export async function getCurrentUser(): Promise<UserProfile | null> {
   const supabase = await createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
+
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
   if (!user) return null;
 
   // TODO: Replace with real profile query after migration
@@ -36,33 +42,43 @@ export async function getCurrentUser(): Promise<UserProfile | null> {
     permissions: DEFAULT_PERMISSIONS.super_admin,
     is_active: true,
     created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   };
 }
 
-export async function hasPermission(feature: keyof UserPermissions): Promise<boolean> {
+export async function hasPermission(
+  feature: keyof UserPermissions
+): Promise<boolean> {
   const user = await getCurrentUser();
   if (!user) return false;
-  
+
   return user.permissions[feature] === true;
 }
 
-export async function requirePermission(feature: keyof UserPermissions): Promise<void> {
+export async function requirePermission(
+  feature: keyof UserPermissions
+): Promise<void> {
   const hasAccess = await hasPermission(feature);
   if (!hasAccess) {
     throw new Error(`Access denied: Missing permission for ${feature}`);
   }
 }
 
-export async function requireRole(requiredRole: UserRole | UserRole[]): Promise<void> {
+export async function requireRole(
+  requiredRole: UserRole | UserRole[]
+): Promise<void> {
   const user = await getCurrentUser();
   if (!user) {
     throw new Error('Authentication required');
   }
 
-  const requiredRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+  const requiredRoles = Array.isArray(requiredRole)
+    ? requiredRole
+    : [requiredRole];
   if (!requiredRoles.includes(user.role)) {
-    throw new Error(`Access denied: Required role ${requiredRoles.join(' or ')}`);
+    throw new Error(
+      `Access denied: Required role ${requiredRoles.join(' or ')}`
+    );
   }
 }
 

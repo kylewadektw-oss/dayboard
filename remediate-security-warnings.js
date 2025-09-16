@@ -7,9 +7,15 @@ async function remediateSecurityWarnings() {
   console.log('🛡️ Addressing Supabase Security Warnings...\n');
 
   console.log('📋 Security Issues Identified:');
-  console.log('1. ⚠️  AUTH OTP LONG EXPIRY - OTP expiry exceeds 1 hour recommendation');
-  console.log('2. ⚠️  LEAKED PASSWORD PROTECTION DISABLED - HaveIBeenPwned protection off');
-  console.log('3. ⚠️  VULNERABLE POSTGRES VERSION - Security patches available\n');
+  console.log(
+    '1. ⚠️  AUTH OTP LONG EXPIRY - OTP expiry exceeds 1 hour recommendation'
+  );
+  console.log(
+    '2. ⚠️  LEAKED PASSWORD PROTECTION DISABLED - HaveIBeenPwned protection off'
+  );
+  console.log(
+    '3. ⚠️  VULNERABLE POSTGRES VERSION - Security patches available\n'
+  );
 
   console.log('🔧 Remediation Steps Required:\n');
 
@@ -44,7 +50,9 @@ async function remediateSecurityWarnings() {
 
   console.log('📊 SECURITY IMPACT ASSESSMENT:');
   console.log('• OTP Expiry: MEDIUM risk - reduces attack window');
-  console.log('• Password Protection: HIGH risk - prevents compromised passwords');
+  console.log(
+    '• Password Protection: HIGH risk - prevents compromised passwords'
+  );
   console.log('• Postgres Upgrade: CRITICAL risk - applies security patches\n');
 
   console.log('✅ VERIFICATION STEPS:');

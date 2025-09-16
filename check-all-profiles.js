@@ -9,7 +9,7 @@ const supabase = createClient(
 
 async function checkAllProfiles() {
   console.log('🔍 Checking all profiles in database...');
-  
+
   try {
     // Get all profiles
     const { data: profiles, error: profileError } = await supabase
@@ -49,11 +49,13 @@ async function checkAllProfiles() {
       console.log('   ID:', profileByEmail.id);
       console.log('   Full Name:', profileByEmail.full_name);
       console.log('   Expected ID: 0139a6fc-bf13-426d-8929-604051c4d1f4');
-      console.log('   ID Match:', profileByEmail.id === '0139a6fc-bf13-426d-8929-604051c4d1f4');
+      console.log(
+        '   ID Match:',
+        profileByEmail.id === '0139a6fc-bf13-426d-8929-604051c4d1f4'
+      );
     } else {
       console.log('❌ No profile found with that email either');
     }
-
   } catch (error) {
     console.error('💥 Unexpected error:', error);
   }

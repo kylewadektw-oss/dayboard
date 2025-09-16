@@ -8,7 +8,7 @@ const supabase = createClient(
 
 async function checkProfileSchema() {
   console.log('🔍 Checking profiles table columns...');
-  
+
   try {
     // Get the one existing profile to see its structure
     const { data: profiles, error } = await supabase
@@ -23,11 +23,12 @@ async function checkProfileSchema() {
 
     if (profiles && profiles.length > 0) {
       console.log('✅ Profile table columns:');
-      Object.keys(profiles[0]).forEach(col => {
-        console.log(`  - ${col}: ${typeof profiles[0][col]} = ${profiles[0][col]}`);
+      Object.keys(profiles[0]).forEach((col) => {
+        console.log(
+          `  - ${col}: ${typeof profiles[0][col]} = ${profiles[0][col]}`
+        );
       });
     }
-
   } catch (error) {
     console.error('💥 Error:', error);
   }

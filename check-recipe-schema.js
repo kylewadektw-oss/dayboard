@@ -11,10 +11,7 @@ async function checkRecipeSchema() {
 
   try {
     // Get one record to see what columns exist
-    const { data, error } = await supabase
-      .from('recipes')
-      .select('*')
-      .limit(1);
+    const { data, error } = await supabase.from('recipes').select('*').limit(1);
 
     if (error) {
       console.log('❌ Error:', error.message);
@@ -33,7 +30,6 @@ async function checkRecipeSchema() {
     } else {
       console.log('📭 No data in recipes table to examine schema');
     }
-
   } catch (error) {
     console.error('❌ Schema check failed:', error.message);
   }

@@ -7,8 +7,10 @@ const supabase = createClient(
 );
 
 async function checkProfileStatus() {
-  console.log('🔍 Checking profile status for user: 0139a6fc-bf13-426d-8929-604051c4d1f4');
-  
+  console.log(
+    '🔍 Checking profile status for user: 0139a6fc-bf13-426d-8929-604051c4d1f4'
+  );
+
   try {
     // Check profile using user_id
     const { data: profile, error: profileError } = await supabase
@@ -36,11 +38,18 @@ async function checkProfileStatus() {
     console.log('  - Role:', profile.role);
     console.log('  - Household ID:', profile.household_id);
     console.log('  - Onboarding Completed:', profile.onboarding_completed);
-    console.log('  - Profile Completion %:', profile.profile_completion_percentage);
+    console.log(
+      '  - Profile Completion %:',
+      profile.profile_completion_percentage
+    );
     console.log('  - Active:', profile.is_active);
 
     // Check completion criteria (using actual schema fields)
-    const isComplete = !!(profile.household_id && profile.onboarding_completed && profile.name);
+    const isComplete = !!(
+      profile.household_id &&
+      profile.onboarding_completed &&
+      profile.name
+    );
     console.log('\n🔍 Completion Check:');
     console.log('  - Has Household ID:', !!profile.household_id);
     console.log('  - Onboarding Completed:', profile.onboarding_completed);
@@ -48,15 +57,17 @@ async function checkProfileStatus() {
     console.log('  - Overall Complete:', isComplete);
 
     if (!isComplete) {
-      console.log('\n⚠️  Profile is incomplete - should redirect to /profile/setup');
+      console.log(
+        '\n⚠️  Profile is incomplete - should redirect to /profile/setup'
+      );
       console.log('   Missing:');
       if (!profile.household_id) console.log('   - Household ID');
-      if (!profile.onboarding_completed) console.log('   - Onboarding completion');
+      if (!profile.onboarding_completed)
+        console.log('   - Onboarding completion');
       if (!profile.name) console.log('   - Name');
     } else {
       console.log('\n✅ Profile is complete - should allow dashboard access');
     }
-
   } catch (error) {
     console.error('💥 Unexpected error:', error);
   }

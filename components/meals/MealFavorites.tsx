@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 import { Heart, Clock, Users, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -24,15 +23,20 @@ import { AddToMealPlanModal } from './AddToMealPlanModal';
 // const supabase = createClient();
 
 const getDifficultyColor = (difficulty: RecipeWithDetails['difficulty']) => {
-  const difficultyConfig = RECIPE_DIFFICULTIES.find(d => d.value === difficulty);
+  const difficultyConfig = RECIPE_DIFFICULTIES.find(
+    (d) => d.value === difficulty
+  );
   return difficultyConfig?.color || 'text-gray-600 bg-gray-100';
 };
 
 export function MealFavorites() {
-  const [favoriteRecipes, setFavoriteRecipes] = useState<RecipeWithDetails[]>([]);
+  const [favoriteRecipes, setFavoriteRecipes] = useState<RecipeWithDetails[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [totalFavorites, setTotalFavorites] = useState(0);
-  const [selectedRecipe, setSelectedRecipe] = useState<RecipeWithDetails | null>(null);
+  const [selectedRecipe, setSelectedRecipe] =
+    useState<RecipeWithDetails | null>(null);
   const [showMealPlanModal, setShowMealPlanModal] = useState(false);
 
   const openMealPlanModal = (recipe: RecipeWithDetails) => {
@@ -71,7 +75,12 @@ export function MealFavorites() {
           { name: 'honey', amount: '1/4', unit: 'cup' },
           { name: 'soy sauce', amount: '2', unit: 'tbsp' }
         ],
-        instructions: ['Season chicken', 'Cook in pan', 'Add sauce', 'Simmer until done'],
+        instructions: [
+          'Season chicken',
+          'Cook in pan',
+          'Add sauce',
+          'Simmer until done'
+        ],
         tags: ['dinner', 'chicken', 'easy'],
         rating: 4.8,
         rating_count: 24,
@@ -103,7 +112,12 @@ export function MealFavorites() {
           { name: 'pecorino cheese', amount: '1/2', unit: 'cup' },
           { name: 'pancetta', amount: '4', unit: 'oz' }
         ],
-        instructions: ['Cook pasta', 'Fry pancetta', 'Mix eggs and cheese', 'Combine everything'],
+        instructions: [
+          'Cook pasta',
+          'Fry pancetta',
+          'Mix eggs and cheese',
+          'Combine everything'
+        ],
         tags: ['pasta', 'italian', 'dinner'],
         rating: 4.9,
         rating_count: 18,
@@ -133,8 +147,10 @@ export function MealFavorites() {
   const toggleFavorite = async (recipeId: string, isFavorite: boolean) => {
     // For now, just update local state until recipe tables are deployed
     if (isFavorite) {
-      setFavoriteRecipes(prev => prev.filter(recipe => recipe.id !== recipeId));
-      setTotalFavorites(prev => prev - 1);
+      setFavoriteRecipes((prev) =>
+        prev.filter((recipe) => recipe.id !== recipeId)
+      );
+      setTotalFavorites((prev) => prev - 1);
     }
     console.log(`Toggle favorite for recipe ${recipeId}: ${!isFavorite}`);
   };
@@ -147,8 +163,11 @@ export function MealFavorites() {
           <div className="h-5 w-24 bg-gray-200 rounded"></div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-white border border-gray-200 rounded-xl p-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="bg-white border border-gray-200 rounded-xl p-4"
+            >
               <div className="h-8 w-8 bg-gray-200 rounded mb-3"></div>
               <div className="h-5 w-3/4 bg-gray-200 rounded mb-2"></div>
               <div className="h-4 w-full bg-gray-200 rounded mb-3"></div>
@@ -163,7 +182,9 @@ export function MealFavorites() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Your Favorite Recipes</h3>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Your Favorite Recipes
+        </h3>
         <button className="text-sm text-pink-600 hover:text-pink-700 font-medium">
           View All ({totalFavorites})
         </button>
@@ -172,8 +193,12 @@ export function MealFavorites() {
       {favoriteRecipes.length === 0 ? (
         <div className="text-center py-12">
           <Heart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <h4 className="text-lg font-medium text-gray-900 mb-2">No Favorite Recipes Yet</h4>
-          <p className="text-gray-600 mb-4">Start favoriting recipes to see them here!</p>
+          <h4 className="text-lg font-medium text-gray-900 mb-2">
+            No Favorite Recipes Yet
+          </h4>
+          <p className="text-gray-600 mb-4">
+            Start favoriting recipes to see them here!
+          </p>
           <button className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg font-medium">
             Browse Recipe Library
           </button>
@@ -182,10 +207,13 @@ export function MealFavorites() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {favoriteRecipes.map((recipe) => (
-              <div key={recipe.id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer">
+              <div
+                key={recipe.id}
+                className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer"
+              >
                 <div className="flex items-center justify-between mb-3">
                   <div className="text-3xl">{recipe.image_emoji || '🍽️'}</div>
-                  <button 
+                  <button
                     onClick={() => toggleFavorite(recipe.id, true)}
                     className="flex items-center transition-colors"
                   >
@@ -212,9 +240,13 @@ export function MealFavorites() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <Star className="h-3 w-3 text-yellow-400 fill-current mr-1" />
-                      <span className="text-sm text-gray-600">{recipe.rating}</span>
+                      <span className="text-sm text-gray-600">
+                        {recipe.rating}
+                      </span>
                     </div>
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(recipe.difficulty)}`}>
+                    <div
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(recipe.difficulty)}`}
+                    >
                       {recipe.difficulty}
                     </div>
                   </div>
@@ -222,13 +254,16 @@ export function MealFavorites() {
 
                 <div className="flex flex-wrap gap-1 mb-3">
                   {recipe.tags.slice(0, 3).map((tag: string, index: number) => (
-                    <span key={index} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                    <span
+                      key={index}
+                      className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full"
+                    >
                       {tag}
                     </span>
                   ))}
                 </div>
 
-                <button 
+                <button
                   onClick={() => openMealPlanModal(recipe)}
                   className="w-full bg-pink-50 hover:bg-pink-100 text-pink-700 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
@@ -243,7 +278,10 @@ export function MealFavorites() {
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium text-pink-900">Need inspiration?</h4>
-                <p className="text-sm text-pink-700">Browse our recipe collection or import from your favorite cooking sites.</p>
+                <p className="text-sm text-pink-700">
+                  Browse our recipe collection or import from your favorite
+                  cooking sites.
+                </p>
               </div>
               <button className="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
                 Browse Recipes

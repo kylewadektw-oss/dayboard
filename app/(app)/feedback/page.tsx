@@ -1,6 +1,6 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Feedback Dashboard Page - Admin interface for managing user feedback
  */
 

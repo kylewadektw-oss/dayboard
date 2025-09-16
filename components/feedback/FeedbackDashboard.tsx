@@ -1,19 +1,19 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Feedback Dashboard - Admin interface for managing user feedback
  */
 
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  MessageSquare, 
-  Search, 
-  Eye, 
-  MessageCircle, 
-  CheckCircle, 
-  Clock, 
+import {
+  MessageSquare,
+  Search,
+  Eye,
+  MessageCircle,
+  CheckCircle,
+  Clock,
   AlertTriangle,
   Bug,
   Lightbulb,
@@ -29,9 +29,9 @@ import {
   X
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  FeedbackStatus, 
-  FeedbackType, 
+import {
+  FeedbackStatus,
+  FeedbackType,
   FeedbackPriority,
   FEEDBACK_TYPES,
   FEEDBACK_PRIORITIES,
@@ -101,19 +101,27 @@ const PRIORITY_COLORS = {
 export default function FeedbackDashboard() {
   const { profile } = useAuth();
   const [feedback, setFeedback] = useState<FeedbackLogEntry[]>([]);
-  const [filteredFeedback, setFilteredFeedback] = useState<FeedbackLogEntry[]>([]);
+  const [filteredFeedback, setFilteredFeedback] = useState<FeedbackLogEntry[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
-  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackLogEntry | null>(null);
-  
+  const [selectedFeedback, setSelectedFeedback] =
+    useState<FeedbackLogEntry | null>(null);
+
   // Filters
-  const [statusFilter, setStatusFilter] = useState<FeedbackStatus | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<FeedbackStatus | 'all'>(
+    'all'
+  );
   const [typeFilter, setTypeFilter] = useState<FeedbackType | 'all'>('all');
-  const [priorityFilter, setPriorityFilter] = useState<FeedbackPriority | 'all'>('all');
+  const [priorityFilter, setPriorityFilter] = useState<
+    FeedbackPriority | 'all'
+  >('all');
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Response form
   const [adminResponse, setAdminResponse] = useState('');
-  const [responseStatus, setResponseStatus] = useState<FeedbackStatus>('responded');
+  const [responseStatus, setResponseStatus] =
+    useState<FeedbackStatus>('responded');
   const [submittingResponse, setSubmittingResponse] = useState(false);
 
   useEffect(() => {
@@ -126,7 +134,7 @@ export default function FeedbackDashboard() {
     try {
       setLoading(true);
       const response = await fetch('/api/feedback');
-      
+
       if (response.ok) {
         const data = await response.json();
         setFeedback(data);
@@ -145,28 +153,29 @@ export default function FeedbackDashboard() {
 
     // Status filter
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(f => f.data.status === statusFilter);
+      filtered = filtered.filter((f) => f.data.status === statusFilter);
     }
 
     // Type filter
     if (typeFilter !== 'all') {
-      filtered = filtered.filter(f => f.data.feedback_type === typeFilter);
+      filtered = filtered.filter((f) => f.data.feedback_type === typeFilter);
     }
 
     // Priority filter
     if (priorityFilter !== 'all') {
-      filtered = filtered.filter(f => f.data.priority === priorityFilter);
+      filtered = filtered.filter((f) => f.data.priority === priorityFilter);
     }
 
     // Search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(f => 
-        f.data.title.toLowerCase().includes(term) ||
-        f.data.description.toLowerCase().includes(term) ||
-        f.profiles.first_name.toLowerCase().includes(term) ||
-        f.profiles.last_name.toLowerCase().includes(term) ||
-        f.profiles.email.toLowerCase().includes(term)
+      filtered = filtered.filter(
+        (f) =>
+          f.data.title.toLowerCase().includes(term) ||
+          f.data.description.toLowerCase().includes(term) ||
+          f.profiles.first_name.toLowerCase().includes(term) ||
+          f.profiles.last_name.toLowerCase().includes(term) ||
+          f.profiles.email.toLowerCase().includes(term)
       );
     }
 
@@ -178,19 +187,23 @@ export default function FeedbackDashboard() {
     applyFilters();
   }, [applyFilters]);
 
-  const handleStatusUpdate = async (feedbackId: string, newStatus: FeedbackStatus, response?: string) => {
+  const handleStatusUpdate = async (
+    feedbackId: string,
+    newStatus: FeedbackStatus,
+    response?: string
+  ) => {
     try {
       setSubmittingResponse(true);
-      
+
       const updateResponse = await fetch(`/api/feedback?id=${feedbackId}`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           status: newStatus,
           admin_response: response || null
-        }),
+        })
       });
 
       if (updateResponse.ok) {
@@ -230,7 +243,9 @@ export default function FeedbackDashboard() {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
-          <p className="text-gray-500">You need to be logged in to view feedback.</p>
+          <p className="text-gray-500">
+            You need to be logged in to view feedback.
+          </p>
         </div>
       </div>
     );
@@ -276,7 +291,9 @@ export default function FeedbackDashboard() {
             </label>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as FeedbackStatus | 'all')}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as FeedbackStatus | 'all')
+              }
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="all">All Statuses</option>
@@ -295,7 +312,9 @@ export default function FeedbackDashboard() {
             </label>
             <select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as FeedbackType | 'all')}
+              onChange={(e) =>
+                setTypeFilter(e.target.value as FeedbackType | 'all')
+              }
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="all">All Types</option>
@@ -314,7 +333,9 @@ export default function FeedbackDashboard() {
             </label>
             <select
               value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value as FeedbackPriority | 'all')}
+              onChange={(e) =>
+                setPriorityFilter(e.target.value as FeedbackPriority | 'all')
+              }
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="all">All Priorities</option>
@@ -342,12 +363,16 @@ export default function FeedbackDashboard() {
           {filteredFeedback.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
               <MessageSquare className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No feedback found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No feedback found
+              </h3>
               <p className="text-gray-500">
-                {searchTerm || statusFilter !== 'all' || typeFilter !== 'all' || priorityFilter !== 'all'
+                {searchTerm ||
+                statusFilter !== 'all' ||
+                typeFilter !== 'all' ||
+                priorityFilter !== 'all'
                   ? 'Try adjusting your filters'
-                  : 'No feedback has been submitted yet'
-                }
+                  : 'No feedback has been submitted yet'}
               </p>
             </div>
           ) : (
@@ -355,7 +380,7 @@ export default function FeedbackDashboard() {
               const TypeIcon = FEEDBACK_ICONS[item.data.feedback_type];
               const StatusIcon = STATUS_ICONS[item.data.status];
               const DeviceIcon = getDeviceIcon(item.data.browser_info);
-              
+
               return (
                 <div
                   key={item.id}
@@ -367,12 +392,18 @@ export default function FeedbackDashboard() {
                         {/* Header */}
                         <div className="flex items-center space-x-3 mb-3">
                           <TypeIcon className="h-5 w-5 text-gray-600" />
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${PRIORITY_COLORS[item.data.priority]}`}>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${PRIORITY_COLORS[item.data.priority]}`}
+                          >
                             {item.data.priority.toUpperCase()}
                           </span>
                           <div className="flex items-center text-sm text-gray-500">
                             <StatusIcon className="h-4 w-4 mr-1" />
-                            {FEEDBACK_STATUSES.find(s => s.value === item.data.status)?.label}
+                            {
+                              FEEDBACK_STATUSES.find(
+                                (s) => s.value === item.data.status
+                              )?.label
+                            }
                           </div>
                         </div>
 
@@ -403,7 +434,13 @@ export default function FeedbackDashboard() {
                           {item.data.browser_info && (
                             <div className="flex items-center">
                               <DeviceIcon className="h-4 w-4 mr-1" />
-                              {(item.data.browser_info as Record<string, string>)?.browser || 'Unknown'} on {(item.data.browser_info as Record<string, string>)?.os || 'Unknown'}
+                              {(
+                                item.data.browser_info as Record<string, string>
+                              )?.browser || 'Unknown'}{' '}
+                              on{' '}
+                              {(
+                                item.data.browser_info as Record<string, string>
+                              )?.os || 'Unknown'}
                             </div>
                           )}
                         </div>
@@ -417,9 +454,12 @@ export default function FeedbackDashboard() {
                         >
                           View Details
                         </button>
-                        {(item.data.status === 'submitted' || item.data.status === 'open') && (
+                        {(item.data.status === 'submitted' ||
+                          item.data.status === 'open') && (
                           <button
-                            onClick={() => handleStatusUpdate(item.id, 'in_review')}
+                            onClick={() =>
+                              handleStatusUpdate(item.id, 'in_review')
+                            }
                             className="px-3 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
                           >
                             Start Review
@@ -442,8 +482,12 @@ export default function FeedbackDashboard() {
             {/* Modal Header */}
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center">
-                <div className="text-lg font-semibold text-gray-900">Feedback Details</div>
-                <span className={`ml-3 px-2 py-1 rounded-full text-xs font-medium ${PRIORITY_COLORS[selectedFeedback.data.priority]}`}>
+                <div className="text-lg font-semibold text-gray-900">
+                  Feedback Details
+                </div>
+                <span
+                  className={`ml-3 px-2 py-1 rounded-full text-xs font-medium ${PRIORITY_COLORS[selectedFeedback.data.priority]}`}
+                >
                   {selectedFeedback.data.priority.toUpperCase()}
                 </span>
               </div>
@@ -460,26 +504,40 @@ export default function FeedbackDashboard() {
               <div className="space-y-6">
                 {/* Basic Info */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">{selectedFeedback.data.title}</h3>
-                  <p className="text-gray-700 mb-4">{selectedFeedback.data.description}</p>
-                  
+                  <h3 className="text-lg font-semibold mb-3">
+                    {selectedFeedback.data.title}
+                  </h3>
+                  <p className="text-gray-700 mb-4">
+                    {selectedFeedback.data.description}
+                  </p>
+
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="font-medium text-gray-900">Type:</span>
                       <span className="ml-2 text-gray-600">
-                        {FEEDBACK_TYPES.find(t => t.value === selectedFeedback.data.feedback_type)?.label}
+                        {
+                          FEEDBACK_TYPES.find(
+                            (t) =>
+                              t.value === selectedFeedback.data.feedback_type
+                          )?.label
+                        }
                       </span>
                     </div>
                     <div>
                       <span className="font-medium text-gray-900">Status:</span>
                       <span className="ml-2 text-gray-600">
-                        {FEEDBACK_STATUSES.find(s => s.value === selectedFeedback.data.status)?.label}
+                        {
+                          FEEDBACK_STATUSES.find(
+                            (s) => s.value === selectedFeedback.data.status
+                          )?.label
+                        }
                       </span>
                     </div>
                     <div>
                       <span className="font-medium text-gray-900">User:</span>
                       <span className="ml-2 text-gray-600">
-                        {selectedFeedback.profiles.first_name} {selectedFeedback.profiles.last_name}
+                        {selectedFeedback.profiles.first_name}{' '}
+                        {selectedFeedback.profiles.last_name}
                       </span>
                     </div>
                     <div>
@@ -492,24 +550,36 @@ export default function FeedbackDashboard() {
                 </div>
 
                 {/* Bug-specific fields */}
-                                {selectedFeedback.data.feedback_type === 'bug' && (
+                {selectedFeedback.data.feedback_type === 'bug' && (
                   <div className="space-y-4">
                     {selectedFeedback.data.steps_to_reproduce && (
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Steps to Reproduce</h4>
-                        <p className="text-gray-700 whitespace-pre-wrap">{selectedFeedback.data.steps_to_reproduce}</p>
+                        <h4 className="font-medium text-gray-900 mb-2">
+                          Steps to Reproduce
+                        </h4>
+                        <p className="text-gray-700 whitespace-pre-wrap">
+                          {selectedFeedback.data.steps_to_reproduce}
+                        </p>
                       </div>
                     )}
                     {selectedFeedback.data.expected_behavior && (
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Expected Behavior</h4>
-                        <p className="text-gray-700">{selectedFeedback.data.expected_behavior}</p>
+                        <h4 className="font-medium text-gray-900 mb-2">
+                          Expected Behavior
+                        </h4>
+                        <p className="text-gray-700">
+                          {selectedFeedback.data.expected_behavior}
+                        </p>
                       </div>
                     )}
                     {selectedFeedback.data.actual_behavior && (
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Actual Behavior</h4>
-                        <p className="text-gray-700">{selectedFeedback.data.actual_behavior}</p>
+                        <h4 className="font-medium text-gray-900 mb-2">
+                          Actual Behavior
+                        </h4>
+                        <p className="text-gray-700">
+                          {selectedFeedback.data.actual_behavior}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -518,23 +588,45 @@ export default function FeedbackDashboard() {
                 {/* Technical Information */}
                 {selectedFeedback.data.browser_info && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Technical Details:</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Technical Details:
+                    </h4>
                     <div className="bg-gray-50 p-4 rounded-lg text-sm space-y-2">
                       <div>
-                        <span className="font-medium">Browser:</span> {(selectedFeedback.data.browser_info as Record<string, string>)?.browser || 'Unknown'}
+                        <span className="font-medium">Browser:</span>{' '}
+                        {(
+                          selectedFeedback.data.browser_info as Record<
+                            string,
+                            string
+                          >
+                        )?.browser || 'Unknown'}
                       </div>
                       <div>
-                        <span className="font-medium">OS:</span> {(selectedFeedback.data.browser_info as Record<string, string>)?.os || 'Unknown'}
+                        <span className="font-medium">OS:</span>{' '}
+                        {(
+                          selectedFeedback.data.browser_info as Record<
+                            string,
+                            string
+                          >
+                        )?.os || 'Unknown'}
                       </div>
                       <div>
-                        <span className="font-medium">Device:</span> {(selectedFeedback.data.browser_info as Record<string, string>)?.device || 'Unknown'}
+                        <span className="font-medium">Device:</span>{' '}
+                        {(
+                          selectedFeedback.data.browser_info as Record<
+                            string,
+                            string
+                          >
+                        )?.device || 'Unknown'}
                       </div>
                       <div>
-                        <span className="font-medium">Screen:</span> {selectedFeedback.data.screen_resolution}
+                        <span className="font-medium">Screen:</span>{' '}
+                        {selectedFeedback.data.screen_resolution}
                       </div>
                       {selectedFeedback.data.page_url && (
                         <div>
-                          <span className="font-medium">Page:</span> {selectedFeedback.data.page_url}
+                          <span className="font-medium">Page:</span>{' '}
+                          {selectedFeedback.data.page_url}
                         </div>
                       )}
                     </div>
@@ -544,12 +636,17 @@ export default function FeedbackDashboard() {
                 {/* Admin Response */}
                 {selectedFeedback.data.admin_response && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-2">Admin Response:</h4>
+                    <h4 className="font-medium text-gray-900 mb-2">
+                      Admin Response:
+                    </h4>
                     <div className="bg-blue-50 p-4 rounded-lg">
-                      <p className="text-gray-700">{selectedFeedback.data.admin_response}</p>
+                      <p className="text-gray-700">
+                        {selectedFeedback.data.admin_response}
+                      </p>
                       {selectedFeedback.data.responded_at && (
                         <p className="text-sm text-gray-500 mt-2">
-                          Responded on {formatDate(selectedFeedback.data.responded_at)}
+                          Responded on{' '}
+                          {formatDate(selectedFeedback.data.responded_at)}
                         </p>
                       )}
                     </div>
@@ -559,7 +656,9 @@ export default function FeedbackDashboard() {
                 {/* Response Form */}
                 {selectedFeedback.data.status !== 'closed' && (
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Admin Response:</h4>
+                    <h4 className="font-medium text-gray-900 mb-3">
+                      Admin Response:
+                    </h4>
                     <div className="space-y-4">
                       <textarea
                         value={adminResponse}
@@ -571,14 +670,22 @@ export default function FeedbackDashboard() {
                       <div className="flex items-center space-x-4">
                         <select
                           value={responseStatus}
-                          onChange={(e) => setResponseStatus(e.target.value as FeedbackStatus)}
+                          onChange={(e) =>
+                            setResponseStatus(e.target.value as FeedbackStatus)
+                          }
                           className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         >
                           <option value="responded">Respond & Keep Open</option>
                           <option value="closed">Respond & Close</option>
                         </select>
                         <button
-                          onClick={() => handleStatusUpdate(selectedFeedback.id, responseStatus, adminResponse)}
+                          onClick={() =>
+                            handleStatusUpdate(
+                              selectedFeedback.id,
+                              responseStatus,
+                              adminResponse
+                            )
+                          }
                           disabled={submittingResponse || !adminResponse.trim()}
                           className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white rounded-lg font-medium flex items-center space-x-2 transition-colors"
                         >
@@ -587,7 +694,11 @@ export default function FeedbackDashboard() {
                           ) : (
                             <MessageCircle className="h-4 w-4" />
                           )}
-                          <span>{submittingResponse ? 'Submitting...' : 'Submit Response'}</span>
+                          <span>
+                            {submittingResponse
+                              ? 'Submitting...'
+                              : 'Submit Response'}
+                          </span>
                         </button>
                       </div>
                     </div>

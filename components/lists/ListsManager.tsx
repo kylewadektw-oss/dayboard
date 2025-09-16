@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 'use client';
 
@@ -81,51 +80,62 @@ export function ListsManager() {
   const [activeList, setActiveList] = useState(lists[0].id);
 
   // Memoize current list to avoid recalculation
-  const currentList = useMemo(() => 
-    lists.find(list => list.id === activeList), 
+  const currentList = useMemo(
+    () => lists.find((list) => list.id === activeList),
     [lists, activeList]
   );
 
   // Memoize toggle function with useCallback to prevent recreation
   const toggleItem = useCallback((listId: string, itemId: string) => {
-    setLists(prev => prev.map(list => 
-      list.id === listId 
-        ? {
-            ...list,
-            items: list.items.map(item =>
-              item.id === itemId ? { ...item, completed: !item.completed } : item
-            )
-          }
-        : list
-    ));
+    setLists((prev) =>
+      prev.map((list) =>
+        list.id === listId
+          ? {
+              ...list,
+              items: list.items.map((item) =>
+                item.id === itemId
+                  ? { ...item, completed: !item.completed }
+                  : item
+              )
+            }
+          : list
+      )
+    );
   }, []);
 
   // Memoize add function
-  const addItem = useCallback((listId: string) => {
-    if (!newItemText.trim()) return;
+  const addItem = useCallback(
+    (listId: string) => {
+      if (!newItemText.trim()) return;
 
-    const newItem: ListItem = {
-      id: Date.now().toString(),
-      text: newItemText,
-      completed: false
-    };
+      const newItem: ListItem = {
+        id: Date.now().toString(),
+        text: newItemText,
+        completed: false
+      };
 
-    setLists(prev => prev.map(list =>
-      list.id === listId
-        ? { ...list, items: [...list.items, newItem] }
-        : list
-    ));
+      setLists((prev) =>
+        prev.map((list) =>
+          list.id === listId
+            ? { ...list, items: [...list.items, newItem] }
+            : list
+        )
+      );
 
-    setNewItemText('');
-  }, [newItemText]);
+      setNewItemText('');
+    },
+    [newItemText]
+  );
 
   // Memoize remove function
   const removeItem = useCallback((listId: string, itemId: string) => {
-    setLists(prev => prev.map(list =>
-      list.id === listId
-        ? { ...list, items: list.items.filter(item => item.id !== itemId) }
-        : list
-    ));
+    setLists((prev) =>
+      prev.map((list) =>
+        list.id === listId
+          ? { ...list, items: list.items.filter((item) => item.id !== itemId) }
+          : list
+      )
+    );
   }, []);
 
   // Memoize completion percentage calculation
@@ -133,20 +143,25 @@ export function ListsManager() {
     if (!currentList || currentList.items.length === 0) {
       return { completedCount: 0, totalCount: 0, percentage: 0 };
     }
-    
-    const completedCount = currentList.items.filter(item => item.completed).length;
+
+    const completedCount = currentList.items.filter(
+      (item) => item.completed
+    ).length;
     const totalCount = currentList.items.length;
     const percentage = Math.round((completedCount / totalCount) * 100);
-    
+
     return { completedCount, totalCount, percentage };
   }, [currentList]);
 
   // Memoize the Enter key handler
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && currentList) {
-      addItem(currentList.id);
-    }
-  }, [addItem, currentList]);
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && currentList) {
+        addItem(currentList.id);
+      }
+    },
+    [addItem, currentList]
+  );
 
   return (
     <div>
@@ -159,11 +174,15 @@ export function ListsManager() {
                 <ClipboardList className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Family Lists</h1>
-                <p className="text-gray-600">Keep track of everything together</p>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Family Lists
+                </h1>
+                <p className="text-gray-600">
+                  Keep track of everything together
+                </p>
               </div>
             </div>
-            
+
             <button className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center transition-all duration-200 shadow-lg">
               <Plus className="h-4 w-4 mr-2" />
               New List
@@ -183,10 +202,12 @@ export function ListsManager() {
                 }`}
               >
                 <div className="flex items-center">
-                  <div className={`w-2 h-2 ${list.color} rounded-full mr-2`}></div>
+                  <div
+                    className={`w-2 h-2 ${list.color} rounded-full mr-2`}
+                  ></div>
                   {list.name}
                   <span className="ml-2 px-2 py-0.5 bg-white bg-opacity-20 rounded-full text-xs">
-                    {list.items.filter(item => !item.completed).length}
+                    {list.items.filter((item) => !item.completed).length}
                   </span>
                 </div>
               </button>
@@ -200,13 +221,18 @@ export function ListsManager() {
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
-              <div className={`w-3 h-3 ${currentList.color} rounded-full mr-2`}></div>
-              <h2 className="text-lg font-semibold text-gray-900">{currentList.name}</h2>
+              <div
+                className={`w-3 h-3 ${currentList.color} rounded-full mr-2`}
+              ></div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {currentList.name}
+              </h2>
               <span className="ml-3 text-sm text-gray-500">
-                {currentList.items.filter(item => !item.completed).length} remaining
+                {currentList.items.filter((item) => !item.completed).length}{' '}
+                remaining
               </span>
             </div>
-            
+
             {currentList.type === 'grocery' && (
               <button className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center">
                 <ShoppingCart className="h-4 w-4 mr-1" />
@@ -239,8 +265,8 @@ export function ListsManager() {
               <div
                 key={item.id}
                 className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                  item.completed 
-                    ? 'bg-gray-50 border-gray-200' 
+                  item.completed
+                    ? 'bg-gray-50 border-gray-200'
                     : 'bg-white border-gray-300 hover:border-gray-400'
                 }`}
               >
@@ -255,13 +281,15 @@ export function ListsManager() {
                   >
                     {item.completed && <Check className="h-3 w-3 text-white" />}
                   </button>
-                  
+
                   <div className="flex-1">
-                    <span className={`${
-                      item.completed 
-                        ? 'line-through text-gray-500' 
-                        : 'text-gray-900'
-                    }`}>
+                    <span
+                      className={`${
+                        item.completed
+                          ? 'line-through text-gray-500'
+                          : 'text-gray-900'
+                      }`}
+                    >
                       {item.text}
                     </span>
                     {item.category && (
@@ -286,11 +314,10 @@ export function ListsManager() {
           <div className="mt-6 pt-4 border-t border-gray-200">
             <div className="flex justify-between items-center text-sm text-gray-500">
               <span>
-                {completionData.completedCount} of {completionData.totalCount} completed
+                {completionData.completedCount} of {completionData.totalCount}{' '}
+                completed
               </span>
-              <span>
-                {completionData.percentage}% done
-              </span>
+              <span>{completionData.percentage}% done</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
               <div

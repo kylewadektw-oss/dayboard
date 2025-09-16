@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -29,7 +29,7 @@ export async function PUT(
     console.log(`📅 Updating event ${eventId}:`, updatedEvent);
 
     // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     // Return the updated event
     return NextResponse.json({
@@ -37,12 +37,11 @@ export async function PUT(
       event: updatedEvent,
       message: 'Event updated successfully'
     });
-
   } catch (error) {
     console.error('Error updating event:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Failed to update event',
         message: error instanceof Error ? error.message : 'Unknown error'
       },
@@ -63,18 +62,17 @@ export async function DELETE(
     console.log(`📅 Deleting event ${eventId}`);
 
     // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise((resolve) => setTimeout(resolve, 300));
 
     return NextResponse.json({
       success: true,
       message: 'Event deleted successfully'
     });
-
   } catch (error) {
     console.error('Error deleting event:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Failed to delete event',
         message: error instanceof Error ? error.message : 'Unknown error'
       },

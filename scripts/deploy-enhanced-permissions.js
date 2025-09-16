@@ -27,30 +27,36 @@ async function deployEnhancedPermissions() {
   }
 
   console.log('✅ Environment variables found');
-  
+
   // Create Supabase client with service role key
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
     // Read the migration file
-    const migrationPath = path.join(__dirname, '..', 'supabase', 'migrations', '20250909020000_enhanced_permissions_system.sql');
-    
+    const migrationPath = path.join(
+      __dirname,
+      '..',
+      'supabase',
+      'migrations',
+      '20250909020000_enhanced_permissions_system.sql'
+    );
+
     if (!fs.existsSync(migrationPath)) {
       console.error('❌ Migration file not found:', migrationPath);
       process.exit(1);
     }
 
     console.log('✅ Found enhanced permissions migration file');
-    
+
     const migrationSQL = fs.readFileSync(migrationPath, 'utf-8');
-    
+
     console.log('🔄 Applying enhanced permissions system...\n');
 
     // Split the migration into individual statements and execute them
     const statements = migrationSQL
       .split(';')
-      .map(stmt => stmt.trim())
-      .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+      .map((stmt) => stmt.trim())
+      .filter((stmt) => stmt.length > 0 && !stmt.startsWith('--'));
 
     console.log(`📝 Executing ${statements.length} SQL statements...`);
 
@@ -58,22 +64,30 @@ async function deployEnhancedPermissions() {
       const statement = statements[i];
       if (statement.trim()) {
         try {
-          console.log(`   [${i + 1}/${statements.length}] Executing statement...`);
-          
-          const { error } = await supabase.rpc('exec', { sql: statement + ';' });
-          
+          console.log(
+            `   [${i + 1}/${statements.length}] Executing statement...`
+          );
+
+          const { error } = await supabase.rpc('exec', {
+            sql: statement + ';'
+          });
+
           if (error) {
             // Try direct query if rpc fails
             const { error: directError } = await supabase
               .from('_migrations') // This will likely fail but we'll catch it
               .select('*')
               .limit(1);
-              
+
             // For now, let's use a different approach - create tables directly
-            console.log(`   ⚠️  Statement ${i + 1} might need manual execution`);
+            console.log(
+              `   ⚠️  Statement ${i + 1} might need manual execution`
+            );
           }
         } catch (err) {
-          console.log(`   ⚠️  Statement ${i + 1} execution noted: ${err.message?.slice(0, 50)}...`);
+          console.log(
+            `   ⚠️  Statement ${i + 1} execution noted: ${err.message?.slice(0, 50)}...`
+          );
         }
       }
     }
@@ -82,10 +96,10 @@ async function deployEnhancedPermissions() {
 
     // Verify the deployment by checking if tables exist
     console.log('🔍 Verifying deployment...');
-    
+
     const tables = [
       'global_feature_control',
-      'household_feature_settings', 
+      'household_feature_settings',
       'user_feature_overrides',
       'settings_categories',
       'settings_items',
@@ -94,11 +108,8 @@ async function deployEnhancedPermissions() {
     ];
 
     for (const table of tables) {
-      const { data, error } = await supabase
-        .from(table)
-        .select('*')
-        .limit(1);
-        
+      const { data, error } = await supabase.from(table).select('*').limit(1);
+
       if (error) {
         console.error(`❌ Table ${table} verification failed:`, error.message);
       } else {
@@ -119,7 +130,6 @@ async function deployEnhancedPermissions() {
     console.log('  2. Configure global features as Super Admin');
     console.log('  3. Set household permissions as Admin');
     console.log('  4. Test member access and permissions\n');
-
   } catch (err) {
     console.error('❌ Deployment failed:', err.message);
     console.error(err);

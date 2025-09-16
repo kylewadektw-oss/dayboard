@@ -1,20 +1,30 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-import { Calendar, ShoppingCart, Wrench, ChefHat, Zap, Plus, Clock, Users, Bell } from 'lucide-react';
+import {
+  Calendar,
+  ShoppingCart,
+  Wrench,
+  ChefHat,
+  Zap,
+  Plus,
+  Clock,
+  Users,
+  Bell
+} from 'lucide-react';
 import Link from 'next/link';
 import { memo, useMemo } from 'react';
 
@@ -117,23 +127,29 @@ const STATIC_QUICK_ACTIONS: QuickAction[] = [
 ];
 
 // Contextual suggestion component
-const ContextualSuggestion = memo(({ suggestion }: { 
-  suggestion: { 
-    id: string; 
-    text: string; 
-    bgColor: string; 
-    borderColor: string; 
-    textColor: string; 
-  } 
-}) => (
-  <div
-    className={`${suggestion.bgColor} border ${suggestion.borderColor} rounded-lg px-3 py-2 flex-shrink-0`}
-  >
-    <div className={`text-xs ${suggestion.textColor} font-medium whitespace-nowrap`}>
-      {suggestion.text}
+const ContextualSuggestion = memo(
+  ({
+    suggestion
+  }: {
+    suggestion: {
+      id: string;
+      text: string;
+      bgColor: string;
+      borderColor: string;
+      textColor: string;
+    };
+  }) => (
+    <div
+      className={`${suggestion.bgColor} border ${suggestion.borderColor} rounded-lg px-3 py-2 flex-shrink-0`}
+    >
+      <div
+        className={`text-xs ${suggestion.textColor} font-medium whitespace-nowrap`}
+      >
+        {suggestion.text}
+      </div>
     </div>
-  </div>
-));
+  )
+);
 ContextualSuggestion.displayName = 'ContextualSuggestion';
 
 function QuickActionsRibbonComponent() {
@@ -141,29 +157,32 @@ function QuickActionsRibbonComponent() {
   const allActions = useMemo(() => [...STATIC_QUICK_ACTIONS], []);
 
   // 🚀 PERFORMANCE: Memoize static suggestions array
-  const suggestions = useMemo(() => [
-    {
-      id: 'dinner',
-      text: '💡 Planning dinner? Check new recipes →',
-      bgColor: 'bg-yellow-50',
-      borderColor: 'border-yellow-200',
-      textColor: 'text-yellow-800'
-    },
-    {
-      id: 'weekend',
-      text: '📅 Both parents free Saturday 2-6PM for projects',
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200',
-      textColor: 'text-blue-800'
-    },
-    {
-      id: 'voice',
-      text: '🎙️ Try: "Hey assistant, add milk to grocery list"',
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200',
-      textColor: 'text-purple-800'
-    }
-  ], []);
+  const suggestions = useMemo(
+    () => [
+      {
+        id: 'dinner',
+        text: '💡 Planning dinner? Check new recipes →',
+        bgColor: 'bg-yellow-50',
+        borderColor: 'border-yellow-200',
+        textColor: 'text-yellow-800'
+      },
+      {
+        id: 'weekend',
+        text: '📅 Both parents free Saturday 2-6PM for projects',
+        bgColor: 'bg-blue-50',
+        borderColor: 'border-blue-200',
+        textColor: 'text-blue-800'
+      },
+      {
+        id: 'voice',
+        text: '🎙️ Try: "Hey assistant, add milk to grocery list"',
+        bgColor: 'bg-purple-50',
+        borderColor: 'border-purple-200',
+        textColor: 'text-purple-800'
+      }
+    ],
+    []
+  );
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 mb-6">
@@ -187,12 +206,8 @@ function QuickActionsRibbonComponent() {
               href={action.href}
               className={`${action.color} rounded-lg px-2.5 py-1.5 transition-all duration-200 hover:scale-105 active:scale-95 touch-manipulation flex items-center gap-1.5 min-w-0 flex-shrink-0 text-xs font-medium whitespace-nowrap`}
             >
-              <div className="flex-shrink-0">
-                {action.icon}
-              </div>
-              <span className="truncate">
-                {action.title}
-              </span>
+              <div className="flex-shrink-0">{action.icon}</div>
+              <span className="truncate">{action.title}</span>
             </Link>
           ))}
         </div>

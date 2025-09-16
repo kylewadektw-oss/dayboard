@@ -297,9 +297,12 @@ async function initializeComprehensiveSettings() {
       const { error } = await supabase
         .from('settings_categories')
         .upsert(category, { onConflict: 'category_key' });
-      
+
       if (error) {
-        console.log(`❌ Error updating category ${category.category_key}:`, error.message);
+        console.log(
+          `❌ Error updating category ${category.category_key}:`,
+          error.message
+        );
       } else {
         console.log(`✅ Updated category: ${category.display_name}`);
       }
@@ -311,9 +314,12 @@ async function initializeComprehensiveSettings() {
       const { error } = await supabase
         .from('settings_items')
         .upsert(item, { onConflict: 'category_key,setting_key' });
-      
+
       if (error) {
-        console.log(`❌ Error updating item ${item.setting_key}:`, error.message);
+        console.log(
+          `❌ Error updating item ${item.setting_key}:`,
+          error.message
+        );
       } else {
         console.log(`✅ Updated setting: ${item.display_name}`);
       }
@@ -326,7 +332,6 @@ async function initializeComprehensiveSettings() {
     console.log('- Member settings: Personal preferences');
     console.log('- Admin settings: Household management');
     console.log('- Super admin settings: System controls');
-
   } catch (error) {
     console.error('❌ Error initializing settings:', error.message);
   }

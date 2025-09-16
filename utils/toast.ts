@@ -3,14 +3,21 @@ import { toast } from '@/components/ui/Toasts/use-toast';
 
 export type ToastKind = 'success' | 'error' | 'info' | 'warning';
 
-const variantMap: Record<ToastKind, {variant?: 'destructive'; defaultTitle: string}> = {
+const variantMap: Record<
+  ToastKind,
+  { variant?: 'destructive'; defaultTitle: string }
+> = {
   success: { defaultTitle: 'Success' },
   error: { variant: 'destructive', defaultTitle: 'Error' },
   info: { defaultTitle: 'Info' },
   warning: { defaultTitle: 'Warning' }
 };
 
-export function showToast(kind: ToastKind, message: string, opts?: { title?: string; action?: React.ReactNode }) {
+export function showToast(
+  kind: ToastKind,
+  message: string,
+  opts?: { title?: string; action?: React.ReactNode }
+) {
   const cfg = variantMap[kind];
   toast({
     title: opts?.title || cfg.defaultTitle,

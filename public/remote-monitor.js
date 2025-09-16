@@ -1,17 +1,17 @@
 /*
  * 🌐 REMOTE MONITORING SCRIPT for bentlolabs.com
- * 
+ *
  * Deploy this script to bentlolabs.com to send monitoring data
  * back to your Dayboard logs dashboard
  */
 
-(function() {
+(function () {
   'use strict';
-  
+
   // Configuration - Update these URLs to your Dayboard deployment
   const DAYBOARD_API = 'https://monitor.bentlolabs.com'; // Production monitoring subdomain
   const SITE_NAME = 'bentlolabs.com';
-  
+
   class RemoteMonitor {
     constructor() {
       this.data = {
@@ -23,24 +23,24 @@
         interactions: [],
         network: []
       };
-      
+
       this.init();
     }
-    
+
     init() {
       this.setupPerformanceObserver();
       this.setupErrorTracking();
       this.setupNetworkMonitoring();
       this.setupInteractionTracking();
       this.capturePageMetrics();
-      
+
       // Send initial data
       setTimeout(() => this.sendData(), 2000);
-      
+
       // Send data every 30 seconds
       setInterval(() => this.sendData(), 30000);
     }
-    
+
     setupPerformanceObserver() {
       if ('PerformanceObserver' in window) {
         try {
@@ -51,21 +51,29 @@
                 this.data.performance.lcp = entry.startTime;
               }
               if (entry.entryType === 'first-input') {
-                this.data.performance.fid = entry.processingStart - entry.startTime;
+                this.data.performance.fid =
+                  entry.processingStart - entry.startTime;
               }
               if (entry.entryType === 'layout-shift' && !entry.hadRecentInput) {
-                this.data.performance.cls = (this.data.performance.cls || 0) + entry.value;
+                this.data.performance.cls =
+                  (this.data.performance.cls || 0) + entry.value;
               }
             }
           });
-          
-          observer.observe({ entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift'] });
+
+          observer.observe({
+            entryTypes: [
+              'largest-contentful-paint',
+              'first-input',
+              'layout-shift'
+            ]
+          });
         } catch (e) {
           console.warn('Performance Observer not supported:', e);
         }
       }
     }
-    
+
     setupErrorTracking() {
       window.addEventListener('error', (event) => {
         this.data.errors.push({
@@ -78,7 +86,7 @@
           stack: event.error?.stack
         });
       });
-      
+
       window.addEventListener('unhandledrejection', (event) => {
         this.data.errors.push({
           type: 'unhandled-promise-rejection',
@@ -88,7 +96,7 @@
         });
       });
     }
-    
+
     setupNetworkMonitoring() {
       if ('PerformanceObserver' in window) {
         try {
@@ -104,7 +112,7 @@
                   load: entry.loadEventEnd - entry.loadEventStart
                 };
               }
-              
+
               if (entry.entryType === 'resource') {
                 this.data.network.push({
                   name: entry.name,
@@ -116,14 +124,14 @@
               }
             }
           });
-          
+
           networkObserver.observe({ entryTypes: ['navigation', 'resource'] });
         } catch (e) {
           console.warn('Network monitoring not supported:', e);
         }
       }
     }
-    
+
     setupInteractionTracking() {
       // Track clicks
       document.addEventListener('click', (event) => {
@@ -137,7 +145,7 @@
           y: event.clientY
         });
       });
-      
+
       // Track form submissions
       document.addEventListener('submit', (event) => {
         this.data.interactions.push({
@@ -147,7 +155,7 @@
         });
       });
     }
-    
+
     capturePageMetrics() {
       // Memory usage
       if ('memory' in performance) {
@@ -157,7 +165,7 @@
           limit: performance.memory.jsHeapSizeLimit
         };
       }
-      
+
       // Connection info
       if ('connection' in navigator) {
         this.data.performance.connection = {
@@ -166,7 +174,7 @@
           rtt: navigator.connection.rtt
         };
       }
-      
+
       // Basic page info
       this.data.performance.basic = {
         userAgent: navigator.userAgent,
@@ -185,14 +193,14 @@
         }
       };
     }
-    
+
     async sendData() {
       try {
         // Send to unified Bentlolabs monitoring (internal endpoint)
         const response = await fetch('/api/bentlolabs-monitor', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             ...this.data,
@@ -200,7 +208,7 @@
             batchId: Math.random().toString(36).substr(2, 9)
           })
         });
-        
+
         if (response.ok) {
           console.log('✅ Monitoring data sent to Dayboard');
           // Reset accumulated data
@@ -215,7 +223,7 @@
       }
     }
   }
-  
+
   // Initialize monitoring when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => new RemoteMonitor());

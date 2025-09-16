@@ -17,22 +17,34 @@ interface SettingsContextType {
   loading: boolean;
   refreshSettings: () => Promise<void>;
   getSetting: (key: string, defaultValue?: unknown) => unknown;
-  setSetting: (key: string, value: Json, isHousehold?: boolean) => Promise<void>;
+  setSetting: (
+    key: string,
+    value: Json,
+    isHousehold?: boolean
+  ) => Promise<void>;
 }
 
-const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+const SettingsContext = createContext<SettingsContextType | undefined>(
+  undefined
+);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const { profile } = useAuth();
-  const [settingsService, setSettingsService] = useState<SettingsService | null>(null);
+  const [settingsService, setSettingsService] =
+    useState<SettingsService | null>(null);
   const [userSettings, setUserSettings] = useState<Record<string, unknown>>({});
-  const [householdSettings, setHouseholdSettings] = useState<Record<string, unknown>>({});
+  const [householdSettings, setHouseholdSettings] = useState<
+    Record<string, unknown>
+  >({});
   const [loading, setLoading] = useState(true);
 
   // Initialize settings service when auth context changes
   useEffect(() => {
     if (profile?.id) {
-      const service = new SettingsService(profile.id, profile.household_id || undefined);
+      const service = new SettingsService(
+        profile.id,
+        profile.household_id || undefined
+      );
       setSettingsService(service);
     } else {
       setSettingsService(null);
@@ -54,7 +66,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setLoading(true);
         const [userSettingsData, householdSettingsData] = await Promise.all([
           settingsService.getAllUserSettings(),
-          profile?.household_id ? settingsService.getAllHouseholdSettings() : Promise.resolve({})
+          profile?.household_id
+            ? settingsService.getAllHouseholdSettings()
+            : Promise.resolve({})
         ]);
 
         setUserSettings(userSettingsData);
@@ -76,7 +90,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       const [userSettingsData, householdSettingsData] = await Promise.all([
         settingsService.getAllUserSettings(),
-        profile?.household_id ? settingsService.getAllHouseholdSettings() : Promise.resolve({})
+        profile?.household_id
+          ? settingsService.getAllHouseholdSettings()
+          : Promise.resolve({})
       ]);
 
       setUserSettings(userSettingsData);
@@ -99,16 +115,20 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     return defaultValue;
   };
 
-  const setSetting = async (key: string, value: Json, isHousehold: boolean = false) => {
+  const setSetting = async (
+    key: string,
+    value: Json,
+    isHousehold: boolean = false
+  ) => {
     if (!settingsService) return;
 
     try {
       if (isHousehold) {
         await settingsService.setHouseholdSetting(key, value);
-        setHouseholdSettings(prev => ({ ...prev, [key]: value }));
+        setHouseholdSettings((prev) => ({ ...prev, [key]: value }));
       } else {
         await settingsService.setUserSetting(key, value);
-        setUserSettings(prev => ({ ...prev, [key]: value }));
+        setUserSettings((prev) => ({ ...prev, [key]: value }));
       }
     } catch (error) {
       console.error('Error setting value:', error);
@@ -144,24 +164,27 @@ export function useSettings() {
 // Convenience hooks for common settings
 export function useDarkMode() {
   const { getSetting, setSetting } = useSettings();
-  
+
   const isDarkMode = getSetting('dark_mode', false);
   const setDarkMode = (enabled: boolean) => setSetting('dark_mode', enabled);
-  
+
   return { isDarkMode, setDarkMode };
 }
 
 export function useNotificationSettings() {
   const { getSetting, setSetting } = useSettings();
-  
+
   const emailNotifications = getSetting('email_notifications', true);
   const pushNotifications = getSetting('push_notifications', true);
   const notificationFrequency = getSetting('notification_frequency', 'daily');
-  
-  const setEmailNotifications = (enabled: boolean) => setSetting('email_notifications', enabled);
-  const setPushNotifications = (enabled: boolean) => setSetting('push_notifications', enabled);
-  const setNotificationFrequency = (frequency: string) => setSetting('notification_frequency', frequency);
-  
+
+  const setEmailNotifications = (enabled: boolean) =>
+    setSetting('email_notifications', enabled);
+  const setPushNotifications = (enabled: boolean) =>
+    setSetting('push_notifications', enabled);
+  const setNotificationFrequency = (frequency: string) =>
+    setSetting('notification_frequency', frequency);
+
   return {
     emailNotifications,
     pushNotifications,
@@ -174,15 +197,15 @@ export function useNotificationSettings() {
 
 export function useLanguageSettings() {
   const { getSetting, setSetting } = useSettings();
-  
+
   const language = getSetting('language', 'en');
   const timezone = getSetting('timezone', 'UTC');
   const dateFormat = getSetting('date_format', 'MM/DD/YYYY');
-  
+
   const setLanguage = (lang: string) => setSetting('language', lang);
   const setTimezone = (tz: string) => setSetting('timezone', tz);
   const setDateFormat = (format: string) => setSetting('date_format', format);
-  
+
   return {
     language,
     timezone,
@@ -195,17 +218,21 @@ export function useLanguageSettings() {
 
 export function useHouseholdSettings() {
   const { getSetting, setSetting } = useSettings();
-  
+
   const householdName = getSetting('household_name', '');
   const householdDescription = getSetting('household_description', '');
   const inviteNotifications = getSetting('invite_notifications', true);
   const autoAssignChores = getSetting('auto_assign_chores', false);
-  
-  const setHouseholdName = (name: string) => setSetting('household_name', name, true);
-  const setHouseholdDescription = (desc: string) => setSetting('household_description', desc, true);
-  const setInviteNotifications = (enabled: boolean) => setSetting('invite_notifications', enabled, true);
-  const setAutoAssignChores = (enabled: boolean) => setSetting('auto_assign_chores', enabled, true);
-  
+
+  const setHouseholdName = (name: string) =>
+    setSetting('household_name', name, true);
+  const setHouseholdDescription = (desc: string) =>
+    setSetting('household_description', desc, true);
+  const setInviteNotifications = (enabled: boolean) =>
+    setSetting('invite_notifications', enabled, true);
+  const setAutoAssignChores = (enabled: boolean) =>
+    setSetting('auto_assign_chores', enabled, true);
+
   return {
     householdName,
     householdDescription,

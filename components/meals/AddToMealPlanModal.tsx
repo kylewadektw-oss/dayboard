@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -25,30 +25,37 @@ interface AddToMealPlanModalProps {
   onSuccess?: () => void;
 }
 
-export function AddToMealPlanModal({ isOpen, onClose, recipe, onSuccess }: AddToMealPlanModalProps) {
+export function AddToMealPlanModal({
+  isOpen,
+  onClose,
+  recipe,
+  onSuccess
+}: AddToMealPlanModalProps) {
   const [selectedDate, setSelectedDate] = useState('');
-  const [selectedMealType, setSelectedMealType] = useState<'breakfast' | 'lunch' | 'dinner'>('dinner');
+  const [selectedMealType, setSelectedMealType] = useState<
+    'breakfast' | 'lunch' | 'dinner'
+  >('dinner');
   const [loading, setLoading] = useState(false);
 
   // Generate next 14 days for selection
   const getDateOptions = () => {
     const dates = [];
     const today = new Date();
-    
+
     for (let i = 0; i < 14; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       dates.push({
         value: date.toISOString().split('T')[0],
-        label: date.toLocaleDateString('en-US', { 
-          weekday: 'short', 
-          month: 'short', 
-          day: 'numeric' 
+        label: date.toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric'
         }),
         isToday: i === 0
       });
     }
-    
+
     return dates;
   };
 
@@ -59,12 +66,16 @@ export function AddToMealPlanModal({ isOpen, onClose, recipe, onSuccess }: AddTo
     try {
       // For now, just simulate adding to meal plan
       // Once the recipe tables are deployed, this will use real Supabase calls
-      console.log(`Adding ${recipe.title} to ${selectedMealType} on ${selectedDate}`);
-      
+      console.log(
+        `Adding ${recipe.title} to ${selectedMealType} on ${selectedDate}`
+      );
+
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      alert(`Successfully added "${recipe.title}" to ${selectedMealType} on ${selectedDate}!`);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      alert(
+        `Successfully added "${recipe.title}" to ${selectedMealType} on ${selectedDate}!`
+      );
       onSuccess?.();
       onClose();
     } catch (error) {
@@ -83,7 +94,7 @@ export function AddToMealPlanModal({ isOpen, onClose, recipe, onSuccess }: AddTo
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black bg-opacity-25" onClick={onClose} />
-      
+
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl">
@@ -102,7 +113,9 @@ export function AddToMealPlanModal({ isOpen, onClose, recipe, onSuccess }: AddTo
           {/* Recipe Preview */}
           <div className="mb-6 p-3 bg-gray-50 rounded-lg">
             <div className="flex items-center">
-              <span className="text-2xl mr-3">{recipe.image_emoji || '🍽️'}</span>
+              <span className="text-2xl mr-3">
+                {recipe.image_emoji || '🍽️'}
+              </span>
               <div>
                 <h4 className="font-medium text-gray-900">{recipe.title}</h4>
                 <div className="flex items-center text-sm text-gray-600">
@@ -142,7 +155,11 @@ export function AddToMealPlanModal({ isOpen, onClose, recipe, onSuccess }: AddTo
               {MEAL_TYPES.map((mealType) => (
                 <button
                   key={mealType.value}
-                  onClick={() => setSelectedMealType(mealType.value as 'breakfast' | 'lunch' | 'dinner')}
+                  onClick={() =>
+                    setSelectedMealType(
+                      mealType.value as 'breakfast' | 'lunch' | 'dinner'
+                    )
+                  }
                   className={`p-3 rounded-lg border-2 text-sm font-medium transition-colors ${
                     selectedMealType === mealType.value
                       ? 'border-blue-500 bg-blue-50 text-blue-700'

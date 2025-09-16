@@ -1,19 +1,18 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
-
 
 // Performance optimization utilities for the Dayboard app
 
@@ -27,7 +26,7 @@ function debounce<T extends (...args: any[]) => any>(
 ): T {
   let timeout: NodeJS.Timeout | null = null;
   let lastArgs: Parameters<T> | null = null;
-  
+
   const later = () => {
     timeout = null;
     if (options?.trailing !== false && lastArgs) {
@@ -38,10 +37,10 @@ function debounce<T extends (...args: any[]) => any>(
   return ((...args: Parameters<T>) => {
     lastArgs = args;
     const callNow = options?.leading && !timeout;
-    
+
     if (timeout) clearTimeout(timeout);
     timeout = setTimeout(later, wait);
-    
+
     if (callNow) {
       func.apply(null, args);
     }
@@ -49,10 +48,7 @@ function debounce<T extends (...args: any[]) => any>(
 }
 
 // Simple throttle implementation
-function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): T {
+function throttle<T extends (...args: any[]) => any>(func: T, wait: number): T {
   let timeout: NodeJS.Timeout | null = null;
   let previous = 0;
 
@@ -94,17 +90,20 @@ export class PerformanceMonitor {
     const start = performance.now();
     const result = fn();
     const end = performance.now();
-    
+
     this.recordMetric(name, end - start);
     return result;
   }
 
   // Measure async function execution time
-  async measureAsyncExecution<T>(name: string, fn: () => Promise<T>): Promise<T> {
+  async measureAsyncExecution<T>(
+    name: string,
+    fn: () => Promise<T>
+  ): Promise<T> {
     const start = performance.now();
     const result = await fn();
     const end = performance.now();
-    
+
     this.recordMetric(name, end - start);
     return result;
   }
@@ -113,10 +112,10 @@ export class PerformanceMonitor {
     if (!this.metrics.has(name)) {
       this.metrics.set(name, []);
     }
-    
+
     const times = this.metrics.get(name)!;
     times.push(time);
-    
+
     // Keep only last 100 measurements
     if (times.length > 100) {
       times.shift();
@@ -172,8 +171,8 @@ export const withPerformanceMonitoring = <P extends object>(
 ) => {
   return (props: P) => {
     const monitor = PerformanceMonitor.getInstance();
-    
-    return monitor.measureExecution(`Component:${name}`, () => 
+
+    return monitor.measureExecution(`Component:${name}`, () =>
       React.createElement(Component, props)
     );
   };
@@ -233,7 +232,9 @@ export const createMemoryOptimizedArray = <T>(maxSize: number = 1000) => {
       }
     },
     get: () => [...items],
-    clear: () => { items = []; },
+    clear: () => {
+      items = [];
+    },
     size: () => items.length
   };
 };
@@ -246,14 +247,17 @@ export const lazyImport = <T extends React.ComponentType<any>>(
 };
 
 // Image optimization helper
-export const createOptimizedImageLoader = (src: string, quality: number = 75) => {
+export const createOptimizedImageLoader = (
+  src: string,
+  quality: number = 75
+) => {
   if (typeof window === 'undefined') return src;
-  
+
   // For Next.js Image optimization
   if (src.startsWith('/') || src.startsWith('http')) {
     return `/_next/image?url=${encodeURIComponent(src)}&w=640&q=${quality}`;
   }
-  
+
   return src;
 };
 

@@ -1,16 +1,16 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
@@ -85,19 +85,27 @@ export function PlannerCell({
 
   const getWeatherIcon = (weather: string) => {
     switch (weather) {
-      case 'rainy': return '🌧️';
-      case 'hot': return '☀️';
-      case 'cold': return '❄️';
-      default: return '';
+      case 'rainy':
+        return '🌧️';
+      case 'hot':
+        return '☀️';
+      case 'cold':
+        return '❄️';
+      default:
+        return '';
     }
   };
 
   const getDifficultyColor = (difficulty?: string) => {
     switch (difficulty) {
-      case 'Easy': return 'bg-green-100 text-green-700';
-      case 'Medium': return 'bg-yellow-100 text-yellow-700';
-      case 'Hard': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'Easy':
+        return 'bg-green-100 text-green-700';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'Hard':
+        return 'bg-red-100 text-red-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -108,11 +116,11 @@ export function PlannerCell({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={`relative h-32 rounded-xl border-2 border-dashed transition-all ${
-        isDragOver 
-          ? 'border-indigo-400 bg-indigo-50 scale-105' 
-          : value 
-          ? 'border-gray-200 bg-white hover:shadow-md'
-          : 'border-gray-200 bg-gray-50 hover:border-gray-300'
+        isDragOver
+          ? 'border-indigo-400 bg-indigo-50 scale-105'
+          : value
+            ? 'border-gray-200 bg-white hover:shadow-md'
+            : 'border-gray-200 bg-gray-50 hover:border-gray-300'
       }`}
     >
       {value ? (
@@ -138,8 +146,8 @@ export function PlannerCell({
           <div className="flex items-start gap-3 flex-1">
             {/* Meal Image */}
             {value.image_url ? (
-              <Image 
-                src={value.image_url} 
+              <Image
+                src={value.image_url}
                 alt={value.title}
                 width={48}
                 height={48}
@@ -159,7 +167,7 @@ export function PlannerCell({
                   <span className="ml-2 text-xs text-orange-600">♻️</span>
                 )}
               </h4>
-              
+
               {/* Meal Metadata */}
               <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
                 {value.total_time_minutes && (
@@ -184,7 +192,9 @@ export function PlannerCell({
                   </span>
                 )}
                 {value.difficulty && (
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${getDifficultyColor(value.difficulty)}`}>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded ${getDifficultyColor(value.difficulty)}`}
+                  >
                     {value.difficulty}
                   </span>
                 )}

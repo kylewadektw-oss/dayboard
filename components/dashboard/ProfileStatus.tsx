@@ -1,25 +1,24 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
- * 
+ *
  * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
- * 
+ *
  * This file is part of Dayboard, a proprietary household command center application.
- * 
+ *
  * IMPORTANT NOTICE:
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
- * 
+ *
  * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
+ *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-
-import { 
-  Home, 
-  Users, 
-  Settings, 
-  Sparkles, 
+import {
+  Home,
+  Users,
+  Settings,
+  Sparkles,
   Activity,
   Sun,
   CloudRain,
@@ -79,9 +78,9 @@ interface WeatherData {
   }>;
 }
 
-const getWeatherIcon = (weatherId: number, size: string = "h-5 w-5") => {
+const getWeatherIcon = (weatherId: number, size: string = 'h-5 w-5') => {
   const baseClasses = `${size}`;
-  
+
   if (weatherId >= 200 && weatherId < 300) {
     return <CloudLightning className={`${baseClasses} text-purple-500`} />;
   } else if (weatherId >= 300 && weatherId < 400) {
@@ -124,10 +123,37 @@ const formatTimeAgo = (dateString: string) => {
 
 // Component starts here
 
-export function ProfileStatus() {
-  const { user, profile } = useAuth();
+function ProfileStatus() {
+  const { user, profile, loading } = useAuth();
+  const supabase = createClient();
+
+  // Stable auth state management to prevent loading oscillation
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [stableAuthState, setStableAuthState] = useState({
+    user: null as typeof user,
+    profile: null as typeof profile,
+    loading: true
+  });
+
+  // Update stable auth state when auth values change
+  useEffect(() => {
+    if (!loading && !initialLoadComplete) {
+      setInitialLoadComplete(true);
+      setStableAuthState({ user, profile, loading });
+    } else if (initialLoadComplete) {
+      setStableAuthState({ user, profile, loading });
+    }
+  }, [user, profile, loading, initialLoadComplete]);
+
+  // Use stable state for all auth-dependent operations
+  const currentProfile = stableAuthState.profile;
+  const isAuthLoading = !initialLoadComplete || stableAuthState.loading;
+
+  // Local state management
   const [household, setHousehold] = useState<Household | null>(null);
-  const [householdMembers, setHouseholdMembers] = useState<HouseholdMember[]>([]);
+  const [householdMembers, setHouseholdMembers] = useState<HouseholdMember[]>(
+    []
+  );
   const [stats, setStats] = useState<HouseholdStats>({
     projectsInProgress: 0,
     mealsPlanned: 0,
@@ -137,33 +163,26 @@ export function ProfileStatus() {
   });
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [componentLoading, setComponentLoading] = useState(true);
 
-  const supabase = createClient();
-  
-  // Memoize display name calculation to avoid recomputation
-  const displayName = useMemo(() => 
-    profile?.preferred_name || profile?.name || user?.email?.split('@')[0] || 'there',
-    [profile?.preferred_name, profile?.name, user?.email]
-  );
-
-  // Memoize greeting to avoid string concatenation on every render
-  const greeting = useMemo(() => 
-    `${getTimeBasedGreeting()}, ${displayName} 👋`,
-    [displayName]
-  );
+  // Computed values using stable auth state
+  const greeting = `${getTimeBasedGreeting()}, ${currentProfile?.preferred_name || currentProfile?.name || 'there'}!`;
 
   // Memoize household data loading function
   const loadHouseholdData = useCallback(async () => {
-    console.log('🔍 [DEBUG] ProfileStatus - loadHouseholdData called with profile:', {
-      hasProfile: !!profile,
-      householdId: profile?.household_id,
-      profileDisplayName: profile?.preferred_name || profile?.name
-    });
+    console.log(
+      '🔍 [DEBUG] ProfileStatus - loadHouseholdData called with profile:',
+      {
+        hasProfile: !!currentProfile,
+        householdId: currentProfile?.household_id,
+        profileDisplayName:
+          currentProfile?.preferred_name || currentProfile?.name
+      }
+    );
 
-    if (!profile?.household_id) {
+    if (!currentProfile?.household_id) {
       console.log('❌ [DEBUG] ProfileStatus - No household_id, stopping');
-      setLoading(false);
+      setComponentLoading(false);
       return;
     }
 
@@ -172,7 +191,7 @@ export function ProfileStatus() {
       const { data: householdData, error: householdError } = await supabase
         .from('households')
         .select('*')
-        .eq('id', profile.household_id)
+        .eq('id', currentProfile.household_id)
         .single();
 
       if (householdError) {
@@ -184,8 +203,10 @@ export function ProfileStatus() {
       // Fetch household members
       const { data: membersData, error: membersError } = await supabase
         .from('profiles')
-        .select('id, name, preferred_name, family_role, last_seen_at, is_active, profile_photo_url')
-        .eq('household_id', profile.household_id)
+        .select(
+          'id, name, preferred_name, family_role, last_seen_at, is_active, profile_photo_url'
+        )
+        .eq('household_id', currentProfile.household_id)
         .order('name');
 
       if (membersError) {
@@ -197,26 +218,36 @@ export function ProfileStatus() {
       // Calculate stats
       const totalMembers = membersData?.length || 0;
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      const membersOnline = membersData?.filter(member => 
-        member.is_active && member.last_seen_at && member.last_seen_at > fiveMinutesAgo
-      ).length || 0;
+      const membersOnline =
+        membersData?.filter(
+          (member) =>
+            member.is_active &&
+            member.last_seen_at &&
+            member.last_seen_at > fiveMinutesAgo
+        ).length || 0;
 
       // TODO: Fetch real project, meal, and activity data when those tables are implemented
       // For now, use placeholder data
       setStats({
         projectsInProgress: 2, // Will be replaced with real data
-        mealsPlanned: 3, // Will be replaced with real data  
+        mealsPlanned: 3, // Will be replaced with real data
         activitiesScheduled: 1, // Will be replaced with real data
         totalMembers,
         membersOnline
       });
-
     } catch (error) {
       console.error('Error loading household data:', error);
     } finally {
-      setLoading(false);
+      setComponentLoading(false);
     }
-  }, [profile, supabase]);
+  }, [currentProfile, supabase]);
+
+  // Load household data when stable auth state is ready
+  useEffect(() => {
+    if (!isAuthLoading && currentProfile?.household_id) {
+      loadHouseholdData();
+    }
+  }, [isAuthLoading, currentProfile?.household_id, loadHouseholdData]);
 
   // Weather fetching function - Use household city/state for weather
   const fetchWeather = useCallback(async () => {
@@ -224,17 +255,20 @@ export function ProfileStatus() {
       console.log('No household location available for weather');
       return;
     }
-    
+
     setWeatherLoading(true);
     try {
       // Use city and state for weather lookup instead of coordinates
       const location = `${household.city}, ${household.state}`;
       console.log('Weather lookup for:', location);
-      
+
       // For now, just log that weather would be fetched
       // TODO: Implement city-based weather API call
       setWeather(null);
-      console.log('Weather fetched for household location:', household.name || 'Unknown location');
+      console.log(
+        'Weather fetched for household location:',
+        household.name || 'Unknown location'
+      );
     } catch (error) {
       console.error('Error loading weather:', error);
     } finally {
@@ -243,23 +277,28 @@ export function ProfileStatus() {
   }, [household?.city, household?.state, household?.name]);
 
   // Memoize members with computed properties to avoid recalculation
-  const membersWithStatus = useMemo(() => 
-    householdMembers.map(member => {
-      const isOnline = member.is_active && member.last_seen_at && 
-        new Date(member.last_seen_at) > new Date(Date.now() - 5 * 60 * 1000);
-      const displayName = member.preferred_name || member.name || 'Unknown';
-      const lastSeen = member.last_seen_at ? formatTimeAgo(member.last_seen_at) : 'Offline';
-      const isCurrentUser = member.id === profile?.id;
-      
-      return {
-        ...member,
-        isOnline,
-        displayName,
-        lastSeen,
-        isCurrentUser
-      };
-    }),
-    [householdMembers, profile?.id]
+  const membersWithStatus = useMemo(
+    () =>
+      householdMembers.map((member) => {
+        const isOnline =
+          member.is_active &&
+          member.last_seen_at &&
+          new Date(member.last_seen_at) > new Date(Date.now() - 5 * 60 * 1000);
+        const displayName = member.preferred_name || member.name || 'Unknown';
+        const lastSeen = member.last_seen_at
+          ? formatTimeAgo(member.last_seen_at)
+          : 'Offline';
+        const isCurrentUser = member.id === currentProfile?.id;
+
+        return {
+          ...member,
+          isOnline,
+          displayName,
+          lastSeen,
+          isCurrentUser
+        };
+      }),
+    [householdMembers, currentProfile?.id]
   );
 
   useEffect(() => {
@@ -273,7 +312,7 @@ export function ProfileStatus() {
     }
   }, [household?.city, household?.state, fetchWeather]);
 
-  if (loading) {
+  if (isAuthLoading || componentLoading) {
     return (
       <div className="bg-white rounded-2xl shadow-lg p-4 mb-4 animate-pulse">
         <div className="flex items-center justify-between">
@@ -319,7 +358,7 @@ export function ProfileStatus() {
             <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-100">
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
-                  {getWeatherIcon(weather.current.weather[0].id, "h-8 w-8")}
+                  {getWeatherIcon(weather.current.weather[0].id, 'h-8 w-8')}
                   <div>
                     <div className="text-2xl font-bold text-gray-900">
                       {Math.round(weather.current.temp)}°F
@@ -330,24 +369,64 @@ export function ProfileStatus() {
                   </div>
                 </div>
                 <div className="text-right text-sm text-gray-600 space-y-1">
-                  <div>Feels like <span className="font-medium">{Math.round(weather.current.feels_like)}°F</span></div>
-                  <div>Humidity <span className="font-medium">{weather.current.humidity}%</span></div>
-                  <div>Wind <span className="font-medium">{Math.round(weather.current.wind_speed)} mph</span></div>
-                  <div>UV Index <span className="font-medium">{Math.round(weather.current.uvi)}</span></div>
+                  <div>
+                    Feels like{' '}
+                    <span className="font-medium">
+                      {Math.round(weather.current.feels_like)}°F
+                    </span>
+                  </div>
+                  <div>
+                    Humidity{' '}
+                    <span className="font-medium">
+                      {weather.current.humidity}%
+                    </span>
+                  </div>
+                  <div>
+                    Wind{' '}
+                    <span className="font-medium">
+                      {Math.round(weather.current.wind_speed)} mph
+                    </span>
+                  </div>
+                  <div>
+                    UV Index{' '}
+                    <span className="font-medium">
+                      {Math.round(weather.current.uvi)}
+                    </span>
+                  </div>
                 </div>
               </div>
-              
+
               {/* Today's forecast */}
               {weather.daily && weather.daily[0] && (
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-blue-200">
                   <div className="text-sm text-gray-600">
-                    Today: <span className="font-medium">{Math.round(weather.daily[0].temp.max)}°/{Math.round(weather.daily[0].temp.min)}°</span>
+                    Today:{' '}
+                    <span className="font-medium">
+                      {Math.round(weather.daily[0].temp.max)}°/
+                      {Math.round(weather.daily[0].temp.min)}°
+                    </span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    Sunrise: <span className="font-medium">{new Date(weather.current.sunrise * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    Sunrise:{' '}
+                    <span className="font-medium">
+                      {new Date(
+                        weather.current.sunrise * 1000
+                      ).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    Sunset: <span className="font-medium">{new Date(weather.current.sunset * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    Sunset:{' '}
+                    <span className="font-medium">
+                      {new Date(
+                        weather.current.sunset * 1000
+                      ).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
                   </div>
                 </div>
               )}
@@ -375,7 +454,7 @@ export function ProfileStatus() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               {/* AI Assistant Button (Premium feature) */}
-              <button 
+              <button
                 className="p-2 bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 rounded-lg transition-all duration-200 group"
                 title="AI Assistant (Premium Feature)"
               >
@@ -383,7 +462,7 @@ export function ProfileStatus() {
               </button>
 
               {/* Household Members Quick View */}
-              <Link 
+              <Link
                 href="/household/members"
                 className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                 title="View Household Members"
@@ -392,7 +471,7 @@ export function ProfileStatus() {
               </Link>
 
               {/* Settings */}
-              <Link 
+              <Link
                 href="/profile"
                 className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                 title="Profile Settings"
@@ -435,10 +514,10 @@ export function ProfileStatus() {
               {membersWithStatus.map((member) => {
                 const initials = member.displayName
                   .split(' ')
-                  .map(name => name.charAt(0).toUpperCase())
+                  .map((name) => name.charAt(0).toUpperCase())
                   .join('')
                   .slice(0, 2);
-                
+
                 return (
                   <div
                     key={member.id}
@@ -446,33 +525,37 @@ export function ProfileStatus() {
                   >
                     <div
                       className={`w-20 h-20 flex items-center justify-center transition-all duration-200 group cursor-pointer rounded-xl ${
-                        member.isCurrentUser 
-                          ? 'bg-blue-500 text-white ring-2 ring-blue-200 shadow-md' 
+                        member.isCurrentUser
+                          ? 'bg-blue-500 text-white ring-2 ring-blue-200 shadow-md'
                           : member.isOnline
-                          ? 'bg-green-100 text-green-700 hover:bg-green-200 hover:shadow-sm'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:shadow-sm'
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200 hover:shadow-sm'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:shadow-sm'
                       } group-hover:scale-105 relative`}
                       title={`${member.displayName} ${member.isCurrentUser ? '(You)' : ''} - ${member.isOnline ? 'Online' : member.lastSeen}`}
                     >
                       {/* Profile photo placeholder - will show initials if no photo */}
                       {member.profile_photo_url ? (
-                        <Image 
-                          src={member.profile_photo_url} 
+                        <Image
+                          src={member.profile_photo_url}
                           alt={member.displayName}
                           width={64}
                           height={64}
                           className="w-16 h-16 rounded-lg object-cover"
                         />
                       ) : (
-                        <span className="text-lg font-semibold">{initials}</span>
+                        <span className="text-lg font-semibold">
+                          {initials}
+                        </span>
                       )}
-                      
+
                       {/* Online status indicator */}
-                      <div className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                        member.isOnline ? 'bg-green-500' : 'bg-gray-300'
-                      }`} />
+                      <div
+                        className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                          member.isOnline ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                      />
                     </div>
-                    
+
                     {/* Member name */}
                     <span className="text-xs text-gray-600 text-center truncate max-w-[80px]">
                       {member.displayName.split(' ')[0]}
