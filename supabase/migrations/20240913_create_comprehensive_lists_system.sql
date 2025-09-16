@@ -54,23 +54,23 @@ CREATE TABLE list_items (
 );
 
 -- Add indexes for performance
-CREATE INDEX idx_lists_household_id ON lists(household_id);
-CREATE INDEX idx_lists_type ON lists(type);
-CREATE INDEX idx_lists_created_by ON lists(created_by);
-CREATE INDEX idx_lists_updated_at ON lists(updated_at);
+CREATE INDEX IF NOT EXISTS idx_lists_household_id ON lists(household_id);
+CREATE INDEX IF NOT EXISTS idx_lists_type ON lists(type);
+CREATE INDEX IF NOT EXISTS idx_lists_created_by ON lists(created_by);
+CREATE INDEX IF NOT EXISTS idx_lists_updated_at ON lists(updated_at);
 
-CREATE INDEX idx_list_items_list_id ON list_items(list_id);
-CREATE INDEX idx_list_items_checked ON list_items(checked);
-CREATE INDEX idx_list_items_assigned_to ON list_items(assigned_to);
-CREATE INDEX idx_list_items_due_date ON list_items(due_date);
-CREATE INDEX idx_list_items_priority ON list_items(priority);
-CREATE INDEX idx_list_items_position ON list_items(position);
-CREATE INDEX idx_list_items_updated_at ON list_items(updated_at);
+CREATE INDEX IF NOT EXISTS idx_list_items_list_id ON list_items(list_id);
+CREATE INDEX IF NOT EXISTS idx_list_items_checked ON list_items(checked);
+CREATE INDEX IF NOT EXISTS idx_list_items_assigned_to ON list_items(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_list_items_due_date ON list_items(due_date);
+CREATE INDEX IF NOT EXISTS idx_list_items_priority ON list_items(priority);
+CREATE INDEX IF NOT EXISTS idx_list_items_position ON list_items(position);
+CREATE INDEX IF NOT EXISTS idx_list_items_updated_at ON list_items(updated_at);
 
 -- Create GIN indexes for JSONB fields
-CREATE INDEX idx_list_items_details_gin ON list_items USING gin(details);
-CREATE INDEX idx_list_items_tags_gin ON list_items USING gin(tags);
-CREATE INDEX idx_lists_settings_gin ON lists USING gin(settings);
+CREATE INDEX IF NOT EXISTS idx_list_items_details_gin ON list_items USING gin(details);
+CREATE INDEX IF NOT EXISTS idx_list_items_tags_gin ON list_items USING gin(tags);
+CREATE INDEX IF NOT EXISTS idx_lists_settings_gin ON lists USING gin(settings);
 
 -- Create updated_at triggers
 CREATE OR REPLACE FUNCTION update_updated_at_column()
