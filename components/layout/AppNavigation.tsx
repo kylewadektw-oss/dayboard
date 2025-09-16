@@ -44,7 +44,7 @@ function AppNavigationComponent() {
   
   useEffect(() => { setHasHydrated(true); }, []);
 
-  // Get user role from profile (default to 'member')
+    // Get user's role for permission checking
   const userRole = (profile?.role as string) || 'member';
   const isAdmin = userRole === 'admin' || userRole === 'super_admin';
 

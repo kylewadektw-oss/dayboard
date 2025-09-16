@@ -9,6 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      customer_reviews: {
+        Row: {
+          app_version: string | null
+          completed_at: string | null
+          created_at: string | null
+          device_info: Json | null
+          feedback_category: string | null
+          helpful_votes: number | null
+          id: string
+          is_public: boolean | null
+          rating: number | null
+          response_at: string | null
+          response_from_team: string | null
+          review_text: string | null
+          review_type: string | null
+          reviewer_email: string | null
+          reviewer_name: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          app_version?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          device_info?: Json | null
+          feedback_category?: string | null
+          helpful_votes?: number | null
+          id?: string
+          is_public?: boolean | null
+          rating?: number | null
+          response_at?: string | null
+          response_from_team?: string | null
+          review_text?: string | null
+          review_type?: string | null
+          reviewer_email?: string | null
+          reviewer_name?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          app_version?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          device_info?: Json | null
+          feedback_category?: string | null
+          helpful_votes?: number | null
+          id?: string
+          is_public?: boolean | null
+          rating?: number | null
+          response_at?: string | null
+          response_from_team?: string | null
+          review_text?: string | null
+          review_type?: string | null
+          reviewer_email?: string | null
+          reviewer_name?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       households: {
         Row: {
           created_at: string | null

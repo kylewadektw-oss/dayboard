@@ -23,8 +23,8 @@ interface HouseholdUser {
   id: string;
   user_id: string;
   name: string | null;
-  role: string;
-  created_at: string;
+  role: string | null;
+  created_at: string | null;
   last_seen_at: string | null;
   can_manage_members: boolean;
   can_manage_admins: boolean;
@@ -78,15 +78,20 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
       try {
         setLoading(true);
         
-        // Get household users 
+                // Get users in the household
         const { data: usersData, error: usersError } = await supabase
           .from('profiles')
           .select(`
             id,
             user_id,
             name,
+            preferred_name,
+            avatar_url,
             role,
+            is_active,
+            onboarding_completed,
             created_at,
+            updated_at,
             last_seen_at
           `)
           .eq('household_id', profile.household_id)
@@ -96,7 +101,7 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
         if (usersError) throw usersError;
 
         // Get user permissions
-        const userIds = (usersData || []).map(u => u.id);
+        const userIds = (usersData || []).map(u => u.user_id);
         const { data: permissionsData, error: permissionsError } = await supabase
           .from('user_settings')
           .select('user_id, setting_key, setting_value')
@@ -114,12 +119,13 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
 
         const householdUsers: HouseholdUser[] = (usersData || []).map(user => ({
           ...user,
-          can_manage_members: permissionsMap[user.id]?.can_manage_members ?? getDefaultPermission(user.role, 'can_manage_members'),
-          can_manage_admins: permissionsMap[user.id]?.can_manage_admins ?? getDefaultPermission(user.role, 'can_manage_admins'),
-          can_view_analytics: permissionsMap[user.id]?.can_view_analytics ?? getDefaultPermission(user.role, 'can_view_analytics'),
-          can_manage_billing: permissionsMap[user.id]?.can_manage_billing ?? getDefaultPermission(user.role, 'can_manage_billing'),
-          can_manage_features: permissionsMap[user.id]?.can_manage_features ?? getDefaultPermission(user.role, 'can_manage_features'),
-          can_export_data: permissionsMap[user.id]?.can_export_data ?? getDefaultPermission(user.role, 'can_export_data')
+          role: user.role || 'member', // Ensure role is never null
+          can_manage_members: permissionsMap[user.user_id]?.can_manage_members ?? getDefaultPermission(user.role || 'member', 'can_manage_members'),
+          can_manage_admins: permissionsMap[user.user_id]?.can_manage_admins ?? getDefaultPermission(user.role || 'member', 'can_manage_admins'),
+          can_view_analytics: permissionsMap[user.user_id]?.can_view_analytics ?? getDefaultPermission(user.role || 'member', 'can_view_analytics'),
+          can_manage_billing: permissionsMap[user.user_id]?.can_manage_billing ?? getDefaultPermission(user.role || 'member', 'can_manage_billing'),
+          can_manage_features: permissionsMap[user.user_id]?.can_manage_features ?? getDefaultPermission(user.role || 'member', 'can_manage_features'),
+          can_export_data: permissionsMap[user.user_id]?.can_export_data ?? getDefaultPermission(user.role || 'member', 'can_export_data')
         }));
 
         setUsers(householdUsers);
@@ -251,12 +257,12 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
     if (!profile) return false;
     
     // Super admin can edit anyone except other super admins
-    if (profile.user_role === 'super_admin') {
+    if (profile.role === 'super_admin') {
       return targetUser.role !== 'super_admin' || targetUser.id === profile.id;
     }
     
     // Admin can edit members and themselves
-    if (profile.user_role === 'admin') {
+    if (profile.role === 'admin') {
       return targetUser.role === 'member' || targetUser.id === profile.id;
     }
     
@@ -268,7 +274,7 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
     if (!profile) return false;
     
     // Only super admin can change roles
-    return profile.user_role === 'super_admin' && targetUser.id !== profile.id;
+    return profile.role === 'super_admin' && targetUser.id !== profile.id;
   };
 
   if (loading) {
@@ -445,7 +451,7 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
                   <td className="px-4 py-3 text-center border-b border-gray-200">
                     {canChangeUserRole ? (
                       <select
-                        value={user.role}
+                        value={user.role || 'member'}
                         onChange={(e) => handleRoleChange(user.id, e.target.value)}
                         disabled={saving}
                         className="px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -455,7 +461,7 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
                       </select>
                     ) : (
                       <span className={`px-3 py-1 text-sm font-medium rounded-full border ${roleColor}`}>
-                        {user.role.replace('_', ' ')}
+                        {(user.role || 'member').replace('_', ' ')}
                       </span>
                     )}
                   </td>
