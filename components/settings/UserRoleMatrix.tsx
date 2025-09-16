@@ -251,12 +251,12 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
     if (!profile) return false;
     
     // Super admin can edit anyone except other super admins
-    if (profile.role === 'super_admin') {
+    if (profile.user_role === 'super_admin') {
       return targetUser.role !== 'super_admin' || targetUser.id === profile.id;
     }
     
     // Admin can edit members and themselves
-    if (profile.role === 'admin') {
+    if (profile.user_role === 'admin') {
       return targetUser.role === 'member' || targetUser.id === profile.id;
     }
     
@@ -268,7 +268,7 @@ export default function UserRoleMatrix({ className = '' }: UserRoleMatrixProps) 
     if (!profile) return false;
     
     // Only super admin can change roles
-    return profile.role === 'super_admin' && targetUser.id !== profile.id;
+    return profile.user_role === 'super_admin' && targetUser.id !== profile.id;
   };
 
   if (loading) {

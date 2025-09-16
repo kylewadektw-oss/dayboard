@@ -60,7 +60,7 @@ export default function DashboardPage() {
         userId: user?.id,
         profileId: profile.id,
         displayName: profile.name,
-        role: profile.role,
+        role: profile.user_role,
         householdId: profile.household_id,
         url: typeof window !== 'undefined' ? window.location.href : 'unknown'
       });

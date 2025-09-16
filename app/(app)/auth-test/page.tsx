@@ -206,7 +206,7 @@ export default function AuthTestPage() {
                   <h3 className="font-medium text-green-900 mb-2">Profile Data</h3>
                   <div className="text-sm text-green-700">
                     <div>Display Name: {profile.preferred_name || profile.name || 'Not set'}</div>
-                    <div>Role: {profile.role || 'Not set'}</div>
+                    <div>Role: {profile.user_role || 'Not set'}</div>
                     <div>Created: {new Date(profile.created_at).toLocaleString()}</div>
                   </div>
                 </div>

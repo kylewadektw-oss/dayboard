@@ -23,12 +23,12 @@ export default async function AdminRecipePage() {
   // Get user profile to check if they're an admin
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('user_role')
     .eq('id', user.id)
     .single()
 
   // Check for admin or super_admin role
-  if (!profile?.role || !['admin', 'super_admin'].includes(profile.role)) {
+  if (!profile?.user_role || !['admin', 'super_admin'].includes(profile.user_role)) {
     redirect('/dashboard')
   }
 
