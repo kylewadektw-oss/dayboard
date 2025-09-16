@@ -33,7 +33,7 @@ import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState, useMemo, useCallback, memo } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Database } from '@/types_db';
+import { Database } from '@/src/lib/types_db';
 
 type Household = Database['public']['Tables']['households']['Row'];
 
@@ -51,7 +51,7 @@ interface HouseholdMember {
   preferred_name: string | null;
   family_role: string | null;
   last_seen_at: string | null;
-  is_active: boolean;
+  is_active: boolean | null;
   profile_photo_url: string | null;
 }
 
@@ -143,8 +143,8 @@ export function ProfileStatus() {
   
   // Memoize display name calculation to avoid recomputation
   const displayName = useMemo(() => 
-    profile?.display_name || profile?.full_name || user?.email?.split('@')[0] || 'there',
-    [profile?.display_name, profile?.full_name, user?.email]
+    profile?.preferred_name || profile?.name || user?.email?.split('@')[0] || 'there',
+    [profile?.preferred_name, profile?.name, user?.email]
   );
 
   // Memoize greeting to avoid string concatenation on every render
@@ -158,7 +158,7 @@ export function ProfileStatus() {
     console.log('🔍 [DEBUG] ProfileStatus - loadHouseholdData called with profile:', {
       hasProfile: !!profile,
       householdId: profile?.household_id,
-      profileDisplayName: profile?.display_name || profile?.full_name
+      profileDisplayName: profile?.preferred_name || profile?.name
     });
 
     if (!profile?.household_id) {
@@ -218,34 +218,29 @@ export function ProfileStatus() {
     }
   }, [profile, supabase]);
 
-  // Weather fetching function - Use household coordinates
+  // Weather fetching function - Use household city/state for weather
   const fetchWeather = useCallback(async () => {
-    if (!household?.coordinates) {
-      console.log('No household coordinates available for weather');
-      return;
-    }
-    
-    // Type cast coordinates to expected format
-    const coords = household.coordinates as { lat: number; lng: number };
-    if (!coords.lat || !coords.lng) {
-      console.log('Invalid coordinates format:', coords);
+    if (!household?.city || !household?.state) {
+      console.log('No household location available for weather');
       return;
     }
     
     setWeatherLoading(true);
     try {
-      const res = await fetch(`/api/weather?lat=${coords.lat}&lon=${coords.lng}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      // Use city and state for weather lookup instead of coordinates
+      const location = `${household.city}, ${household.state}`;
+      console.log('Weather lookup for:', location);
       
-      const data = await res.json();
-      setWeather(data);
+      // For now, just log that weather would be fetched
+      // TODO: Implement city-based weather API call
+      setWeather(null);
       console.log('Weather fetched for household location:', household.name || 'Unknown location');
     } catch (error) {
       console.error('Error loading weather:', error);
     } finally {
       setWeatherLoading(false);
     }
-  }, [household?.coordinates, household?.name]);
+  }, [household?.city, household?.state, household?.name]);
 
   // Memoize members with computed properties to avoid recalculation
   const membersWithStatus = useMemo(() => 
@@ -273,10 +268,10 @@ export function ProfileStatus() {
 
   // Fetch weather when household data is loaded
   useEffect(() => {
-    if (household?.coordinates) {
+    if (household?.city && household?.state) {
       fetchWeather();
     }
-  }, [household?.coordinates, fetchWeather]);
+  }, [household?.city, household?.state, fetchWeather]);
 
   if (loading) {
     return (

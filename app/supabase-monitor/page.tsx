@@ -113,14 +113,14 @@ export default function SupabaseMonitorPage() {
       // Transform and categorize logs
       const transformedLogs: SupabaseLog[] = appLogs?.map(log => ({
         id: log.id,
-        timestamp: log.timestamp,
-        level: log.level,
+        timestamp: log.created_at || new Date().toISOString(),
+        level: log.level || 'info',
         message: log.message,
         user_id: log.user_id || undefined,
         category: categorizeSupabaseError(log.message || ''),
-        severity: getSeverityLevel(log.level, log.message || ''),
-        source: 'application',
-        data: log.data
+        severity: getSeverityLevel(log.level || 'info', log.message || ''),
+        source: log.source || 'application',
+        data: log.metadata
       })) || [];
 
       setLogs(transformedLogs);

@@ -8,6 +8,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { SettingsService } from '@/utils/settings';
+import type { Json } from '@/src/lib/types_db';
 
 interface SettingsContextType {
   settingsService: SettingsService | null;
@@ -16,7 +17,7 @@ interface SettingsContextType {
   loading: boolean;
   refreshSettings: () => Promise<void>;
   getSetting: (key: string, defaultValue?: unknown) => unknown;
-  setSetting: (key: string, value: unknown, isHousehold?: boolean) => Promise<void>;
+  setSetting: (key: string, value: Json, isHousehold?: boolean) => Promise<void>;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -98,7 +99,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     return defaultValue;
   };
 
-  const setSetting = async (key: string, value: unknown, isHousehold: boolean = false) => {
+  const setSetting = async (key: string, value: Json, isHousehold: boolean = false) => {
     if (!settingsService) return;
 
     try {

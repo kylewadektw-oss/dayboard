@@ -64,16 +64,16 @@ export async function POST(request: NextRequest) {
       timestamp: feedbackData.browser_info.timestamp
     } : null;
 
-    // For now, store feedback in application_logs until user_feedback table is created
+    // Store feedback in customer_reviews table
     const { data, error } = await supabase
-      .from('application_logs')
+      .from('customer_reviews')
       .insert({
         user_id: user.id,
-        session_id: `feedback-${Date.now()}`,
-        level: 'info',
-        message: `Feedback: ${feedbackData.title}`,
-        component: 'feedback_system',
-        data: {
+        review_type: feedbackData.feedback_type,
+        review_text: `${feedbackData.title}\n\n${feedbackData.description}`,
+        feedback_category: feedbackData.feedback_type,
+        status: 'pending',
+        device_info: {
           feedback_type: feedbackData.feedback_type,
           priority: feedbackData.priority || 'medium',
           title: feedbackData.title,
@@ -137,16 +137,8 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
 
     let query = supabase
-      .from('application_logs')
-      .select(`
-        *,
-        profiles!inner (
-          first_name,
-          last_name,
-          email
-        )
-      `)
-      .eq('component', 'feedback_system')
+      .from('customer_reviews')
+      .select('*')
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -209,36 +201,29 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { status, admin_response } = body;
 
-    // Update feedback in application_logs data field
-    const { data: existingLog, error: fetchError } = await supabase
-      .from('application_logs')
-      .select('data')
+    // Update feedback status in customer_reviews 
+    const { data: existingReview, error: fetchError } = await supabase
+      .from('customer_reviews')
+      .select('*')
       .eq('id', feedbackId)
-      .eq('component', 'feedback_system')
       .single();
 
-    if (fetchError || !existingLog) {
+    if (fetchError || !existingReview) {
       return NextResponse.json(
         { error: 'Feedback not found' },
         { status: 404 }
       );
     }
 
-    const updatedData = {
-      ...(existingLog.data as Record<string, unknown>),
-      status,
-      admin_response,
-      responded_at: status === 'responded' ? new Date().toISOString() : (existingLog.data as Record<string, string>)?.responded_at
-    };
-
     // Update feedback
     const { data, error } = await supabase
-      .from('application_logs')
+      .from('customer_reviews')
       .update({
-        data: updatedData
+        status: status,
+        response_from_team: admin_response || null,
+        response_at: status === 'responded' ? new Date().toISOString() : null
       })
       .eq('id', feedbackId)
-      .eq('component', 'feedback_system')
       .select()
       .single();
 

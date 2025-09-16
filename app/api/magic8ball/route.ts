@@ -142,8 +142,10 @@ export async function GET(request: NextRequest) {
           return NextResponse.json({ error: 'Failed to get stats' }, { status: 500 });
         }
 
-        const themeCounts = themeStats?.reduce((acc: Record<string, number>, q: { theme: string }) => {
-          acc[q.theme] = (acc[q.theme] || 0) + 1;
+        const themeCounts = themeStats?.reduce((acc: Record<string, number>, q: { theme: string | null }) => {
+          if (q.theme) {
+            acc[q.theme] = (acc[q.theme] || 0) + 1;
+          }
           return acc;
         }, {});
 
@@ -242,7 +244,7 @@ export async function DELETE(request: NextRequest) {
     const { error } = await supabase
       .from('magic8_questions')
       .delete()
-      .eq('id', questionId)
+      .eq('id', parseInt(questionId))
       .eq('asked_by', user.id); // Double-check ownership
 
     if (error) {

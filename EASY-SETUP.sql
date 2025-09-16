@@ -1,3 +1,14 @@
+-- Dayboard Database Schema
+-- © 2025 BentLo Labs LLC. All Rights Reserved.
+-- PROPRIETARY AND CONFIDENTIAL
+-- 
+-- This database schema is the proprietary property of BentLo Labs LLC.
+-- Unauthorized use, copying, or distribution is strictly prohibited.
+--
+-- Company: BentLo Labs LLC
+-- Product: Dayboard™
+-- Version: 1.0
+
 -- EASY SETUP: Copy and paste this ENTIRE script into Supabase SQL Editor
 -- This will set up everything you need in one go
 

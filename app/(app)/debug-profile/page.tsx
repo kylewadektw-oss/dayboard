@@ -47,7 +47,7 @@ export default async function DebugProfilePage() {
           <h2 className="text-lg font-semibold mb-4">Role Check:</h2>
           <p>Profile Role: <span className="font-mono bg-gray-100 px-2 py-1 rounded">{profile?.role || 'null/undefined'}</span></p>
           <p>Is Super Admin: <span className="font-mono bg-gray-100 px-2 py-1 rounded">{profile?.role === 'super_admin' ? 'true' : 'false'}</span></p>
-          
+
           {profile?.role !== 'super_admin' && (
             <div className="mt-4 p-4 bg-yellow-100 rounded">
               <p className="text-yellow-800">

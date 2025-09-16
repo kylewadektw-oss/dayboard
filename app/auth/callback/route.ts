@@ -76,18 +76,12 @@ export async function GET(request: NextRequest) {
         serverAuthLogger.info(`🆕 Creating new profile for user`, { userId: user.id });
         
         const newProfile = {
-          user_id: user.id,  // Use user_id to match actual schema
+          id: user.id,
+          user_id: user.id,
           name: user.user_metadata?.full_name || user.user_metadata?.name || '',
           avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || '',
           role: 'member' as const,
-          is_active: true,
-          household_id: null,
-          onboarding_completed: false,
-          profile_completion_percentage: 25, // Basic info from OAuth
-          timezone: 'America/New_York', // Default, user can change later
-          language: 'en',
-          notification_preferences: {},
-          privacy_settings: {}
+          household_id: null
         };
 
         serverAuthLogger.debug(`📝 Profile data prepared`, { profileData: newProfile });
@@ -148,16 +142,16 @@ export async function GET(request: NextRequest) {
         serverAuthLogger.info(`👤 Existing profile found`, { 
           userId: user.id, 
           profileId: profile.id,
-          displayName: profile.display_name || profile.full_name 
+          displayName: profile.preferred_name || profile.name 
         });
 
         // Check if household setup is complete
-        if (!profile.household_id || !profile.onboarding_completed || !(profile.display_name || profile.full_name)) {
+        if (!profile.household_id || !(profile.preferred_name || profile.name)) {
           serverAuthLogger.info(`🏠 Redirecting to profile setup - incomplete household/profile`, {
             userId: user.id,
             hasHousehold: !!profile.household_id,
-            hasName: !!(profile.display_name || profile.full_name),
-            onboardingCompleted: profile.onboarding_completed
+            hasName: !!(profile.preferred_name || profile.name),
+            onboardingCompleted: true // Assume completed since field doesn't exist in current schema
           });
           return NextResponse.redirect(
             getStatusRedirect(

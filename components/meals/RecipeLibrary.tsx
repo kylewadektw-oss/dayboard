@@ -303,8 +303,8 @@ function RecipeLibraryComponent() {
         is_verified: false,
         created_by: recipe.user_id || 'unknown',
         household_id: recipe.household_id || 'unknown',
-        created_at: recipe.created_at,
-        updated_at: recipe.updated_at,
+        created_at: recipe.created_at || new Date().toISOString(),
+        updated_at: recipe.updated_at || new Date().toISOString(),
         // Handle nullable fields
         source_url: recipe.source_url || undefined,
         image_url: recipe.image_url || undefined

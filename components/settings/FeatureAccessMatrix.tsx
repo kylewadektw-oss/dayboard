@@ -82,7 +82,7 @@ const FeatureAccessMatrix: React.FC<FeatureAccessMatrixProps> = ({
         const newState: AccessState = { ...accessState };
         accessRules.forEach((rule: FeatureAccess) => {
           if (newState[rule.feature_name]) {
-            newState[rule.feature_name][rule.role] = rule.available;
+            (newState[rule.feature_name] as Record<string, boolean>)[rule.role] = rule.available;
           }
         });
 

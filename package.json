@@ -1,18 +1,19 @@
 {
   "name": "dayboard-household-command-center",
   "version": "1.0.0",
-  "description": "Proprietary household command center application - Unauthorized copying prohibited",
+  "description": "Dayboard™ Family Management Platform - © 2025 BentLo Labs LLC. All Rights Reserved.",
   "author": {
-    "name": "Kyle Wade",
-    "email": "kyle.wade.ktw@gmail.com",
-    "url": "https://github.com/kylewadektw-oss"
+    "name": "BentLo Labs LLC",
+    "email": "legal@bentlolabs.com",
+    "url": "https://bentlolabs.com"
   },
   "license": "PROPRIETARY",
   "repository": {
     "type": "git",
     "url": "https://github.com/kylewadektw-oss/dayboard_official"
   },
-  "copyright": "Copyright (c) 2025 Kyle Wade. All rights reserved.",
+  "copyright": "© 2025 BentLo Labs LLC. All Rights Reserved.",
+  "trademark": "Dayboard™ is a trademark of BentLo Labs LLC",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",

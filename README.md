@@ -1,14 +1,18 @@
-# 🛡️ Dayboard - Proprietary Household Command Center
+# 🛡️ Dayboard™ - Family Management Platform
 
-> **IMPORTANT:** This is proprietary software owned by Kyle Wade (kyle.wade.ktw@gmail.com). Unauthorized copying, distribution, or commercial use by large corporations is strictly prohibited.
+> **© 2025 BentLo Labs LLC. All Rights Reserved.**
 
-**Copyright (c) 2025 Kyle Wade. All rights reserved.**
+**Dayboard™** is a proprietary family management platform developed by **BentLo Labs LLC**. This application provides an all-in-one household command center for modern families.
 
 ## ⚖️ Legal Notice
 
-This application contains proprietary code and algorithms. Large corporations and competing services are **PROHIBITED** from copying, mirroring, or creating derivative works. Violation may result in legal action and damages up to $100,000.
+**PROPRIETARY AND CONFIDENTIAL** - This software contains proprietary and confidential information of BentLo Labs LLC. Any reproduction, distribution, or disclosure of this material without express written permission is strictly prohibited.
 
-**License:** Proprietary - See [DMCA_PROTECTION.md](./DMCA_PROTECTION.md) for full legal terms.
+**Dayboard™** is a trademark of BentLo Labs LLC.
+
+**Copyright Notice:** All software, documentation, and materials are protected by copyright law and owned by BentLo Labs LLC.
+
+For licensing inquiries: legal@bentlolabs.com
 
 ## ✨ Features
 

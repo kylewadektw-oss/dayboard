@@ -107,10 +107,18 @@ export default function ComprehensiveSettingsDashboard() {
           .order('sort_order');
 
         if (error) throw error;
-        setCategories(data || []);
         
-        if (data && data.length > 0) {
-          setActiveCategory(data[0].category_key);
+        // Transform data to handle nullable fields
+        const transformedCategories: SettingsCategory[] = (data || []).map(category => ({
+          ...category,
+          sort_order: category.sort_order ?? 0,
+          created_at: category.created_at || new Date().toISOString()
+        }));
+        
+        setCategories(transformedCategories);
+        
+        if (transformedCategories.length > 0) {
+          setActiveCategory(transformedCategories[0].category_key);
         }
       } catch (err: unknown) {
         console.error('Error loading settings categories:', err);
@@ -135,11 +143,15 @@ export default function ComprehensiveSettingsDashboard() {
           .order('sort_order');
 
         if (error) throw error;
-        setSettingsItems((data || []).map(item => ({
+        
+        const transformedItems: SettingsItem[] = (data || []).map(item => ({
           ...item,
+          sort_order: item.sort_order ?? 0,
           default_value: item.default_value as SettingValue,
           options: item.options as Array<{ value: string | number; label: string }> | undefined
-        })));
+        }));
+        
+        setSettingsItems(transformedItems);
       } catch (err: unknown) {
         console.error('Error loading settings items:', err);
         setError(err instanceof Error ? err.message : 'Failed to load settings');
@@ -176,16 +188,16 @@ export default function ComprehensiveSettingsDashboard() {
     loadUserSettings();
   }, [profile?.id, supabase]);
 
-  // Load household settings (for admin categories)
+  // Load user settings (for admin categories)
   useEffect(() => {
-    const loadHouseholdSettings = async () => {
-      if (!profile?.household_id || activeCategory === 'member') return;
+    const loadUserSettings = async () => {
+      if (!profile?.id || activeCategory === 'member') return;
 
       try {
         const { data, error } = await supabase
-          .from('household_settings')
+          .from('user_settings')
           .select('*')
-          .eq('household_id', profile.household_id);
+          .eq('user_id', profile.id);
 
         if (error) throw error;
         
@@ -196,12 +208,12 @@ export default function ComprehensiveSettingsDashboard() {
         
         setHouseholdSettings(settingsMap);
       } catch (err: unknown) {
-        console.error('Error loading household settings:', err);
+        console.error('Error loading user settings:', err);
       }
     };
 
-    loadHouseholdSettings();
-  }, [profile?.household_id, activeCategory, supabase]);
+    loadUserSettings();
+  }, [profile?.id, activeCategory, supabase]);
 
   useEffect(() => {
     if (categories.length > 0) {
@@ -227,17 +239,17 @@ export default function ComprehensiveSettingsDashboard() {
     try {
       const isHouseholdSetting = activeCategory !== 'member';
       
-      if (isHouseholdSetting && profile.household_id) {
-        // Update household setting
+      if (isHouseholdSetting && profile.id) {
+        // Update user setting (for admin/household level settings)
         const { error } = await supabase
-          .from('household_settings')
+          .from('user_settings')
           .upsert({
-            household_id: profile.household_id,
+            user_id: profile.id,
             setting_key: settingKey,
             setting_value: value,
             updated_at: new Date().toISOString()
           }, {
-            onConflict: 'household_id,setting_key'
+            onConflict: 'user_id,setting_key'
           });
 
         if (error) throw error;

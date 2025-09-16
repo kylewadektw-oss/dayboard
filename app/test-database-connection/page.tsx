@@ -1,7 +1,14 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
  * 
- * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * Copyright (c) 2025 Kyle       const testLog = {
+        user_id: null,
+        level: 'info' as const,
+        message: 'Test log entry from database connection test',
+        source: 'TestDatabaseConnection',
+        metadata: { test: true, timestamp: new Date().toISOString() },
+        side: 'client' as const
+      };de.ktw@gmail.com)
  * 
  * This file is part of Dayboard, a proprietary household command center application.
  * 
@@ -66,17 +73,12 @@ export default function TestDatabaseConnection() {
       const supabase = createClient();
       
       const testLog = {
-        user_id: null, // Allow null for testing
-        session_id: 'test-session-' + Date.now(),
-        level: 'info',
+        user_id: null,
+        level: 'info' as const,
         message: 'Test log entry from database connection test',
-        component: 'TestDatabaseConnection',
-        data: { test: true, timestamp: new Date().toISOString() },
-        stack_trace: null,
-        user_agent: navigator.userAgent,
-        url: window.location.href,
-        timestamp: new Date().toISOString(),
-        side: 'client'
+        source: 'TestDatabaseConnection',
+        metadata: { test: true, timestamp: new Date().toISOString() },
+        side: 'client' as const
       };
       
       const { data, error } = await supabase

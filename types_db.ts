@@ -9,6 +9,54 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      application_logs: {
+        Row: {
+          id: string
+          user_id: string
+          session_id: string
+          level: string
+          message: string
+          component: string
+          data: Json
+          stack_trace: string | null
+          user_agent: string | null
+          url: string | null
+          timestamp: string
+          created_at: string
+          side: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          session_id: string
+          level: string
+          message: string
+          component: string
+          data?: Json
+          stack_trace?: string | null
+          user_agent?: string | null
+          url?: string | null
+          timestamp?: string
+          created_at?: string
+          side?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          session_id?: string
+          level?: string
+          message?: string
+          component?: string
+          data?: Json
+          stack_trace?: string | null
+          user_agent?: string | null
+          url?: string | null
+          timestamp?: string
+          created_at?: string
+          side?: string
+        }
+        Relationships: []
+      }
       customer_reviews: {
         Row: {
           app_version: string | null
@@ -184,6 +232,288 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      recipes: {
+        Row: {
+          id: string
+          user_id: string
+          household_id: string | null
+          title: string
+          description: string | null
+          ingredients: Json | null
+          instructions: Json | null
+          prep_time: number | null
+          cook_time: number | null
+          servings: number | null
+          difficulty: string | null
+          cuisine_type: string | null
+          dietary_tags: Json | null
+          source_url: string | null
+          image_url: string | null
+          visibility: string | null
+          shared_with_household: boolean | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          household_id?: string | null
+          title: string
+          description?: string | null
+          ingredients?: Json | null
+          instructions?: Json | null
+          prep_time?: number | null
+          cook_time?: number | null
+          servings?: number | null
+          difficulty?: string | null
+          cuisine_type?: string | null
+          dietary_tags?: Json | null
+          source_url?: string | null
+          image_url?: string | null
+          visibility?: string | null
+          shared_with_household?: boolean | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          household_id?: string | null
+          title?: string
+          description?: string | null
+          ingredients?: Json | null
+          instructions?: Json | null
+          prep_time?: number | null
+          cook_time?: number | null
+          servings?: number | null
+          difficulty?: string | null
+          cuisine_type?: string | null
+          dietary_tags?: Json | null
+          source_url?: string | null
+          image_url?: string | null
+          visibility?: string | null
+          shared_with_household?: boolean | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_permissions: {
+        Row: {
+          id: string
+          user_id: string
+          household_id: string | null
+          permission_type: string
+          resource_type: string | null
+          resource_id: string | null
+          granted_by: string | null
+          granted_at: string
+          revoked_at: string | null
+          is_active: boolean | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          household_id?: string | null
+          permission_type: string
+          resource_type?: string | null
+          resource_id?: string | null
+          granted_by?: string | null
+          granted_at?: string
+          revoked_at?: string | null
+          is_active?: boolean | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          household_id?: string | null
+          permission_type?: string
+          resource_type?: string | null
+          resource_id?: string | null
+          granted_by?: string | null
+          granted_at?: string
+          revoked_at?: string | null
+          is_active?: boolean | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      calendar_events: {
+        Row: {
+          id: string
+          user_id: string
+          household_id: string | null
+          title: string
+          description: string | null
+          start_time: string
+          end_time: string
+          all_day: boolean | null
+          recurrence_rule: string | null
+          location: string | null
+          event_type: string | null
+          visibility: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          household_id?: string | null
+          title: string
+          description?: string | null
+          start_time: string
+          end_time: string
+          all_day?: boolean | null
+          recurrence_rule?: string | null
+          location?: string | null
+          event_type?: string | null
+          visibility?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          household_id?: string | null
+          title?: string
+          description?: string | null
+          start_time?: string
+          end_time?: string
+          all_day?: boolean | null
+          recurrence_rule?: string | null
+          location?: string | null
+          event_type?: string | null
+          visibility?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      task_lists: {
+        Row: {
+          id: string
+          user_id: string
+          household_id: string | null
+          name: string
+          description: string | null
+          is_shared: boolean | null
+          visibility: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          household_id?: string | null
+          name: string
+          description?: string | null
+          is_shared?: boolean | null
+          visibility?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          household_id?: string | null
+          name?: string
+          description?: string | null
+          is_shared?: boolean | null
+          visibility?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          id: string
+          task_list_id: string | null
+          user_id: string
+          household_id: string | null
+          title: string
+          description: string | null
+          is_completed: boolean | null
+          due_date: string | null
+          priority: string | null
+          assigned_to: string | null
+          tags: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          task_list_id?: string | null
+          user_id: string
+          household_id?: string | null
+          title: string
+          description?: string | null
+          is_completed?: boolean | null
+          due_date?: string | null
+          priority?: string | null
+          assigned_to?: string | null
+          tags?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          task_list_id?: string | null
+          user_id?: string
+          household_id?: string | null
+          title?: string
+          description?: string | null
+          is_completed?: boolean | null
+          due_date?: string | null
+          priority?: string | null
+          assigned_to?: string | null
+          tags?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shopping_lists: {
+        Row: {
+          id: string
+          user_id: string
+          household_id: string | null
+          name: string
+          description: string | null
+          is_shared: boolean | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          household_id?: string | null
+          name: string
+          description?: string | null
+          is_shared?: boolean | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          household_id?: string | null
+          name?: string
+          description?: string | null
+          is_shared?: boolean | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

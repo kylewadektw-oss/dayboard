@@ -1,7 +1,7 @@
 "use client";
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Shield, Save, Check } from 'lucide-react';
-import { Database } from '@/types_db';
+import { Database } from '@/src/lib/types_db';
 
 // Types replicated for isolation
 type UserPermissionsRow = Database['public']['Tables']['user_permissions']['Row'];

@@ -19,7 +19,7 @@
 
 import Button from '@/components/ui/Button';
 import LogoCloud from '@/components/ui/LogoCloud';
-import type { Tables } from '@/types_db';
+// import type { Tables } from '@/src/lib/types_db';
 import { getStripe } from '@/utils/stripe/client';
 import { checkoutWithStripe } from '@/utils/stripe/server';
 import { getErrorRedirect } from '@/utils/helpers';
@@ -28,9 +28,31 @@ import cn from 'classnames';
 import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
 
-type Subscription = Tables<'subscriptions'>;
-type Product = Tables<'products'>;
-type Price = Tables<'prices'>;
+// TODO: Add these tables to the database schema
+// type Subscription = Tables<'subscriptions'>;
+// type Product = Tables<'products'>;
+// type Price = Tables<'prices'>;
+
+interface Subscription {
+  id: string;
+  status: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+}
+
+interface Price {
+  id: string;
+  currency: string;
+  unit_amount: number;
+  interval: string;
+  type: 'recurring' | 'one_time';
+  trial_period_days?: number;
+}
+
 interface ProductWithPrices extends Product {
   prices: Price[];
 }

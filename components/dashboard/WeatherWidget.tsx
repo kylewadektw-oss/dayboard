@@ -34,7 +34,7 @@ import { useEffect, useState, useCallback, memo } from 'react';
 import { enhancedLogger, LogLevel } from '@/utils/logger';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
-import { Database } from '@/types_db';
+import { Database } from '@/src/lib/types_db';
 
 type Household = Database['public']['Tables']['households']['Row'];
 

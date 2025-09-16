@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Edit, Save, Home, Bell, Users, Copy, UserPlus, Star, Gift, Clock, Zap, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
-import { Database } from '@/types_db';
+import { Database } from '@/src/lib/types_db';
 import { toastHelpers } from '@/utils/toast';
 import { GoogleAddressInput } from '@/components/ui/GoogleAddressInput';
 
@@ -132,8 +132,8 @@ type HouseholdMember = {
   id: string;
   name: string | null;
   preferred_name: string | null;
-  role: 'super_admin' | 'admin' | 'member';
-  family_role: Database['public']['Enums']['family_role'] | null;
+  role: 'super_admin' | 'admin' | 'member' | null;
+  family_role: string | null;
   avatar_url: string | null;
   last_seen_at: string | null;
 };
@@ -231,8 +231,8 @@ export default function ProfileViewImproved() {
   useEffect(() => {
     if (profile) {
       const next: ProfileFormState = {
-        name: profile.display_name || profile.full_name || '',
-        preferred_name: profile.display_name || '',
+        name: profile.preferred_name || profile.name || '',
+        preferred_name: profile.preferred_name || '',
         phone_number: formatPhoneNumber(profile.phone_number || ''),
         date_of_birth: profile.date_of_birth || '',
         timezone: profile.timezone || '',
@@ -280,14 +280,8 @@ export default function ProfileViewImproved() {
   // Seed household form
   useEffect(() => {
     if (household) {
-      let coordinates = undefined;
-      if (household.coordinates) {
-        try {
-          coordinates = JSON.parse(household.coordinates as string);
-        } catch (e) {
-          console.error('Error parsing household coordinates:', e);
-        }
-      }
+      // Note: coordinates field removed from schema, using city/state instead
+      const coordinates = undefined;
       
       setHouseholdForm({
         name: household.name || '',
@@ -595,13 +589,13 @@ export default function ProfileViewImproved() {
             <div className="flex items-start gap-6 mb-8">
               <div className="relative">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-3xl flex items-center justify-center text-white text-3xl font-bold shadow-xl">
-                  {(profile.display_name || profile.full_name || user?.email || 'U').charAt(0).toUpperCase()}
+                  {(profile.preferred_name || profile.name || user?.email || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-3 border-white shadow-lg"></div>
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-3xl font-bold text-gray-900 leading-tight mb-2">
-                  {profile.display_name || profile.full_name || 'No name set'}
+                  {profile.preferred_name || profile.name || 'No name set'}
                 </h2>
                 {profile.family_role && (
                   <span className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-full text-sm font-semibold tracking-wide shadow-sm">
@@ -921,7 +915,7 @@ export default function ProfileViewImproved() {
                                   member.role === 'admin' ? 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700' :
                                   'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700'
                                 }`}>
-                                  {member.role === 'super_admin' ? 'Super Admin' : readable(member.role)}
+                                  {member.role === 'super_admin' ? 'Super Admin' : readable(member.role || 'member')}
                                 </span>
                                 {member.last_seen_at && (
                                   <span className="text-xs text-gray-500 flex items-center gap-1">
@@ -947,7 +941,7 @@ export default function ProfileViewImproved() {
                         </code>
                         <button 
                           type="button" 
-                          onClick={() => copyToClipboard(household.household_code, 'Household code copied!')} 
+                          onClick={() => household.household_code && copyToClipboard(household.household_code, 'Household code copied!')} 
                           className="px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 border-0"
                         >
                           <Copy className="w-4 h-4" />
@@ -1291,7 +1285,7 @@ export default function ProfileViewImproved() {
     showLoading,
     profile: profile ? {
       id: profile.id,
-      name: profile.display_name || profile.full_name,
+      name: profile.preferred_name || profile.name,
       onboarding_completed: profile.onboarding_completed,
       household_id: profile.household_id
     } : null,

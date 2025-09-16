@@ -26,9 +26,18 @@ import {
   getErrorRedirect,
   calculateTrialEndUnixTimestamp
 } from '@/utils/helpers';
-import { Tables } from '@/types_db';
+// import { Tables } from '@/src/lib/types_db';
 
-type Price = Tables<'prices'>;
+// TODO: Add prices table to database schema
+// type Price = Tables<'prices'>;
+interface Price {
+  id: string;
+  currency: string;
+  unit_amount: number;
+  interval: string;
+  type: 'recurring' | 'one_time';
+  trial_period_days?: number;
+}
 
 type CheckoutResponse = {
   errorRedirect?: string;

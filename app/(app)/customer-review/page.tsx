@@ -16,145 +16,135 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
-import { Check, X, MessageSquare, Calendar, User, AlertCircle } from 'lucide-react';
+import { Check, X, MessageSquare, User, AlertCircle } from 'lucide-react';
+import { Database } from '@/src/lib/types_db';
+
+type Json = Database['public']['Tables']['customer_reviews']['Row']['device_info'];
 
 interface CustomerReview {
   id: string;
   user_id: string;
-  household_id: string | null;
-  status: 'pending' | 'approved' | 'rejected';
-  review_notes: string | null;
-  reviewed_by: string | null;
-  reviewed_at: string | null;
-  created_at: string;
-  updated_at: string;
+  status: string;
+  rating: number | null;
+  review_text: string | null;
+  review_type: string | null;
+  feedback_category: string | null;
+  reviewer_name: string | null;
+  reviewer_email: string | null;
+  app_version: string | null;
+  device_info: Json | null;
+  helpful_votes: number | null;
+  is_public: boolean | null;
+  response_from_team: string | null;
+  response_at: string | null;
+  completed_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+interface Profile {
+  id: string;
+  name: string | null;
+  avatar_url?: string | null;
 }
 
 export default function CustomerReviewPage() {
   const { user, profile } = useAuth();
   const supabase = createClient();
+  
   const [reviews, setReviews] = useState<CustomerReview[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [profiles, setProfiles] = useState<{ [key: string]: Profile }>({});
   const [selectedReview, setSelectedReview] = useState<CustomerReview | null>(null);
-  const [reviewNotes, setReviewNotes] = useState('');
-  const [processingId, setProcessingId] = useState<string | null>(null);
-  const [userProfiles, setUserProfiles] = useState<{[key: string]: {id: string, name: string | null, preferred_name?: string | null, avatar_url?: string | null}}>({});
-  const [households, setHouseholds] = useState<{[key: string]: {id: string, name: string | null, address?: string | null, city?: string | null, state?: string | null, zip?: string | null}}>({});
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [responseText, setResponseText] = useState('');
 
-  // Check if user has admin privileges
+  // Check if user is admin
   const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
 
-  useEffect(() => {
-    if (!isAdmin) {
-      setError('You do not have permission to access this page.');
-      setLoading(false);
-      return;
-    }
-    
-    fetchReviews();
-  }, [isAdmin, filter]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
-
+      
       let query = supabase
         .from('customer_reviews')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (filter !== 'all') {
-        query = query.eq('status', filter);
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
       }
 
-      const { data: reviewData, error: fetchError } = await query;
+      const { data: reviewData, error } = await query;
 
-      if (fetchError) {
-        throw fetchError;
-      }
+      if (error) throw error;
 
       setReviews(reviewData || []);
 
-      // Fetch user profiles separately
+      // Fetch user profiles for reviewers
       if (reviewData && reviewData.length > 0) {
         const userIds = reviewData.map(review => review.user_id);
-        const { data: profileData } = await supabase
+        
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('id, name, preferred_name, avatar_url')
+          .select('id, name, avatar_url')
           .in('id', userIds);
 
-        const profileMap: {[key: string]: {id: string, name: string | null, preferred_name?: string | null, avatar_url?: string | null}} = {};
-        profileData?.forEach(profile => {
-          profileMap[profile.id] = profile;
-        });
-        setUserProfiles(profileMap);
-
-        // Fetch household data
-        const householdIds = reviewData
-          .filter(review => review.household_id)
-          .map(review => review.household_id) as string[];
-        if (householdIds.length > 0) {
-          const { data: householdData } = await supabase
-            .from('households')
-            .select('id, name, address, city, state, zip')
-            .in('id', householdIds);
-
-          const householdMap: {[key: string]: {id: string, name: string | null, address?: string | null, city?: string | null, state?: string | null, zip?: string | null}} = {};
-          householdData?.forEach(household => {
-            householdMap[household.id] = household;
+        if (!profileError && profileData) {
+          const profileMap: { [key: string]: Profile } = {};
+          profileData.forEach(profile => {
+            profileMap[profile.id] = profile;
           });
-          setHouseholds(householdMap);
+          setProfiles(profileMap);
         }
       }
-    } catch (err) {
-      console.error('Error fetching reviews:', err);
-      setError('Failed to load customer reviews');
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase, statusFilter]);
 
-  const handleReviewAction = async (reviewId: string, action: 'approved' | 'rejected', notes?: string) => {
-    if (!user) return;
+  useEffect(() => {
+    if (!user || !isAdmin) return;
 
+    fetchReviews();
+  }, [user, isAdmin, fetchReviews]);
+
+  const updateReviewStatus = async (reviewId: string, newStatus: string) => {
     try {
-      setProcessingId(reviewId);
+      const updateData: Partial<CustomerReview> = { status: newStatus };
       
-      const { error: updateError } = await supabase
-        .from('customer_reviews')
-        .update({
-          status: action,
-          review_notes: notes || null,
-          reviewed_by: user.id,
-          reviewed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', reviewId);
-
-      if (updateError) {
-        throw updateError;
+      if (newStatus === 'completed') {
+        updateData.completed_at = new Date().toISOString();
       }
 
-      // Refresh the reviews list
-      await fetchReviews();
+      if (responseText.trim()) {
+        updateData.response_from_team = responseText.trim();
+        updateData.response_at = new Date().toISOString();
+      }
+
+      const { error } = await supabase
+        .from('customer_reviews')
+        .update(updateData)
+        .eq('id', reviewId);
+
+      if (error) throw error;
+
+      // Refresh reviews
+      fetchReviews();
       setSelectedReview(null);
-      setReviewNotes('');
-    } catch (err) {
-      console.error('Error updating review:', err);
-      setError('Failed to update review status');
-    } finally {
-      setProcessingId(null);
+      setResponseText('');
+    } catch (error) {
+      console.error('Error updating review:', error);
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -167,265 +157,291 @@ export default function CustomerReviewPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'approved':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-yellow-100 text-yellow-800';
+      case 'in_progress':
+        return 'bg-blue-100 text-blue-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
       case 'rejected':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-100 text-red-800';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const getReviewTypeIcon = (type: string | null) => {
+    switch (type) {
+      case 'bug_report':
+        return <AlertCircle className="h-4 w-4" />;
+      case 'feature_request':
+        return <MessageSquare className="h-4 w-4" />;
+      default:
+        return <User className="h-4 w-4" />;
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600">Please sign in to access this page.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Access Denied</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            You do not have permission to access the customer review dashboard.
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600">Only administrators can access customer reviews.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="min-w-0 flex-1">
-              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl">
-                Customer Review Dashboard
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                Review and approve new customer signup requests
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Customer Reviews</h1>
+          <p className="mt-2 text-gray-600">
+            Manage customer feedback and reviews
+          </p>
+        </div>
 
-          {/* Filter Tabs */}
-          <div className="mt-6">
-            <div className="border-b border-gray-200">
-              <nav className="-mb-px flex space-x-8">
-                {[
-                  { key: 'pending', label: 'Pending', count: reviews.filter(r => r.status === 'pending').length },
-                  { key: 'approved', label: 'Approved', count: reviews.filter(r => r.status === 'approved').length },
-                  { key: 'rejected', label: 'Rejected', count: reviews.filter(r => r.status === 'rejected').length },
-                  { key: 'all', label: 'All', count: reviews.length }
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setFilter(tab.key as 'all' | 'pending' | 'approved' | 'rejected')}
-                    className={`${
-                      filter === tab.key
-                        ? 'border-purple-500 text-purple-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2`}
-                  >
-                    <span>{tab.label}</span>
-                    <span className={`${
-                      filter === tab.key ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-600'
-                    } inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium`}>
-                      {tab.count}
-                    </span>
-                  </button>
-                ))}
-              </nav>
-            </div>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 rounded-md p-4">
-              <div className="flex">
-                <AlertCircle className="h-5 w-5 text-red-400" />
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">Error</h3>
-                  <p className="mt-1 text-sm text-red-700">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Reviews List */}
-          <div className="mt-6">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-                <p className="mt-2 text-sm text-gray-500">Loading reviews...</p>
-              </div>
-            ) : reviews.length === 0 ? (
-              <div className="text-center py-12">
-                <User className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No reviews found</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  {filter === 'pending' ? 'No pending reviews at this time.' : `No ${filter} reviews found.`}
-                </p>
-              </div>
-            ) : (
-              <div className="bg-white shadow overflow-hidden sm:rounded-md">
-                <ul className="divide-y divide-gray-200">
-                  {reviews.map((review) => (
-                    <li key={review.id}>
-                      <div className="px-4 py-4 flex items-center justify-between hover:bg-gray-50">
-                        <div className="flex items-center space-x-4">
-                          {/* User Avatar */}
-                          <div className="flex-shrink-0">
-                            {userProfiles[review.user_id]?.avatar_url ? (
-                              <Image
-                                className="h-10 w-10 rounded-full"
-                                src={userProfiles[review.user_id].avatar_url || ''}
-                                alt="User avatar"
-                                width={40}
-                                height={40}
-                              />
-                            ) : (
-                              <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                <User className="h-6 w-6 text-gray-600" />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* User Info */}
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center space-x-2">
-                              <p className="text-sm font-medium text-gray-900 truncate">
-                                {userProfiles[review.user_id]?.preferred_name || userProfiles[review.user_id]?.name || 'Unknown User'}
-                              </p>
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(review.status)}`}>
-                                {review.status.charAt(0).toUpperCase() + review.status.slice(1)}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-4 mt-1">
-                              <div className="flex items-center text-sm text-gray-500">
-                                <User className="h-4 w-4 mr-1" />
-                                User ID: {review.user_id.slice(0, 8)}...
-                              </div>
-                              <div className="flex items-center text-sm text-gray-500">
-                                <Calendar className="h-4 w-4 mr-1" />
-                                {formatDate(review.created_at)}
-                              </div>
-                            </div>
-                            {review.household_id && households[review.household_id] && (
-                              <p className="text-sm text-gray-500 mt-1">
-                                Household: {households[review.household_id].name}
-                                {households[review.household_id].address && (
-                                  <span className="ml-2">
-                                    • {households[review.household_id].city}, {households[review.household_id].state}
-                                  </span>
-                                )}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center space-x-2">
-                          {review.status === 'pending' && (
-                            <>
-                              <button
-                                onClick={() => handleReviewAction(review.id, 'approved')}
-                                disabled={processingId === review.id}
-                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-                              >
-                                <Check className="h-4 w-4 mr-1" />
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => setSelectedReview(review)}
-                                disabled={processingId === review.id}
-                                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-                              >
-                                <X className="h-4 w-4 mr-1" />
-                                Reject
-                              </button>
-                            </>
-                          )}
-                          {review.review_notes && (
-                            <button
-                              onClick={() => setSelectedReview(review)}
-                              className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                            >
-                              <MessageSquare className="h-4 w-4 mr-1" />
-                              View Notes
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+        {/* Filters */}
+        <div className="mb-6">
+          <div className="flex space-x-4">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="rejected">Rejected</option>
+            </select>
           </div>
         </div>
-      </div>
 
-      {/* Rejection Modal */}
-      {selectedReview && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {selectedReview.status === 'pending' ? 'Reject Application' : 'Review Notes'}
-              </h3>
-              
-              {selectedReview.status === 'pending' ? (
-                <>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Rejecting {userProfiles[selectedReview.user_id]?.preferred_name || userProfiles[selectedReview.user_id]?.name || 'this user'}&apos;s application.
-                    Please provide a reason for rejection:
-                  </p>
-                  <textarea
-                    value={reviewNotes}
-                    onChange={(e) => setReviewNotes(e.target.value)}
-                    placeholder="Enter rejection reason..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    rows={4}
-                  />
-                </>
-              ) : (
-                <div className="text-sm text-gray-700">
-                  <p className="font-medium mb-2">Review Notes:</p>
-                  <p className="bg-gray-50 p-3 rounded-md">
-                    {selectedReview.review_notes || 'No notes provided.'}
-                  </p>
-                  {selectedReview.reviewed_at && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Reviewed on {formatDate(selectedReview.reviewed_at)}
-                    </p>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading reviews...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Reviews List */}
+            <div className="lg:col-span-2">
+              <div className="bg-white shadow rounded-lg">
+                <div className="px-4 py-5 sm:p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Reviews ({reviews.length})
+                  </h3>
+                  
+                  {reviews.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No reviews found.</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {reviews.map((review) => (
+                        <div
+                          key={review.id}
+                          onClick={() => setSelectedReview(review)}
+                          className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center space-x-3">
+                              {getReviewTypeIcon(review.review_type)}
+                              <div>
+                                <p className="font-medium text-gray-900">
+                                  {profiles[review.user_id]?.name || review.reviewer_name || 'Anonymous'}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  {formatDate(review.created_at)}
+                                </p>
+                              </div>
+                            </div>
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(review.status)}`}>
+                              {review.status}
+                            </span>
+                          </div>
+                          
+                          {review.rating && (
+                            <div className="mt-2 flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <span
+                                  key={i}
+                                  className={`text-sm ${
+                                    i < review.rating! ? 'text-yellow-400' : 'text-gray-300'
+                                  }`}
+                                >
+                                  ★
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          
+                          {review.review_text && (
+                            <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                              {review.review_text}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
-              )}
-
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={() => {
-                    setSelectedReview(null);
-                    setReviewNotes('');
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                >
-                  {selectedReview.status === 'pending' ? 'Cancel' : 'Close'}
-                </button>
-                {selectedReview.status === 'pending' && (
-                  <button
-                    onClick={() => handleReviewAction(selectedReview.id, 'rejected', reviewNotes)}
-                    disabled={processingId === selectedReview.id}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-                  >
-                    {processingId === selectedReview.id ? 'Processing...' : 'Confirm Rejection'}
-                  </button>
-                )}
               </div>
             </div>
+
+            {/* Review Detail */}
+            <div className="lg:col-span-1">
+              {selectedReview ? (
+                <div className="bg-white shadow rounded-lg">
+                  <div className="px-4 py-5 sm:p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Review Details</h3>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Reviewer</label>
+                        <p className="mt-1 text-sm text-gray-900">
+                          {profiles[selectedReview.user_id]?.name || selectedReview.reviewer_name || 'Anonymous'}
+                        </p>
+                        {selectedReview.reviewer_email && (
+                          <p className="text-sm text-gray-500">{selectedReview.reviewer_email}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Status</label>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedReview.status)}`}>
+                          {selectedReview.status}
+                        </span>
+                      </div>
+
+                      {selectedReview.rating && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Rating</label>
+                          <div className="flex items-center mt-1">
+                            {[...Array(5)].map((_, i) => (
+                              <span
+                                key={i}
+                                className={`text-lg ${
+                                  i < selectedReview.rating! ? 'text-yellow-400' : 'text-gray-300'
+                                }`}
+                              >
+                                ★
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedReview.review_text && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Review</label>
+                          <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
+                            {selectedReview.review_text}
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedReview.review_type && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Type</label>
+                          <p className="mt-1 text-sm text-gray-900">{selectedReview.review_type}</p>
+                        </div>
+                      )}
+
+                      {selectedReview.feedback_category && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Category</label>
+                          <p className="mt-1 text-sm text-gray-900">{selectedReview.feedback_category}</p>
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Created</label>
+                        <p className="mt-1 text-sm text-gray-900">
+                          {formatDate(selectedReview.created_at)}
+                        </p>
+                      </div>
+
+                      {selectedReview.response_from_team && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">Team Response</label>
+                          <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">
+                            {selectedReview.response_from_team}
+                          </p>
+                          {selectedReview.response_at && (
+                            <p className="text-sm text-gray-500 mt-2">
+                              Reviewed on {formatDate(selectedReview.response_at)}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Response Section */}
+                      {selectedReview.status !== 'completed' && (
+                        <div className="border-t pt-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Team Response
+                          </label>
+                          <textarea
+                            value={responseText}
+                            onChange={(e) => setResponseText(e.target.value)}
+                            rows={3}
+                            className="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            placeholder="Add a response to this review..."
+                          />
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      {selectedReview.status !== 'completed' && (
+                        <div className="flex space-x-2 pt-4">
+                          <button
+                            onClick={() => updateReviewStatus(selectedReview.id, 'in_progress')}
+                            className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700"
+                          >
+                            Mark In Progress
+                          </button>
+                          <button
+                            onClick={() => updateReviewStatus(selectedReview.id, 'completed')}
+                            className="flex-1 bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-green-700"
+                          >
+                            <Check className="h-4 w-4 inline mr-1" />
+                            Complete
+                          </button>
+                          <button
+                            onClick={() => updateReviewStatus(selectedReview.id, 'rejected')}
+                            className="flex-1 bg-red-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-red-700"
+                          >
+                            <X className="h-4 w-4 inline mr-1" />
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white shadow rounded-lg">
+                  <div className="px-4 py-5 sm:p-6 text-center">
+                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">Select a review to view details</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

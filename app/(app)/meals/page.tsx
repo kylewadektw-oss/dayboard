@@ -1,17 +1,16 @@
-/*
- * 🛡️ DAYBOARD PROPRIETARY CODE
+/**
+ * Dayboard - Family Management Platform
  * 
- * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * © 2025 BentLo Labs LLC. All Rights Reserved.
  * 
- * This file is part of Dayboard, a proprietary household command center application.
+ * PROPRIETARY AND CONFIDENTIAL
  * 
- * IMPORTANT NOTICE:
- * This code is proprietary and confidential. Unauthorized copying, distribution,
- * or use by large corporations or competing services is strictly prohibited.
+ * This source code is the proprietary and confidential property of BentLo Labs LLC.
+ * Unauthorized copying, distribution, or use is strictly prohibited.
  * 
- * For licensing inquiries: kyle.wade.ktw@gmail.com
- * 
- * Violation of this notice may result in legal action and damages up to $100,000.
+ * @company BentLo Labs LLC
+ * @product Dayboard
+ * @license Proprietary
  */
 
 
@@ -27,6 +26,11 @@ export default function MealsPage() {
         <Suspense fallback={<div className="h-96 bg-white rounded-2xl animate-pulse" />}>
           <MealTabs />
         </Suspense>
+        
+        {/* BentLo Labs LLC Copyright Footer */}
+        <footer className="text-sm text-gray-500 text-center py-4 border-t mt-8">
+          © 2025 BentLo Labs LLC. All rights reserved. Dayboard™ is a trademark of BentLo Labs LLC.
+        </footer>
       </div>
     </div>
   );

@@ -1,7 +1,16 @@
 /**
- * 🚀 PROFILE CACHE - TYPESCRIPT VERSION
+ * Dayboard - Family Management Platform
  * 
- * Type-safe profile caching for immediate performance improvements
+ * © 2025 BentLo Labs LLC. All Rights Reserved.
+ * 
+ * PROPRIETARY AND CONFIDENTIAL
+ * 
+ * This source code is the proprietary and confidential property of BentLo Labs LLC.
+ * Unauthorized copying, distribution, or use is strictly prohibited.
+ * 
+ * @company BentLo Labs LLC
+ * @product Dayboard
+ * @license Proprietary
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js';

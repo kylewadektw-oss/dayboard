@@ -69,7 +69,7 @@
 
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { Database } from '@/types_db';
+import { Database } from '@/src/lib/types_db';
 import type { ReadonlyRequestCookies } from 'next/dist/server/web/spec-extension/adapters/request-cookies';
 
 // Define a function to create a Supabase client for server-side operations

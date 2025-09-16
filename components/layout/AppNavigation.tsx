@@ -69,8 +69,8 @@ function AppNavigationComponent() {
 
   // Memoize user display name
   const displayName = useMemo(() => 
-    profile?.display_name || profile?.full_name || user?.email || 'Guest',
-    [profile?.display_name, profile?.full_name, user?.email]
+    profile?.preferred_name || profile?.name || user?.email || 'Guest',
+    [profile?.preferred_name, profile?.name, user?.email]
   );
 
   // Get user role for display

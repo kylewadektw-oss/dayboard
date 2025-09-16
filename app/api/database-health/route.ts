@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
     // Test 3: Simple Database Query (avoiding RLS issues)
     try {
       const { data, error } = await supabase
-        .from('application_logs')
+        .from('profiles')
         .select('id')
         .limit(1);
 

@@ -1,3 +1,14 @@
+-- Dayboard Database Admin Setup
+-- © 2025 BentLo Labs LLC. All Rights Reserved.
+-- PROPRIETARY AND CONFIDENTIAL
+-- 
+-- This database schema is the proprietary property of BentLo Labs LLC.
+-- Unauthorized use, copying, or distribution is strictly prohibited.
+--
+-- Company: BentLo Labs LLC
+-- Product: Dayboard™
+-- Version: 1.0
+
 -- SUPER EASY SETUP: Works with your current 'admin' role
 -- Copy and paste this ENTIRE script into Supabase SQL Editor
 

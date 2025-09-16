@@ -21,7 +21,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Home, Users, ArrowRight, CheckCircle, UserCheck, ArrowLeft } from 'lucide-react';
-import { Json } from '@/types_db';
+import { Json } from '@/src/lib/types_db';
 
 type SetupStep = 'choose' | 'join' | 'create' | 'profile';
 
@@ -165,7 +165,11 @@ function ProfileSetupContent() {
           router.replace('/dashboard');
           return; // prevent further state changes
         }
-        setUserProfile(profile);
+        setUserProfile({
+          ...profile,
+          onboarding_completed: profile.onboarding_completed ?? undefined,
+          role: profile.role ?? undefined
+        } as UserProfile);
         
         if (editMode) {
           setCurrentStep('profile');
@@ -177,7 +181,7 @@ function ProfileSetupContent() {
             preferred_name: profile.preferred_name || '',
             phone_number: profile.phone_number || '',
             date_of_birth: profile.date_of_birth || '',
-            family_role: profile.family_role || 'parent_guardian',
+            family_role: (profile.family_role as FamilyRole) || 'parent_guardian',
             dietary_preferences: (Array.isArray(profile.dietary_preferences) ? profile.dietary_preferences : []).filter((item): item is string => typeof item === 'string'),
             allergies: (Array.isArray(profile.allergies) ? profile.allergies : []).filter((item): item is string => typeof item === 'string'),
             notification_preferences: {

@@ -26,9 +26,9 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     
     let query = supabase
-      .from('application_logs')
-      .select('id, user_id, session_id, level, message, component, data, stack_trace, user_agent, url, timestamp, created_at, side')
-      .order('timestamp', { ascending: false });
+      .from('customer_reviews')
+      .select('*')
+      .order('created_at', { ascending: false });
 
     // Apply time range filter if specified
     if (timeRangeMs) {

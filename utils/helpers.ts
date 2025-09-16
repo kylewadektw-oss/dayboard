@@ -14,10 +14,11 @@
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-
-import type { Tables } from '@/types_db';
-
-type Price = Tables<'prices'>;
+// TODO: Add prices table to database schema
+// type Price = Tables<'prices'>;
+interface Price {
+  trial_period_days?: number;
+}
 
 export const getURL = (path: string = '') => {
   // Check if NEXT_PUBLIC_SITE_URL is set and non-empty. Set this to your site URL in production env.
@@ -61,7 +62,7 @@ export const postData = async ({
 };
 
 export const toDateTime = (secs: number) => {
-  var t = new Date(+0); // Unix epoch start.
+  const t = new Date(+0); // Unix epoch start.
   t.setSeconds(secs);
   return t;
 };

@@ -1,3 +1,18 @@
+/**
+ * Dayboard - Family Management Platform
+ * 
+ * © 2025 BentLo Labs LLC. All Rights Reserved.
+ * 
+ * PROPRIETARY AND CONFIDENTIAL
+ * 
+ * This source code is the proprietary and confidential property of BentLo Labs LLC.
+ * Unauthorized copying, distribution, or use is strictly prohibited.
+ * 
+ * @company BentLo Labs LLC
+ * @product Dayboard
+ * @license Proprietary
+ */
+
 'use client';
 
 import { useEffect, useState } from 'react';

@@ -23,11 +23,32 @@ import { useState } from 'react';
 import { createStripePortal } from '@/utils/stripe/server';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Tables } from '@/types_db';
+// import { Tables } from '@/src/lib/types_db';
 
-type Subscription = Tables<'subscriptions'>;
-type Price = Tables<'prices'>;
-type Product = Tables<'products'>;
+// TODO: Add these tables to the database schema
+// type Subscription = Tables<'subscriptions'>;
+// type Price = Tables<'prices'>;
+// type Product = Tables<'products'>;
+
+interface Subscription {
+  id: string;
+  status: string;
+  // Add other properties as needed
+}
+
+interface Price {
+  id: string;
+  currency: string;
+  unit_amount: number;
+  interval: string;
+  // Add other properties as needed
+}
+
+interface Product {
+  id: string;
+  name: string;
+  // Add other properties as needed
+}
 
 type SubscriptionWithPriceAndProduct = Subscription & {
   prices:

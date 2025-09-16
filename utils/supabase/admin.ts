@@ -19,17 +19,54 @@ import { toDateTime } from '@/utils/helpers';
 import { stripe } from '@/utils/stripe/config';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
-import type { Database, Tables, TablesInsert } from 'types_db';
 
-type Product = Tables<'products'>;
-type Price = Tables<'prices'>;
+// Compatible interfaces for database operations
+interface Product {
+  id: string;
+  active: boolean;
+  name: string;
+  description: string | null;
+  image: string | null;
+  metadata: Record<string, any>;
+}
+
+interface Price {
+  id: string;
+  product_id: string;
+  active: boolean;
+  description: string | null;
+  unit_amount: number | null;
+  currency: string;
+  type: 'one_time' | 'recurring';
+  interval: 'day' | 'week' | 'month' | 'year' | null;
+  interval_count: number | null;
+  trial_period_days: number | null;
+  metadata: Record<string, any>;
+}
+
+interface Subscription {
+  id: string;
+  user_id: string;
+  status: string;
+  metadata: Record<string, any> | null;
+  price_id: string | null;
+  quantity: number | null;
+  cancel_at_period_end: boolean | null;
+  created: string;
+  current_period_start: string;
+  current_period_end: string;
+  ended_at: string | null;
+  cancel_at: string | null;
+  canceled_at: string | null;
+  trial_start: string | null;
+  trial_end: string | null;
+}
 
 // Change to control trial period length
 const TRIAL_PERIOD_DAYS = 0;
 
-// Note: supabaseAdmin uses the SERVICE_ROLE_KEY which you must only use in a secure server-side context
-// as it has admin privileges and overwrites RLS policies!
-const supabaseAdmin = createClient<Database>(
+// Create client without strict typing for these admin operations
+const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
   process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 );
@@ -65,7 +102,7 @@ const upsertPriceRecord = async (
     description: price.nickname || null,
     type: price.type,
     unit_amount: price.unit_amount ?? null,
-    interval: price.recurring?.interval ?? null,
+    interval: (price.recurring?.interval as 'day' | 'week' | 'month' | 'year') ?? null,
     interval_count: price.recurring?.interval_count ?? null,
     trial_period_days: price.recurring?.trial_period_days ?? TRIAL_PERIOD_DAYS,
     metadata: price.metadata || {}
@@ -248,7 +285,7 @@ const manageSubscriptionStatusChange = async (
     expand: ['default_payment_method']
   });
   // Upsert the latest status of the subscription object.
-  const subscriptionData: TablesInsert<'subscriptions'> = {
+  const subscriptionData: Subscription = {
     id: subscription.id,
     user_id: uuid,
     metadata: subscription.metadata,

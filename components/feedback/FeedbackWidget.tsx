@@ -7,7 +7,7 @@
   FEEDBACK_PRIORITIES,
   BrowserInfo
 } from '@/types';
-import { Json } from '@/types_db';CODE
+import { Json } from '@/src/lib/types_db';CODE
  * 
  * Feedback Widget - Floating sidebar feedback form
  */
@@ -37,7 +37,7 @@ import {
   FEEDBACK_PRIORITIES,
   BrowserInfo
 } from '@/types/feedback';
-import { Json } from '@/types_db';
+import { Json } from '@/src/lib/types_db';
 
 interface FeedbackWidgetProps {
   className?: string;

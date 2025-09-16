@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { Edit, Save, Home, Shield, Bell, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/utils/supabase/client';
-import { Database } from '@/types_db';
+import { Database } from '@/src/lib/types_db';
 import { toastHelpers } from '@/utils/toast';
 
 // Lazy permissions tab
@@ -110,8 +110,8 @@ export default function ProfileView() {
   useEffect(() => {
     if (profile) {
       const next: ProfileFormState = {
-        name: profile.display_name || profile.full_name || '',
-        preferred_name: profile.display_name || '',
+        name: profile.preferred_name || profile.name || '',
+        preferred_name: profile.preferred_name || '',
         phone_number: profile.phone_number || '',
         date_of_birth: profile.date_of_birth || '',
         timezone: profile.timezone || '',
@@ -313,7 +313,7 @@ export default function ProfileView() {
           <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-start gap-4 mb-6">
               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-2xl font-semibold shadow">
-                {(profile.display_name || profile.full_name || user?.email || 'U').charAt(0).toUpperCase()}
+                {(profile.preferred_name || profile.name || user?.email || 'U').charAt(0).toUpperCase()}
               </div>
               <div className="flex-1">
                 <h2 className="text-2xl font-bold text-gray-900 leading-tight">{profile.preferred_name || profile.name || 'No name set'}</h2>
@@ -430,25 +430,19 @@ export default function ProfileView() {
                       <p className="text-gray-500 text-xs uppercase tracking-wide mb-1 flex items-center gap-1">Household Code</p>
                       <div className="flex items-center gap-2">
                         <code className="px-2 py-1 rounded bg-gray-100 text-gray-800 text-xs font-mono border border-gray-200">{household.household_code}</code>
-                        <button type="button" onClick={()=>{ navigator?.clipboard?.writeText?.(household.household_code); toastHelpers.success('Copied'); }} className="text-xs px-2.5 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium focus:outline-none focus-visible:ring">
+                        <button type="button" onClick={()=>{ 
+                          if (household.household_code) {
+                            navigator?.clipboard?.writeText?.(household.household_code); 
+                            toastHelpers.success('Copied'); 
+                          }
+                        }} className="text-xs px-2.5 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-medium focus:outline-none focus-visible:ring">
                           Copy
                         </button>
                       </div>
                       <p className="text-[11px] text-gray-500 mt-1">Share this code for others to join.</p>
                     </div>
                   )}
-                  {household.referral_code && (
-                    <div className="pt-2">
-                      <p className="text-gray-500 text-xs uppercase tracking-wide mb-1 flex items-center gap-1">Referral Code</p>
-                      <div className="flex items-center gap-2">
-                        <code className="px-2 py-1 rounded bg-green-100 text-green-800 text-xs font-mono border border-green-200">{household.referral_code}</code>
-                        <button type="button" onClick={()=>{ navigator?.clipboard?.writeText?.(household.referral_code); toastHelpers.success('Referral code copied'); }} className="text-xs px-2.5 py-1.5 rounded-md border border-green-300 bg-green-50 hover:bg-green-100 text-green-700 font-medium focus:outline-none focus-visible:ring">
-                          Copy
-                        </button>
-                      </div>
-                      <p className="text-[11px] text-gray-500 mt-1">Share this referral code to invite new customers.</p>
-                    </div>
-                  )}
+                  {/* Referral code functionality removed - not in current schema */}
                 </div>
               </div>
             )}
