@@ -1,6 +1,8 @@
 -- Comprehensive Lists System Migration
 -- Creates flexible list management with types, metadata, and household sharing
 
+BEGIN;
+
 -- Create lists table with comprehensive type system
 CREATE TABLE lists (
   id bigint primary key generated always as identity,
@@ -316,4 +318,6 @@ GRANT EXECUTE ON FUNCTION get_list_items_with_users(bigint) TO authenticated;
 COMMENT ON TABLE lists IS 'Flexible list management system supporting multiple list types with household sharing';
 COMMENT ON TABLE list_items IS 'Items within lists with flexible metadata and assignment capabilities';
 COMMENT ON COLUMN list_items.details IS 'JSONB field for type-specific metadata (quantity, price, notes, etc.)';
+
+COMMIT;
 COMMENT ON COLUMN lists.settings IS 'JSONB field for list-specific configuration (sorting, categories, etc.)';

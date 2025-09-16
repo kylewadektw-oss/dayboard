@@ -1,6 +1,8 @@
 -- 03_calendar_rls.sql
 -- Row Level Security policies for calendar system
 
+BEGIN;
+
 ALTER TABLE calendar_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE calendar_event_links ENABLE ROW LEVEL SECURITY;
 
@@ -76,3 +78,5 @@ CREATE POLICY "members delete event links"
 
 -- Note: The v_calendar_feed view inherits underlying table policies automatically
 -- No additional RLS needed on the view itself
+
+COMMIT;

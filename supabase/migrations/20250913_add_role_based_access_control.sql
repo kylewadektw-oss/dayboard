@@ -1,6 +1,8 @@
 -- 🔐 Role-Based Access Control Migration
 -- This migration adds comprehensive role-based feature access control to Dayboard
 
+BEGIN;
+
 -- First, add role column to profiles table if it doesn't exist
 DO $$
 BEGIN
@@ -230,3 +232,5 @@ COMMENT ON COLUMN feature_access.available IS 'Whether this feature is available
 
 COMMENT ON FUNCTION setup_default_feature_access(uuid) IS 'Sets up default feature access permissions for a household';
 COMMENT ON FUNCTION check_feature_access(uuid, text) IS 'Checks if a user has access to a specific feature';
+
+COMMIT;

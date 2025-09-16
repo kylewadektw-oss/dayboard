@@ -1,6 +1,8 @@
 -- Comprehensive Database Setup for Dayboard
 -- This migration creates all necessary tables for the application to work
 
+BEGIN;
+
 -- Create households table
 CREATE TABLE IF NOT EXISTS households (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -168,3 +170,5 @@ COMMENT ON COLUMN magic8_questions.question IS 'The question that was asked to t
 COMMENT ON COLUMN magic8_questions.answer IS 'The answer that was provided by the Magic 8-Ball';
 COMMENT ON COLUMN magic8_questions.theme IS 'The theme mode used when the question was asked';
 COMMENT ON COLUMN magic8_questions.created_at IS 'Timestamp when the question was asked';
+
+COMMIT;

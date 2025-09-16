@@ -1,6 +1,8 @@
 -- 02_calendar_feed.sql
 -- Unified calendar feed view that combines manual events with derived events from meals, lists, and projects
 
+BEGIN;
+
 -- Defaults for meal slot times; adjust to taste
 CREATE OR REPLACE FUNCTION meal_slot_time(meal_type text)
 RETURNS time LANGUAGE sql IMMUTABLE AS $$
@@ -93,3 +95,5 @@ CREATE OR REPLACE VIEW v_calendar_feed AS
   JOIN projects p ON p.id = t.project_id
   WHERE t.due_at IS NOT NULL
 ;
+
+COMMIT;

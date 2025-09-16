@@ -1,6 +1,8 @@
 -- 01_calendar_core.sql
 -- Unified household calendar system with manual events and derived events from meals/lists/projects
 
+BEGIN;
+
 -- Helpful enum for linkage
 CREATE TYPE entity_kind AS ENUM ('manual','meal','list_item','chore','project_task');
 
@@ -44,3 +46,5 @@ $$ language 'plpgsql';
 CREATE TRIGGER trg_calendar_events_updated
   BEFORE UPDATE ON calendar_events
   FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+
+COMMIT;

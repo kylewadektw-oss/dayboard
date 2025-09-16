@@ -1,6 +1,8 @@
 -- Magic 8-Ball Questions Table Migration
 -- This migration creates the magic8_questions table with proper dependencies
 
+BEGIN;
+
 -- First, let's make sure we have the basic tables that magic8_questions depends on
 -- Create households table if it doesn't exist
 CREATE TABLE IF NOT EXISTS households (
@@ -119,3 +121,5 @@ COMMENT ON COLUMN magic8_questions.question IS 'The question that was asked to t
 COMMENT ON COLUMN magic8_questions.answer IS 'The answer that was provided by the Magic 8-Ball';
 COMMENT ON COLUMN magic8_questions.theme IS 'The theme mode used when the question was asked';
 COMMENT ON COLUMN magic8_questions.created_at IS 'Timestamp when the question was asked';
+
+COMMIT;
