@@ -16,6 +16,5 @@
   "github": {
     "autoAlias": true,
     "silent": true
-  },
-  "alias": ["dayboard.bentlolabs.com"]
+  }
 }
