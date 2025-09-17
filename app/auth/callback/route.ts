@@ -231,7 +231,7 @@ export async function GET(request: NextRequest) {
               userId: user.id,
               hasHousehold: !!profile.household_id,
               hasName: !!(profile.preferred_name || profile.name),
-              onboardingCompleted: true // Assume completed since field doesn't exist in current schema
+              onboardingCompleted: profile.onboarding_completed
             }
           );
           return NextResponse.redirect(
@@ -241,6 +241,33 @@ export async function GET(request: NextRequest) {
               'Please complete your profile and household setup.'
             )
           );
+        }
+
+        // For existing users with household_id, verify the household actually exists
+        if (profile.household_id) {
+          const { data: householdExists, error: householdCheckError } = await supabase
+            .from('households')
+            .select('id')
+            .eq('id', profile.household_id)
+            .single();
+
+          if (householdCheckError || !householdExists) {
+            serverAuthLogger.info(
+              `🚨 Household referenced in profile doesn't exist - redirecting to setup`,
+              {
+                userId: user.id,
+                householdId: profile.household_id,
+                error: householdCheckError?.message
+              }
+            );
+            return NextResponse.redirect(
+              getStatusRedirect(
+                `${requestUrl.origin}/profile/setup`,
+                'Setup Required',
+                'Please complete your household setup to continue.'
+              )
+            );
+          }
         }
 
         // Profile is complete, redirect to dashboard

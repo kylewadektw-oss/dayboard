@@ -20,6 +20,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { GoogleAddressInput } from '@/components/ui/GoogleAddressInput';
 import {
   Home,
   Users,
@@ -75,6 +76,10 @@ interface HouseholdInfo {
   city: string;
   state: string;
   zip: string;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
 }
 
 interface ProfileInfo {
@@ -114,7 +119,8 @@ function ProfileSetupContent() {
     address: '',
     city: '',
     state: '',
-    zip: ''
+    zip: '',
+    coordinates: undefined
   });
 
   const [profileInfo, setProfileInfo] = useState<ProfileInfo>({
@@ -333,6 +339,7 @@ function ProfileSetupContent() {
           city: householdInfo.city,
           state: householdInfo.state,
           zip: householdInfo.zip,
+          coordinates: householdInfo.coordinates ? JSON.stringify(householdInfo.coordinates) : null,
           household_code: joinCode,
           created_by: user!.id
         })
@@ -626,7 +633,7 @@ function ProfileSetupContent() {
           </select>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">
           <div>
             <label
               htmlFor="address"
@@ -634,76 +641,23 @@ function ProfileSetupContent() {
             >
               Address
             </label>
-            <input
-              type="text"
-              id="address"
-              value={householdInfo.address}
-              onChange={(e) =>
+            <GoogleAddressInput
+              onAddressSelect={(addressData) => {
                 setHouseholdInfo((prev) => ({
                   ...prev,
-                  address: e.target.value
-                }))
-              }
-              placeholder="123 Main St"
+                  address: addressData.address,
+                  city: addressData.city,
+                  state: addressData.state,
+                  zip: addressData.zip,
+                  coordinates: addressData.coordinates
+                }));
+              }}
+              placeholder="Enter your full address"
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white text-gray-900 placeholder-gray-400"
             />
-          </div>
-
-          <div>
-            <label
-              htmlFor="city"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              City
-            </label>
-            <input
-              type="text"
-              id="city"
-              value={householdInfo.city}
-              onChange={(e) =>
-                setHouseholdInfo((prev) => ({ ...prev, city: e.target.value }))
-              }
-              placeholder="City"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white text-gray-900 placeholder-gray-400"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="state"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              State
-            </label>
-            <input
-              type="text"
-              id="state"
-              value={householdInfo.state}
-              onChange={(e) =>
-                setHouseholdInfo((prev) => ({ ...prev, state: e.target.value }))
-              }
-              placeholder="State"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white text-gray-900 placeholder-gray-400"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="zip"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              ZIP Code
-            </label>
-            <input
-              type="text"
-              id="zip"
-              value={householdInfo.zip}
-              onChange={(e) =>
-                setHouseholdInfo((prev) => ({ ...prev, zip: e.target.value }))
-              }
-              placeholder="12345"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 bg-white text-gray-900 placeholder-gray-400"
-            />
+            <p className="text-xs text-gray-500 mt-1">
+              Start typing to see address suggestions with automatic geocoding
+            </p>
           </div>
         </div>
 

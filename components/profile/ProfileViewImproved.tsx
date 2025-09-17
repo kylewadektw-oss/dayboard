@@ -304,25 +304,46 @@ export default function ProfileViewImproved() {
       }
       setHouseholdLoading(true);
 
-      // Fetch household and members in parallel for better performance
-      const [householdResult, membersResult] = await Promise.all([
-        supabase
-          .from('households')
-          .select('*')
-          .eq('id', profile.household_id)
-          .single(),
-        supabase
-          .from('profiles')
-          .select(
-            'id, name, preferred_name, role, family_role, avatar_url, last_seen_at'
-          )
-          .eq('household_id', profile.household_id)
-          .order('role', { ascending: false })
-          .order('name')
-      ]);
+      try {
+        // Fetch household and members in parallel for better performance
+        const [householdResult, membersResult] = await Promise.all([
+          supabase
+            .from('households')
+            .select('*')
+            .eq('id', profile.household_id)
+            .single(),
+          supabase
+            .from('profiles')
+            .select(
+              'id, name, preferred_name, role, family_role, avatar_url, last_seen_at'
+            )
+            .eq('household_id', profile.household_id)
+            .order('role', { ascending: false })
+            .order('name')
+        ]);
 
-      if (!householdResult.error) setHousehold(householdResult.data);
-      if (!membersResult.error) setHouseholdMembers(membersResult.data || []);
+        // Handle household not found gracefully
+        if (householdResult.error && householdResult.error.code === 'PGRST116') {
+          console.warn('⚠️ Household not found for profile, clearing household_id');
+          // Clear the invalid household_id from profile
+          await supabase
+            .from('profiles')
+            .update({ household_id: null })
+            .eq('id', profile.id);
+          
+          // Refresh user data to get updated profile
+          await refreshUser();
+          setHousehold(null);
+          setHouseholdMembers([]);
+        } else {
+          if (!householdResult.error) setHousehold(householdResult.data);
+          if (!membersResult.error) setHouseholdMembers(membersResult.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching household data:', error);
+        setHousehold(null);
+        setHouseholdMembers([]);
+      }
 
       setHouseholdLoading(false);
       setInitialLoading(false);
@@ -332,7 +353,7 @@ export default function ProfileViewImproved() {
     if (initialLoadComplete && profile) {
       run();
     }
-  }, [profile?.household_id, supabase, initialLoadComplete, profile]);
+  }, [profile?.household_id, supabase, initialLoadComplete, profile, refreshUser]);
 
   // Generate referral code
   useEffect(() => {
@@ -346,10 +367,15 @@ export default function ProfileViewImproved() {
     generateReferralCode();
   }, [profile]);
 
-  // Redirect if onboarding incomplete
+  // Redirect if onboarding incomplete - but only once per session
+  const hasRedirectedToSetup = useRef(false);
   useEffect(() => {
     if (initialLoadComplete && profile && !profile.onboarding_completed) {
-      router.replace('/profile/setup');
+      if (!hasRedirectedToSetup.current) {
+        hasRedirectedToSetup.current = true;
+        console.log('🔄 Redirecting to profile setup - onboarding incomplete');
+        router.replace('/profile/setup');
+      }
     }
   }, [initialLoadComplete, profile, router]);
 
