@@ -2,7 +2,7 @@
 
 ## Digital Millennium Copyright Act (DMCA) Protection for Dayboard
 
-**Copyright Holder:** Kyle Wade  
+**Copyright Holder:** BentLo Labs LLC  
 **Application:** Dayboard Household Command Center  
 **Copyright Year:** 2025  
 **License:** Proprietary  
@@ -49,8 +49,8 @@ Unauthorized commercial use will result in:
 
 If you discover unauthorized copying or use of this code:
 
-**Email:** kyle.wade.ktw@gmail.com  
-**Contact:** Kyle Wade via GitHub: @kylewadektw-oss  
+**Email:** developer@bentlolabs.com  
+**Contact:** BentLo Labs LLC via GitHub: @kylewadektw-oss  
 **Subject Line:** "DMCA Violation Report - Dayboard Code Theft"
 
 **Required Information:**
@@ -72,8 +72,8 @@ The following uses are permitted:
 
 For commercial licensing, partnerships, or permission requests:
 
-**Contact:** Kyle Wade  
-**Email:** kyle.wade.ktw@gmail.com  
+**Contact:** BentLo Labs LLC  
+**Email:** developer@bentlolabs.com  
 **GitHub:** @kylewadektw-oss  
 
 ### 🔗 RELEVANT LAWS

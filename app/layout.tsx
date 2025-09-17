@@ -24,7 +24,7 @@ import 'styles/main.css';
 
 const title = 'Dayboard - Household Command Center';
 const description =
-  'Proprietary household command center application. Copyright 2025 Kyle Wade. All rights reserved.';
+  'Proprietary household command center application. Copyright 2025 BentLo Labs LLC. All rights reserved.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(getURL()),
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     description: description
   },
   other: {
-    copyright: 'Copyright 2025 Kyle Wade. All rights reserved.',
+    copyright: 'Copyright 2025 BentLo Labs LLC. All rights reserved.',
     license: 'Proprietary - Unauthorized copying prohibited'
   }
 };
@@ -59,7 +59,7 @@ export default async function RootLayout({ children }: PropsWithChildren) {
         />
         <meta
           name="copyright"
-          content="Copyright 2025 Kyle Wade. All rights reserved."
+          content="Copyright 2025 BentLo Labs LLC. All rights reserved."
         />
         <meta
           name="license"

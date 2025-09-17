@@ -82,7 +82,7 @@ async function sendSecurityAlert(
   try {
     // Send email alert (you'd integrate with your email service)
     const alertData = {
-      to: 'kyle.wade.ktw@gmail.com',
+      to: 'developer@bentlolabs.com',
       subject: `🚨 DAYBOARD SECURITY VIOLATION: ${violation.type}`,
       html: `
         <h2>Security Violation Detected</h2>

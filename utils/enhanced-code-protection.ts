@@ -1,7 +1,7 @@
 /*
  * 🛡️ ENHANCED DAYBOARD CODE PROTECTION SYSTEM
  *
- * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * Copyright (c) 2025 BentLo Labs LLC (developer@bentlolabs.com)
  *
  * MULTI-LAYER PROTECTION SYSTEM:
  * - Domain validation with fingerprinting
@@ -11,7 +11,7 @@
  * - Code theft detection and reporting
  *
  * VIOLATION PENALTIES: Up to $500,000 in damages
- * Report violations: kyle.wade.ktw@gmail.com
+ * Report violations: developer@bentlolabs.com
  */
 
 interface ProtectionConfig {
@@ -382,7 +382,7 @@ export function addCopyrightProtection(): void {
   console.log('%c🛡️ DAYBOARD - PROPRIETARY SOFTWARE', styles.title);
   console.log('%c⚖️ COPYRIGHT PROTECTED CODE', styles.warning);
   console.log(
-    '%c© 2025 Kyle Wade / BentloLabs - All Rights Reserved',
+    '%c© 2025 BentLo Labs LLC / BentloLabs - All Rights Reserved',
     styles.info
   );
   console.log(
@@ -394,7 +394,7 @@ export function addCopyrightProtection(): void {
     styles.warning
   );
   console.log(
-    '%c📧 Report violations: kyle.wade.ktw@gmail.com',
+    '%c📧 Report violations: developer@bentlolabs.com',
     styles.contact
   );
   console.log('%c🌐 Licensed for use only on: bentlolabs.com', styles.info);
@@ -405,7 +405,7 @@ export function addCopyrightProtection(): void {
     'position:absolute;left:-9999px;opacity:0;pointer-events:none;';
   watermark.setAttribute(
     'data-copyright',
-    `© 2025 Kyle Wade - Dayboard v${process.env.NEXT_PUBLIC_APP_VERSION}`
+    `© 2025 BentLo Labs LLC - Dayboard v${process.env.NEXT_PUBLIC_APP_VERSION}`
   );
   watermark.setAttribute('data-fingerprint', CODE_FINGERPRINT);
   watermark.setAttribute('data-license', 'PROPRIETARY-COMMERCIAL');

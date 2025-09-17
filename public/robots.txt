@@ -1,9 +1,9 @@
 # 🛡️ DAYBOARD PROPRIETARY APPLICATION
 # 
-# This application contains proprietary code owned by Kyle Wade.
+# This application contains proprietary code owned by BentLo Labs LLC.
 # Unauthorized crawling, scraping, or indexing is prohibited.
 # 
-# Copyright (c) 2025 Kyle Wade. All rights reserved.
+# Copyright (c) 2025 BentLo Labs LLC. All rights reserved.
 
 User-agent: *
 Disallow: /

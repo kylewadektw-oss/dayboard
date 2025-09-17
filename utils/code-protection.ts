@@ -1,7 +1,7 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
  *
- * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * Copyright (c) 2025 BentLo Labs LLC (developer@bentlolabs.com)
  *
  * This file is part of Dayboard, a proprietary household command center application.
  *
@@ -9,7 +9,7 @@
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
  *
- * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * For licensing inquiries: developer@bentlolabs.com
  *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
@@ -197,13 +197,13 @@ export function addOwnershipWatermark() {
   watermark.style.fontSize = '1px';
   watermark.style.pointerEvents = 'none';
   watermark.style.zIndex = '-1';
-  watermark.textContent = 'Dayboard © 2025 Kyle Wade - Proprietary Software';
+  watermark.textContent = 'Dayboard © 2025 BentLo Labs LLC - Proprietary Software';
 
   document.body.appendChild(watermark);
 
   // Add to console
   console.log(
-    '%c🛡️ Dayboard © 2025 Kyle Wade',
+    '%c🛡️ Dayboard © 2025 BentLo Labs LLC',
     'color: #666; font-size: 12px;'
   );
   console.log(

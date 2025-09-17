@@ -749,4 +749,4 @@ The system provides automatic:
 
 ---
 
-**© 2025 Dayboard - Kyle Wade. All rights reserved.**
+**© 2025 Dayboard - BentLo Labs LLC. All rights reserved.**

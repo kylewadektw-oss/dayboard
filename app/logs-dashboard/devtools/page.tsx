@@ -15,7 +15,7 @@ export default function DevToolsPage() {: string;
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
  * 
- * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * Copyright (c) 2025 BentLo Labs LLC (developer@bentlolabs.com)
  */
 
 /*

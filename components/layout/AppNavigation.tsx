@@ -11,7 +11,7 @@
   const displayRole = useMemo(() => 
     profile?.role?.replace('_', ' ').toUpperCase() || 'Member',
     [profile?.role]
-  );ade (kyle.wade.ktw@gmail.com)
+  );ade (developer@bentlolabs.com)
  * 
  * This file is part of Dayboard, a proprietary household command center application.
  * 
@@ -19,7 +19,7 @@
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
  * 
- * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * For licensing inquiries: developer@bentlolabs.com
  * 
  * Violation of this notice may result in legal action and damages up to $100,000.
  */

@@ -1,7 +1,7 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
  * 
- * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * Copyright (c) 2025 BentLo Labs LLC (developer@bentlolabs.com)
  * 
  * This file is part of Dayboard, a proprieta// Log level// Log level options - modernized without emojis
 const LOG_LEVELS_OLD = [
@@ -33,7 +33,7 @@ const sourceSides = [
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
  * 
- * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * For licensing inquiries: developer@bentlolabs.com
  * 
  * Violation of this notice may result in legal action and damages up to $100,000.
  */

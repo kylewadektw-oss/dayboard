@@ -1,5 +1,5 @@
 -- 🔧 CREATE MISSING USER PROFILE
--- Run this in Supabase SQL editor to create profile for Kyle Wade
+-- Run this in Supabase SQL editor to create profile for BentLo Labs LLC
 
 -- Create profile for the authenticated user
 INSERT INTO profiles (
@@ -22,7 +22,7 @@ INSERT INTO profiles (
     updated_at
 ) VALUES (
     '0139a6fc-bf13-426d-8929-604051c4d1f4',
-    'Kyle Wade',
+    'BentLo Labs LLC',
     35,
     'Software Developer',
     'https://lh3.googleusercontent.com/a/ACg8ocKui7F5ojd5EJlTILIq5xAufPb1WJ-NCTXEOmOIS_PduqtKQw=s96-c',
@@ -94,4 +94,4 @@ FROM profiles
 WHERE user_id = '0139a6fc-bf13-426d-8929-604051c4d1f4';
 
 -- Success message
-SELECT 'Profile and permissions created successfully for Kyle Wade!' as status;
+SELECT 'Profile and permissions created successfully for BentLo Labs LLC!' as status;

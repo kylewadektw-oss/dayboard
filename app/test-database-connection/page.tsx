@@ -16,7 +16,7 @@
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
  * 
- * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * For licensing inquiries: developer@bentlolabs.com
  * 
  * Violation of this notice may result in legal action and damages up to $100,000.
  */

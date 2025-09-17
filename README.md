@@ -161,11 +161,11 @@ This is a personal household management project. While not currently open for co
 
 ## 📄 License
 
-**PROPRIETARY LICENSE** - This project contains proprietary code owned by Kyle Wade (kyle.wade.ktw@gmail.com). Unauthorized copying, distribution, or commercial use is strictly prohibited. See the [DMCA_PROTECTION.md](DMCA_PROTECTION.md) file for full legal terms.
+**PROPRIETARY LICENSE** - This project contains proprietary code owned by BentLo Labs LLC (developer@bentlolabs.com). Unauthorized copying, distribution, or commercial use is strictly prohibited. See the [DMCA_PROTECTION.md](DMCA_PROTECTION.md) file for full legal terms.
 
 ## 🙋‍♀️ Support
 
-For questions or support, please contact kyle.wade.ktw@gmail.com or open an issue in the GitHub repository.
+For questions or support, please contact developer@bentlolabs.com or open an issue in the GitHub repository.
 
 ---
 

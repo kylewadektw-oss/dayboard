@@ -13,7 +13,7 @@ const path = require('path');
 const COPYRIGHT_HEADER = `/*
  * 🛡️ DAYBOARD PROPRIETARY CODE
  * 
- * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * Copyright (c) 2025 BentLo Labs LLC (developer@bentlolabs.com)
  * 
  * This file is part of Dayboard, a proprietary household command center application.
  * 
@@ -21,7 +21,7 @@ const COPYRIGHT_HEADER = `/*
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
  * 
- * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * For licensing inquiries: developer@bentlolabs.com
  * 
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
@@ -49,7 +49,7 @@ function hasExistingCopyright(content) {
   // If has ANY old copyright headers (including duplicates or old email/terminology), force update
   if (
     content.includes('DAYBOARD PROPRIETARY CODE') ||
-    content.includes('Copyright (c) 2025 Kyle Wade')
+    content.includes('Copyright (c) 2025 BentLo Labs LLC')
   ) {
     return false; // Always force update to clean up
   }
@@ -113,7 +113,7 @@ function addCopyrightHeader(filePath) {
     // Check if this file has any copyright headers (clean up all duplicates)
     const hasAnyHeaders =
       content.includes('DAYBOARD PROPRIETARY CODE') ||
-      content.includes('Copyright (c) 2025 Kyle Wade');
+      content.includes('Copyright (c) 2025 BentLo Labs LLC');
 
     // Skip if already has updated copyright (no cleanup needed)
     if (hasExistingCopyright(content)) {

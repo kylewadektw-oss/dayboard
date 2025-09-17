@@ -1,7 +1,7 @@
 /*
  * 🛡️ DAYBOARD PROPRIETARY CODE
  *
- * Copyright (c) 2025 Kyle Wade (kyle.wade.ktw@gmail.com)
+ * Copyright (c) 2025 BentLo Labs LLC (developer@bentlolabs.com)
  *
  * This file is part of Dayboard, a proprietary household command center application.
  *
@@ -9,7 +9,7 @@
  * This code is proprietary and confidential. Unauthorized copying, distribution,
  * or use by large corporations or competing services is strictly prohibited.
  *
- * For licensing inquiries: kyle.wade.ktw@gmail.com
+ * For licensing inquiries: developer@bentlolabs.com
  *
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
@@ -526,7 +526,7 @@ export default function LandingPage() {
               </ul>
 
               <Link
-                href="mailto:kyle.wade.ktw@gmail.com"
+                href="mailto:developer@bentlolabs.com"
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-semibold transition-colors text-center block"
               >
                 Contact Sales
