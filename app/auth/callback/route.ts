@@ -248,7 +248,25 @@ export async function GET(request: NextRequest) {
           userId: user.id,
           profileComplete: true
         });
-        return NextResponse.redirect(`${requestUrl.origin}/auth/success`);
+        
+        // Set cookies explicitly for better session persistence
+        const response = NextResponse.redirect(`${requestUrl.origin}/auth/success`);
+        
+        // If we have session data, set additional headers to ensure session persistence
+        if (sessionData?.session) {
+          const cookieOptions = {
+            httpOnly: false, // Allow client access
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax' as const,
+            path: '/',
+            maxAge: 60 * 60 * 24 * 7 // 7 days
+          };
+          
+          // Set session info in a client-readable cookie
+          response.cookies.set('sb-session-exists', 'true', cookieOptions);
+        }
+        
+        return response;
       } else if (profileSelectError) {
         serverAuthLogger.error(
           `❌ Error checking for existing profile`,
