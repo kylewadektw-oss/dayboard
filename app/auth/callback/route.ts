@@ -248,13 +248,7 @@ export async function GET(request: NextRequest) {
           userId: user.id,
           profileComplete: true
         });
-        return NextResponse.redirect(
-          getStatusRedirect(
-            `${requestUrl.origin}/dashboard`,
-            'Welcome back!',
-            'You have been signed in successfully.'
-          )
-        );
+        return NextResponse.redirect(`${requestUrl.origin}/auth/success`);
       } else if (profileSelectError) {
         serverAuthLogger.error(
           `❌ Error checking for existing profile`,
