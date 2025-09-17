@@ -35,31 +35,49 @@ export default function ProtectedRoute({
   const [shouldRender, setShouldRender] = useState(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const hasRedirected = useRef(false);
+  
+  console.log('🔒 [PROTECTED ROUTE DEBUG]:', {
+    hasUser: !!user,
+    loading,
+    pathname: typeof window !== 'undefined' ? window.location.pathname : 'server',
+    hasRedirected: hasRedirected.current,
+    shouldRender,
+    initialLoadComplete
+  });
 
+  // Mark initial load as complete when loading finishes
   useEffect(() => {
-    // Once we've completed the initial load, don't go back to loading
     if (!loading && !initialLoadComplete) {
       setInitialLoadComplete(true);
     }
   }, [loading, initialLoadComplete]);
 
+  // Handle auth logic after initial load
   useEffect(() => {
-    // Only evaluate redirects after initial load is complete
-    if (!initialLoadComplete || hasRedirected.current) {
-      return;
+    if (!initialLoadComplete) {
+      return; // Wait for initial load to complete
     }
+
+    // Reset redirect flag when auth state changes
+    hasRedirected.current = false;
 
     if (requireAuth && !user) {
       // User is not authenticated but auth is required
-      hasRedirected.current = true;
-      router.push(redirectTo);
+      if (!hasRedirected.current) {
+        hasRedirected.current = true;
+        router.push(redirectTo);
+      }
+      setShouldRender(false);
       return;
     }
 
     if (!requireAuth && user) {
       // User is authenticated but shouldn't be (e.g., on signin page)
-      hasRedirected.current = true;
-      router.push('/dashboard');
+      if (!hasRedirected.current) {
+        hasRedirected.current = true;
+        router.push('/dashboard');
+      }
+      setShouldRender(false);
       return;
     }
 
@@ -70,8 +88,9 @@ export default function ProtectedRoute({
   // Show loading state while doing initial auth check
   if (!initialLoadComplete) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <div className="text-lg text-gray-600">
             Checking authentication...
           </div>
@@ -80,10 +99,20 @@ export default function ProtectedRoute({
     );
   }
 
-  // Only render children if all auth checks passed and we haven't redirected
-  if (!shouldRender || hasRedirected.current) {
-    return null;
+  // Show loading while redirect is happening
+  if (hasRedirected.current && !shouldRender) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="text-lg text-gray-600">
+            Redirecting...
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  return <>{children}</>;
+  // Only render children if all auth checks passed
+  return shouldRender ? <>{children}</> : null;
 }

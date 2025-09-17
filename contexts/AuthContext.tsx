@@ -421,7 +421,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoadingStable
   ]);
 
-  const value = { user, profile, permissions, loading, signOut, refreshUser };
+  const value = { 
+    user, 
+    profile, 
+    permissions, 
+    loading: loading && !initialLoadComplete, // Don't show loading after initial load
+    signOut, 
+    refreshUser 
+  };
+  
+  // Debug logging for auth state
+  console.log('🔧 [AUTH DEBUG] Context value:', {
+    hasUser: !!user,
+    userId: user?.id,
+    hasProfile: !!profile,
+    loading: value.loading,
+    rawLoading: loading,
+    initialLoadComplete
+  });
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
