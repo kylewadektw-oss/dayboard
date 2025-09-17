@@ -241,9 +241,27 @@ export default function ProfileViewImproved() {
   const [overviewEditMode, setOverviewEditMode] = useState(false);
   const [editHighlight, setEditHighlight] = useState(false);
 
-  // Forms
-  const [profileForm, setProfileForm] =
-    useState<ProfileFormState>(EMPTY_PROFILE);
+  // Forms - memoize initial state to prevent unnecessary re-renders
+  const initialProfileForm = useMemo(() => 
+    profile ? {
+      name: profile.preferred_name || profile.name || '',
+      preferred_name: profile.preferred_name || '',
+      phone_number: formatPhoneNumber(profile.phone_number || ''),
+      date_of_birth: profile.date_of_birth || '',
+      timezone: profile.timezone || '',
+      language: profile.language || 'en',
+      bio: profile.bio || '',
+      dietary_preferences: Array.isArray(profile.dietary_preferences) ? (profile.dietary_preferences as string[]) : [],
+      allergies: Array.isArray(profile.allergies) ? (profile.allergies as string[]) : [],
+      notification_email: (profile.notification_preferences as Record<string, boolean>)?.email ?? true,
+      notification_push: (profile.notification_preferences as Record<string, boolean>)?.push ?? true,
+      notification_sms: (profile.notification_preferences as Record<string, boolean>)?.sms ?? false,
+      notification_daycare_pickup_backup: (profile.notification_preferences as Record<string, boolean>)?.daycare_pickup_backup ?? false
+    } : EMPTY_PROFILE,
+    [profile]
+  );
+
+  const [profileForm, setProfileForm] = useState<ProfileFormState>(initialProfileForm);
   const originalProfileRef = useRef<ProfileFormState | null>(null);
   const [permissionsForm, setPermissionsForm] = useState<
     Partial<UserPermissionsRow>
@@ -293,67 +311,74 @@ export default function ProfileViewImproved() {
   // Loading gate
   const [initialLoading, setInitialLoading] = useState(true);
 
-  // Fetch household and members
-  useEffect(() => {
-    const run = async () => {
-      if (!profile?.household_id) {
-        setHousehold(null);
-        setHouseholdMembers([]);
-        setInitialLoading(false);
-        return;
-      }
-      setHouseholdLoading(true);
-
-      try {
-        // Fetch household and members in parallel for better performance
-        const [householdResult, membersResult] = await Promise.all([
-          supabase
-            .from('households')
-            .select('*')
-            .eq('id', profile.household_id)
-            .single(),
-          supabase
-            .from('profiles')
-            .select(
-              'id, name, preferred_name, role, family_role, avatar_url, last_seen_at'
-            )
-            .eq('household_id', profile.household_id)
-            .order('role', { ascending: false })
-            .order('name')
-        ]);
-
-        // Handle household not found gracefully
-        if (householdResult.error && householdResult.error.code === 'PGRST116') {
-          console.warn('⚠️ Household not found for profile, clearing household_id');
-          // Clear the invalid household_id from profile
-          await supabase
-            .from('profiles')
-            .update({ household_id: null })
-            .eq('id', profile.id);
-          
-          // Refresh user data to get updated profile
-          await refreshUser();
-          setHousehold(null);
-          setHouseholdMembers([]);
-        } else {
-          if (!householdResult.error) setHousehold(householdResult.data);
-          if (!membersResult.error) setHouseholdMembers(membersResult.data || []);
-        }
-      } catch (error) {
-        console.error('Error fetching household data:', error);
-        setHousehold(null);
-        setHouseholdMembers([]);
-      }
-
-      setHouseholdLoading(false);
+  // Stable household data fetcher
+  const fetchHouseholdData = useCallback(async () => {
+    if (!profile?.household_id) {
+      setHousehold(null);
+      setHouseholdMembers([]);
       setInitialLoading(false);
-    };
-
-    // Only run after initial auth load is complete
-    if (initialLoadComplete && profile) {
-      run();
+      return;
     }
-  }, [profile?.household_id, supabase, initialLoadComplete, profile, refreshUser]);
+    
+    setHouseholdLoading(true);
+
+    try {
+      // Fetch household and members in parallel for better performance
+      const [householdResult, membersResult] = await Promise.all([
+        supabase
+          .from('households')
+          .select('*')
+          .eq('id', profile.household_id)
+          .single(),
+        supabase
+          .from('profiles')
+          .select(
+            'id, name, preferred_name, role, family_role, avatar_url, last_seen_at'
+          )
+          .eq('household_id', profile.household_id)
+          .order('role', { ascending: false })
+          .order('name')
+      ]);
+
+      // Handle household not found gracefully
+      if (householdResult.error && householdResult.error.code === 'PGRST116') {
+        console.warn('⚠️ Household not found for profile, clearing household_id');
+        // Clear the invalid household_id from profile
+        await supabase
+          .from('profiles')
+          .update({ household_id: null })
+          .eq('id', profile.id);
+        
+        // Refresh user data to get updated profile
+        await refreshUser();
+        setHousehold(null);
+        setHouseholdMembers([]);
+      } else {
+        if (!householdResult.error) setHousehold(householdResult.data);
+        if (!membersResult.error) setHouseholdMembers(membersResult.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching household data:', error);
+      setHousehold(null);
+      setHouseholdMembers([]);
+    }
+
+    setHouseholdLoading(false);
+    setInitialLoading(false);
+  }, [profile?.household_id, profile?.id, supabase, refreshUser]);
+
+  // Fetch household and members - runs only when household_id changes and profile is ready
+  useEffect(() => {
+    if (initialLoadComplete && profile?.household_id) {
+      fetchHouseholdData();
+    } else if (initialLoadComplete && !profile?.household_id) {
+      // No household ID - clear data and finish loading
+      setHousehold(null);
+      setHouseholdMembers([]);
+      setInitialLoading(false);
+      setHouseholdLoading(false);
+    }
+  }, [initialLoadComplete, profile?.household_id, fetchHouseholdData]);
 
   // Generate referral code
   useEffect(() => {
@@ -379,40 +404,13 @@ export default function ProfileViewImproved() {
     }
   }, [initialLoadComplete, profile, router]);
 
-  // Seed profile form
+  // Seed profile form - only update when profile changes
   useEffect(() => {
     if (profile) {
-      const next: ProfileFormState = {
-        name: profile.preferred_name || profile.name || '',
-        preferred_name: profile.preferred_name || '',
-        phone_number: formatPhoneNumber(profile.phone_number || ''),
-        date_of_birth: profile.date_of_birth || '',
-        timezone: profile.timezone || '',
-        language: profile.language || 'en',
-        bio: profile.bio || '',
-        dietary_preferences: Array.isArray(profile.dietary_preferences)
-          ? (profile.dietary_preferences as string[])
-          : [],
-        allergies: Array.isArray(profile.allergies)
-          ? (profile.allergies as string[])
-          : [],
-        notification_email:
-          (profile.notification_preferences as Record<string, boolean>)
-            ?.email ?? true,
-        notification_push:
-          (profile.notification_preferences as Record<string, boolean>)?.push ??
-          true,
-        notification_sms:
-          (profile.notification_preferences as Record<string, boolean>)?.sms ??
-          false,
-        notification_daycare_pickup_backup:
-          (profile.notification_preferences as Record<string, boolean>)
-            ?.daycare_pickup_backup ?? false
-      };
-      setProfileForm(next);
-      originalProfileRef.current = next; // baseline
+      setProfileForm(initialProfileForm);
+      originalProfileRef.current = initialProfileForm; // baseline
     }
-  }, [profile]);
+  }, [profile, initialProfileForm]);
 
   // Seed permissions form
   useEffect(() => {
@@ -801,17 +799,83 @@ export default function ProfileViewImproved() {
   };
 
   const renderSkeleton = () => (
-    <div className="max-w-6xl mx-auto animate-pulse" aria-hidden="true">
-      <div className="h-10 w-40 bg-gray-200 rounded mb-8" />
-      <div className="h-8 w-60 bg-gray-200 rounded mb-6" />
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="h-64 bg-white/60 rounded-xl border border-gray-200" />
-          <div className="h-40 bg-white/60 rounded-xl border border-gray-200" />
+    <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8" aria-hidden="true">
+      {/* Header skeleton with fixed height to prevent layout shift */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+        <div className="space-y-2">
+          <div className="h-12 w-48 bg-gray-300 rounded-lg animate-pulse" />
+          <div className="h-4 w-80 bg-gray-200 rounded animate-pulse" />
         </div>
-        <div className="space-y-6">
-          <div className="h-48 bg-white/60 rounded-xl border border-gray-200" />
-          <div className="h-40 bg-white/60 rounded-xl border border-gray-200" />
+        <div className="h-10 w-32 bg-gray-200 rounded-lg animate-pulse" />
+      </div>
+      
+      {/* Tab navigation skeleton */}
+      <div className="border-b border-gray-200 mb-8">
+        <div className="flex space-x-8">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-6 w-20 bg-gray-200 rounded animate-pulse mb-4" />
+          ))}
+        </div>
+      </div>
+      
+      {/* Content grid skeleton with proper spacing */}
+      <div className="grid lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          {/* Main content card */}
+          <div className="bg-white/80 rounded-3xl border border-white/20 p-8 space-y-6">
+            <div className="flex items-start gap-6">
+              <div className="w-20 h-20 bg-gray-200 rounded-3xl animate-pulse" />
+              <div className="flex-1 space-y-3">
+                <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+                <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+                <div className="h-4 w-64 bg-gray-200 rounded animate-pulse" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="space-y-2">
+                  <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
+                  <div className="h-6 w-full bg-gray-200 rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Secondary content card */}
+          <div className="bg-white/80 rounded-3xl border border-white/20 p-6 space-y-4">
+            <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Sidebar skeleton */}
+        <div className="space-y-8">
+          {/* Stats card */}
+          <div className="bg-white/80 rounded-3xl border border-white/20 p-6 space-y-4">
+            <div className="h-6 w-24 bg-gray-200 rounded animate-pulse" />
+            <div className="grid grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="text-center space-y-2">
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mx-auto" />
+                  <div className="h-3 w-12 bg-gray-200 rounded animate-pulse mx-auto" />
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Additional sidebar cards */}
+          <div className="bg-white/80 rounded-3xl border border-white/20 p-6 space-y-4">
+            <div className="h-6 w-28 bg-gray-200 rounded animate-pulse" />
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1895,21 +1959,26 @@ export default function ProfileViewImproved() {
   const shouldHideForSetup =
     !showLoading && (!profile || !profile.onboarding_completed);
 
-  console.log('🔍 [DEBUG] ProfileViewImproved state:', {
-    profile: profile
-      ? {
-          id: profile.id,
-          name: profile.name,
-          household_id: profile.household_id,
-          onboarding_completed: profile.onboarding_completed
-        }
-      : null,
-    authLoading,
-    showLoading,
-    initialLoading,
-    householdLoading,
-    shouldHideForSetup
-  });
+  // Remove debug logging for performance
+  // Only log when necessary for debugging specific issues
+  const debugEnabled = process.env.NODE_ENV === 'development' && false; // Set to true only when debugging
+  if (debugEnabled) {
+    console.log('🔍 [DEBUG] ProfileViewImproved state:', {
+      profile: profile
+        ? {
+            id: profile.id,
+            name: profile.name,
+            household_id: profile.household_id,
+            onboarding_completed: profile.onboarding_completed
+          }
+        : null,
+      authLoading,
+      showLoading,
+      initialLoading,
+      householdLoading,
+      shouldHideForSetup
+    });
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 text-gray-900">

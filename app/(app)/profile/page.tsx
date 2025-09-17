@@ -14,8 +14,8 @@
  * Violation of this notice may result in legal action and damages up to $100,000.
  */
 
-import ProfileViewImproved from '@/components/profile/ProfileViewImproved';
+import OptimizedProfileView from '@/components/profile/OptimizedProfileView';
 
 export default function ProfilePage() {
-  return <ProfileViewImproved />;
+  return <OptimizedProfileView />;
 }

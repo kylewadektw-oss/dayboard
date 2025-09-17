@@ -83,6 +83,25 @@ export default function SidebarWeather() {
         return;
       }
 
+      // Check cache first to reduce API calls
+      const cacheKey = `weather_${currentProfile.household_id}`;
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          const { data, timestamp } = JSON.parse(cached);
+          // Use cache if less than 15 minutes old (reduced from frequent refreshes)
+          if (Date.now() - timestamp < 15 * 60 * 1000) {
+            setWeather(data.weather);
+            setHousehold(data.household);
+            setComponentLoading(false);
+            console.log('Using cached weather data');
+            return;
+          }
+        } catch {
+          // Invalid cache, continue with fresh fetch
+        }
+      }
+
       try {
         // Fetch household information
         const { data: householdData, error: householdError } = await supabase
@@ -102,7 +121,7 @@ export default function SidebarWeather() {
         // Fetch weather if coordinates are available
         if (householdData?.coordinates) {
           console.log(
-            'Fetching weather for household:',
+            'Fetching fresh weather for household:',
             householdData.name || 'Unknown'
           );
           const coords = JSON.parse(householdData.coordinates as string) as {
@@ -111,13 +130,20 @@ export default function SidebarWeather() {
           };
 
           const response = await fetch(
-            `/api/weather?lat=${coords.lat}&lng=${coords.lng}`
+            `/api/weather?lat=${coords.lat}&lon=${coords.lng}`
           );
           if (response.ok) {
-            const data = await response.json();
-            setWeather(data);
+            const weatherData = await response.json();
+            setWeather(weatherData);
+            
+            // Cache the result for 15 minutes
+            sessionStorage.setItem(cacheKey, JSON.stringify({
+              data: { weather: weatherData, household: householdData },
+              timestamp: Date.now()
+            }));
+            
             console.log(
-              'Sidebar weather loaded for:',
+              'Fresh weather loaded and cached for:',
               householdData.name || 'Household location'
             );
           } else {

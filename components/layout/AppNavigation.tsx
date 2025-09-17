@@ -56,6 +56,17 @@ function AppNavigationComponent() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user, profile, loading, signOut } = useAuth();
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update current time more frequently for accurate second counting
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000); // Update every second for accurate counting
+
+    return () => clearInterval(timer);
+  }, []);
 
   // Stable auth state management to prevent loading oscillation
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
@@ -81,7 +92,33 @@ function AppNavigationComponent() {
 
   useEffect(() => {
     setHasHydrated(true);
-  }, []);
+    // Set initial refresh time only once when component mounts
+    if (!lastRefreshed) {
+      setLastRefreshed(new Date());
+    }
+  }, [lastRefreshed]);
+
+  // Only update last refreshed when there's actual new data loading
+  // Remove the automatic update on auth state changes
+  // useEffect(() => {
+  //   if (initialLoadComplete) {
+  //     setLastRefreshed(new Date());
+  //   }
+  // }, [initialLoadComplete, stableAuthState]);
+
+  // Format last refreshed time
+  const formatLastRefreshed = useCallback((date: Date | null) => {
+    if (!date) return 'Never';
+    const now = currentTime; // Use currentTime to trigger updates
+    const diffMs = now.getTime() - date.getTime();
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    
+    if (diffSecs < 1) return 'Just now';
+    if (diffSecs < 60) return `${diffSecs}s ago`;
+    if (diffMins < 60) return `${diffMins}m ago`;
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }, [currentTime]);
 
   // Get user's role for permission checking using stable state
   const userRole = (currentProfile?.role as string) || 'member';
@@ -288,6 +325,18 @@ function AppNavigationComponent() {
               </div>
             </div>
           </Link>
+        )}
+
+        {/* Last Refreshed Indicator */}
+        {!isCollapsed && hasHydrated && (
+          <div className="px-4 py-2 border-b border-gray-700 bg-gray-800/30">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-400">Last updated:</span>
+              <span className="text-xs text-gray-300">
+                {formatLastRefreshed(lastRefreshed)}
+              </span>
+            </div>
+          </div>
         )}
 
         {/* Simple Weather Display */}

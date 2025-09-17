@@ -177,7 +177,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           );
         }
 
-        console.log('🔍 [DEBUG] Final profile data:', profileData);
+        // Disable debug logging for performance
+        // console.log('🔍 [DEBUG] Final profile data:', profileData);
         setProfile(profileData ?? null);
 
         // Fetch permissions - use profile.id instead of user_id for foreign key
@@ -208,7 +209,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               );
             setPermissions(null);
           } else {
-            console.log('🔍 [DEBUG] Permissions data:', permissionsData);
+            // Disable debug logging for performance
+            // console.log('🔍 [DEBUG] Permissions data:', permissionsData);
             setPermissions(permissionsData ?? null);
           }
         } catch (permErr) {
@@ -236,29 +238,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       let session = null;
       let user = null;
 
-      // Method 1: Get session from client
-      const { data: sessionData, error: sessionError } =
-        await supabase.auth.getSession();
-      if (sessionData?.session && !sessionError) {
-        session = sessionData.session;
+      // Method 1: Force session refresh first to ensure we have the latest state
+      fireInfo('🔄 [AUTH] Forcing session refresh for latest state');
+      const refreshResult = await supabase.auth.refreshSession();
+      if (refreshResult.data?.session && !refreshResult.error) {
+        session = refreshResult.data.session;
         user = session.user;
-        fireInfo('✅ [AUTH] Session found via getSession', {
+        fireInfo('✅ [AUTH] Session found via refreshSession', {
           userId: user?.id,
-          method: 'getSession',
+          method: 'refreshSession',
           hasTokens: !!(session.access_token && session.refresh_token)
         });
-      } else if (sessionError) {
-        // Handle session errors gracefully
-        if (sessionError.message.includes('Auth session missing') || 
-            sessionError.message.includes('session_not_found') ||
-            sessionError.message.includes('invalid_token')) {
-          fireInfo('ℹ️ [AUTH] No valid session found during getSession');
-        } else {
-          fireError('❌ [AUTH] Session error: ' + sessionError.message);
+      } else if (refreshResult.error && !refreshResult.error.message.includes('session_not_found')) {
+        fireWarn('⚠️ [AUTH] Session refresh error: ' + refreshResult.error.message);
+      }
+
+      // Method 2: Get session from client if refresh didn't work
+      if (!session) {
+        const { data: sessionData, error: sessionError } =
+          await supabase.auth.getSession();
+        if (sessionData?.session && !sessionError) {
+          session = sessionData.session;
+          user = session.user;
+          fireInfo('✅ [AUTH] Session found via getSession', {
+            userId: user?.id,
+            method: 'getSession',
+            hasTokens: !!(session.access_token && session.refresh_token)
+          });
+        } else if (sessionError) {
+          // Handle session errors gracefully
+          if (sessionError.message.includes('Auth session missing') || 
+              sessionError.message.includes('session_not_found') ||
+              sessionError.message.includes('invalid_token')) {
+            fireInfo('ℹ️ [AUTH] No valid session found during getSession');
+          } else {
+            fireError('❌ [AUTH] Session error: ' + sessionError.message);
+          }
         }
       }
 
-      // Method 2: If no session, try getUser as fallback
+      // Method 3: If no session, try getUser as fallback
       if (!user) {
         fireInfo('🔄 [AUTH] Trying getUser as fallback');
         const { data: userData, error: userError } =
@@ -284,7 +303,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (user) {
         fireInfo('👤 [AUTH] User authenticated', {
           userId: user.id,
-          email: user.email
+          email: user.email,
+          hasSession: !!session
         });
         setUser(user);
         setLoadingStable(false); // Set loading to false immediately for faster UI
@@ -374,27 +394,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       (window.location.hash.includes('access_token') ||
         window.location.hash.includes('refresh_token') ||
         window.location.pathname.includes('/auth/callback') ||
-        new URLSearchParams(window.location.search).has('code'));
+        window.location.pathname.includes('/auth/success') ||
+        new URLSearchParams(window.location.search).has('code') ||
+        document.cookie.includes('sb-session-exists=true'));
+
+    fireInfo('🔄 [AUTH] Initializing auth context', {
+      isOAuthCallback,
+      pathname: typeof window !== 'undefined' ? window.location.pathname : 'SSR',
+      hasCodeParam: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).has('code') : false,
+      hasSessionCookie: typeof window !== 'undefined' ? document.cookie.includes('sb-session-exists=true') : false,
+      hasHashTokens: typeof window !== 'undefined' ? (window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token')) : false
+    });
 
     if (!isOAuthCallback) {
       // Normal initialization - check for existing session
       refreshUser();
     } else {
       fireInfo('🔄 [AUTH] OAuth callback detected - enhanced processing');
-      // For OAuth callbacks, wait a bit longer and try multiple times
-      setTimeout(() => {
-        fireInfo('🔄 [AUTH] First OAuth session check attempt');
-        refreshUser().then(() => {
-          // If still no user after first attempt, try again
-          if (!user) {
-            fireInfo('🔄 [AUTH] No user found, retrying in 500ms');
-            setTimeout(() => {
-              fireInfo('🔄 [AUTH] Second OAuth session check attempt');
-              refreshUser();
-            }, 500);
+      // For OAuth callbacks, use more aggressive session detection
+      const attemptSessionRecovery = async () => {
+        // Try multiple times with different methods
+        for (let attempt = 1; attempt <= 5; attempt++) {
+          fireInfo(`🔄 [AUTH] OAuth session recovery attempt ${attempt}/5`);
+          
+          // Force refresh session first to ensure latest state
+          const refreshResult = await supabase.auth.refreshSession();
+          if (refreshResult.data?.session) {
+            fireInfo('✅ [AUTH] Session recovered via refreshSession');
           }
-        });
-      }, 500); // Increased wait time for OAuth processing
+          
+          // Then try to get user
+          await refreshUser();
+          
+          // Check if we now have a user
+          if (user) {
+            fireInfo('✅ [AUTH] OAuth session recovered successfully');
+            return;
+          }
+          
+          // Wait between attempts, increasing delay
+          const delay = attempt * 400;
+          fireInfo(`⏳ [AUTH] Waiting ${delay}ms before next attempt`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+        
+        fireWarn('⚠️ [AUTH] OAuth session recovery failed after all attempts');
+      };
+      
+      // Start recovery process after a brief delay
+      setTimeout(attemptSessionRecovery, 300);
     }
 
     const {
@@ -459,6 +507,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchUserData,
     fireInfo,
     fireError,
+    fireWarn,
     refreshUser,
     supabase.auth,
     user,
@@ -474,15 +523,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser 
   };
   
-  // Debug logging for auth state
-  console.log('🔧 [AUTH DEBUG] Context value:', {
-    hasUser: !!user,
-    userId: user?.id,
-    hasProfile: !!profile,
-    loading: value.loading,
-    rawLoading: loading,
-    initialLoadComplete
-  });
+  // Debug logging removed for performance
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 

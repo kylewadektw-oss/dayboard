@@ -68,9 +68,18 @@
 import { createBrowserClient } from '@supabase/ssr';
 import { Database } from '@/src/lib/types_db';
 
+// Singleton instance to prevent multiple client creation
+let supabaseInstance: ReturnType<typeof createBrowserClient<Database>> | null = null;
+
 // Define a function to create a Supabase client for client-side operations
-export const createClient = () =>
-  createBrowserClient<Database>(
+export const createClient = () => {
+  // Return existing instance if available
+  if (supabaseInstance) {
+    return supabaseInstance;
+  }
+
+  // Create new instance only if none exists
+  supabaseInstance = createBrowserClient<Database>(
     // Pass Supabase URL and anonymous key from the environment to the client
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -80,13 +89,20 @@ export const createClient = () =>
         autoRefreshToken: true,
         // Persist session in localStorage by default
         persistSession: true,
-        // Enable debug mode for auth issues
+        // Enable debug mode to help track session issues
         debug: process.env.NODE_ENV === 'development',
         // Configure storage
         storage:
           typeof window !== 'undefined' ? window.localStorage : undefined,
         // Set flowType for better OAuth handling
-        flowType: 'pkce'
+        flowType: 'pkce',
+        // Detect session in URL on OAuth callback
+        detectSessionInUrl: true,
+        // Storage key for session persistence
+        storageKey: 'sb-auth-token'
       }
     }
   );
+
+  return supabaseInstance;
+};

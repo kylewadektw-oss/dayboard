@@ -130,7 +130,7 @@ function WeatherWidgetComponent({ className = '' }: WeatherWidgetProps) {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [lastRequestTime, setLastRequestTime] = useState<number>(0);
 
-  // Load household data and fetch weather
+  // Load household data and fetch weather - OPTIMIZED for better performance
   useEffect(() => {
     const loadHouseholdAndWeather = async () => {
       if (!currentProfile?.household_id) {
@@ -140,71 +140,61 @@ function WeatherWidgetComponent({ className = '' }: WeatherWidgetProps) {
       }
 
       try {
-        // Fetch household information
-        const { data: householdData, error: householdError } = await supabase
-          .from('households')
-          .select('*')
-          .eq('id', currentProfile.household_id)
-          .single();
+        // Use cached fetch for household data if available
+        const cacheKey = `household_${currentProfile.household_id}`;
+        const householdData = sessionStorage.getItem(cacheKey);
+        
+        if (householdData) {
+          // Use cached data for faster loading
+          const parsed = JSON.parse(householdData);
+          setHousehold(parsed);
+          
+          // Fetch weather immediately with cached coordinates
+          if (parsed?.coordinates) {
+            const coords = JSON.parse(parsed.coordinates as string) as {
+              lat: number;
+              lng: number;
+            };
+            
+            // Start weather fetch immediately
+            fetchWeatherData(coords, parsed);
+          } else {
+            setError('No location set in household profile');
+            setComponentLoading(false);
+          }
+        } else {
+          // Fetch household information and cache it
+          const { data: householdResult, error: householdError } = await supabase
+            .from('households')
+            .select('*')
+            .eq('id', currentProfile.household_id)
+            .single();
 
-        if (householdError) {
-          console.error('Error fetching household:', householdError);
-          setError('Failed to load household information');
-          setComponentLoading(false);
-          return;
-        }
-
-        setHousehold(householdData);
-
-        // Fetch weather if coordinates are available
-        if (householdData?.coordinates) {
-          const coords = JSON.parse(householdData.coordinates as string) as {
-            lat: number;
-            lng: number;
-          };
-
-          await enhancedLogger.logWithFullContext(
-            LogLevel.INFO,
-            'Fetching weather data for household location',
-            'WeatherWidget',
-            {
-              householdName: householdData.name,
-              lat: coords.lat,
-              lng: coords.lng
-            }
-          );
-
-          const res = await fetch(
-            `/api/weather?lat=${coords.lat}&lon=${coords.lng}`
-          );
-
-          if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(
-              errorData.error || `HTTP ${res.status}: ${res.statusText}`
-            );
+          if (householdError) {
+            console.error('Error fetching household:', householdError);
+            setError('Failed to load household information');
+            setComponentLoading(false);
+            return;
           }
 
-          const data = await res.json();
-          setWeather(data);
-          setLastUpdated(new Date());
+          setHousehold(householdResult);
+          
+          // Cache household data for 5 minutes
+          sessionStorage.setItem(cacheKey, JSON.stringify(householdResult));
+          setTimeout(() => sessionStorage.removeItem(cacheKey), 5 * 60 * 1000);
 
-          await enhancedLogger.logWithFullContext(
-            LogLevel.INFO,
-            'Weather data loaded successfully for household',
-            'WeatherWidget',
-            {
-              householdName: householdData.name,
-              currentTemp: data.current?.temp,
-              condition: data.current?.weather?.[0]?.description
-            }
-          );
-        } else {
-          setError('No location set in household profile');
-          console.log(
-            'No coordinates set for household:',
-            householdData.name || 'Unknown'
-          );
+          // Fetch weather if coordinates are available
+          if (householdResult?.coordinates) {
+            const coords = JSON.parse(householdResult.coordinates as string) as {
+              lat: number;
+              lng: number;
+            };
+            
+            fetchWeatherData(coords, householdResult);
+          } else {
+            setError('No location set in household profile');
+            setComponentLoading(false);
+          }
         }
       } catch (err: unknown) {
         const errorMessage =
@@ -218,6 +208,63 @@ function WeatherWidgetComponent({ className = '' }: WeatherWidgetProps) {
           {
             error: errorMessage,
             householdId: currentProfile?.household_id
+          }
+        );
+        setComponentLoading(false);
+      }
+    };
+
+    // Separate weather data fetching function for reuse
+    const fetchWeatherData = async (coords: { lat: number; lng: number }, householdData: Database['public']['Tables']['households']['Row']) => {
+      try {
+        await enhancedLogger.logWithFullContext(
+          LogLevel.INFO,
+          'Fetching weather data for household location',
+          'WeatherWidget',
+          {
+            householdName: householdData.name,
+            lat: coords.lat,
+            lng: coords.lng
+          }
+        );
+
+        const res = await fetch(
+          `/api/weather?lat=${coords.lat}&lon=${coords.lng}`
+        );
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(
+            errorData.error || `HTTP ${res.status}: ${res.statusText}`
+          );
+        }
+
+        const data = await res.json();
+        setWeather(data);
+        setLastUpdated(new Date());
+
+        await enhancedLogger.logWithFullContext(
+          LogLevel.INFO,
+          'Weather data loaded successfully for household',
+          'WeatherWidget',
+          {
+            householdName: householdData.name,
+            currentTemp: data.current?.temp,
+            condition: data.current?.weather?.[0]?.description
+          }
+        );
+      } catch (err: unknown) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to load weather data';
+        setError(errorMessage);
+
+        await enhancedLogger.logWithFullContext(
+          LogLevel.ERROR,
+          'Failed to fetch weather data',
+          'WeatherWidget',
+          {
+            error: errorMessage,
+            householdName: householdData?.name
           }
         );
       } finally {

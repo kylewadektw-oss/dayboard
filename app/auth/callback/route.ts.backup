@@ -25,40 +25,76 @@ export async function GET(request: NextRequest) {
   // by the `@supabase/ssr` package. It exchanges an auth code for the user's session.
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
+  const error = requestUrl.searchParams.get('error');
+  const errorDescription = requestUrl.searchParams.get('error_description');
 
   serverAuthLogger.info(`🔄 Auth callback received`, {
     url: requestUrl.toString(),
     hasCode: !!code,
-    origin: requestUrl.origin
+    hasError: !!error,
+    error,
+    errorDescription,
+    origin: requestUrl.origin,
+    searchParams: Array.from(requestUrl.searchParams.entries()),
+    userAgent: request.headers.get('user-agent')
   });
 
+  // Check for OAuth errors first
+  if (error) {
+    serverAuthLogger.error(`❌ OAuth error received`, {
+      error,
+      errorDescription,
+      fullUrl: requestUrl.toString()
+    });
+    
+    return NextResponse.redirect(
+      getErrorRedirect(
+        `${requestUrl.origin}/signin`,
+        error,
+        errorDescription || 'OAuth authentication failed. Please try again.'
+      )
+    );
+  }
+
   if (code) {
-    const supabase = await createClient();
+    try {
+      const supabase = await createClient();
 
-    serverAuthLogger.info(`🔑 Exchanging code for session`);
-    const { data: sessionData, error } =
-      await supabase.auth.exchangeCodeForSession(code);
+      serverAuthLogger.info(`🔑 Attempting code exchange for session`, {
+        codeLength: code.length,
+        codePrefix: code.substring(0, 10) + '...',
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
+        hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      });
 
-    if (error) {
-      serverAuthLogger.error(
-        `❌ Code exchange failed`,
-        { error: error.message },
-        error
-      );
-      return NextResponse.redirect(
-        getErrorRedirect(
-          `${requestUrl.origin}/signin`,
-          error.name,
-          "Sorry, we weren't able to log you in. Please try again."
-        )
-      );
-    }
+      const { data: sessionData, error: exchangeError } =
+        await supabase.auth.exchangeCodeForSession(code);
 
-    // Check if we got a session
-    if (sessionData?.session) {
-      serverAuthLogger.info(`✅ Session created successfully`, {
-        userId: sessionData.session.user?.id,
-        hasAccessToken: !!sessionData.session.access_token,
+      if (exchangeError) {
+        serverAuthLogger.error(
+          `❌ Code exchange failed`,
+          { 
+            error: exchangeError.message,
+            name: exchangeError.name,
+            stack: exchangeError.stack,
+            code: code.substring(0, 10) + '...'
+          },
+          exchangeError
+        );
+        return NextResponse.redirect(
+          getErrorRedirect(
+            `${requestUrl.origin}/signin`,
+            exchangeError.name || 'CodeExchangeError',
+            "Sorry, we weren't able to log you in. Please try again."
+          )
+        );
+      }
+
+      // Check if we got a session
+      if (sessionData?.session) {
+        serverAuthLogger.info(`✅ Session created successfully`, {
+          userId: sessionData.session.user?.id,
+          hasAccessToken: !!sessionData.session.access_token,
         hasRefreshToken: !!sessionData.session.refresh_token,
         expiresAt: sessionData.session.expires_at
       });
@@ -323,14 +359,31 @@ export async function GET(request: NextRequest) {
         )
       );
     }
-  } else {
-    serverAuthLogger.warn(`⚠️ No authorization code provided in callback`);
+  } catch (codeExchangeError) {
+    serverAuthLogger.error(
+      `💥 Unexpected error during code exchange`,
+      { 
+        error: codeExchangeError instanceof Error ? codeExchangeError.message : 'Unknown error',
+        stack: codeExchangeError instanceof Error ? codeExchangeError.stack : undefined
+      },
+      codeExchangeError instanceof Error ? codeExchangeError : undefined
+    );
     return NextResponse.redirect(
       getErrorRedirect(
         `${requestUrl.origin}/signin`,
-        'AuthCallbackError',
-        'No authorization code provided. Please try signing in again.'
+        'UnexpectedError',
+        'An unexpected error occurred during authentication. Please try again.'
       )
     );
   }
+} else {
+  serverAuthLogger.warn(`⚠️ No authorization code provided in callback`);
+  return NextResponse.redirect(
+    getErrorRedirect(
+      `${requestUrl.origin}/signin`,
+      'AuthCallbackError',
+      'No authorization code provided. Please try signing in again.'
+    )
+  );
+}
 }

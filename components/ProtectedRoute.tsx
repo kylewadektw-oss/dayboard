@@ -36,14 +36,15 @@ export default function ProtectedRoute({
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const hasRedirected = useRef(false);
   
-  console.log('🔒 [PROTECTED ROUTE DEBUG]:', {
-    hasUser: !!user,
-    loading,
-    pathname: typeof window !== 'undefined' ? window.location.pathname : 'server',
-    hasRedirected: hasRedirected.current,
-    shouldRender,
-    initialLoadComplete
-  });
+  // Debug logging removed for performance
+  // console.log('🔒 [PROTECTED ROUTE DEBUG]:', {
+  //   hasUser: !!user,
+  //   loading,
+  //   pathname: typeof window !== 'undefined' ? window.location.pathname : 'server',
+  //   hasRedirected: hasRedirected.current,
+  //   shouldRender,
+  //   initialLoadComplete
+  // });
 
   // Mark initial load as complete when loading finishes
   useEffect(() => {
