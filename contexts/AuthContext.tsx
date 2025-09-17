@@ -180,14 +180,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('🔍 [DEBUG] Final profile data:', profileData);
         setProfile(profileData ?? null);
 
-        // Fetch permissions
+        // Fetch permissions - use profile.id instead of user_id for foreign key
         try {
-          const { data: permissionsData, error: permissionsError } =
-            await supabase
+          // First try with profile.id (correct foreign key)
+          let permissionsData = null;
+          let permissionsError = null;
+          
+          if (profileData?.id) {
+            const { data, error } = await supabase
               .from('user_permissions')
               .select('*')
-              .eq('user_id', currentUser.id)
+              .eq('user_id', profileData.id)
               .maybeSingle();
+            permissionsData = data;
+            permissionsError = error;
+          }
 
           if (permissionsError) {
             if (permissionsError.message.includes('Could not find the table'))
@@ -241,7 +248,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           hasTokens: !!(session.access_token && session.refresh_token)
         });
       } else if (sessionError) {
-        fireError('❌ [AUTH] Session error: ' + sessionError.message);
+        // Handle session errors gracefully
+        if (sessionError.message.includes('Auth session missing') || 
+            sessionError.message.includes('session_not_found') ||
+            sessionError.message.includes('invalid_token')) {
+          fireInfo('ℹ️ [AUTH] No valid session found during getSession');
+        } else {
+          fireError('❌ [AUTH] Session error: ' + sessionError.message);
+        }
       }
 
       // Method 2: If no session, try getUser as fallback
@@ -256,7 +270,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             method: 'getUser'
           });
         } else if (userError) {
-          fireError('❌ [AUTH] User retrieval error: ' + userError.message);
+          // Handle session missing gracefully - this is normal when not logged in
+          if (userError.message.includes('Auth session missing') || 
+              userError.message.includes('session_not_found') ||
+              userError.message.includes('invalid_token')) {
+            fireInfo('ℹ️ [AUTH] No valid session found - user not authenticated');
+          } else {
+            fireError('❌ [AUTH] User retrieval error: ' + userError.message);
+          }
         }
       }
 
@@ -277,6 +298,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
       } else {
         fireInfo('👤 [AUTH] No authenticated user found');
+        
+        // Try to refresh the session if we have refresh tokens
+        try {
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshData?.session && !refreshError) {
+            fireInfo('✅ [AUTH] Session refreshed successfully');
+            setUser(refreshData.session.user);
+            setLoadingStable(false);
+            
+            // Fetch profile data for refreshed user
+            fetchUserData(refreshData.session.user).catch((err) =>
+              fireError('❌ [AUTH] Profile fetch after refresh failed: ' + (err?.message || 'Unknown error'))
+            );
+            return; // Exit early since we found a valid session
+          } else if (refreshError && !refreshError.message.includes('session_not_found')) {
+            fireWarn('⚠️ [AUTH] Session refresh failed: ' + refreshError.message);
+          }
+        } catch {
+          fireInfo('ℹ️ [AUTH] No session to refresh');
+        }
+        
+        // Clear all auth state if no valid session
         setUser(null);
         setProfile(null);
         setPermissions(null);
@@ -297,6 +340,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchUserData,
     fireInfo,
     fireError,
+    fireWarn,
     FAST_AUTH_LOG,
     setLoadingStable
   ]);
