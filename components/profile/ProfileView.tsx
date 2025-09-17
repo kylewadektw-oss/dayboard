@@ -370,17 +370,13 @@ export default function ProfileView() {
     setSavingPermissions(true);
     setPermissionsFeedback(null);
     try {
+      // Extract permission fields, excluding metadata
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const {
-        id: _id,
-        user_id: _user_id,
-        created_at: _created_at,
-        updated_at: _updated_at,
-        ...rest
-      } = permissionsForm as Record<string, unknown>;
+      const { id, user_id, created_at, updated_at, ...updateData } = permissionsForm as Record<string, unknown>;
+      
       const { error } = await supabase
         .from('user_permissions')
-        .update(rest)
+        .update(updateData)
         .eq('id', permissions.id);
       if (error) throw error;
       toastHelpers.success('Permissions updated');
