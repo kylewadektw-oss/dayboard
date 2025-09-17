@@ -146,7 +146,8 @@ export async function GET(req: Request) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    const weatherUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&exclude=minutely,alerts&units=imperial&appid=${apiKey}`;
+    // Use current weather API (free tier) instead of OneCall API (requires subscription)
+    const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=imperial&appid=${apiKey}`;
 
     const res = await fetch(weatherUrl, {
       signal: controller.signal,
@@ -223,15 +224,15 @@ export async function GET(req: Request) {
 
     const data = await res.json();
 
-    // Validate response structure
-    if (!data.current || !data.daily) {
+    // Transform current weather API response to match expected format
+    if (!data.main || !data.weather) {
       await enhancedLogger.logWithFullContext(
         LogLevel.ERROR,
         'Invalid weather API response structure',
         'WeatherAPI',
         {
-          hasurrent: !!data.current,
-          hasDaily: !!data.daily,
+          hasMain: !!data.main,
+          hasWeather: !!data.weather,
           responseKeys: Object.keys(data)
         }
       );
@@ -242,6 +243,19 @@ export async function GET(req: Request) {
       );
     }
 
+    // Transform to expected format
+    const transformedData = {
+      current: {
+        temp: data.main.temp,
+        feels_like: data.main.feels_like,
+        humidity: data.main.humidity,
+        visibility: data.visibility,
+        wind_speed: data.wind?.speed || 0,
+        weather: data.weather
+      },
+      daily: [] // Current weather API doesn't provide daily forecast in free tier
+    };
+
     const responseTime = Date.now() - startTime;
     await enhancedLogger.logWithFullContext(
       LogLevel.INFO,
@@ -251,13 +265,13 @@ export async function GET(req: Request) {
         lat: latitude,
         lon: longitude,
         responseTime: `${responseTime}ms`,
-        currentTemp: data.current.temp,
-        dailyForecastDays: data.daily.length
+        currentTemp: transformedData.current.temp,
+        location: data.name || 'Unknown'
       }
     );
 
     // Add cache headers (5 minute cache)
-    const response = NextResponse.json(data);
+    const response = NextResponse.json(transformedData);
     response.headers.set(
       'Cache-Control',
       'public, max-age=300, stale-while-revalidate=600'
