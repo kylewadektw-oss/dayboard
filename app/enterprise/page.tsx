@@ -1,12 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { 
   Code2, 
   Smartphone, 
   Cloud, 
   Shield, 
-  Users, 
   ArrowRight, 
   Star,
   CheckCircle,
@@ -20,9 +18,7 @@ import {
   Monitor,
   Heart,
   Award,
-  Mail,
-  Phone,
-  MapPin
+  Mail
 } from 'lucide-react';
 
 export default function BentLoLabsLanding() {

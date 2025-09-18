@@ -15,9 +15,9 @@
  */
 
 import { headers } from 'next/headers'
-import CompanyLandingPage from '@/components/pages/CompanyLandingPage'
-import DayboardLandingPage from '@/components/pages/DayboardLandingPage'
-import LogsDashboardPage from '@/components/pages/LogsDashboardPage'
+import CompanyLandingPage from '../components/pages/CompanyLandingPage'
+import DayboardLandingPage from '../components/pages/DayboardLandingPage'
+import LogsDashboardPage from '../components/pages/LogsDashboardPage'
 
 export default async function HomePage() {
   const headersList = await headers()

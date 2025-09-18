@@ -18,32 +18,15 @@
 
 import Link from 'next/link';
 import {
-  ChefHat,
-  ListTodo,
-  Timer,
-  Star,
   ArrowRight,
   PlayCircle,
   CheckCircle,
   Sparkles,
-  Clock,
   Shield,
-  MapPin,
-  BarChart3,
-  Wrench,
-  Baby,
-  Cloud,
   Zap,
   Eye,
-  Settings,
-  Crown,
-  Martini,
-  BookOpen,
-  ActivitySquare,
   Home,
-  Monitor,
-  Check,
-  X
+  Monitor
 } from 'lucide-react';
 import LandingPageLogger from '@/components/marketing/LandingPageLogger';
 
