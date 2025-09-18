@@ -2,9 +2,9 @@ import { Suspense } from 'react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Bentlolabs Enterprise Dashboard',
+  title: 'BentLo Labs - Software Design Group',
   description:
-    'Comprehensive monitoring and management for the Bentlolabs ecosystem'
+    'BentLo Labs is a boutique software design group crafting intelligent solutions that solve real-world problems. Custom development, consulting, and enterprise applications.'
 };
 
 export default function EnterpriseDashboardLayout({
@@ -18,10 +18,10 @@ export default function EnterpriseDashboardLayout({
         <div className="max-w-6xl mx-auto px-8 py-4 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold mb-1">
-              🏢 Bentlolabs Enterprise
+              🏢 BentLo Labs
             </h1>
-            <span className="text-xs bg-green-500/20 px-2 py-1 rounded">
-              Production Dashboard
+            <span className="text-xs bg-blue-500/20 px-2 py-1 rounded">
+              Software Design Group
             </span>
           </div>
           <nav className="flex gap-8">
@@ -29,25 +29,25 @@ export default function EnterpriseDashboardLayout({
               href="/enterprise"
               className="text-white/80 hover:text-white hover:bg-white/10 px-4 py-2 rounded transition-all"
             >
-              Dashboard
+              Home
             </a>
             <a
-              href="/enterprise/analytics"
+              href="/enterprise#portfolio"
               className="text-white/80 hover:text-white hover:bg-white/10 px-4 py-2 rounded transition-all"
             >
-              Analytics
+              Portfolio
             </a>
             <a
-              href="/enterprise/monitoring"
+              href="/enterprise#contact"
               className="text-white/80 hover:text-white hover:bg-white/10 px-4 py-2 rounded transition-all"
             >
-              Monitoring
+              Contact
             </a>
             <a
-              href="/enterprise/settings"
+              href="https://dayboard.bentlolabs.com"
               className="text-white/80 hover:text-white hover:bg-white/10 px-4 py-2 rounded transition-all"
             >
-              Settings
+              Dayboard
             </a>
           </nav>
         </div>
@@ -57,7 +57,7 @@ export default function EnterpriseDashboardLayout({
         <Suspense
           fallback={
             <div className="text-center py-16 text-xl opacity-80">
-              Loading Enterprise Dashboard...
+              Loading BentLo Labs...
             </div>
           }
         >
