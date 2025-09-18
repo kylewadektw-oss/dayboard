@@ -167,7 +167,8 @@ const nextConfig = {
   },
 
   // 🚀 PERFORMANCE: Output configuration
-  output: 'standalone',
+  // Commented out for Vercel compatibility with route groups
+  // output: 'standalone',
 
   // 🚀 PERFORMANCE: Headers for caching
   async headers() {
